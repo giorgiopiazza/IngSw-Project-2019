@@ -1,8 +1,8 @@
 package exceptions.map;
 
-import exceptions.AdrenalinaException;
+import exceptions.AdrenalinaRuntimeException;
 
-public class MaxSquareWeaponsException extends AdrenalinaException {
+public class MaxSquareWeaponsException extends AdrenalinaRuntimeException {
     public MaxSquareWeaponsException() {
         super("Reached max number of weapons for the square");
     }
