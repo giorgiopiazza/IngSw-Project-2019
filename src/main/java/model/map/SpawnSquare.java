@@ -9,7 +9,7 @@ import java.util.Arrays;
 
 public class SpawnSquare extends Square {
     public static final int MAX_WEAPONS = 3;
-    private WeaponCard weapons[];
+    private WeaponCard[] weapons;
 
     /**
      *  Create an instance of a piece of <code>SpawnSquare</code> map, allocate an array of <code>MAX_WEAPONS</code> items that will contain the 3 weapons card
