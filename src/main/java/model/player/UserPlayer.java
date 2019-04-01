@@ -40,8 +40,8 @@ public class UserPlayer extends Player {
     /**
      * Adds a weapon to your hand when you do not have to discard one
      *
-     * @param weapon
-     * @throws MaxCardsInHandException
+     * @param weapon thw weapon you want to add
+     * @throws MaxCardsInHandException if you already have 3 cards but you have not decided to discard one
      */
     public void addWeapon(WeaponCard weapon) throws MaxCardsInHandException {
         if (weapons.size() == 3) {
@@ -53,8 +53,8 @@ public class UserPlayer extends Player {
     /**
      * Adds a weapond in the position of the one you want to discharge
      *
-     * @param addedWeapon
-     * @param discardWeapon
+     * @param addedWeapon the weapon to be added
+     * @param discardWeapon the weapon to be replaced
      */
     public void addWeapon(WeaponCard addedWeapon, WeaponCard discardWeapon) {
         weapons.set(weapons.indexOf(discardWeapon), addedWeapon);
@@ -75,8 +75,8 @@ public class UserPlayer extends Player {
     /**
      * Returns true if you can add the powerup to your hand, false instead
      *
-     * @param powerup
-     * @return
+     * @param powerup the powerup to be added
+     * @return true if the powerup can be added to your hando, false if not (your hand already has 3 powerups)
      */
     public boolean addPowerup(PowerupCard powerup) {
         if (powerups.size() == 3) {

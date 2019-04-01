@@ -4,6 +4,6 @@ import exceptions.AdrenalinaException;
 
 public class MaxCardsInHandException extends AdrenalinaException {
     public MaxCardsInHandException(String cardType) {
-        super("Reached max number of" + cardType +"cards in your hand");
+        super("Reached max number of" + cardType + "cards in your hand");
     }
 }

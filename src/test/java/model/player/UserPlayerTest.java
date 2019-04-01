@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
-public class UserPlayerTest {
+class UserPlayerTest {
     private UserPlayer[] players;
 
     @BeforeEach
