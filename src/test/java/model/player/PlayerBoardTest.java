@@ -1,18 +1,115 @@
 package model.player;
 
+import enumerations.Ammo;
+
+import exceptions.AdrenalinaException;
+import exceptions.playerboard.BoardAlreadyFlippedException;
+import exceptions.playerboard.BoardFlipDamagedException;
+import exceptions.playerboard.BoardMaxAmmoException;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
-public class PlayerBoardTest {
+class PlayerBoardTest {
     private PlayerBoard playerBoard;
     private Player damageDealer;
+    private Ammo ammo;
 
     @BeforeEach
-    public void before() {
+    void before() {
         playerBoard = new PlayerBoard();
         damageDealer = mock(Player.class);
+    }
 
+    @Test
+    void damageTest() {
+        playerBoard.addDamage(damageDealer, 2);
+        assertEquals(2, playerBoard.getDamageCount());
+    }
+
+    @Test
+    void markTest() {
+        playerBoard.addMark(damageDealer, 2);
+        assertEquals(0, playerBoard.getDamageCount());
+        assertEquals(2, playerBoard.getMarkCount());
+
+        playerBoard.addDamage(damageDealer, 5);
+        assertEquals(7, playerBoard.getDamageCount());
+        assertEquals(0, playerBoard.getMarkCount());
+
+        playerBoard.addDamage(damageDealer, 6);
+        assertEquals(12, playerBoard.getDamageCount());
+        assertEquals(0, playerBoard.getMarkCount());
+    }
+
+    @Test
+    void pointsAfterDeathTest() {
+        assertArrayEquals(new Integer[]{8, 6, 4, 2, 1, 1}, playerBoard.getBoardPoints());
+        assertEquals(0, playerBoard.getSkulls());
+
+        playerBoard.onDeath();
+
+        assertArrayEquals(new Integer[]{6, 4, 2, 1, 1}, playerBoard.getBoardPoints());
+        assertEquals(1, playerBoard.getSkulls());
+    }
+
+    @Test
+    void BoardAlreadyFlippedExceptionTest() {
+        assertThrows(BoardAlreadyFlippedException.class, () -> {
+            playerBoard.flipBoard();
+            playerBoard.flipBoard();
+        });
+    }
+
+    @Test
+    void BoardFlipDamagedExceptionTest() {
+        assertThrows(BoardFlipDamagedException.class, () -> {
+            playerBoard.addDamage(damageDealer, 2);
+            playerBoard.flipBoard();
+        });
+    }
+
+    @Test
+    void BoardFlipTest() {
+        assertArrayEquals(new Integer[]{8, 6, 4, 2, 1, 1}, playerBoard.getBoardPoints());
+
+        try {
+            playerBoard.flipBoard();
+        } catch (AdrenalinaException e) {
+            e.printStackTrace();
+        }
+
+        assertTrue(playerBoard.isBoardFlipped());
+
+        assertArrayEquals(new Integer[]{2, 1, 1, 1}, playerBoard.getBoardPoints());
+    }
+
+    @Test
+    void AddAmmoTest() {
+        Ammo ammoB = Ammo.BLUE;
+        Ammo ammoY = Ammo.YELLOW;
+
+        try {
+            playerBoard.addAmmo(ammoB);
+            assertArrayEquals(new Ammo[]{Ammo.BLUE}, playerBoard.getAmmo());
+
+            playerBoard.addAmmo(ammoB);
+            assertArrayEquals(new Ammo[]{Ammo.BLUE, Ammo.BLUE}, playerBoard.getAmmo());
+
+            playerBoard.addAmmo(ammoY);
+            assertArrayEquals(new Ammo[]{Ammo.BLUE, Ammo.BLUE, Ammo.YELLOW}, playerBoard.getAmmo());
+
+            playerBoard.addAmmo(ammoB);
+            assertArrayEquals(new Ammo[]{Ammo.BLUE, Ammo.BLUE, Ammo.YELLOW, Ammo.BLUE}, playerBoard.getAmmo());
+        } catch (AdrenalinaException e) {
+            e.printStackTrace();
+        }
+
+        assertThrows(BoardMaxAmmoException.class, () -> {
+            playerBoard.addAmmo(ammoB);
+        });
     }
 }

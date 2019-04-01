@@ -47,6 +47,8 @@ public class PlayerBoard {
         return damages.size();
     }
 
+    public int getMarkCount() { return marks.size(); }
+
     public void flipBoard() throws BoardAlreadyFlippedException, BoardFlipDamagedException {
         if (boardFlipped) {
             throw new BoardAlreadyFlippedException();
@@ -69,18 +71,24 @@ public class PlayerBoard {
         this.ammo.add(ammo);
     }
 
-    public void addMark(Player markDealer) {
-        marks.add(markDealer);
+    public Ammo[] getAmmo() {
+        return ammo.toArray(new Ammo[0]);
     }
 
-    public void addDamage(Player damageDealer, int damage) {
-        int marksNum = Collections.frequency(damages, damageDealer);
+    public void addMark(Player markDealer, int marksCount) {
+        for (int i = 0; i < marksCount; i++) {
+            marks.add(markDealer);
+        }
+    }
+
+    public void addDamage(Player damageDealer, int damageCount) {
+        int marksNum = Collections.frequency(marks, damageDealer);
 
         if (marksNum > 0) {
-            damages.removeIf(damageDealer::equals);
+            marks.removeIf(damageDealer::equals);
         }
 
-        for (int i = 0; i < damage + marksNum && damages.size() < 13; ++i) {
+        for (int i = 0; i < damageCount + marksNum && damages.size() < 12; ++i) {
             damages.add(damageDealer);
         }
     }
