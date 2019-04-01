@@ -2,7 +2,7 @@ package model.map;
 
 import enumerations.Color;
 import enumerations.SquareAdjacency;
-import exceptions.MapException;
+import exceptions.map.MaxSquareWeaponsException;
 import model.cards.WeaponCard;
 
 import java.util.Arrays;
@@ -36,9 +36,9 @@ public class SpawnSquare extends Square {
      *
      * @param weapon the weapon card to insert
      * @return index where the card is inserted
-     * @throws MapException if the array already contains 3 cards
+     * @throws MaxSquareWeaponsException if the array already contains 3 cards
      */
-    public int addWeapon(WeaponCard weapon) throws MapException {
+    public int addWeapon(WeaponCard weapon) throws MaxSquareWeaponsException {
         for (int i = 0; i < MAX_WEAPONS; i++) {
             if (weapons[i] == null) {
                 weapons[i] = weapon;
@@ -46,7 +46,7 @@ public class SpawnSquare extends Square {
             }
         }
 
-        throw new MapException("MAX_WEAPONS number exceeded");
+        throw new MaxSquareWeaponsException();
     }
 
     /**
