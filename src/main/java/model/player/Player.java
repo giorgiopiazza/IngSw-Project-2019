@@ -42,7 +42,7 @@ public abstract class Player {
         return firstPlayer;
     }
 
-    public void changePosition(int newX, int newY) throws IndexOutOfBoundsException {
+    public void changePosition(int newX, int newY) {
 
         if ((newX < 0) || (newX > 4)) {
             throw new IndexOutOfBoundsException("The X you wanted to change is not in the map");
