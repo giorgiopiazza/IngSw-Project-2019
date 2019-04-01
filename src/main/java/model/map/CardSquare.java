@@ -3,6 +3,8 @@ package model.map;
 import enumerations.Color;
 import enumerations.SquareAdjacency;
 
+import java.util.Objects;
+
 public class CardSquare extends Square {
     private AmmoCard ammoCard;
 
@@ -21,5 +23,19 @@ public class CardSquare extends Square {
 
     public void setAmmoCard(AmmoCard ammoCard) {
         this.ammoCard = ammoCard;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CardSquare)) return false;
+        if (!super.equals(o)) return false;
+        CardSquare that = (CardSquare) o;
+        return Objects.equals(getAmmoCard(), that.getAmmoCard());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), getAmmoCard());
     }
 }
