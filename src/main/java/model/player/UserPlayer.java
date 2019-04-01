@@ -13,10 +13,10 @@ public class UserPlayer extends Player {
     private List<WeaponCard> weapons;
     private List<PowerupCard> powerups;
     private final boolean firstPlayer;
-    public boolean terminator;
+    private boolean terminator;
 
     public UserPlayer(String nickname, Color color, boolean firstPlayer, PlayerPosition position,
-                            PlayerBoard playerBoard, boolean terminator) {
+                      PlayerBoard playerBoard, boolean terminator) {
 
         super(nickname, color, position, playerBoard);
         this.firstPlayer = firstPlayer;
@@ -25,9 +25,13 @@ public class UserPlayer extends Player {
         this.terminator = terminator;
     }
 
-    public boolean hasTerminator() { return terminator; }
+    public void setTerminator(boolean terminator) {
+        this.terminator = terminator;
+    }
 
-    public void setTerminator(boolean terminator) { this.terminator = terminator; }
+    public boolean hasTerminator() {
+        return this.terminator;
+    }
 
     public boolean isFirstPlayer() {
         return this.firstPlayer;
@@ -35,6 +39,7 @@ public class UserPlayer extends Player {
 
     /**
      * Adds a weapon to your hand when you do not have to discard one
+     *
      * @param weapon
      * @throws MaxCardsInHandException
      */
@@ -47,39 +52,54 @@ public class UserPlayer extends Player {
 
     /**
      * Adds a weapond in the position of the one you want to discharge
+     *
      * @param addedWeapon
      * @param discardWeapon
      */
-    public void addWeapon(WeaponCard addedWeapon, WeaponCard discardWeapon ) {
+    public void addWeapon(WeaponCard addedWeapon, WeaponCard discardWeapon) {
         weapons.set(weapons.indexOf(discardWeapon), addedWeapon);
     }
 
-    public boolean hasWeapon (WeaponCard weapon) { return weapons.contains(weapon); }
-
-    public int weaponsNum () { return weapons.size(); }
-
-    public WeaponCard[] getWeapons() { return weapons.toArray(new WeaponCard[0]); }
-
-    /**
-     * Adds a powerup to your hand if you do not have 3, in this case you can't pick an other powerup
-     * @param powerup
-     */
-    public void addPowerup(PowerupCard powerup) {
-        if (powerups.size() == 3) {
-            return;
-        }
-        powerups.add(powerup);
+    public boolean hasWeapon(WeaponCard weapon) {
+        return weapons.contains(weapon);
     }
 
-    public void discardPowerup (PowerupCard powerup) throws EmptyHandException {
+    public int weaponsNum() {
+        return weapons.size();
+    }
+
+    public WeaponCard[] getWeapons() {
+        return weapons.toArray(new WeaponCard[0]);
+    }
+
+    /**
+     * Returns true if you can add the powerup to your hand, false instead
+     *
+     * @param powerup
+     * @return
+     */
+    public boolean addPowerup(PowerupCard powerup) {
+        if (powerups.size() == 3) {
+            return false;
+        }
+        powerups.add(powerup);
+        return true;
+    }
+
+    public boolean discardPowerup(PowerupCard powerup) throws EmptyHandException {
         if (powerups.isEmpty()) {
             throw new EmptyHandException("powerups");
         }
         powerups.remove(powerup);
+        return true;
     }
 
-    public boolean hasPowerup (PowerupCard powerup) { return powerups.contains(powerup); }
+    public boolean hasPowerup(PowerupCard powerup) {
+        return powerups.contains(powerup);
+    }
 
-    public PowerupCard[] getPowerups() { return powerups.toArray(new PowerupCard[0]); }
+    public PowerupCard[] getPowerups() {
+        return powerups.toArray(new PowerupCard[0]);
+    }
 
 }

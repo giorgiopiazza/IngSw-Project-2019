@@ -11,7 +11,7 @@ public class PlayerPosition {
     }
 
     public int getCoordX() {
-        return coordX;
+        return this.coordX;
     }
 
     public void setCoordX(int coordX) {
@@ -19,7 +19,7 @@ public class PlayerPosition {
     }
 
     public int getCoordY() {
-        return coordY;
+        return this.coordY;
     }
 
     public void setCoordY(int coordY) {
