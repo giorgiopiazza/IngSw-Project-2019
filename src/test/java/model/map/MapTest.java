@@ -37,17 +37,11 @@ class MapTest {
 
     @Test
     void spawnSquare() throws MaxSquareWeaponsException {
-        WeaponCard mock1, mock2, mock3;
+        assertEquals(0, spawnSquare.addWeapon(mock(WeaponCard.class)));
+        assertEquals(1, spawnSquare.addWeapon(mock(WeaponCard.class)));
+        assertEquals(2, spawnSquare.addWeapon(mock(WeaponCard.class)));
 
-        mock1 = mock(WeaponCard.class);
-        mock2 = mock(WeaponCard.class);
-        mock3 = mock(WeaponCard.class);
-
-        assertEquals(0, spawnSquare.addWeapon(mock1));
-        assertEquals(1, spawnSquare.addWeapon(mock2));
-        assertEquals(2, spawnSquare.addWeapon(mock3));
-
-        assertThrows(MaxSquareWeaponsException.class, () -> spawnSquare.addWeapon(mock1));
+        assertThrows(MaxSquareWeaponsException.class, () -> spawnSquare.addWeapon(mock(WeaponCard.class)));
 
         assertTrue(spawnSquare.removeWeapon(2));
         assertTrue(spawnSquare.removeWeapon(1));
