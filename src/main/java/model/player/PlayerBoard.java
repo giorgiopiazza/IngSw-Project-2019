@@ -1,9 +1,9 @@
 package model.player;
 
 import enumerations.Ammo;
-import exceptions.BoardAlreadyFlippedException;
-import exceptions.BoardFlipDamagedException;
-import exceptions.BoardMaxAmmoException;
+import exceptions.playerboard.BoardAlreadyFlippedException;
+import exceptions.playerboard.BoardFlipDamagedException;
+import exceptions.playerboard.BoardMaxAmmoException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,7 +40,11 @@ public class PlayerBoard {
     }
 
     public Integer[] getBoardPoints() {
-        return boardPoints.toArray(new Integer[0]);
+        return boardPoints.subList(skulls, boardPoints.size()).toArray(new Integer[0]);
+    }
+
+    public int getDamageCount() {
+        return damages.size();
     }
 
     public void flipBoard() throws BoardAlreadyFlippedException, BoardFlipDamagedException {
@@ -63,5 +67,26 @@ public class PlayerBoard {
         }
 
         this.ammo.add(ammo);
+    }
+
+    public void addMark(Player markDealer) {
+        marks.add(markDealer);
+    }
+
+    public void addDamage(Player damageDealer, int damage) {
+        int marksNum = Collections.frequency(damages, damageDealer);
+
+        if (marksNum > 0) {
+            damages.removeIf(damageDealer::equals);
+        }
+
+        for (int i = 0; i < damage + marksNum && damages.size() < 13; ++i) {
+            damages.add(damageDealer);
+        }
+    }
+
+    public void onDeath() {
+        damages.clear();
+        skulls++;
     }
 }
