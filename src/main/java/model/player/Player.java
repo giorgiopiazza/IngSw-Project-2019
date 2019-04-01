@@ -5,17 +5,14 @@ import enumerations.Color;
 public abstract class Player {
     private final String nickname;
     private final Color color;
-    private final boolean firstPlayer;
     private final PlayerBoard playerBoard;
-
     private PlayerPosition position;
     private int points;
 
-    public Player(String nickname, Color color, boolean firstPlayer, PlayerPosition position, PlayerBoard playerBoard) {
+    public Player(String nickname, Color color, PlayerPosition position, PlayerBoard playerBoard) {
 
         this.nickname = nickname;
         this.color = color;
-        this.firstPlayer = firstPlayer;
         this.position = position;
         this.playerBoard = playerBoard;
 
@@ -36,10 +33,6 @@ public abstract class Player {
 
     public int getPoints() {
         return points;
-    }
-
-    public boolean isFirstPlayer() {
-        return firstPlayer;
     }
 
     public void changePosition(int newX, int newY) {
