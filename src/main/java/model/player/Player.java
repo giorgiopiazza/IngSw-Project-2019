@@ -11,7 +11,7 @@ public abstract class Player {
     private PlayerPosition position;
     private int points;
 
-    public Player (String nickname, Color color, boolean firstPlayer, PlayerPosition position, PlayerBoard playerBoard) {
+    public Player(String nickname, Color color, boolean firstPlayer, PlayerPosition position, PlayerBoard playerBoard) {
 
         this.nickname = nickname;
         this.color = color;
@@ -22,12 +22,23 @@ public abstract class Player {
         points = 0;
     }
 
-    public String getNickname() { return nickname; }
-    public Color getColor () { return color; }
-    public PlayerPosition getPosition () { return position; }
-    public int getPoints () { return points; }
+    public String getNickname() {
+        return nickname;
+    }
 
-    public boolean isFirstPlayer () {
+    public Color getColor() {
+        return color;
+    }
+
+    public PlayerPosition getPosition() {
+        return position;
+    }
+
+    public int getPoints() {
+        return points;
+    }
+
+    public boolean isFirstPlayer() {
         return firstPlayer;
     }
 
@@ -43,7 +54,7 @@ public abstract class Player {
         this.position.setCoordY(newY);
     }
 
-    public void addPoints (int pointsGained) {
+    public void addPoints(int pointsGained) {
         points = this.points + pointsGained;
     }
 }

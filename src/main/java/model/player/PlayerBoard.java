@@ -47,7 +47,9 @@ public class PlayerBoard {
         return damages.size();
     }
 
-    public int getMarkCount() { return marks.size(); }
+    public int getMarkCount() {
+        return marks.size();
+    }
 
     public void flipBoard() throws BoardAlreadyFlippedException, BoardFlipDamagedException {
         if (boardFlipped) {
