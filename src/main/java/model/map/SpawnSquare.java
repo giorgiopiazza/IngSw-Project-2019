@@ -3,6 +3,7 @@ package model.map;
 import enumerations.Color;
 import enumerations.SquareAdjacency;
 import exceptions.MapException;
+import model.cards.WeaponCard;
 
 import java.util.Arrays;
 

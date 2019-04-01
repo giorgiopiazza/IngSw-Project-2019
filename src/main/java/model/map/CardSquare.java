@@ -2,6 +2,7 @@ package model.map;
 
 import enumerations.Color;
 import enumerations.SquareAdjacency;
+import model.cards.AmmoCard;
 
 import java.util.Objects;
 
