@@ -25,13 +25,13 @@ class PlayerBoardTest {
     }
 
     @Test
-    void damageTest() {
+    void addDamage() {
         playerBoard.addDamage(damageDealer, 2);
         assertEquals(2, playerBoard.getDamageCount());
     }
 
     @Test
-    void markTest() {
+    void addMark() {
         playerBoard.addMark(damageDealer, 2);
         assertEquals(0, playerBoard.getDamageCount());
         assertEquals(2, playerBoard.getMarkCount());
@@ -46,7 +46,7 @@ class PlayerBoardTest {
     }
 
     @Test
-    void pointsAfterDeathTest() {
+    void pointsAfterDeath() {
         assertArrayEquals(new Integer[]{8, 6, 4, 2, 1, 1}, playerBoard.getBoardPoints());
         assertEquals(0, playerBoard.getSkulls());
 
@@ -57,7 +57,7 @@ class PlayerBoardTest {
     }
 
     @Test
-    void BoardAlreadyFlippedExceptionTest() {
+    void boardAlreadyFlippedException() {
         assertThrows(BoardAlreadyFlippedException.class, () -> {
             playerBoard.flipBoard();
             playerBoard.flipBoard();
@@ -65,7 +65,7 @@ class PlayerBoardTest {
     }
 
     @Test
-    void BoardFlipDamagedExceptionTest() {
+    void boardFlipDamagedException() {
         assertThrows(BoardFlipDamagedException.class, () -> {
             playerBoard.addDamage(damageDealer, 2);
             playerBoard.flipBoard();
@@ -73,7 +73,7 @@ class PlayerBoardTest {
     }
 
     @Test
-    void BoardFlipTest() {
+    void boardFlip() {
         assertArrayEquals(new Integer[]{8, 6, 4, 2, 1, 1}, playerBoard.getBoardPoints());
 
         try {
@@ -88,7 +88,7 @@ class PlayerBoardTest {
     }
 
     @Test
-    void AddAmmoTest() {
+    void addAmmo() {
         Ammo ammoB = Ammo.BLUE;
         Ammo ammoY = Ammo.YELLOW;
 
@@ -108,8 +108,6 @@ class PlayerBoardTest {
             e.printStackTrace();
         }
 
-        assertThrows(BoardMaxAmmoException.class, () -> {
-            playerBoard.addAmmo(ammoB);
-        });
+        assertThrows(BoardMaxAmmoException.class, () -> playerBoard.addAmmo(ammoB));
     }
 }
