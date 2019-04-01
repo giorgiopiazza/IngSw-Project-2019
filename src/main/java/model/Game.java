@@ -45,6 +45,8 @@ public class Game {
      * Adds a player to the game
      *
      * @param player the player to add to the game
+     * @throws GameAlredyStartedException if the game has already started
+     * @throws MaxPlayerException if the maximum number of players has been reached
      */
     public void addPlayer(Player player) throws AdrenalinaException {
         if(started) throw new GameAlredyStartedException("it is not possible to add a player when the game has already started");
@@ -73,6 +75,11 @@ public class Game {
         // TODO: implementation of stopGame()
     }
 
+    /**
+     * Returns the number of skulls remaining during the game
+     *
+     * @return the number of remaining skulls
+     */
     public int remainingSkulls() {
         int leftSkulls = 0;
 
@@ -103,6 +110,12 @@ public class Game {
         if(!added) throw new KillShotsTerminatedException();
     }
 
+    /**
+     * Set the number of skulls in the game
+     *
+     * @param killShotNum number of killshots
+     * @throws GameAlredyStartedException if the game has already started
+     */
     public void setKillShotNum(int killShotNum) throws GameAlredyStartedException {
         if(killShotNum > MAX_KILLSHOT) throw new MaximumKillshotExceededException();
         if(started) throw new GameAlredyStartedException("it is not possible to set the number of killshot when the game is in progress");
@@ -113,6 +126,12 @@ public class Game {
         return terminator;
     }
 
+    /**
+     * Enable or disable terminator mode, true to enable
+     *
+     * @param terminator true to enable terminator mode, otherwise false
+     * @throws GameAlredyStartedException if the game has already started
+     */
     public void setTerminator(boolean terminator) throws GameAlredyStartedException {
         if(started) throw new GameAlredyStartedException("it is not possible to set the terminator player when the game has already started.");
         this.terminator = terminator;
