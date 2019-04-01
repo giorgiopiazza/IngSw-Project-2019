@@ -33,6 +33,8 @@ class MapTest {
     @Test
     void fillMap() {
         assertTrue(map.fillMap(rooms));
+        assertFalse(map.fillMap(new Square[3][5]));
+        assertFalse(map.fillMap(new Square[4][3]));
     }
 
     @Test
