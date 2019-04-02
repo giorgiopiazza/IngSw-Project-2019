@@ -138,13 +138,18 @@ public class Game {
      * @throws GameAlredyStartedException if the game has already started
      */
     public void setTerminator(boolean terminatorPresent) throws AdrenalinaException {
-        if(players.size() >= 5) throw new MaxPlayerException("Can not add Terminatore with 5 players");
+        if(players.size() >= 5) throw new MaxPlayerException("Can not add Terminator with 5 players");
         if(started) throw new GameAlredyStartedException("it is not possible to set the setTerminator player when the game has already started.");
         this.terminatorPresent = terminatorPresent;
 
         terminator = new Terminator(firstColorUnused(), new PlayerBoard());
     }
 
+    /**
+     * Find the first color that no player uses, otherwise <code>null</code>
+     *
+     * @return the first color not used by any player
+     */
     private Color firstColorUnused() {
         ArrayList<Color> ar = new ArrayList<>();
 
