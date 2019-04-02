@@ -2,15 +2,9 @@ package model;
 
 import enumerations.Color;
 import exceptions.AdrenalinaException;
-import exceptions.game.GameAlredyStartedException;
-import exceptions.game.KillShotsTerminatedException;
-import exceptions.game.MaxPlayerException;
-import exceptions.game.MaximumKillshotExceededException;
+import exceptions.game.*;
 import model.cards.Deck;
-import model.player.KillShot;
-import model.player.Player;
-import model.player.PlayerBoard;
-import model.player.Terminator;
+import model.player.*;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -157,6 +151,12 @@ public class Game {
         }
 
         return null;
+    }
+
+    public void spawnPlayer(Player player, PlayerPosition playerPosition) throws GameAlredyStartedException {
+        if(!players.contains(player)) throw new UnknownPlayerException();
+        if(!started) throw new GameAlredyStartedException("Game not started yet");
+        player.setPosition(playerPosition);
     }
 
     public boolean isStarted() {
