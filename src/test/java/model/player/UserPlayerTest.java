@@ -21,8 +21,9 @@ class UserPlayerTest {
             if (i == 4) first = true;
             if (i == 2) terminator = true;
             players[i] = new UserPlayer("player", Color.values()[i], first,
-                    new PlayerPosition(0, 0), mock(PlayerBoard.class), terminator);
+                     mock(PlayerBoard.class), terminator);
             terminator = false;
+            players[i].setPosition(new PlayerPosition(0, 0));
         }
     }
 
