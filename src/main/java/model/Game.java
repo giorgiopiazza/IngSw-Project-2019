@@ -6,12 +6,17 @@ import exceptions.game.*;
 import model.cards.Deck;
 import model.player.*;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Game {
+    /**
+     * Maximum number of skulls in a game: 8
+     */
     public static final int MAX_KILLSHOT = 8;
+    /**
+     * Singleton instance of Game
+     */
     private static Game instance;
     private boolean started;
     private int killShotNum;
@@ -23,6 +28,9 @@ public class Game {
     private Deck powerupCardsDeck;
     private Deck ammoCardsDeck;
 
+    /**
+     * Initialize singleton Game instance
+     */
     private Game() {
         players = new ArrayList<>();
         killShotsTrack = new KillShot[MAX_KILLSHOT];
@@ -34,6 +42,11 @@ public class Game {
         ammoCardsDeck = new Deck();
     }
 
+    /**
+     * The singleton instance of the game returns, if it has not been created it allocates it as well
+     *
+     * @return the singleton instance
+     */
     public static Game getInstance() {
         if(instance == null)
             instance = new Game();
@@ -63,10 +76,25 @@ public class Game {
         return players.size();
     }
 
-    public void startGame() throws GameAlredyStartedException {
+    public void startGame() throws AdrenalinaException {
         if(started) throw new GameAlredyStartedException("the game is already in progress");
+        if(players.size() < 3) throw new NotEnoughPlayersException();
         started = true;
+
+        weaponsCardsDeck.flush();
+        ammoCardsDeck.flush();
+        powerupCardsDeck.flush();
+
+        initializeDecks();
+
         // TODO: implementation of startGame()
+    }
+
+    /**
+     * Initializes the three decks: <code>weaponsCardDeck</code>, <code>ammoCardsDeck</code> and <code>powerupCardsDeck</code>
+     */
+    private void initializeDecks() {
+
     }
 
     public void stopGame() throws GameAlredyStartedException {
@@ -158,12 +186,24 @@ public class Game {
         return null;
     }
 
+    /**
+     * Spawn the player to a spawn point on the map
+     *
+     * @param player the player to spawn
+     * @param playerPosition the player's spawn position
+     * @throws GameAlredyStartedException if the game has not started
+     */
     public void spawnPlayer(Player player, PlayerPosition playerPosition) throws GameAlredyStartedException {
         if(!players.contains(player)) throw new UnknownPlayerException();
         if(!started) throw new GameAlredyStartedException("Game not started yet");
         player.setPosition(playerPosition);
     }
 
+    /**
+     * Function that returns true if the game started, otherwise false
+     *
+     * @return true if the game started, otherwise false
+     */
     public boolean isStarted() {
         return started;
     }
