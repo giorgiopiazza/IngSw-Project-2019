@@ -1,5 +1,6 @@
 package model;
 
+import enumerations.Color;
 import exceptions.AdrenalinaException;
 import exceptions.game.GameAlredyStartedException;
 import exceptions.game.KillShotsTerminatedException;
@@ -8,7 +9,10 @@ import exceptions.game.MaximumKillshotExceededException;
 import model.cards.Deck;
 import model.player.KillShot;
 import model.player.Player;
+import model.player.PlayerBoard;
+import model.player.Terminator;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +21,8 @@ public class Game {
     private static Game instance;
     private boolean started;
     private int killShotNum;
-    private boolean terminator;
+    private boolean terminatorPresent;
+    private Player terminator;
     private List<Player> players;
     private KillShot[] killShotsTrack;
     private Deck weaponsCardsDeck;
@@ -27,7 +32,7 @@ public class Game {
     private Game() {
         players = new ArrayList<>();
         killShotsTrack = new KillShot[MAX_KILLSHOT];
-        terminator = false;
+        terminatorPresent = false;
         started = false;
         // TODO: mettere le giuste carte in ogni deck, per ora creo deck vuoto
         weaponsCardsDeck = new Deck();
@@ -123,18 +128,35 @@ public class Game {
     }
 
     public boolean isTerminator() {
-        return terminator;
+        return terminatorPresent;
     }
 
     /**
-     * Enable or disable terminator mode, true to enable
+     * Enable or disable setTerminator mode, true to enable
      *
-     * @param terminator true to enable terminator mode, otherwise false
+     * @param terminatorPresent true to enable setTerminator mode, otherwise false
      * @throws GameAlredyStartedException if the game has already started
      */
-    public void setTerminator(boolean terminator) throws GameAlredyStartedException {
-        if(started) throw new GameAlredyStartedException("it is not possible to set the terminator player when the game has already started.");
-        this.terminator = terminator;
+    public void setTerminator(boolean terminatorPresent) throws AdrenalinaException {
+        if(players.size() >= 5) throw new MaxPlayerException("Can not add Terminatore with 5 players");
+        if(started) throw new GameAlredyStartedException("it is not possible to set the setTerminator player when the game has already started.");
+        this.terminatorPresent = terminatorPresent;
+
+        terminator = new Terminator(firstColorUnused(), new PlayerBoard());
+    }
+
+    private Color firstColorUnused() {
+        ArrayList<Color> ar = new ArrayList<>();
+
+        for(Player player : players) {
+            ar.add(player.getColor());
+        }
+
+        for(int i=0;i<Color.values().length;i++) {
+            if(ar.contains(Color.values()[i])) return Color.values()[i];
+        }
+
+        return null;
     }
 
     public boolean isStarted() {

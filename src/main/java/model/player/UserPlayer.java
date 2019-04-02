@@ -15,10 +15,10 @@ public class UserPlayer extends Player {
     private final boolean firstPlayer;
     private boolean terminator;
 
-    public UserPlayer(String nickname, Color color, boolean firstPlayer, PlayerPosition position,
+    public UserPlayer(String nickname, Color color, boolean firstPlayer,
                       PlayerBoard playerBoard, boolean terminator) {
 
-        super(nickname, color, position, playerBoard);
+        super(nickname, color, playerBoard);
         this.firstPlayer = firstPlayer;
         weapons = new ArrayList<>();
         powerups = new ArrayList<>();
