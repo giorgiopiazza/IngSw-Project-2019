@@ -1,7 +1,7 @@
 package model.game;
 
 import exceptions.AdrenalinaException;
-import exceptions.game.GameAlredyStartedException;
+import exceptions.game.GameAlreadyStartedException;
 import exceptions.game.MaxPlayerException;
 import exceptions.game.NotEnoughPlayersException;
 import model.Game;
@@ -43,7 +43,7 @@ class GameTest {
 
         instance.startGame();
 
-        assertThrows(GameAlredyStartedException.class, () -> instance.addPlayer(null));
+        assertThrows(GameAlreadyStartedException.class, () -> instance.addPlayer(null));
     }
 
     @Test
@@ -56,7 +56,7 @@ class GameTest {
         instance.startGame();
 
         assertTrue(instance.isStarted());
-        assertThrows(GameAlredyStartedException.class, instance::startGame);
+        assertThrows(GameAlreadyStartedException.class, instance::startGame);
     }
 
 }

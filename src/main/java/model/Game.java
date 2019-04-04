@@ -57,11 +57,11 @@ public class Game {
      * Adds a player to the game
      *
      * @param player the player to add to the game
-     * @throws GameAlredyStartedException if the game has already started
+     * @throws GameAlreadyStartedException if the game has already started
      * @throws MaxPlayerException if the maximum number of players has been reached
      */
     public void addPlayer(Player player) throws AdrenalinaException {
-        if(started) throw new GameAlredyStartedException("it is not possible to add a player when the game has already started");
+        if(started) throw new GameAlreadyStartedException("it is not possible to add a player when the game has already started");
         if(player == null) throw new NullPointerException("Player cannot be null");
         if(players.size() >= 5) throw new MaxPlayerException();
         players.add(player);
@@ -77,7 +77,7 @@ public class Game {
     }
 
     public void startGame() throws AdrenalinaException {
-        if(started) throw new GameAlredyStartedException("the game is already in progress");
+        if(started) throw new GameAlreadyStartedException("the game is already in progress");
         if(players.size() < 3) throw new NotEnoughPlayersException();
         started = true;
 
@@ -97,8 +97,8 @@ public class Game {
 
     }
 
-    public void stopGame() throws GameAlredyStartedException {
-        if(!started) throw new GameAlredyStartedException("the game is not in progress");
+    public void stopGame() throws GameAlreadyStartedException {
+        if(!started) throw new GameAlreadyStartedException("the game is not in progress");
         // TODO: implementation of stopGame()
     }
 
@@ -141,11 +141,11 @@ public class Game {
      * Set the number of skulls in the game
      *
      * @param killShotNum number of killshots
-     * @throws GameAlredyStartedException if the game has already started
+     * @throws GameAlreadyStartedException if the game has already started
      */
-    public void setKillShotNum(int killShotNum) throws GameAlredyStartedException {
+    public void setKillShotNum(int killShotNum) throws GameAlreadyStartedException {
         if(killShotNum > MAX_KILLSHOT) throw new MaximumKillshotExceededException();
-        if(started) throw new GameAlredyStartedException("it is not possible to set the number of killshot when the game is in progress");
+        if(started) throw new GameAlreadyStartedException("it is not possible to set the number of killshot when the game is in progress");
         this.killShotNum = killShotNum;
     }
 
@@ -157,11 +157,11 @@ public class Game {
      * Enable or disable setTerminator mode, true to enable
      *
      * @param terminatorPresent true to enable setTerminator mode, otherwise false
-     * @throws GameAlredyStartedException if the game has already started
+     * @throws GameAlreadyStartedException if the game has already started
      */
     public void setTerminator(boolean terminatorPresent) throws AdrenalinaException {
         if(players.size() >= 5) throw new MaxPlayerException("Can not add Terminator with 5 players");
-        if(started) throw new GameAlredyStartedException("it is not possible to set the setTerminator player when the game has already started.");
+        if(started) throw new GameAlreadyStartedException("it is not possible to set the setTerminator player when the game has already started.");
         this.terminatorPresent = terminatorPresent;
 
         terminator = new Terminator(firstColorUnused(), new PlayerBoard());
@@ -191,12 +191,12 @@ public class Game {
      *
      * @param player the player to spawn
      * @param playerPosition the player's spawn position
-     * @throws GameAlredyStartedException if the game has not started
+     * @throws GameAlreadyStartedException if the game has not started
      */
-    public void spawnPlayer(Player player, PlayerPosition playerPosition) throws GameAlredyStartedException {
+    public void spawnPlayer(Player player, PlayerPosition playerPosition) throws GameAlreadyStartedException {
         if(player == null || playerPosition == null) throw new NullPointerException("player or playerPosition cannot be null");
         if(!players.contains(player)) throw new UnknownPlayerException();
-        if(!started) throw new GameAlredyStartedException("Game not started yet");
+        if(!started) throw new GameAlreadyStartedException("Game not started yet");
         player.setPosition(playerPosition);
     }
 
