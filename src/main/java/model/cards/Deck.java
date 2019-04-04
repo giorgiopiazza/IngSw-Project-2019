@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class Deck {
-    private ArrayList<Card> deck;
+    private ArrayList<Card> cardsDeck;
     private boolean garbage;
     private ArrayList<Card> discard;
 
     /**
-     * Create a new empty deck
+     * Create a new empty deck without discard
      */
     public Deck() {
         this(false);
@@ -21,7 +21,7 @@ public class Deck {
      * @param garbage if true set the discarded card deck
      */
     public Deck(boolean garbage) {
-        deck = new ArrayList<>();
+        cardsDeck = new ArrayList<>();
         if(garbage) discard = new ArrayList<>();
         this.garbage = garbage;
     }
@@ -30,7 +30,7 @@ public class Deck {
      * Empty the decks
      */
     public void flush() {
-        deck.clear();
+        cardsDeck.clear();
         if(garbage) discard.clear();
     }
 
@@ -39,10 +39,10 @@ public class Deck {
      */
     public void shuffle() {
         if(garbage) {
-            deck.addAll(discard);
+            cardsDeck.addAll(discard);
             discard.clear();
         }
-        Collections.shuffle(deck);
+        Collections.shuffle(cardsDeck);
     }
 
     /**
@@ -52,7 +52,7 @@ public class Deck {
      */
     public void addCard(Card card) {
         if(card == null) throw new NullPointerException("card cannot be null");
-        deck.add(card);
+        cardsDeck.add(card);
     }
 
     /**
@@ -62,8 +62,8 @@ public class Deck {
      */
     public Card draw() {
         try {
-            return deck.remove(0);
-        } catch (ArrayIndexOutOfBoundsException e) {
+            return cardsDeck.remove(0);
+        } catch (IndexOutOfBoundsException e) {
             return null;
         }
     }
@@ -77,6 +77,25 @@ public class Deck {
         if(card == null) throw new NullPointerException("card cannot be null");
 
         if(garbage) discard.add(0, card);
-        else deck.add(card);
+        else cardsDeck.add(card);
+    }
+
+    /**
+     * Return the number of cards left in the deck
+     *
+     * @return number of cards in the deck
+     */
+    public int numOfCards() {
+        return cardsDeck.size();
+    }
+
+    /**
+     * Return the number of cards left in the discard deck
+     *
+     * @return number of cards in the discard deck
+     */
+    public int numOfDiscards() {
+        if(!garbage) throw new NullPointerException("deck of discarded cards is null");
+        return discard.size();
     }
 }
