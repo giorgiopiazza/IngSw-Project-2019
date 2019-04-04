@@ -194,6 +194,7 @@ public class Game {
      * @throws GameAlredyStartedException if the game has not started
      */
     public void spawnPlayer(Player player, PlayerPosition playerPosition) throws GameAlredyStartedException {
+        if(player == null || playerPosition == null) throw new NullPointerException("player or playerPosition cannot be null");
         if(!players.contains(player)) throw new UnknownPlayerException();
         if(!started) throw new GameAlredyStartedException("Game not started yet");
         player.setPosition(playerPosition);
