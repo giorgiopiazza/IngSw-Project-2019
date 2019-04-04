@@ -43,6 +43,13 @@ public abstract class Player {
         return playerBoard;
     }
 
+
+    /**
+     * Changes the position of a player throwing a runtime exception if the position is not in the map
+     *
+     * @param newX the new X where to move the player
+     * @param newY the new Y where to move the player
+     */
     public void changePosition(int newX, int newY) {
 
         if ((newX < 0) || (newX > 4)) {
@@ -55,6 +62,12 @@ public abstract class Player {
         this.position.setCoordY(newY);
     }
 
+
+    /**
+     * Adds points to a player
+     *
+     * @param pointsGained new points to be added
+     */
     public void addPoints(int pointsGained) {
         points = this.points + pointsGained;
     }

@@ -68,6 +68,12 @@ public class UserPlayer extends Player {
         return weapons.size();
     }
 
+
+    /**
+     * Gives an array representation of the weapons of a player
+     *
+     * @return the array of weapons
+     */
     public WeaponCard[] getWeapons() {
         return weapons.toArray(new WeaponCard[0]);
     }
@@ -86,6 +92,14 @@ public class UserPlayer extends Player {
         return true;
     }
 
+
+    /**
+     * Discards a powerup from your hand
+     *
+     * @param powerup the powerup to be discarded
+     * @return true if the powerup has been discarded
+     * @throws EmptyHandException if your hand has no powerups
+     */
     public boolean discardPowerup(PowerupCard powerup) throws EmptyHandException {
         if (powerups.isEmpty()) {
             throw new EmptyHandException("powerups");
@@ -98,6 +112,11 @@ public class UserPlayer extends Player {
         return powerups.contains(powerup);
     }
 
+    /**
+     * Gives an array representation of the powerups of a player
+     *
+     * @return the array of powerups
+     */
     public PowerupCard[] getPowerups() {
         return powerups.toArray(new PowerupCard[0]);
     }
