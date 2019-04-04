@@ -34,6 +34,7 @@ public class Game {
     private Game() {
         players = new ArrayList<>();
         killShotsTrack = new KillShot[MAX_KILLSHOT];
+        killShotNum = 8;
         terminatorPresent = false;
         started = false;
         // TODO: mettere le giuste carte in ogni deck, per ora creo deck vuoto
@@ -63,7 +64,7 @@ public class Game {
     public void addPlayer(Player player) throws AdrenalinaException {
         if(started) throw new GameAlreadyStartedException("it is not possible to add a player when the game has already started");
         if(player == null) throw new NullPointerException("Player cannot be null");
-        if(players.size() >= 5) throw new MaxPlayerException();
+        if(players.size() >= 5 || (players.size() >= 4 && terminatorPresent)) throw new MaxPlayerException();
         players.add(player);
     }
 
@@ -99,7 +100,24 @@ public class Game {
 
     public void stopGame() throws GameAlreadyStartedException {
         if(!started) throw new GameAlreadyStartedException("the game is not in progress");
+        started = false;
         // TODO: implementation of stopGame()
+    }
+
+    /**
+     *
+     * @throws AdrenalinaException
+     */
+    public void flush() throws AdrenalinaException {
+        if(started) throw new GameAlreadyStartedException("cannot flush with game started");
+
+        players.clear();
+        powerupCardsDeck.flush();
+        ammoCardsDeck.flush();
+        weaponsCardsDeck.flush();
+
+        setTerminator(false);
+        flushKillshot();
     }
 
     /**
@@ -125,16 +143,14 @@ public class Game {
     public void addKillShot(KillShot killShot) {
         if(killShot == null) throw new NullPointerException("killshot cannot be null");
 
-        boolean added = false;
-
         for(int i=0;i<killShotNum;i++) {
             if(killShotsTrack[i] == null) {
                 killShotsTrack[i] = killShot;
-                added = true;
+                return;
             }
         }
 
-        if(!added) throw new KillShotsTerminatedException();
+        throw new KillShotsTerminatedException();
     }
 
     /**
@@ -149,6 +165,11 @@ public class Game {
         this.killShotNum = killShotNum;
     }
 
+    public void flushKillshot() throws GameAlreadyStartedException {
+        if(started) throw new GameAlreadyStartedException("cannot flush killshots while game is started");
+        killShotsTrack = new KillShot[MAX_KILLSHOT];
+    }
+
     public boolean isTerminator() {
         return terminatorPresent;
     }
@@ -158,13 +179,17 @@ public class Game {
      *
      * @param terminatorPresent true to enable setTerminator mode, otherwise false
      * @throws GameAlreadyStartedException if the game has already started
+     * @return the created instance of terminator
      */
-    public void setTerminator(boolean terminatorPresent) throws AdrenalinaException {
-        if(players.size() >= 5) throw new MaxPlayerException("Can not add Terminator with 5 players");
+    public Player setTerminator(boolean terminatorPresent) throws AdrenalinaException {
         if(started) throw new GameAlreadyStartedException("it is not possible to set the setTerminator player when the game has already started.");
+        if(players.size() >= 5) throw new MaxPlayerException("Can not add Terminator with 5 players");
         this.terminatorPresent = terminatorPresent;
 
-        terminator = new Terminator(firstColorUnused(), new PlayerBoard());
+        if(terminatorPresent) terminator = new Terminator(firstColorUnused(), new PlayerBoard());
+        else terminator = null;
+
+        return terminator;
     }
 
     /**
@@ -207,5 +232,24 @@ public class Game {
      */
     public boolean isStarted() {
         return started;
+    }
+
+    /**
+     * The number of killshot for this Game
+     * @return number of killshot set
+     */
+    public int getKillShotNum() {
+        return killShotNum;
+    }
+
+    /**
+     * Return the instance of terminator <code>player</code> for this game
+     *
+     * @return the terminator instance
+     * @throws TerminatorNotPresentException if terminator not set for this game instance
+     */
+    public Player getTerminator() throws TerminatorNotPresentException {
+        if(!terminatorPresent) throw new TerminatorNotPresentException();
+        return terminator;
     }
 }
