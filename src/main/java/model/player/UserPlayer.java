@@ -53,7 +53,7 @@ public class UserPlayer extends Player {
     /**
      * Adds a weapond in the position of the one you want to discharge
      *
-     * @param addedWeapon the weapon to be added
+     * @param addedWeapon   the weapon to be added
      * @param discardWeapon the weapon to be replaced
      */
     public void addWeapon(WeaponCard addedWeapon, WeaponCard discardWeapon) {
