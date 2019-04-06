@@ -7,7 +7,7 @@ import java.util.List;
 
 public class Target {
     /**
-     * Target object is possessed by a player who changes his target every time he decides to shoot
+     * Target object is possessed by the effect of a weapon and changed for every attack
      */
     private List<Player> target;
 

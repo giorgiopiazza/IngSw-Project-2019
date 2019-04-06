@@ -2,8 +2,10 @@ package model.cards;
 
 import enumerations.Ammo;
 import enumerations.Color;
+import exceptions.AdrenalinaException;
 import exceptions.cards.WeaponAlreadyChargedException;
 import exceptions.cards.WeaponNotChargedException;
+import model.player.Player;
 
 import java.util.List;
 
@@ -59,11 +61,10 @@ public class WeaponCard extends Card {
         } else throw new WeaponAlreadyChargedException(this.getName());
     }
 
-    public void use(Effect effect) {
+    public void use(Effect effect, Player playerDealer) throws AdrenalinaException {
         if (charged()) {
-            weaponState.use(effect);
+            weaponState.use(effect, playerDealer);
         } else throw new WeaponNotChargedException(this.getName());
     }
-
 
 }

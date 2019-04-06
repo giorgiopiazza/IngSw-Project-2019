@@ -1,6 +1,7 @@
 package model.cards;
 
 import exceptions.cards.WeaponNotChargedException;
+import model.player.Player;
 
 public class SemiChargedWeapon implements WeaponState {
 
@@ -20,7 +21,7 @@ public class SemiChargedWeapon implements WeaponState {
     }
 
     @Override
-    public void use(Effect effect) {
+    public void use(Effect effect, Player playerDealer) {
         throw new WeaponNotChargedException();
     }
 }

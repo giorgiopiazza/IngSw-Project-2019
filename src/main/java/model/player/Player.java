@@ -9,7 +9,6 @@ public abstract class Player {
     private final PlayerBoard playerBoard;
     private PlayerPosition position;
     private int points;
-    private Target target;
 
     public Player(String nickname, Color color, PlayerBoard playerBoard) {
 
@@ -19,8 +18,6 @@ public abstract class Player {
         this.playerBoard = playerBoard;
 
         points = 0;
-
-        target = new Target();
     }
 
     public String getNickname() {
@@ -47,14 +44,6 @@ public abstract class Player {
         return playerBoard;
     }
 
-    public Target getTarget() {
-        return this.target;
-    }
-
-    public void setTarget(Target target) {
-        this.target = target;
-    }
-
     /**
      * Changes the position of a player throwing a runtime exception if the position is not in the map
      *
@@ -72,7 +61,6 @@ public abstract class Player {
         this.position.setCoordX(newX);
         this.position.setCoordY(newY);
     }
-
 
     /**
      * Adds points to a player

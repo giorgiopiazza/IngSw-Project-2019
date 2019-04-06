@@ -1,5 +1,8 @@
 package model.cards;
 
+import exceptions.AdrenalinaException;
+import model.player.Player;
+
 public class ChargedWeapon implements WeaponState {
 
     @Override
@@ -18,7 +21,7 @@ public class ChargedWeapon implements WeaponState {
     }
 
     @Override
-    public void use(Effect effect) {
-        effect.execute(effect.getTarget());
+    public void use(Effect effect, Player playerDealer) throws AdrenalinaException {
+        effect.execute(effect.getTarget(), playerDealer);
     }
 }
