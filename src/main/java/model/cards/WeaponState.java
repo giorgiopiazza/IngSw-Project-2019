@@ -7,4 +7,6 @@ public interface WeaponState {
     boolean rechargeable(WeaponCard weapon);
 
     int status();
+
+    void use(Effect effect);
 }

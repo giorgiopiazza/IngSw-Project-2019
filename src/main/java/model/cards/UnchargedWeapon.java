@@ -1,5 +1,7 @@
 package model.cards;
 
+import exceptions.cards.WeaponNotChargedException;
+
 public class UnchargedWeapon implements WeaponState {
 
     @Override
@@ -15,5 +17,10 @@ public class UnchargedWeapon implements WeaponState {
     @Override
     public int status() {
         return WeaponCard.UNCHARGED;
+    }
+
+    @Override
+    public void use(Effect effect) {
+        throw new WeaponNotChargedException();
     }
 }

@@ -16,4 +16,9 @@ public class ChargedWeapon implements WeaponState {
     public int status() {
         return WeaponCard.CHARGED;
     }
+
+    @Override
+    public void use(Effect effect) {
+        effect.execute(effect.getTarget());
+    }
 }

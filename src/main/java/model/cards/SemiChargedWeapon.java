@@ -1,5 +1,7 @@
 package model.cards;
 
+import exceptions.cards.WeaponNotChargedException;
+
 public class SemiChargedWeapon implements WeaponState {
 
     @Override
@@ -15,5 +17,10 @@ public class SemiChargedWeapon implements WeaponState {
     @Override
     public int status() {
         return WeaponCard.SEMI_CHARGED;
+    }
+
+    @Override
+    public void use(Effect effect) {
+        throw new WeaponNotChargedException();
     }
 }

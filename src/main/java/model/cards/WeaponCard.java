@@ -12,7 +12,9 @@ public class WeaponCard extends Card {
     private final Ammo[] halfCost;
     private final List<Effect> secondaryEffects;
     private WeaponState weaponState;
-    public final static int CHARGED = 0, UNCHARGED = 1, SEMI_CHARGED = 2;
+    public final static int CHARGED = 0;
+    public final static int UNCHARGED = 1;
+    public final static int SEMI_CHARGED = 2;
 
     public WeaponCard(String name, Color color, Effect baseEffect, Ammo[] unchargedCost,
                       Ammo[] halfCost, List<Effect> secondaryEffects, WeaponState weaponState) {
@@ -48,11 +50,7 @@ public class WeaponCard extends Card {
     }
 
     public boolean rechargeable() {
-        if (this.status() == 1 || this.status() == 2) {
-            return true;
-        } else {
-            return false;
-        }
+        return weaponState.rechargeable(this);
     }
 
     public void recharge() {
@@ -63,7 +61,7 @@ public class WeaponCard extends Card {
 
     public void use(Effect effect) {
         if (charged()) {
-            effect.execute(effect.getTarget());
+            weaponState.use(effect);
         } else throw new WeaponNotChargedException(this.getName());
     }
 
