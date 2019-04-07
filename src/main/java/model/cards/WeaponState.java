@@ -12,5 +12,5 @@ public interface WeaponState {
 
     int status();
 
-    void use(Effect effect, Player playerDealer) throws AdrenalinaException;
+    void use(Effect effect, FiringAction firingAction, Player playerDealer) throws AdrenalinaException;
 }

@@ -2,31 +2,20 @@ package model.cards.effects;
 
 import enumerations.Ammo;
 import exceptions.AdrenalinaException;
-import model.cards.Target;
+import model.cards.FiringAction;
 import model.player.Player;
 
 public abstract class Effect {
 
     private final Ammo[] cost;
-    private Target target;
 
-    public Effect(Ammo[] cost, Target target) {
+    public Effect(Ammo[] cost) {
         this.cost = cost;
-        this.target = target;
     }
 
     public Ammo[] getCost() {
         return this.cost;
     }
 
-    public Target getTarget() {
-        return this.target;
-    }
-
-    public void setTarget(Target target) {
-        this.target = target;
-    }
-
-    public void execute(Target target, Player playerDealer) throws AdrenalinaException {
-    }
+    public abstract void execute(FiringAction firingAction, Player playerDealer) throws AdrenalinaException;
 }

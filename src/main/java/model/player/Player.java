@@ -1,7 +1,6 @@
 package model.player;
 
 import enumerations.Color;
-import model.cards.Target;
 
 public abstract class Player {
     private final String nickname;

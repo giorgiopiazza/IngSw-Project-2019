@@ -17,9 +17,9 @@ public class WeaponCard extends UsableCard {
     private final Ammo[] cost;
     private final List<Effect> secondaryEffects;
     private WeaponState weaponState;
-    public final static int CHARGED = 0; //non so se preferisco a 0 o a 1
-    public final static int UNCHARGED = 1;
-    public final static int SEMI_CHARGED = 2;
+    public static final int CHARGED = 0;
+    public static final int UNCHARGED = 1;
+    public static final int SEMI_CHARGED = 2;
 
     public WeaponCard(String name, File image, Color color, Effect baseEffect, Ammo[] cost,
                       List<Effect> secondaryEffects, WeaponState weaponState) {
@@ -54,7 +54,7 @@ public class WeaponCard extends UsableCard {
         this.weaponState = status;
     }
 
-    public boolean charged() {
+    public boolean isCharged() {
         return weaponState.charged(this);
     }
 
@@ -72,9 +72,9 @@ public class WeaponCard extends UsableCard {
         } else throw new WeaponAlreadyChargedException(this.getName());
     }
 
-    public void use(Effect effect, Player playerDealer) throws AdrenalinaException {
-        if (charged()) {
-            weaponState.use(effect, playerDealer);
+    public void use(Effect effect, FiringAction firingAction, Player playerDealer) throws AdrenalinaException {
+        if (isCharged()) {
+            weaponState.use(effect, firingAction, playerDealer);
         } else throw new WeaponNotChargedException(this.getName());
     }
 

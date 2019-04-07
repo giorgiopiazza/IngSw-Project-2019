@@ -27,10 +27,10 @@ class DeckTest {
         assertThrows(NullPointerException.class, () -> garbage.addCard(null));
         assertEquals(4, garbage.numOfCards());
 
-        UsableCard c1 = garbage.draw();
-        UsableCard c2 = garbage.draw();
-        UsableCard c3 = garbage.draw();
-        UsableCard c4 = garbage.draw();
+        Card c1 = garbage.draw();
+        Card c2 = garbage.draw();
+        Card c3 = garbage.draw();
+        Card c4 = garbage.draw();
 
         assertNotNull(c1);
         assertNotNull(c2);
