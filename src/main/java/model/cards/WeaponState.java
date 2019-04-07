@@ -1,6 +1,7 @@
 package model.cards;
 
 import exceptions.AdrenalinaException;
+import model.cards.effects.Effect;
 import model.player.Player;
 
 public interface WeaponState {

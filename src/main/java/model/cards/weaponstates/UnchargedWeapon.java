@@ -1,9 +1,12 @@
-package model.cards;
+package model.cards.weaponstates;
 
 import exceptions.cards.WeaponNotChargedException;
+import model.cards.effects.Effect;
+import model.cards.WeaponCard;
+import model.cards.WeaponState;
 import model.player.Player;
 
-public class SemiChargedWeapon implements WeaponState {
+public class UnchargedWeapon implements WeaponState {
 
     @Override
     public boolean charged(WeaponCard weapon) {
@@ -17,11 +20,11 @@ public class SemiChargedWeapon implements WeaponState {
 
     @Override
     public int status() {
-        return WeaponCard.SEMI_CHARGED;
+        return WeaponCard.UNCHARGED;
     }
 
     @Override
-    public void use(Effect effect, Player playerDealer) {
+    public void use(Effect effect, Player playerDealer) throws WeaponNotChargedException {
         throw new WeaponNotChargedException();
     }
 }

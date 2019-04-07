@@ -1,7 +1,8 @@
-package model.cards;
+package model.cards.effects;
 
 import enumerations.Ammo;
 import exceptions.AdrenalinaException;
+import model.cards.Target;
 import model.player.Player;
 
 public abstract class Effect {

@@ -3636,7 +3636,7 @@
 											"top": 1038,
 											"width": 141.58447265625,
 											"height": 13,
-											"text": "-ammoCard: AmmoCard",
+											"text": "-ammoTile: AmmoCard",
 											"horizontalAlignment": 0
 										}
 									],
@@ -12014,7 +12014,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFpuyAvagRuHb8="
 							},
-							"name": "ammoCard",
+							"name": "ammoTile",
 							"visibility": "private",
 							"type": {
 								"$ref": "AAAAAAFpuvdi796N/nw="

@@ -2,28 +2,28 @@ package model.map;
 
 import enumerations.Color;
 import enumerations.SquareAdjacency;
-import model.cards.AmmoCard;
+import model.cards.AmmoTile;
 
 import java.util.Objects;
 
 public class CardSquare extends Square {
-    private AmmoCard ammoCard;
+    private AmmoTile ammoTile;
 
     public CardSquare(Color color, SquareAdjacency north, SquareAdjacency east, SquareAdjacency south, SquareAdjacency west) {
         super(color, north, east, south, west);
     }
 
-    public CardSquare(Color color, SquareAdjacency north, SquareAdjacency east, SquareAdjacency south, SquareAdjacency west, AmmoCard ammoCard) {
+    public CardSquare(Color color, SquareAdjacency north, SquareAdjacency east, SquareAdjacency south, SquareAdjacency west, AmmoTile ammoTile) {
         super(color, north, east, south, west);
-        this.ammoCard = ammoCard;
+        this.ammoTile = ammoTile;
     }
 
-    public AmmoCard getAmmoCard() {
-        return ammoCard;
+    public AmmoTile getAmmoTile() {
+        return ammoTile;
     }
 
-    public void setAmmoCard(AmmoCard ammoCard) {
-        this.ammoCard = ammoCard;
+    public void setAmmoTile(AmmoTile ammoTile) {
+        this.ammoTile = ammoTile;
     }
 
     @Override
@@ -32,11 +32,11 @@ public class CardSquare extends Square {
         if (!(o instanceof CardSquare)) return false;
         if (!super.equals(o)) return false;
         CardSquare that = (CardSquare) o;
-        return Objects.equals(getAmmoCard(), that.getAmmoCard());
+        return Objects.equals(getAmmoTile(), that.getAmmoTile());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getAmmoCard());
+        return Objects.hash(super.hashCode(), getAmmoTile());
     }
 }

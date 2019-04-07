@@ -3,7 +3,6 @@ package model.map;
 import enumerations.Color;
 import enumerations.SquareAdjacency;
 import exceptions.map.MaxSquareWeaponsException;
-import model.cards.AmmoCard;
 import model.cards.WeaponCard;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

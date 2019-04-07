@@ -1,27 +1,15 @@
 package model.cards;
 
-import enumerations.Color;
+import java.io.File;
 
 public abstract class Card {
-    private final String name;
-    private final Color color;
-    private final Effect baseEffect;
+    private final File image;
 
-    public Card(String name, Color color, Effect baseEffect) {
-        this.name = name;
-        this.color = color;
-        this.baseEffect = baseEffect;
+    public Card(File image) {
+        this.image = image;
     }
 
-    public String getName() {
-        return this.name;
-    }
-
-    public Color getColor() {
-        return this.color;
-    }
-
-    public Effect getBaseEffect() {
-        return this.baseEffect;
+    public File getImage() {
+        return image;
     }
 }

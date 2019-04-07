@@ -1,9 +1,10 @@
-package model.cards;
+package model.cards.effects;
 
 import enumerations.Ammo;
 import exceptions.AdrenalinaException;
 import exceptions.cards.RemainingDamageException;
 import exceptions.cards.TooManyDamageException;
+import model.cards.Target;
 import model.player.Player;
 
 public class DamageEffect extends Effect {

@@ -1,4 +1,4 @@
-package model.cards;
+package model.cards.effects;
 
 import enumerations.Ammo;
 import exceptions.AdrenalinaException;
@@ -6,6 +6,7 @@ import exceptions.cards.RemainingDamageException;
 import exceptions.cards.RemainingMarksException;
 import exceptions.cards.TooManyDamageException;
 import exceptions.cards.TooManyMarksException;
+import model.cards.Target;
 import model.player.Player;
 
 public class DamageMarkEffect extends Effect {

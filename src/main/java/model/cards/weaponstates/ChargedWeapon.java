@@ -1,6 +1,9 @@
-package model.cards;
+package model.cards.weaponstates;
 
 import exceptions.AdrenalinaException;
+import model.cards.effects.Effect;
+import model.cards.WeaponCard;
+import model.cards.WeaponState;
 import model.player.Player;
 
 public class ChargedWeapon implements WeaponState {

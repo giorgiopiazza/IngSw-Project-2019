@@ -1,8 +1,8 @@
 package exceptions.cards;
 
-import exceptions.AdrenalinaRuntimeException;
+import exceptions.AdrenalinaException;
 
-public class WeaponNotChargedException extends AdrenalinaRuntimeException {
+public class WeaponNotChargedException extends AdrenalinaException {
     public WeaponNotChargedException() {
         super("The weapon is not charged");
     }

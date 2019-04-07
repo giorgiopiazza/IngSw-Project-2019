@@ -9,6 +9,9 @@ import model.player.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *
+ */
 public class Game {
     /**
      * Maximum number of skulls in a game: 8
