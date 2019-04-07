@@ -1,5 +1,8 @@
 package model.cards;
 
+import exceptions.cards.DamageDistributionException;
+import exceptions.cards.MarkDistributionException;
+import exceptions.cards.PositionDistributionException;
 import model.player.Player;
 import model.player.PlayerPosition;
 
@@ -19,30 +22,35 @@ public class FiringAction {
         this.damageDistribution = new int[0];
         this.markDistribution = new int[0];
         this.positionDistribution = new PlayerPosition[0];
+        moveBeforeDamage = false;
     }
 
-    public void setDamageDistribution(int[] damageDistribution) {
+    public void setDamageDistribution(int[] damageDistribution) throws DamageDistributionException {
         if (damageDistribution.length != targets.length) {
-            // TODO
+            throw new DamageDistributionException();
         }
 
         this.damageDistribution = damageDistribution;
     }
 
-    public void setMarkDistribution(int[] markDistribution) {
+    public void setMarkDistribution(int[] markDistribution) throws MarkDistributionException {
         if (markDistribution.length != targets.length) {
-            // TODO
+            throw new MarkDistributionException();
         }
 
         this.markDistribution = markDistribution;
     }
 
-    public void setPositionDistribution(PlayerPosition[] positionDistribution) {
+    public void setPositionDistribution(PlayerPosition[] positionDistribution) throws PositionDistributionException {
         if (positionDistribution.length != targets.length) {
-            // TODO
+            throw new PositionDistributionException();
         }
 
         this.positionDistribution = positionDistribution;
+    }
+
+    public void setMoveBeforeDamage(boolean moveBeforeDamage) {
+        this.moveBeforeDamage = moveBeforeDamage;
     }
 
     public Player[] getTargets() {
@@ -59,5 +67,9 @@ public class FiringAction {
 
     public PlayerPosition[] getPositionDistribution() {
         return positionDistribution;
+    }
+
+    public boolean isMoveBeforeDamage() {
+        return moveBeforeDamage;
     }
 }
