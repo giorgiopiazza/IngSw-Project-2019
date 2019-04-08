@@ -10,6 +10,12 @@ public class MarkEffect extends Effect {
         super(cost);
     }
 
+    /**
+     * Method that executes a MarkEffect spreading marks to each corresponding TargetPlayer
+     *
+     * @param firingAction contains informations of how and on who the effect is executed
+     * @param markDealer the Player who gives marks
+     */
     @Override
     public void execute(FiringAction firingAction, Player markDealer) {
         for (int i = 0; i < firingAction.getTargets().length; ++i) {

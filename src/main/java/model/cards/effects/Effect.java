@@ -17,5 +17,12 @@ public abstract class Effect {
         return this.cost;
     }
 
+    /**
+     * Method that executes the effect of a Weapon dealing, marking or moving TargetPlayers
+     *
+     * @param firingAction contains informations of how and on who the effect is executed
+     * @param playerDealer the Player who uses the Weapon's effect
+     * @throws AdrenalinaException exception thrown in case the Weapon is not charged
+     */
     public abstract void execute(FiringAction firingAction, Player playerDealer) throws AdrenalinaException;
 }
