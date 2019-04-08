@@ -1,6 +1,9 @@
 package model.player;
 
 import enumerations.Color;
+import exceptions.player.CardAlreadyInHandException;
+import exceptions.player.MaxCardsInHandException;
+import model.cards.WeaponCard;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +24,7 @@ class UserPlayerTest {
             if (i == 4) first = true;
             if (i == 2) terminator = true;
             players[i] = new UserPlayer("player", Color.values()[i], first,
-                     mock(PlayerBoard.class), terminator);
+                    mock(PlayerBoard.class), terminator);
             terminator = false;
             players[i].setPosition(new PlayerPosition(0, 0));
         }
@@ -79,4 +82,35 @@ class UserPlayerTest {
         assertEquals(2, players[4].getPosition().getCoordY());
     }
 
+    @Test
+    void addWeapon() {
+        WeaponCard railGun = new WeaponCard("Railgun", null, null, null, null,
+                null, null);
+        WeaponCard shotGun = new WeaponCard("Shotgun", null, null, null, null,
+                null, null);
+        try {
+            players[0].addWeapon(mock(WeaponCard.class));
+            players[0].addWeapon(mock(WeaponCard.class));
+            players[0].addWeapon(railGun);
+            players[0].addWeapon(mock(WeaponCard.class), railGun);
+
+            assertEquals(3, players[0].getWeapons().length);
+
+            players[2].addWeapon(railGun);
+
+            players[0].addWeapon(mock(WeaponCard.class));
+        } catch (MaxCardsInHandException e) {
+            e.printStackTrace();
+        }
+
+        assertThrows(NullPointerException.class, () -> players[1].addWeapon(null));
+        assertThrows(NullPointerException.class, () -> players[1].addWeapon(mock(WeaponCard.class), null));
+        assertThrows(NullPointerException.class, () -> players[1].addWeapon(null, shotGun));
+        assertThrows(NullPointerException.class, () -> players[1].addWeapon(null, null));
+
+        assertThrows(CardAlreadyInHandException.class, () -> players[2].addWeapon(railGun));
+        assertThrows(CardAlreadyInHandException.class, () -> players[2].addWeapon(railGun, shotGun));
+
+        assertTrue(players[2].hasWeapon(railGun));
+    }
 }

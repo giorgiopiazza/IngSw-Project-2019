@@ -1,6 +1,7 @@
 package model.player;
 
 import enumerations.Color;
+import exceptions.player.CardAlreadyInHandException;
 import exceptions.player.EmptyHandException;
 import exceptions.player.MaxCardsInHandException;
 import model.cards.PowerupCard;
@@ -40,34 +41,35 @@ public class UserPlayer extends Player {
     /**
      * Adds a weapon to your hand when you do not have to discard one
      *
-     * @param weapon thw weapon you want to add
+     * @param weapon the weapon you want to add
      * @throws MaxCardsInHandException if you already have 3 cards but you have not decided to discard one
      */
     public void addWeapon(WeaponCard weapon) throws MaxCardsInHandException {
         if (weapons.size() == 3) {
             throw new MaxCardsInHandException("weapons");
         }
+        if (weapon == null) throw new NullPointerException("You can not add a null WeaponCard to your hand!");
+        if (this.weapons.contains(weapon)) throw new CardAlreadyInHandException(weapon.getName());
         weapons.add(weapon);
     }
 
     /**
-     * Adds a weapond in the position of the one you want to discharge
+     * Adds a weapon in the position of the one you want to discharge
      *
      * @param addedWeapon   the weapon to be added
      * @param discardWeapon the weapon to be replaced
      */
     public void addWeapon(WeaponCard addedWeapon, WeaponCard discardWeapon) {
+        if ((addedWeapon == null) || (discardWeapon == null)) {
+            throw new NullPointerException("You can not add or throw a null WeaponCard in your hand!");
+        }
+        if (this.weapons.contains(addedWeapon)) throw new CardAlreadyInHandException(addedWeapon.getName());
         weapons.set(weapons.indexOf(discardWeapon), addedWeapon);
     }
 
     public boolean hasWeapon(WeaponCard weapon) {
         return weapons.contains(weapon);
     }
-
-    public int weaponsNum() {
-        return weapons.size();
-    }
-
 
     /**
      * Gives an array representation of the weapons of a player
@@ -82,7 +84,7 @@ public class UserPlayer extends Player {
      * Returns true if you can add the powerup to your hand, false instead
      *
      * @param powerup the powerup to be added
-     * @return true if the powerup can be added to your hando, false if not (your hand already has 3 powerups)
+     * @return true if the powerup can be added to your hand, false if not (your hand already has 3 powerups)
      */
     public boolean addPowerup(PowerupCard powerup) {
         if (powerups.size() == 3) {
@@ -91,7 +93,6 @@ public class UserPlayer extends Player {
         powerups.add(powerup);
         return true;
     }
-
 
     /**
      * Discards a powerup from your hand
@@ -120,5 +121,4 @@ public class UserPlayer extends Player {
     public PowerupCard[] getPowerups() {
         return powerups.toArray(new PowerupCard[0]);
     }
-
 }
