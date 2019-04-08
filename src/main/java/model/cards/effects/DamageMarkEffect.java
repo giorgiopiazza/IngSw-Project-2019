@@ -10,6 +10,13 @@ public class DamageMarkEffect extends Effect {
         super(cost);
     }
 
+
+    /**
+     * Method that executes a DamageEffect and a MarkEffect spreading damage and marks on each corresponding TargetPlayer
+     *
+     * @param firingAction contains informations of how and on who the effect is executed
+     * @param playerDealer the Player who deals damage and gives marks
+     */
     @Override
     public void execute(FiringAction firingAction, Player playerDealer) {
         for (int i = 0; i < firingAction.getTargets().length; ++i) {
