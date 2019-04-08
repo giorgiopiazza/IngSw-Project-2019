@@ -1,27 +1,20 @@
 package model.cards.effects;
 
-import enumerations.Ammo;
-import exceptions.AdrenalinaException;
-import model.cards.FiringAction;
+import model.cards.Target;
 import model.player.Player;
 
 public abstract class Effect {
 
-    private final Ammo[] cost;
+    protected Target target;
 
-    public Effect(Ammo[] cost) {
-        this.cost = cost;
-    }
-
-    public Ammo[] getCost() {
-        return this.cost;
+    public Target getTarget() {
+        return this.target;
     }
 
     /**
      * Method that executes the effect of a Weapon dealing, marking or moving TargetPlayers
      *
-     * @param firingAction contains informations of how and on who the effect is executed
      * @param playerDealer the Player who uses the Weapon's effect
      */
-    public abstract void execute(FiringAction firingAction, Player playerDealer);
+    public abstract void execute(Player playerDealer);
 }

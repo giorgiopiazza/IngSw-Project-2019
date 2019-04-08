@@ -16,16 +16,18 @@ import java.util.List;
 public class WeaponCard extends UsableCard {
     private final Ammo[] cost;
     private final List<Effect> secondaryEffects;
+    private final Ammo[] effectsCost;
     private WeaponState weaponState;
     public static final int CHARGED = 0;
     public static final int UNCHARGED = 1;
     public static final int SEMI_CHARGED = 2;
 
     public WeaponCard(String name, File image, Color color, Effect baseEffect, Ammo[] cost,
-                      List<Effect> secondaryEffects, WeaponState weaponState) {
+                      List<Effect> secondaryEffects, Ammo[] effectsCost, WeaponState weaponState) {
         super(name, image, color, baseEffect);
         this.cost = cost;
         this.secondaryEffects = secondaryEffects;
+        this.effectsCost = effectsCost;
         this.weaponState = weaponState;
     }
 
@@ -35,6 +37,10 @@ public class WeaponCard extends UsableCard {
 
     public List<Effect> getEffects() {
         return this.secondaryEffects;
+    }
+
+    public Ammo[] getEffectsCost() {
+        return this.effectsCost;
     }
 
     /**
@@ -101,13 +107,13 @@ public class WeaponCard extends UsableCard {
      * Method that executes the effect of the Weapon depending on it's state
      *
      * @param effect the effect of the Weapon to be executed
-     * @param firingAction contains informations of how and on who the effect is executed
+     * @param target contains informations of how and on who the effect is executed
      * @param playerDealer the Player who uses the Weapon's effect
      * @throws AdrenalinaException exception thrown in case the Weapon is not charged
      */
-    public void use(Effect effect, FiringAction firingAction, Player playerDealer) throws AdrenalinaException {
+    public void use(Effect effect, Target target, Player playerDealer) throws AdrenalinaException {
         if (isCharged()) {
-            weaponState.use(effect, firingAction, playerDealer);
+            weaponState.use(effect, target, playerDealer);
         } else throw new WeaponNotChargedException(this.getName());
     }
 
