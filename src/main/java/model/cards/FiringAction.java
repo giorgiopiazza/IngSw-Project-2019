@@ -15,14 +15,11 @@ public class FiringAction {
     private int[] markDistribution;
     private PlayerPosition[] positionDistribution;
 
-    private boolean moveBeforeDamage;
-
     public FiringAction(Player[] targets) {
         this.targets = targets;
         this.damageDistribution = new int[0];
         this.markDistribution = new int[0];
         this.positionDistribution = new PlayerPosition[0];
-        moveBeforeDamage = false;
     }
 
     public void setDamageDistribution(int[] damageDistribution) throws DamageDistributionException {
@@ -49,10 +46,6 @@ public class FiringAction {
         this.positionDistribution = positionDistribution;
     }
 
-    public void setMoveBeforeDamage(boolean moveBeforeDamage) {
-        this.moveBeforeDamage = moveBeforeDamage;
-    }
-
     public Player[] getTargets() {
         return targets;
     }
@@ -67,9 +60,5 @@ public class FiringAction {
 
     public PlayerPosition[] getPositionDistribution() {
         return positionDistribution;
-    }
-
-    public boolean isMoveBeforeDamage() {
-        return moveBeforeDamage;
     }
 }

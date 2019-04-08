@@ -22,7 +22,6 @@ public abstract class Effect {
      *
      * @param firingAction contains informations of how and on who the effect is executed
      * @param playerDealer the Player who uses the Weapon's effect
-     * @throws AdrenalinaException exception thrown in case the Weapon is not charged
      */
-    public abstract void execute(FiringAction firingAction, Player playerDealer) throws AdrenalinaException;
+    public abstract void execute(FiringAction firingAction, Player playerDealer);
 }
