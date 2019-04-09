@@ -7,6 +7,7 @@ import exceptions.cards.WeaponAlreadyChargedException;
 import exceptions.cards.WeaponNotChargedException;
 import model.cards.effects.Effect;
 import model.cards.weaponstates.ChargedWeapon;
+import model.cards.weaponstates.UnchargedWeapon;
 import model.player.Player;
 
 import java.io.File;
@@ -29,10 +30,6 @@ public class WeaponCard extends UsableCard {
         this.weaponState = weaponState;
     }
 
-    public Ammo[] getCost() {
-        return this.cost;
-    }
-
     public List<Effect> getEffects() {
         return this.secondaryEffects;
     }
@@ -48,7 +45,7 @@ public class WeaponCard extends UsableCard {
                 return cost;
 
             case SEMI_CHARGED:
-                return Arrays.copyOfRange(cost, 1, cost.length - 1);
+                return Arrays.copyOfRange(cost, 1, cost.length);
 
             default:
                 return new Ammo[0];
@@ -100,15 +97,15 @@ public class WeaponCard extends UsableCard {
     /**
      * Method that executes the effect of the Weapon depending on it's state
      *
-     * @param effect the effect of the Weapon to be executed
+     * @param effect       the effect of the Weapon to be executed
      * @param firingAction contains informations of how and on who the effect is executed
      * @param playerDealer the Player who uses the Weapon's effect
      * @throws AdrenalinaException exception thrown in case the Weapon is not charged
      */
-    public void use(Effect effect, FiringAction firingAction, Player playerDealer) throws AdrenalinaException {
+    public void use(Effect effect, FiringAction firingAction, Player playerDealer) throws WeaponNotChargedException {
         if (isCharged()) {
             weaponState.use(effect, firingAction, playerDealer);
+            setStatus(new UnchargedWeapon());
         } else throw new WeaponNotChargedException(this.getName());
     }
-
 }

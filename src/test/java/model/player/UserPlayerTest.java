@@ -97,11 +97,11 @@ class UserPlayerTest {
             assertEquals(3, players[0].getWeapons().length);
 
             players[2].addWeapon(railGun);
-
-            players[0].addWeapon(mock(WeaponCard.class));
         } catch (MaxCardsInHandException e) {
             e.printStackTrace();
         }
+
+        assertThrows(MaxCardsInHandException.class, () -> players[0].addWeapon(mock(WeaponCard.class)));
 
         assertThrows(NullPointerException.class, () -> players[1].addWeapon(null));
         assertThrows(NullPointerException.class, () -> players[1].addWeapon(mock(WeaponCard.class), null));
