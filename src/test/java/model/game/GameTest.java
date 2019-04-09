@@ -103,7 +103,7 @@ class GameTest {
         instance.startGame();
 
         assertThrows(GameAlreadyStartedException.class, instance::flush);
-        assertThrows(GameAlreadyStartedException.class, instance::flushKillshot);
+        assertThrows(GameAlreadyStartedException.class, instance::clearKillshots);
 
         instance.addKillShot(mock(KillShot.class));
         assertEquals(2, instance.remainingSkulls());

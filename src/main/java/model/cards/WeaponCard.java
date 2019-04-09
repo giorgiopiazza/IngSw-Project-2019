@@ -2,7 +2,6 @@ package model.cards;
 
 import enumerations.Ammo;
 import enumerations.Color;
-import exceptions.AdrenalinaException;
 import exceptions.cards.WeaponAlreadyChargedException;
 import exceptions.cards.WeaponNotChargedException;
 import model.cards.effects.Effect;
@@ -100,7 +99,7 @@ public class WeaponCard extends UsableCard {
      * @param effect       the effect of the Weapon to be executed
      * @param firingAction contains informations of how and on who the effect is executed
      * @param playerDealer the Player who uses the Weapon's effect
-     * @throws AdrenalinaException exception thrown in case the Weapon is not charged
+     * @throws WeaponNotChargedException exception thrown in case the Weapon is not charged
      */
     public void use(Effect effect, FiringAction firingAction, Player playerDealer) throws WeaponNotChargedException {
         if (isCharged()) {
