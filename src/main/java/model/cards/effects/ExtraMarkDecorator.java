@@ -3,9 +3,6 @@ package model.cards.effects;
 import exceptions.cards.MarkDistributionException;
 import model.player.Player;
 
-/*
- ***************** LOGICA COSTRUTTORE E SETTER DESCRITTE IN model.effects.DamageEffect *****************
- */
 public class ExtraMarkDecorator extends ExtraEffectDecorator {
 
     private int[] extraMarkDistribution;

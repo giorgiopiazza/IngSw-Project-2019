@@ -93,9 +93,9 @@ class UserPlayerTest {
     @Test
     void addWeapon() throws MaxCardsInHandException{
         WeaponCard railGun = new WeaponCard("Railgun", null, null, null, null,
-                null, null);
+                null, null, null);
         WeaponCard shotGun = new WeaponCard("Shotgun", null, null, null, null,
-                null, null);
+                null, null, null);
 
         players[0].addWeapon(mock(WeaponCard.class));
         players[0].addWeapon(mock(WeaponCard.class));

@@ -27,18 +27,18 @@ class WeaponCardTest {
     private List<Effect> secondaryEffects = new ArrayList<>();
     private Ammo[] cost = new Ammo[]{YELLOW, YELLOW, BLUE};
     private Ammo[] halfCost = new Ammo[]{YELLOW, BLUE};
+    private Ammo[] effectsCost = new Ammo[]{BLUE, BLUE};
     private Color weaponColor = Color.YELLOW;
     private WeaponState full;
     private WeaponState empty;
-    private WeaponState half;
 
     @BeforeEach
     void before() {
         full = new ChargedWeapon();
-        half = new SemiChargedWeapon();
+        WeaponState half = new SemiChargedWeapon();
         empty = new UnchargedWeapon();
         weaponTest = new WeaponCard("TestWeapon", mock(File.class), weaponColor, mock(Effect.class),
-                cost, secondaryEffects, half);
+                cost, secondaryEffects, effectsCost, half);
     }
 
     @Test
@@ -47,6 +47,7 @@ class WeaponCardTest {
         weaponTest.setStatus(empty);
         assertEquals(1, weaponTest.status());
         assertEquals(0, weaponTest.getEffects().size());
+        assertArrayEquals(effectsCost, weaponTest.getEffectsCost());
     }
 
     @Test
@@ -71,10 +72,9 @@ class WeaponCardTest {
     @Test
     void use() throws WeaponNotChargedException{
         weaponTest.setStatus(full);
-
-        weaponTest.use(mock(Effect.class), mock(FiringAction.class), mock(Player.class));
+        weaponTest.use(mock(Effect.class), mock(Target.class), mock(Player.class));
 
         assertThrows(WeaponNotChargedException.class,
-                () -> weaponTest.use(mock(Effect.class), mock(FiringAction.class), mock(Player.class)));
+                () -> weaponTest.use(mock(Effect.class), mock(Target.class), mock(Player.class)));
     }
 }

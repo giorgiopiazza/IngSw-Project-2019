@@ -1,6 +1,6 @@
 package model.cards;
 
-import exceptions.AdrenalinaException;
+import exceptions.cards.WeaponNotChargedException;
 import model.cards.effects.Effect;
 import model.player.Player;
 
@@ -38,7 +38,7 @@ public interface WeaponState {
      * @param effect the effect of the Weapon to be executed
      * @param target contains informations of how and on who the effect is executed
      * @param playerDealer the Player who uses the Weapon's effect
-     * @throws AdrenalinaException exception thrown in case the Weapon is not charged
+     * @throws WeaponNotChargedException exception thrown in case the Weapon is not charged
      */
-    void use(Effect effect, Target target, Player playerDealer) throws AdrenalinaException;
+    void use(Effect effect, Target target, Player playerDealer) throws WeaponNotChargedException;
 }

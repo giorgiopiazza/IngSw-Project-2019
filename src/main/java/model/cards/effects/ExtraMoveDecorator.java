@@ -4,9 +4,6 @@ import exceptions.cards.PositionDistributionException;
 import model.player.Player;
 import model.player.PlayerPosition;
 
-/*
- ***************** LOGICA COSTRUTTORE E SETTER DESCRITTE IN model.effects.DamageEffect *****************
- */
 public class ExtraMoveDecorator extends ExtraEffectDecorator {
 
     private PlayerPosition[] extraPositionDistribution;
