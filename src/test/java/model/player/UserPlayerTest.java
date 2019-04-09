@@ -83,23 +83,19 @@ class UserPlayerTest {
     }
 
     @Test
-    void addWeapon() {
+    void addWeapon() throws MaxCardsInHandException{
         WeaponCard railGun = new WeaponCard("Railgun", null, null, null, null,
                 null, null);
         WeaponCard shotGun = new WeaponCard("Shotgun", null, null, null, null,
                 null, null);
-        try {
-            players[0].addWeapon(mock(WeaponCard.class));
-            players[0].addWeapon(mock(WeaponCard.class));
-            players[0].addWeapon(railGun);
-            players[0].addWeapon(mock(WeaponCard.class), railGun);
 
-            assertEquals(3, players[0].getWeapons().length);
+        players[0].addWeapon(mock(WeaponCard.class));
+        players[0].addWeapon(mock(WeaponCard.class));
+        players[0].addWeapon(railGun);
+        players[0].addWeapon(mock(WeaponCard.class), railGun);
 
-            players[2].addWeapon(railGun);
-        } catch (MaxCardsInHandException e) {
-            e.printStackTrace();
-        }
+        assertEquals(3, players[0].getWeapons().length);
+        players[2].addWeapon(railGun);
 
         assertThrows(MaxCardsInHandException.class, () -> players[0].addWeapon(mock(WeaponCard.class)));
 

@@ -59,25 +59,21 @@ class WeaponCardTest {
     }
 
     @Test
-    void recharge() {
+    void recharge() throws WeaponAlreadyChargedException{
         assertTrue(weaponTest.rechargeable());
-        try {
-            weaponTest.recharge();
-        } catch (WeaponAlreadyChargedException e) {
-            e.printStackTrace();
-        }
+
+        weaponTest.recharge();
+
         assertTrue(weaponTest.isCharged());
         assertThrows(WeaponAlreadyChargedException.class, () -> weaponTest.recharge());
     }
 
     @Test
-    void use() {
+    void use() throws WeaponNotChargedException{
         weaponTest.setStatus(full);
-        try {
-            weaponTest.use(mock(Effect.class), mock(FiringAction.class), mock(Player.class));
-        } catch (WeaponNotChargedException e) {
-            e.printStackTrace();
-        }
+
+        weaponTest.use(mock(Effect.class), mock(FiringAction.class), mock(Player.class));
+
         assertThrows(WeaponNotChargedException.class,
                 () -> weaponTest.use(mock(Effect.class), mock(FiringAction.class), mock(Player.class)));
     }
