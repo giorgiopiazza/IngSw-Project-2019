@@ -29,23 +29,23 @@ class GameTest {
 
     @Test
     void addPlayer() throws AdrenalinaException {
-        instance.addPlayer(mock(Player.class));
-        instance.addPlayer(mock(Player.class));
-        instance.addPlayer(mock(Player.class));
+        instance.addPlayer(mock(UserPlayer.class));
+        instance.addPlayer(mock(UserPlayer.class));
+        instance.addPlayer(mock(UserPlayer.class));
 
         assertNotNull(instance.setTerminator(true));
 
-        instance.addPlayer(mock(Player.class));
+        instance.addPlayer(mock(UserPlayer.class));
 
-        assertThrows(MaxPlayerException.class, () -> instance.addPlayer(mock(Player.class)));
+        assertThrows(MaxPlayerException.class, () -> instance.addPlayer(mock(UserPlayer.class)));
 
         assertNull(instance.setTerminator(false));
-        instance.addPlayer(mock(Player.class));
+        instance.addPlayer(mock(UserPlayer.class));
 
         assertEquals(5, instance.playersNumber());
 
         assertThrows(NullPointerException.class, () -> instance.addPlayer(null));
-        assertThrows(MaxPlayerException.class, () -> instance.addPlayer(mock(Player.class)));
+        assertThrows(MaxPlayerException.class, () -> instance.addPlayer(mock(UserPlayer.class)));
 
         instance.startGame();
 
@@ -60,9 +60,9 @@ class GameTest {
     void startGame() throws AdrenalinaException {
         assertThrows(NotEnoughPlayersException.class, instance::startGame);
 
-        instance.addPlayer(mock(Player.class));
-        instance.addPlayer(mock(Player.class));
-        instance.addPlayer(mock(Player.class));
+        instance.addPlayer(mock(UserPlayer.class));
+        instance.addPlayer(mock(UserPlayer.class));
+        instance.addPlayer(mock(UserPlayer.class));
         instance.startGame();
 
         assertTrue(instance.isStarted());
@@ -77,9 +77,9 @@ class GameTest {
     void stopGame() throws AdrenalinaException {
         assertThrows(GameAlreadyStartedException.class, instance::stopGame);
 
-        instance.addPlayer(mock(Player.class));
-        instance.addPlayer(mock(Player.class));
-        instance.addPlayer(mock(Player.class));
+        instance.addPlayer(mock(UserPlayer.class));
+        instance.addPlayer(mock(UserPlayer.class));
+        instance.addPlayer(mock(UserPlayer.class));
 
         instance.startGame();
         assertTrue(instance.isStarted());
@@ -92,9 +92,9 @@ class GameTest {
 
     @Test
     void various() throws AdrenalinaException {
-        instance.addPlayer(mock(Player.class));
-        instance.addPlayer(mock(Player.class));
-        instance.addPlayer(mock(Player.class));
+        instance.addPlayer(mock(UserPlayer.class));
+        instance.addPlayer(mock(UserPlayer.class));
+        instance.addPlayer(mock(UserPlayer.class));
 
         assertThrows(MaximumKillshotExceededException.class, () -> instance.setKillShotNum(9));
         instance.setKillShotNum(3);
@@ -121,11 +121,11 @@ class GameTest {
 
     @Test
     void terminator() throws AdrenalinaException {
-        instance.addPlayer(mock(Player.class));
-        instance.addPlayer(mock(Player.class));
-        instance.addPlayer(mock(Player.class));
-        instance.addPlayer(mock(Player.class));
-        instance.addPlayer(mock(Player.class));
+        instance.addPlayer(mock(UserPlayer.class));
+        instance.addPlayer(mock(UserPlayer.class));
+        instance.addPlayer(mock(UserPlayer.class));
+        instance.addPlayer(mock(UserPlayer.class));
+        instance.addPlayer(mock(UserPlayer.class));
 
         assertThrows(MaxPlayerException.class, () -> instance.setTerminator(true));
         assertThrows(TerminatorNotPresentException.class, instance::getTerminator);
@@ -137,10 +137,10 @@ class GameTest {
         instance.stopGame();
         instance.flush();
 
-        Player player = new UserPlayer("tose", Color.YELLOW, true, new PlayerBoard(), false);
+        UserPlayer player = new UserPlayer("tose", Color.YELLOW, true, new PlayerBoard(), false);
         instance.addPlayer(player);
-        instance.addPlayer(mock(Player.class));
-        instance.addPlayer(mock(Player.class));
+        instance.addPlayer(mock(UserPlayer.class));
+        instance.addPlayer(mock(UserPlayer.class));
 
         assertNull(instance.setTerminator(false));
 
@@ -153,12 +153,12 @@ class GameTest {
 
     @Test
     void spawnPlayer() throws AdrenalinaException {
-        Player player = new UserPlayer("tose", Color.YELLOW, true, new PlayerBoard(), false);
-        Player notContained = new UserPlayer("gio", Color.YELLOW, true, new PlayerBoard(), false);
+        UserPlayer player = new UserPlayer("tose", Color.YELLOW, true, new PlayerBoard(), false);
+        UserPlayer notContained = new UserPlayer("gio", Color.YELLOW, true, new PlayerBoard(), false);
 
         instance.addPlayer(player);
-        instance.addPlayer(mock(Player.class));
-        instance.addPlayer(mock(Player.class));
+        instance.addPlayer(mock(UserPlayer.class));
+        instance.addPlayer(mock(UserPlayer.class));
 
         assertThrows(GameAlreadyStartedException.class, () -> instance.spawnPlayer(player, mock(PlayerPosition.class)));
 

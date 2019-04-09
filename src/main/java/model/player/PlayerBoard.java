@@ -3,7 +3,6 @@ package model.player;
 import enumerations.Ammo;
 import exceptions.playerboard.BoardAlreadyFlippedException;
 import exceptions.playerboard.BoardFlipDamagedException;
-import exceptions.playerboard.BoardMaxAmmoException;
 import exceptions.playerboard.NotEnoughAmmoException;
 
 import java.util.ArrayList;
@@ -103,7 +102,6 @@ public class PlayerBoard {
      *
      * @param ammo to add to player board
      * @throws NullPointerException when ammo is null
-     * @throws BoardMaxAmmoException when there are already three of passed ammo
      */
     public void addAmmo(Ammo ammo) {
         if (ammo == null) {

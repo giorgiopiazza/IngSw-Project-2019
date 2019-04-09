@@ -26,7 +26,7 @@ public class Game {
     private int killShotNum;
     private boolean terminatorPresent;
     private Player terminator;
-    private List<Player> players;
+    private List<UserPlayer> players;
     private KillShot[] killShotsTrack;
     private Deck weaponsCardsDeck;
     private Deck powerupCardsDeck;
@@ -61,13 +61,20 @@ public class Game {
     }
 
     /**
+     * @return the instance of the PowerupDeck
+     */
+    public Deck getPowerupCardsDeck() {
+        return this.powerupCardsDeck;
+    }
+
+    /**
      * Adds a player to the game
      *
      * @param player the player to add to the game
      * @throws GameAlreadyStartedException if the game has already started
      * @throws MaxPlayerException if the maximum number of players has been reached
      */
-    public void addPlayer(Player player) throws AdrenalinaException {
+    public void addPlayer(UserPlayer player) throws AdrenalinaException {
         if(started) throw new GameAlreadyStartedException("it is not possible to add a player when the game has already started");
         if(player == null) throw new NullPointerException("Player cannot be null");
         if(players.size() >= 5 || (players.size() >= 4 && terminatorPresent)) throw new MaxPlayerException();
