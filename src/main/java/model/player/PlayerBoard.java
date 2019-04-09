@@ -47,7 +47,7 @@ public class PlayerBoard {
     }
 
     /**
-     * @return <code>true</code> if the board is flipped, <code>false</code> otherwise
+     * @return {@code true}if the board is flipped, {@code false} otherwise
      */
     public boolean isBoardFlipped() {
         return boardFlipped;
@@ -102,21 +102,24 @@ public class PlayerBoard {
      * Adds an ammo to player board
      *
      * @param ammo to add to player board
+     * @throws NullPointerException when ammo is null
      * @throws BoardMaxAmmoException when there are already three of passed ammo
      */
-    public void addAmmo(Ammo ammo) throws BoardMaxAmmoException {
-        if (Collections.frequency(this.ammo, ammo) == 3) {
-            throw new BoardMaxAmmoException();
+    public void addAmmo(Ammo ammo) {
+        if (ammo == null) {
+            throw new NullPointerException("Ammo cannot be null");
         }
 
-        this.ammo.add(ammo);
+        if (Collections.frequency(this.ammo, ammo) < 3) {
+            this.ammo.add(ammo);
+        }
     }
 
     /**
      * Checks if there are enough ammo to afford the cost
      *
      * @param cost of the operation
-     * @return <code>true</code> if there are enough ammo, <code>false</code> otherwise
+     * @return {@code true} if there are enough ammo, {@code false} otherwise
      */
     private boolean hasEnoughAmmo(List<Ammo> cost) {
         return Collections.frequency(cost, Ammo.BLUE) <= Collections.frequency(ammo, Ammo.BLUE) &&
@@ -178,26 +181,36 @@ public class PlayerBoard {
      * @param marksCount number of marks inflicted
      */
     public void addMark(Player markDealer, int marksCount) {
+        if (markDealer == null) {
+            throw new NullPointerException("Player cannot be null");
+        }
+
         for (int i = 0; i < marksCount; i++) {
             marks.add(markDealer);
         }
     }
 
     /**
-     * Adds marks on the player board
+     * Adds damages on the player board
      *
      * @param damageDealer player who inflicted the damage
      * @param damageCount  number of damages inflicted
      */
     public void addDamage(Player damageDealer, int damageCount) {
-        int marksNum = Collections.frequency(marks, damageDealer);
-
-        if (marksNum > 0) {
-            marks.removeIf(damageDealer::equals);
+        if (damageDealer == null) {
+            throw new NullPointerException("Player cannot be null");
         }
 
-        for (int i = 0; i < damageCount + marksNum && damages.size() < 12; ++i) {
-            damages.add(damageDealer);
+        int marksNum = Collections.frequency(marks, damageDealer);
+
+        if (damageCount > 0) {
+            if (marksNum > 0) {
+                marks.removeIf(damageDealer::equals);
+            }
+
+            for (int i = 0; i < damageCount + marksNum && damages.size() < 12; ++i) {
+                damages.add(damageDealer);
+            }
         }
     }
 
