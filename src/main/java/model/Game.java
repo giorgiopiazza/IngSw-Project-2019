@@ -4,6 +4,7 @@ import enumerations.Color;
 import exceptions.AdrenalinaException;
 import exceptions.game.*;
 import model.cards.Deck;
+import model.map.Map;
 import model.player.*;
 
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ public class Game {
     private Deck weaponsCardsDeck;
     private Deck powerupCardsDeck;
     private Deck ammoCardsDeck;
+    private Map gameMap;
 
     /**
      * Initialize singleton Game instance
@@ -44,6 +46,7 @@ public class Game {
         weaponsCardsDeck = new Deck();
         powerupCardsDeck = new Deck();
         ammoCardsDeck = new Deck();
+        gameMap = new Map();
     }
 
     /**
@@ -254,5 +257,9 @@ public class Game {
     public Player getTerminator() throws TerminatorNotPresentException {
         if(!terminatorPresent) throw new TerminatorNotPresentException();
         return terminator;
+    }
+
+    public Map getGameMap() {
+        return gameMap;
     }
 }

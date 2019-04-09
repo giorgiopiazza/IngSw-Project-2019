@@ -40,4 +40,7 @@ public class Map {
         return true;
     }
 
+    public Square getSquare(int x, int y) {
+        return rooms[x][y];
+    }
 }
