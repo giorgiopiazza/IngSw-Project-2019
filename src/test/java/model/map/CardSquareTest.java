@@ -1,16 +1,12 @@
 package model.map;
 
-import enumerations.Ammo;
 import enumerations.Color;
 import enumerations.SquareAdjacency;
 import model.cards.AmmoTile;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
-
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class CardSquareTest {
