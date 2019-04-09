@@ -82,7 +82,7 @@ public class PlayerBoard {
      * Tries to flip the player board changing the player board points and removing all the skulls on it
      *
      * @throws BoardAlreadyFlippedException if the player board is already flipped
-     * @throws BoardFlipDamagedException if there is damage on the player board
+     * @throws BoardFlipDamagedException    if there is damage on the player board
      */
     public void flipBoard() throws BoardAlreadyFlippedException, BoardFlipDamagedException {
         if (boardFlipped) {
@@ -114,17 +114,19 @@ public class PlayerBoard {
 
     /**
      * Checks if there are enough ammo to afford the cost
+     *
      * @param cost of the operation
      * @return <code>true</code> if there are enough ammo, <code>false</code> otherwise
      */
     private boolean hasEnoughAmmo(List<Ammo> cost) {
         return Collections.frequency(cost, Ammo.BLUE) <= Collections.frequency(ammo, Ammo.BLUE) &&
-               Collections.frequency(cost, Ammo.YELLOW) <= Collections.frequency(ammo, Ammo.YELLOW) &&
-               Collections.frequency(cost, Ammo.RED) <= Collections.frequency(ammo, Ammo.RED);
+                Collections.frequency(cost, Ammo.YELLOW) <= Collections.frequency(ammo, Ammo.YELLOW) &&
+                Collections.frequency(cost, Ammo.RED) <= Collections.frequency(ammo, Ammo.RED);
     }
 
     /**
      * Pays the cost of ammo
+     *
      * @param cost of operation
      * @throws NotEnoughAmmoException if there aren't enough ammo to pay the operation
      */
@@ -140,7 +142,7 @@ public class PlayerBoard {
         for (int i = ammo.size() - 1; i >= 0; --i) {
             Ammo tempAmmo = ammo.get(i);
 
-            switch (tempAmmo){
+            switch (tempAmmo) {
                 case RED:
                     if (red > 0) {
                         ammo.remove(i);
@@ -153,13 +155,11 @@ public class PlayerBoard {
                         --blue;
                     }
                     break;
-                case YELLOW:
+                default:
                     if (yellow > 0) {
                         ammo.remove(i);
                         --yellow;
                     }
-                    break;
-                default:
             }
         }
     }
@@ -187,7 +187,7 @@ public class PlayerBoard {
      * Adds marks on the player board
      *
      * @param damageDealer player who inflicted the damage
-     * @param damageCount number of damages inflicted
+     * @param damageCount  number of damages inflicted
      */
     public void addDamage(Player damageDealer, int damageCount) {
         int marksNum = Collections.frequency(marks, damageDealer);

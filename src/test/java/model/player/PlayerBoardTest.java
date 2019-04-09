@@ -76,14 +76,10 @@ class PlayerBoardTest {
     }
 
     @Test
-    void boardFlip() {
+    void boardFlip() throws AdrenalinaException {
         assertArrayEquals(new Integer[]{8, 6, 4, 2, 1, 1}, playerBoard.getBoardPoints());
 
-        try {
-            playerBoard.flipBoard();
-        } catch (AdrenalinaException e) {
-            e.printStackTrace();
-        }
+        playerBoard.flipBoard();
 
         assertTrue(playerBoard.isBoardFlipped());
 
@@ -91,40 +87,36 @@ class PlayerBoardTest {
     }
 
     @Test
-    void addAmmo() {
-        try {
-            playerBoard.addAmmo(Ammo.BLUE);
-            assertArrayEquals(new Ammo[]{Ammo.BLUE}, playerBoard.getAmmo());
+    void addAmmo() throws AdrenalinaException {
 
-            playerBoard.addAmmo(Ammo.BLUE);
-            assertArrayEquals(new Ammo[]{Ammo.BLUE, Ammo.BLUE}, playerBoard.getAmmo());
+        playerBoard.addAmmo(Ammo.BLUE);
+        assertArrayEquals(new Ammo[]{Ammo.BLUE}, playerBoard.getAmmo());
 
-            playerBoard.addAmmo(Ammo.YELLOW);
-            assertArrayEquals(new Ammo[]{Ammo.BLUE, Ammo.BLUE, Ammo.YELLOW}, playerBoard.getAmmo());
+        playerBoard.addAmmo(Ammo.BLUE);
+        assertArrayEquals(new Ammo[]{Ammo.BLUE, Ammo.BLUE}, playerBoard.getAmmo());
 
-            playerBoard.addAmmo(Ammo.BLUE);
-            assertArrayEquals(new Ammo[]{Ammo.BLUE, Ammo.BLUE, Ammo.YELLOW, Ammo.BLUE}, playerBoard.getAmmo());
-        } catch (AdrenalinaException e) {
-            e.printStackTrace();
-        }
+        playerBoard.addAmmo(Ammo.YELLOW);
+        assertArrayEquals(new Ammo[]{Ammo.BLUE, Ammo.BLUE, Ammo.YELLOW}, playerBoard.getAmmo());
+
+        playerBoard.addAmmo(Ammo.BLUE);
+        assertArrayEquals(new Ammo[]{Ammo.BLUE, Ammo.BLUE, Ammo.YELLOW, Ammo.BLUE}, playerBoard.getAmmo());
 
         assertThrows(BoardMaxAmmoException.class, () -> playerBoard.addAmmo(Ammo.BLUE));
     }
 
     @Test
-    void useAmmo() {
-        try {
-            playerBoard.addAmmo(Ammo.BLUE);
-            playerBoard.addAmmo(Ammo.BLUE);
-            playerBoard.addAmmo(Ammo.YELLOW);
-            assertArrayEquals(new Ammo[]{Ammo.BLUE, Ammo.BLUE, Ammo.YELLOW}, playerBoard.getAmmo());
+    void useAmmo() throws AdrenalinaException {
+        playerBoard.addAmmo(Ammo.BLUE);
+        playerBoard.addAmmo(Ammo.BLUE);
+        playerBoard.addAmmo(Ammo.YELLOW);
+        playerBoard.addAmmo(Ammo.BLUE);
+        playerBoard.addAmmo(Ammo.RED);
 
-            playerBoard.useAmmo(new ArrayList<>(Arrays.asList(Ammo.BLUE, Ammo.BLUE)));
-            assertArrayEquals(new Ammo[]{Ammo.YELLOW}, playerBoard.getAmmo());
-        } catch (AdrenalinaException e) {
-            e.printStackTrace();
-        }
+        playerBoard.useAmmo(new ArrayList<>(Arrays.asList(Ammo.BLUE, Ammo.BLUE)));
+        playerBoard.useAmmo(new ArrayList<>(Arrays.asList(Ammo.YELLOW, Ammo.RED)));
 
         assertThrows(NotEnoughAmmoException.class, () -> playerBoard.useAmmo(new ArrayList<>(Arrays.asList(Ammo.BLUE, Ammo.BLUE))));
+        assertThrows(NotEnoughAmmoException.class, () -> playerBoard.useAmmo(new ArrayList<>(Arrays.asList(Ammo.YELLOW, Ammo.YELLOW))));
+        assertThrows(NotEnoughAmmoException.class, () -> playerBoard.useAmmo(new ArrayList<>(Arrays.asList(Ammo.RED, Ammo.RED))));
     }
 }
