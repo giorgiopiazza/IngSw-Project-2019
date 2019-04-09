@@ -114,6 +114,9 @@ class PlayerBoardTest {
 
         playerBoard.addAmmo(Ammo.BLUE);
         assertArrayEquals(new Ammo[]{Ammo.BLUE, Ammo.BLUE, Ammo.YELLOW, Ammo.BLUE}, playerBoard.getAmmo());
+
+        playerBoard.addAmmo(Ammo.BLUE);
+        assertArrayEquals(new Ammo[]{Ammo.BLUE, Ammo.BLUE, Ammo.YELLOW, Ammo.BLUE}, playerBoard.getAmmo());
     }
 
     @Test
