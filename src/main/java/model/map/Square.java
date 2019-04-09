@@ -3,8 +3,6 @@ package model.map;
 import enumerations.Color;
 import enumerations.SquareAdjacency;
 
-import java.util.Objects;
-
 public abstract class Square {
     private Color color;
     private SquareAdjacency north;
@@ -58,22 +56,5 @@ public abstract class Square {
 
     public void setWest(SquareAdjacency west) {
         this.west = west;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Square)) return false;
-        Square square = (Square) o;
-        return getColor() == square.getColor() &&
-                getNorth() == square.getNorth() &&
-                getEast() == square.getEast() &&
-                getSouth() == square.getSouth() &&
-                getWest() == square.getWest();
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getColor(), getNorth(), getEast(), getSouth(), getWest());
     }
 }

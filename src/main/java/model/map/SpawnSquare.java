@@ -81,20 +81,4 @@ public class SpawnSquare extends Square {
     public WeaponCard[] getWeapons() {
         return weapons;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SpawnSquare)) return false;
-        if (!super.equals(o)) return false;
-        SpawnSquare that = (SpawnSquare) o;
-        return Arrays.equals(getWeapons(), that.getWeapons());
-    }
-
-    @Override
-    public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + Arrays.hashCode(getWeapons());
-        return result;
-    }
 }
