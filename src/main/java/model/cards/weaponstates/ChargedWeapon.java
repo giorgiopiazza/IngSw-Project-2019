@@ -1,6 +1,6 @@
 package model.cards.weaponstates;
 
-import exceptions.AdrenalinaException;
+import exceptions.cards.WeaponNotChargedException;
 import model.cards.FiringAction;
 import model.cards.effects.Effect;
 import model.cards.WeaponCard;
@@ -25,7 +25,7 @@ public class ChargedWeapon implements WeaponState {
     }
 
     @Override
-    public void use(Effect effect, FiringAction firingAction, Player playerDealer) throws AdrenalinaException {
+    public void use(Effect effect, FiringAction firingAction, Player playerDealer) throws WeaponNotChargedException {
         effect.execute(firingAction, playerDealer);
     }
 }
