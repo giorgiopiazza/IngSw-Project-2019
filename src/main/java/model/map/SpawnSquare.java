@@ -5,8 +5,6 @@ import enumerations.SquareAdjacency;
 import exceptions.map.MaxSquareWeaponsException;
 import model.cards.WeaponCard;
 
-import java.util.Arrays;
-
 public class SpawnSquare extends Square {
     public static final int MAX_WEAPONS = 3;
     private WeaponCard[] weapons;

@@ -12,6 +12,7 @@ import static org.mockito.Mockito.mock;
 
 class UserPlayerTest {
     private UserPlayer[] players;
+    private PlayerBoard board = mock(PlayerBoard.class);
 
     @BeforeEach
     void before() {
@@ -24,7 +25,7 @@ class UserPlayerTest {
             if (i == 4) first = true;
             if (i == 2) terminator = true;
             players[i] = new UserPlayer("player", Color.values()[i], first,
-                    mock(PlayerBoard.class), terminator);
+                    board, terminator);
             terminator = false;
             players[i].setPosition(new PlayerPosition(0, 0));
         }
@@ -47,6 +48,8 @@ class UserPlayerTest {
         for (int i = 0; i < 3; ++i) {
             assertFalse(players[i].isFirstPlayer());
         }
+        assertEquals("player", players[4].getNickname());
+        assertEquals(board, players[4].getPlayerBoard());
     }
 
     @Test
@@ -80,6 +83,11 @@ class UserPlayerTest {
         assertEquals(3, players[3].getPosition().getCoordY());
         assertEquals(1, players[4].getPosition().getCoordX());
         assertEquals(2, players[4].getPosition().getCoordY());
+
+        assertThrows(IndexOutOfBoundsException.class, () -> players[1].changePosition(-1,1));
+        assertThrows(IndexOutOfBoundsException.class, () -> players[1].changePosition(5,1));
+        assertThrows(IndexOutOfBoundsException.class, () -> players[1].changePosition(1, -1));
+        assertThrows(IndexOutOfBoundsException.class, () -> players[1].changePosition(1, 6));
     }
 
     @Test
