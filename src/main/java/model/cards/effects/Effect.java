@@ -1,7 +1,6 @@
 package model.cards.effects;
 
 import enumerations.Ammo;
-import exceptions.AdrenalinaException;
 import model.cards.FiringAction;
 import model.player.Player;
 

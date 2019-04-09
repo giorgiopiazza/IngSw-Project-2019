@@ -1,6 +1,5 @@
 package model.cards;
 
-import exceptions.AdrenalinaException;
 import exceptions.cards.WeaponNotChargedException;
 import model.cards.effects.Effect;
 import model.player.Player;
