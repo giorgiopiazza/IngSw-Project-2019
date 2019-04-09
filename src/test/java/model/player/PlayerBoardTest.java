@@ -6,9 +6,13 @@ import exceptions.AdrenalinaException;
 import exceptions.playerboard.BoardAlreadyFlippedException;
 import exceptions.playerboard.BoardFlipDamagedException;
 import exceptions.playerboard.BoardMaxAmmoException;
+import exceptions.playerboard.NotEnoughAmmoException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -16,7 +20,6 @@ import static org.mockito.Mockito.mock;
 class PlayerBoardTest {
     private PlayerBoard playerBoard;
     private Player damageDealer;
-    private Ammo ammo;
 
     @BeforeEach
     void before() {
@@ -89,25 +92,39 @@ class PlayerBoardTest {
 
     @Test
     void addAmmo() {
-        Ammo ammoB = Ammo.BLUE;
-        Ammo ammoY = Ammo.YELLOW;
-
         try {
-            playerBoard.addAmmo(ammoB);
+            playerBoard.addAmmo(Ammo.BLUE);
             assertArrayEquals(new Ammo[]{Ammo.BLUE}, playerBoard.getAmmo());
 
-            playerBoard.addAmmo(ammoB);
+            playerBoard.addAmmo(Ammo.BLUE);
             assertArrayEquals(new Ammo[]{Ammo.BLUE, Ammo.BLUE}, playerBoard.getAmmo());
 
-            playerBoard.addAmmo(ammoY);
+            playerBoard.addAmmo(Ammo.YELLOW);
             assertArrayEquals(new Ammo[]{Ammo.BLUE, Ammo.BLUE, Ammo.YELLOW}, playerBoard.getAmmo());
 
-            playerBoard.addAmmo(ammoB);
+            playerBoard.addAmmo(Ammo.BLUE);
             assertArrayEquals(new Ammo[]{Ammo.BLUE, Ammo.BLUE, Ammo.YELLOW, Ammo.BLUE}, playerBoard.getAmmo());
         } catch (AdrenalinaException e) {
             e.printStackTrace();
         }
 
-        assertThrows(BoardMaxAmmoException.class, () -> playerBoard.addAmmo(ammoB));
+        assertThrows(BoardMaxAmmoException.class, () -> playerBoard.addAmmo(Ammo.BLUE));
+    }
+
+    @Test
+    void useAmmo() {
+        try {
+            playerBoard.addAmmo(Ammo.BLUE);
+            playerBoard.addAmmo(Ammo.BLUE);
+            playerBoard.addAmmo(Ammo.YELLOW);
+            assertArrayEquals(new Ammo[]{Ammo.BLUE, Ammo.BLUE, Ammo.YELLOW}, playerBoard.getAmmo());
+
+            playerBoard.useAmmo(new ArrayList<>(Arrays.asList(Ammo.BLUE, Ammo.BLUE)));
+            assertArrayEquals(new Ammo[]{Ammo.YELLOW}, playerBoard.getAmmo());
+        } catch (AdrenalinaException e) {
+            e.printStackTrace();
+        }
+
+        assertThrows(NotEnoughAmmoException.class, () -> playerBoard.useAmmo(new ArrayList<>(Arrays.asList(Ammo.BLUE, Ammo.BLUE))));
     }
 }
