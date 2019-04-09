@@ -48,7 +48,7 @@ public class WeaponCard extends UsableCard {
                 return cost;
 
             case SEMI_CHARGED:
-                return Arrays.copyOfRange(cost, 1, cost.length - 1);
+                return Arrays.copyOfRange(cost, 1, cost.length);
 
             default:
                 return new Ammo[0];
