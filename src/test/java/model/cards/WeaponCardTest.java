@@ -29,7 +29,6 @@ class WeaponCardTest {
     private Ammo[] cost = new Ammo[]{YELLOW, YELLOW, BLUE};
     private Ammo[] halfCost = new Ammo[]{YELLOW, BLUE};
     private Ammo[] effectsCost = new Ammo[]{BLUE, BLUE};
-    private Color weaponColor = Color.YELLOW;
     private WeaponState full;
     private WeaponState empty;
 
@@ -38,7 +37,7 @@ class WeaponCardTest {
         full = new ChargedWeapon();
         WeaponState half = new SemiChargedWeapon();
         empty = new UnchargedWeapon();
-        weaponTest = new WeaponCard("TestWeapon", mock(File.class), weaponColor, mock(Effect.class),
+        weaponTest = new WeaponCard("TestWeapon", mock(File.class), mock(Effect.class),
                 cost, secondaryEffects, effectsCost, half);
     }
 
