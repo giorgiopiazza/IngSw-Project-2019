@@ -1,6 +1,9 @@
 package model.player;
 
 import enumerations.Color;
+import enumerations.SquareAdjacency;
+import model.Game;
+import model.map.Square;
 
 public abstract class Player {
     private final String nickname;
@@ -68,5 +71,52 @@ public abstract class Player {
      */
     public void addPoints(int pointsGained) {
         points = this.points + pointsGained;
+    }
+
+    public boolean canSee(Player target) {
+        if (target == null) {
+            throw new NullPointerException("Target can't be null");
+        }
+
+        PlayerPosition pos = target.getPosition();
+
+        Square targetSquare = Game.getInstance().getGameMap().getSquare(pos.getCoordX(), pos.getCoordY());
+        Square playerSquare = Game.getInstance().getGameMap().getSquare(getPosition().getCoordX(), getPosition().getCoordY());
+
+        if (targetSquare.getColor() == playerSquare.getColor()) {
+            return true;
+        }
+
+        Square tempSquare;
+
+        if (playerSquare.getNorth() == SquareAdjacency.DOOR) {
+            tempSquare = Game.getInstance().getGameMap().getSquare(pos.getCoordX(), pos.getCoordY() - 1);
+            if (tempSquare.getColor() == playerSquare.getColor()) {
+                return true;
+            }
+        }
+
+        if (playerSquare.getEast() == SquareAdjacency.DOOR) {
+            tempSquare = Game.getInstance().getGameMap().getSquare(pos.getCoordX() + 1, pos.getCoordY());
+            if (tempSquare.getColor() == playerSquare.getColor()) {
+                return true;
+            }
+        }
+
+        if (playerSquare.getSouth() == SquareAdjacency.DOOR) {
+            tempSquare = Game.getInstance().getGameMap().getSquare(pos.getCoordX(), pos.getCoordY() + 1);
+            if (tempSquare.getColor() == playerSquare.getColor()) {
+                return true;
+            }
+        }
+
+        if (playerSquare.getWest() == SquareAdjacency.DOOR) {
+            tempSquare = Game.getInstance().getGameMap().getSquare(pos.getCoordX() - 1, pos.getCoordY());
+            if (tempSquare.getColor() == playerSquare.getColor()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

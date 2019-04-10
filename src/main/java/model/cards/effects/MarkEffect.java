@@ -1,25 +1,37 @@
 package model.cards.effects;
 
-import enumerations.Ammo;
-import model.cards.FiringAction;
+import exceptions.cards.MarkDistributionException;
+import model.cards.Target;
 import model.player.Player;
 
 public class MarkEffect extends Effect {
 
-    public MarkEffect(Ammo[] cost) {
-        super(cost);
+    private int[] markDistribution;
+
+    public MarkEffect(Target target, int[] markDistribution) throws MarkDistributionException {
+        this.target = target;
+        if(target.getRoom().isPresent()) {
+            this.markDistribution = new int[0];
+        } else {
+            if(markDistribution.length != target.getTargets().length) throw new MarkDistributionException();
+            this.markDistribution = markDistribution;
+        }
+    }
+
+    public void setMarkDistribution(int[] markDistribution) throws MarkDistributionException {
+        if(markDistribution.length != target.getTargets().length) throw new MarkDistributionException();
+        this.markDistribution = markDistribution;
     }
 
     /**
      * Method that executes a MarkEffect spreading marks to each corresponding TargetPlayer
      *
-     * @param firingAction contains informations of how and on who the effect is executed
      * @param markDealer the Player who gives marks
      */
     @Override
-    public void execute(FiringAction firingAction, Player markDealer) {
-        for (int i = 0; i < firingAction.getTargets().length; ++i) {
-            firingAction.getTargets()[i].getPlayerBoard().addMark(markDealer, firingAction.getMarkDistribution()[i]);
+    public void execute(Player markDealer) {
+        for (int i = 0; i < this.target.getTargets().length; ++i) {
+            this.target.getTargets()[i].getPlayerBoard().addMark(markDealer, markDistribution[i]);
         }
     }
 }

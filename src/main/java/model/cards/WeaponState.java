@@ -35,10 +35,10 @@ public interface WeaponState {
     /**
      * Method that executes the effect of the WeaponState
      *
-     * @param effect       the effect of the Weapon to be executed
-     * @param firingAction contains informations of how and on who the effect is executed
+     * @param effect the effect of the Weapon to be executed
+     * @param target contains informations of how and on who the effect is executed
      * @param playerDealer the Player who uses the Weapon's effect
      * @throws WeaponNotChargedException exception thrown in case the Weapon is not charged
      */
-    void use(Effect effect, FiringAction firingAction, Player playerDealer) throws WeaponNotChargedException;
+    void use(Effect effect, Target target, Player playerDealer) throws WeaponNotChargedException;
 }

@@ -31,11 +31,22 @@ class PlayerBoardTest {
     void addDamage() {
         playerBoard.addDamage(damageDealer, 2);
         assertEquals(2, playerBoard.getDamageCount());
+
+        assertThrows(NullPointerException.class, () -> playerBoard.addDamage(null, 2));
+
+        assertEquals(2, playerBoard.getDamageCount());
+        playerBoard.addDamage(damageDealer, -2);
+        assertEquals(2, playerBoard.getDamageCount());
     }
 
     @Test
     void addMark() {
         playerBoard.addMark(damageDealer, 2);
+        assertEquals(0, playerBoard.getDamageCount());
+        assertEquals(2, playerBoard.getMarkCount());
+
+        assertThrows(NullPointerException.class, () -> playerBoard.addMark(null, 2));
+
         assertEquals(0, playerBoard.getDamageCount());
         assertEquals(2, playerBoard.getMarkCount());
 
@@ -87,7 +98,7 @@ class PlayerBoardTest {
     }
 
     @Test
-    void addAmmo() throws AdrenalinaException {
+    void addAmmo() {
 
         playerBoard.addAmmo(Ammo.BLUE);
         assertArrayEquals(new Ammo[]{Ammo.BLUE}, playerBoard.getAmmo());
@@ -95,13 +106,14 @@ class PlayerBoardTest {
         playerBoard.addAmmo(Ammo.BLUE);
         assertArrayEquals(new Ammo[]{Ammo.BLUE, Ammo.BLUE}, playerBoard.getAmmo());
 
+        assertThrows(NullPointerException.class, () -> playerBoard.addAmmo(null));
+        assertArrayEquals(new Ammo[]{Ammo.BLUE, Ammo.BLUE}, playerBoard.getAmmo());
+
         playerBoard.addAmmo(Ammo.YELLOW);
         assertArrayEquals(new Ammo[]{Ammo.BLUE, Ammo.BLUE, Ammo.YELLOW}, playerBoard.getAmmo());
 
         playerBoard.addAmmo(Ammo.BLUE);
         assertArrayEquals(new Ammo[]{Ammo.BLUE, Ammo.BLUE, Ammo.YELLOW, Ammo.BLUE}, playerBoard.getAmmo());
-
-        assertThrows(BoardMaxAmmoException.class, () -> playerBoard.addAmmo(Ammo.BLUE));
     }
 
     @Test

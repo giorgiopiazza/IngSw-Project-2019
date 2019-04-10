@@ -1,9 +1,9 @@
 package model;
 
 import enumerations.Color;
-import exceptions.AdrenalinaException;
 import exceptions.game.*;
 import model.cards.Deck;
+import model.map.Map;
 import model.player.*;
 
 import java.util.ArrayList;
@@ -25,11 +25,12 @@ public class Game {
     private int killShotNum;
     private boolean terminatorPresent;
     private Player terminator;
-    private List<Player> players;
+    private List<UserPlayer> players;
     private KillShot[] killShotsTrack;
     private Deck weaponsCardsDeck;
     private Deck powerupCardsDeck;
     private Deck ammoCardsDeck;
+    private Map gameMap;
 
     /**
      * Initialize singleton Game instance
@@ -44,6 +45,7 @@ public class Game {
         weaponsCardsDeck = new Deck();
         powerupCardsDeck = new Deck();
         ammoCardsDeck = new Deck();
+        gameMap = new Map();
     }
 
     /**
@@ -52,9 +54,16 @@ public class Game {
      * @return the singleton instance
      */
     public static Game getInstance() {
-        if(instance == null)
+        if (instance == null)
             instance = new Game();
         return instance;
+    }
+
+    /**
+     * @return the instance of the PowerupDeck
+     */
+    public Deck getPowerupCardsDeck() {
+        return this.powerupCardsDeck;
     }
 
     /**
@@ -62,13 +71,14 @@ public class Game {
      *
      * @param player the player to add to the game
      * @throws GameAlreadyStartedException if the game has already started
-     * @throws MaxPlayerException if the maximum number of players has been reached
+     * @throws MaxPlayerException          if the maximum number of players has been reached
      */
-    public void addPlayer(Player player) throws AdrenalinaException {
-        if(started) throw new GameAlreadyStartedException("it is not possible to add a player when the game has already started");
-        if(player == null) throw new NullPointerException("Player cannot be null");
-        if(players.size() >= 5 || (players.size() >= 4 && terminatorPresent)) throw new MaxPlayerException();
-        players.add(player);
+    public void addPlayer(Player player) throws GameAlreadyStartedException, MaxPlayerException {
+        if (started)
+            throw new GameAlreadyStartedException("it is not possible to add a player when the game has already started");
+        if (player == null) throw new NullPointerException("Player cannot be null");
+        if (players.size() >= 5 || (players.size() >= 4 && terminatorPresent)) throw new MaxPlayerException();
+        players.add((UserPlayer) player);
     }
 
     /**
@@ -80,9 +90,15 @@ public class Game {
         return players.size();
     }
 
-    public void startGame() throws AdrenalinaException {
-        if(started) throw new GameAlreadyStartedException("the game is already in progress");
-        if(players.size() < 3) throw new NotEnoughPlayersException();
+    /**
+     * Starts the game
+     *
+     * @throws GameAlreadyStartedException when game is already started
+     * @throws NotEnoughPlayersException when there aren't enough players for start the game
+     */
+    public void startGame() throws GameAlreadyStartedException, NotEnoughPlayersException {
+        if (started) throw new GameAlreadyStartedException("the game is already in progress");
+        if (players.size() < 3) throw new NotEnoughPlayersException();
         started = true;
 
         weaponsCardsDeck.flush();
@@ -95,24 +111,25 @@ public class Game {
     }
 
     /**
-     * Initializes the three decks: <code>weaponsCardDeck</code>, <code>ammoCardsDeck</code> and <code>powerupCardsDeck</code>
+     * Initializes the three decks: {@code weaponsCardDeck}, {@code ammoCardsDeck} and {@code powerupCardsDeck}
      */
     private void initializeDecks() {
 
     }
 
     public void stopGame() throws GameAlreadyStartedException {
-        if(!started) throw new GameAlreadyStartedException("the game is not in progress");
+        if (!started) throw new GameAlreadyStartedException("the game is not in progress");
         started = false;
         // TODO: implementation of stopGame()
     }
 
     /**
      *
-     * @throws AdrenalinaException
+     * @throws GameAlreadyStartedException
+     * @throws MaxPlayerException
      */
-    public void flush() throws AdrenalinaException {
-        if(started) throw new GameAlreadyStartedException("cannot flush with game started");
+    public void flush() throws GameAlreadyStartedException, MaxPlayerException {
+        if (started) throw new GameAlreadyStartedException("cannot flush with game started");
 
         players.clear();
         powerupCardsDeck.flush();
@@ -120,7 +137,7 @@ public class Game {
         weaponsCardsDeck.flush();
 
         setTerminator(false);
-        flushKillshot();
+        clearKillshots();
     }
 
     /**
@@ -131,8 +148,8 @@ public class Game {
     public int remainingSkulls() {
         int leftSkulls = 0;
 
-        for(int i=0;i<killShotNum;i++) {
-            if(killShotsTrack[i] == null) leftSkulls++;
+        for (int i = 0; i < killShotNum; i++) {
+            if (killShotsTrack[i] == null) leftSkulls++;
         }
 
         return leftSkulls;
@@ -144,10 +161,10 @@ public class Game {
      * @param killShot killshot to add
      */
     public void addKillShot(KillShot killShot) {
-        if(killShot == null) throw new NullPointerException("killshot cannot be null");
+        if (killShot == null) throw new NullPointerException("killshot cannot be null");
 
-        for(int i=0;i<killShotNum;i++) {
-            if(killShotsTrack[i] == null) {
+        for (int i = 0; i < killShotNum; i++) {
+            if (killShotsTrack[i] == null) {
                 killShotsTrack[i] = killShot;
                 return;
             }
@@ -163,13 +180,14 @@ public class Game {
      * @throws GameAlreadyStartedException if the game has already started
      */
     public void setKillShotNum(int killShotNum) throws GameAlreadyStartedException {
-        if(killShotNum > MAX_KILLSHOT) throw new MaximumKillshotExceededException();
-        if(started) throw new GameAlreadyStartedException("it is not possible to set the number of killshot when the game is in progress");
+        if (killShotNum > MAX_KILLSHOT) throw new MaximumKillshotExceededException();
+        if (started)
+            throw new GameAlreadyStartedException("It is not possible to set the number of killshot when the game is in progress");
         this.killShotNum = killShotNum;
     }
 
-    public void flushKillshot() throws GameAlreadyStartedException {
-        if(started) throw new GameAlreadyStartedException("cannot flush killshots while game is started");
+    public void clearKillshots() throws GameAlreadyStartedException {
+        if (started) throw new GameAlreadyStartedException("Cannot clear killshots while game is started");
         killShotsTrack = new KillShot[MAX_KILLSHOT];
     }
 
@@ -181,15 +199,17 @@ public class Game {
      * Enable or disable setTerminator mode, true to enable
      *
      * @param terminatorPresent true to enable setTerminator mode, otherwise false
-     * @throws GameAlreadyStartedException if the game has already started
      * @return the created instance of terminator
+     * @throws GameAlreadyStartedException if the game has already started
+     * @throws MaxPlayerException          if the game is full
      */
-    public Player setTerminator(boolean terminatorPresent) throws AdrenalinaException {
-        if(started) throw new GameAlreadyStartedException("it is not possible to set the setTerminator player when the game has already started.");
-        if(players.size() >= 5) throw new MaxPlayerException("Can not add Terminator with 5 players");
+    public Player setTerminator(boolean terminatorPresent) throws GameAlreadyStartedException, MaxPlayerException {
+        if (started)
+            throw new GameAlreadyStartedException("it is not possible to set the setTerminator player when the game has already started.");
+        if (players.size() >= 5) throw new MaxPlayerException("Can not add Terminator with 5 players");
         this.terminatorPresent = terminatorPresent;
 
-        if(terminatorPresent) terminator = new Terminator(firstColorUnused(), new PlayerBoard());
+        if (terminatorPresent) terminator = new Terminator(firstColorUnused(), new PlayerBoard());
         else terminator = null;
 
         return terminator;
@@ -203,12 +223,12 @@ public class Game {
     private Color firstColorUnused() {
         ArrayList<Color> ar = new ArrayList<>();
 
-        for(Player player : players) {
+        for (Player player : players) {
             ar.add(player.getColor());
         }
 
-        for(int i=0;i<Color.values().length;i++) {
-            if(ar.contains(Color.values()[i])) return Color.values()[i];
+        for (int i = 0; i < Color.values().length; i++) {
+            if (ar.contains(Color.values()[i])) return Color.values()[i];
         }
 
         return null;
@@ -217,14 +237,15 @@ public class Game {
     /**
      * Spawn the player to a spawn point on the map
      *
-     * @param player the player to spawn
+     * @param player         the player to spawn
      * @param playerPosition the player's spawn position
      * @throws GameAlreadyStartedException if the game has not started
      */
     public void spawnPlayer(Player player, PlayerPosition playerPosition) throws GameAlreadyStartedException {
-        if(player == null || playerPosition == null) throw new NullPointerException("player or playerPosition cannot be null");
-        if(!players.contains(player)) throw new UnknownPlayerException();
-        if(!started) throw new GameAlreadyStartedException("Game not started yet");
+        if (player == null || playerPosition == null)
+            throw new NullPointerException("player or playerPosition cannot be null");
+        if (!players.contains(player)) throw new UnknownPlayerException();
+        if (!started) throw new GameAlreadyStartedException("Game not started yet");
         player.setPosition(playerPosition);
     }
 
@@ -239,6 +260,7 @@ public class Game {
 
     /**
      * The number of killshot for this Game
+     *
      * @return number of killshot set
      */
     public int getKillShotNum() {
@@ -252,7 +274,14 @@ public class Game {
      * @throws TerminatorNotPresentException if terminator not set for this game instance
      */
     public Player getTerminator() throws TerminatorNotPresentException {
-        if(!terminatorPresent) throw new TerminatorNotPresentException();
+        if (!terminatorPresent) throw new TerminatorNotPresentException();
         return terminator;
+    }
+
+    /**
+     * @return the GameMap
+     */
+    public Map getGameMap() {
+        return gameMap;
     }
 }
