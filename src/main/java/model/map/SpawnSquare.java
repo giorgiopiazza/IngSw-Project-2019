@@ -5,8 +5,6 @@ import enumerations.SquareAdjacency;
 import exceptions.map.MaxSquareWeaponsException;
 import model.cards.WeaponCard;
 
-import java.util.Arrays;
-
 public class SpawnSquare extends Square {
     public static final int MAX_WEAPONS = 3;
     private WeaponCard[] weapons;
@@ -56,8 +54,9 @@ public class SpawnSquare extends Square {
      * @return true if the weapon is removed, otherwise false
      */
     public boolean removeWeapon(WeaponCard weapon) {
+        if(weapon == null) throw new NullPointerException("weapon cannot be null");
         for (int i = 0; i < MAX_WEAPONS; i++) {
-            if (weapons[i].equals(weapon)) {
+            if (weapons[i] != null && weapons[i].equals(weapon)) {
                 weapons[i] = null;
                 return true;
             }
