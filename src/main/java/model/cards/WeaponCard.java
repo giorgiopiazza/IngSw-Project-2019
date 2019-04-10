@@ -7,11 +7,13 @@ import exceptions.cards.WeaponNotChargedException;
 import model.cards.effects.Effect;
 import model.cards.weaponstates.ChargedWeapon;
 import model.cards.weaponstates.UnchargedWeapon;
+import model.cards.weaponstates.WeaponState;
 import model.player.Player;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 public class WeaponCard extends UsableCard {
     private final Ammo[] cost;
@@ -22,9 +24,9 @@ public class WeaponCard extends UsableCard {
     public static final int UNCHARGED = 1;
     public static final int SEMI_CHARGED = 2;
 
-    public WeaponCard(String name, File image, Color color, Effect baseEffect, Ammo[] cost,
+    public WeaponCard(String name, File image, Effect baseEffect, Ammo[] cost,
                       List<Effect> secondaryEffects, Ammo[] effectsCost, WeaponState weaponState) {
-        super(name, image, color, baseEffect);
+        super(name, image, baseEffect);
         this.cost = cost;
         this.secondaryEffects = secondaryEffects;
         this.effectsCost = effectsCost;

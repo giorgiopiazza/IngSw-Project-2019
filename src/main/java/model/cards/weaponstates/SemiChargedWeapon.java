@@ -4,7 +4,6 @@ import exceptions.cards.WeaponNotChargedException;
 import model.cards.Target;
 import model.cards.effects.Effect;
 import model.cards.WeaponCard;
-import model.cards.WeaponState;
 import model.player.Player;
 
 public class SemiChargedWeapon implements WeaponState {

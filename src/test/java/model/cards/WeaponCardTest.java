@@ -8,6 +8,7 @@ import model.cards.effects.Effect;
 import model.cards.weaponstates.ChargedWeapon;
 import model.cards.weaponstates.SemiChargedWeapon;
 import model.cards.weaponstates.UnchargedWeapon;
+import model.cards.weaponstates.WeaponState;
 import model.player.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

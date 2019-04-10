@@ -4,7 +4,6 @@ import exceptions.cards.WeaponNotChargedException;
 import model.cards.Target;
 import model.cards.effects.Effect;
 import model.cards.WeaponCard;
-import model.cards.WeaponState;
 import model.player.Player;
 
 public class ChargedWeapon implements WeaponState {
@@ -25,7 +24,7 @@ public class ChargedWeapon implements WeaponState {
     }
 
     @Override
-    public void use(Effect effect, Target target, Player playerDealer) throws WeaponNotChargedException {
+    public void use(Effect effect, Target target, Player playerDealer) {
         effect.execute(playerDealer);
     }
 }
