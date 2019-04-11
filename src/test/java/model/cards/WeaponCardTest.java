@@ -1,7 +1,6 @@
 package model.cards;
 
 import enumerations.Ammo;
-import enumerations.Color;
 import exceptions.cards.WeaponAlreadyChargedException;
 import exceptions.cards.WeaponNotChargedException;
 import model.cards.effects.Effect;
@@ -14,8 +13,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import static enumerations.Ammo.BLUE;
 import static enumerations.Ammo.YELLOW;
@@ -25,10 +24,9 @@ import static org.mockito.Mockito.mock;
 class WeaponCardTest {
 
     private WeaponCard weaponTest;
-    private List<Effect> secondaryEffects = new ArrayList<>();
     private Ammo[] cost = new Ammo[]{YELLOW, YELLOW, BLUE};
     private Ammo[] halfCost = new Ammo[]{YELLOW, BLUE};
-    private Ammo[] effectsCost = new Ammo[]{BLUE, BLUE};
+    private Map<Effect, Ammo[]> secondaryEffects = new HashMap<>();
     private WeaponState full;
     private WeaponState empty;
 
@@ -38,7 +36,7 @@ class WeaponCardTest {
         WeaponState half = new SemiChargedWeapon();
         empty = new UnchargedWeapon();
         weaponTest = new WeaponCard("TestWeapon", mock(File.class), mock(Effect.class),
-                cost, secondaryEffects, effectsCost, half);
+                cost, secondaryEffects, half);
     }
 
     @Test
@@ -47,7 +45,6 @@ class WeaponCardTest {
         weaponTest.setStatus(empty);
         assertEquals(1, weaponTest.status());
         assertEquals(0, weaponTest.getEffects().size());
-        assertArrayEquals(effectsCost, weaponTest.getEffectsCost());
     }
 
     @Test
@@ -60,7 +57,7 @@ class WeaponCardTest {
     }
 
     @Test
-    void recharge() throws WeaponAlreadyChargedException{
+    void recharge() throws WeaponAlreadyChargedException {
         assertTrue(weaponTest.rechargeable());
 
         weaponTest.recharge();
@@ -70,7 +67,7 @@ class WeaponCardTest {
     }
 
     @Test
-    void use() throws WeaponNotChargedException{
+    void use() throws WeaponNotChargedException {
         weaponTest.setStatus(full);
         weaponTest.use(mock(Effect.class), mock(Target.class), mock(Player.class));
 

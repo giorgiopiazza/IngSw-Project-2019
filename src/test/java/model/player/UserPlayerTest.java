@@ -84,18 +84,16 @@ class UserPlayerTest {
         assertEquals(1, players[4].getPosition().getCoordX());
         assertEquals(2, players[4].getPosition().getCoordY());
 
-        assertThrows(IndexOutOfBoundsException.class, () -> players[1].changePosition(-1,1));
-        assertThrows(IndexOutOfBoundsException.class, () -> players[1].changePosition(5,1));
+        assertThrows(IndexOutOfBoundsException.class, () -> players[1].changePosition(-1, 1));
+        assertThrows(IndexOutOfBoundsException.class, () -> players[1].changePosition(5, 1));
         assertThrows(IndexOutOfBoundsException.class, () -> players[1].changePosition(1, -1));
         assertThrows(IndexOutOfBoundsException.class, () -> players[1].changePosition(1, 6));
     }
 
     @Test
-    void addWeapon() throws MaxCardsInHandException{
-        WeaponCard railGun = new WeaponCard("Railgun", null, null, null, null,
-                null, null, null);
-        WeaponCard shotGun = new WeaponCard("Shotgun", null, null, null, null,
-                null, null, null);
+    void addWeapon() throws MaxCardsInHandException {
+        WeaponCard railGun = new WeaponCard("Railgun", null, null, null, null, null);
+        WeaponCard shotGun = new WeaponCard("Shotgun", null, null, null, null, null);
 
         players[0].addWeapon(mock(WeaponCard.class));
         players[0].addWeapon(mock(WeaponCard.class));

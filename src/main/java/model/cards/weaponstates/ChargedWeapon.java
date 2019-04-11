@@ -1,6 +1,5 @@
 package model.cards.weaponstates;
 
-import exceptions.cards.WeaponNotChargedException;
 import model.cards.Target;
 import model.cards.effects.Effect;
 import model.cards.WeaponCard;

@@ -1,7 +1,6 @@
 package model.cards;
 
 import enumerations.Ammo;
-import enumerations.Color;
 import exceptions.cards.WeaponAlreadyChargedException;
 import exceptions.cards.WeaponNotChargedException;
 import model.cards.effects.Effect;
@@ -12,33 +11,30 @@ import model.player.Player;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class WeaponCard extends UsableCard {
     private final Ammo[] cost;
-    private final List<Effect> secondaryEffects;
-    private final Ammo[] effectsCost;   //thing of using a map for upper List to map to each effect his cost
+    private final Map<Effect, Ammo[]> secondaryEffects;     // each effect is mapped to his cost
     private WeaponState weaponState;
     public static final int CHARGED = 0;
     public static final int UNCHARGED = 1;
     public static final int SEMI_CHARGED = 2;
 
     public WeaponCard(String name, File image, Effect baseEffect, Ammo[] cost,
-                      List<Effect> secondaryEffects, Ammo[] effectsCost, WeaponState weaponState) {
+                      Map<Effect, Ammo[]> secondaryEffects, WeaponState weaponState) {
         super(name, image, baseEffect);
         this.cost = cost;
         this.secondaryEffects = secondaryEffects;
-        this.effectsCost = effectsCost;
         this.weaponState = weaponState;
     }
 
-    public List<Effect> getEffects() {
+    /**
+     * @return the map of secondary effects where the key is the effect and the mapped object its cost
+     */
+    public Map<Effect, Ammo[]> getEffects() {
         return this.secondaryEffects;
-    }
-
-    public Ammo[] getEffectsCost() {
-        return this.effectsCost;
     }
 
     /**
@@ -104,8 +100,8 @@ public class WeaponCard extends UsableCard {
     /**
      * Method that executes the effect of the Weapon depending on it's state
      *
-     * @param effect the effect of the Weapon to be executed
-     * @param target contains informations of how and on who the effect is executed
+     * @param effect       the effect of the Weapon to be executed
+     * @param target       contains informations of how and on who the effect is executed
      * @param playerDealer the Player who uses the Weapon's effect
      * @throws WeaponNotChargedException exception thrown in case the Weapon is not charged
      */
@@ -115,5 +111,4 @@ public class WeaponCard extends UsableCard {
             setStatus(new UnchargedWeapon());
         } else throw new WeaponNotChargedException(this.getName());
     }
-
 }

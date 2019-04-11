@@ -5,7 +5,6 @@ import enumerations.Ammo;
 import exceptions.AdrenalinaException;
 import exceptions.playerboard.BoardAlreadyFlippedException;
 import exceptions.playerboard.BoardFlipDamagedException;
-import exceptions.playerboard.BoardMaxAmmoException;
 import exceptions.playerboard.NotEnoughAmmoException;
 
 import org.junit.jupiter.api.BeforeEach;
