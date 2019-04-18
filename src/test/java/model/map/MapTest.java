@@ -7,6 +7,9 @@ import model.cards.WeaponCard;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
@@ -17,7 +20,7 @@ class MapTest {
 
     @BeforeEach
     void before() {
-        map = new Map();
+        this.map = new Map(Map.MAP_1);
         rooms = new Square[Map.MAX_ROWS][Map.MAX_COLUMNS];
         for(int i=0;i<Map.MAX_ROWS;i++) {
             for(int j=0;j<Map.MAX_COLUMNS;j++) {
@@ -31,9 +34,14 @@ class MapTest {
 
     @Test
     void fillMap() {
-        assertTrue(map.fillMap(rooms));
-        assertFalse(map.fillMap(new Square[3][5]));
-        assertFalse(map.fillMap(new Square[4][3]));
+        map = new Map(Map.MAP_1);
+        Logger.getGlobal().log(Level.INFO, map.toString());
+        map = new Map(Map.MAP_2);
+        Logger.getGlobal().log(Level.INFO, map.toString());
+        map = new Map(Map.MAP_3);
+        Logger.getGlobal().log(Level.INFO, map.toString());
+        map = new Map(Map.MAP_4);
+        Logger.getGlobal().log(Level.INFO, map.toString());
     }
 
     @Test

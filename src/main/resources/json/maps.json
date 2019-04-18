@@ -1,0 +1,402 @@
+[
+  {
+    "id":1,
+    "map": [
+      [
+        {
+          "color":"BLUE",
+          "isSpawn": false,
+          "north":"WALL",
+          "east":"SQUARE",
+          "south":"DOOR",
+          "west":"WALL"
+        },
+        {
+          "color":"BLUE",
+          "isSpawn": false,
+          "north":"WALL",
+          "east":"SQUARE",
+          "south":"WALL",
+          "west":"SQUARE"
+        },
+        {
+          "color":"BLUE",
+          "isSpawn": true,
+          "north":"WALL",
+          "east":"WALL",
+          "south":"DOOR",
+          "west":"SQUARE"
+        },
+        null
+      ],
+      [
+        {
+          "color":"RED",
+          "isSpawn": true,
+          "north":"DOOR",
+          "east":"SQUARE",
+          "south":"WALL",
+          "west":"WALL"
+        },
+        {
+          "color":"RED",
+          "isSpawn": false,
+          "north":"WALL",
+          "east":"SQUARE",
+          "south":"DOOR",
+          "west":"SQUARE"
+        },
+        {
+          "color":"RED",
+          "isSpawn": false,
+          "north":"DOOR",
+          "east":"DOOR",
+          "south":"WALL",
+          "west":"SQUARE"
+        },
+        {
+          "color":"YELLOW",
+          "isSpawn": false,
+          "north":"WALL",
+          "east":"WALL",
+          "south":"SQUARE",
+          "west":"DOOR"
+        }
+      ],
+      [
+        null,
+        {
+          "color":"GREY",
+          "isSpawn": false,
+          "north":"DOOR",
+          "east":"SQUARE",
+          "south":"WALL",
+          "west":"WALL"
+        },
+        {
+          "color":"GREY",
+          "isSpawn": false,
+          "north":"WALL",
+          "east":"DOOR",
+          "south":"WALL",
+          "west":"SQUARE"
+        },
+        {
+          "color":"YELLOW",
+          "isSpawn": true,
+          "north":"SQUARE",
+          "east":"WALL",
+          "south":"WALL",
+          "west":"DOOR"
+        }
+      ]
+    ]
+  },
+  {
+    "id":2,
+    "map": [
+      [
+        {
+          "color":"BLUE",
+          "isSpawn": false,
+          "north":"WALL",
+          "east":"SQUARE",
+          "south":"DOOR",
+          "west":"WALL"
+        },
+        {
+          "color":"BLUE",
+          "isSpawn": false,
+          "north":"WALL",
+          "east":"SQUARE",
+          "south":"WALL",
+          "west":"SQUARE"
+        },
+        {
+          "color":"BLUE",
+          "isSpawn": true,
+          "north":"WALL",
+          "east":"DOOR",
+          "south":"DOOR",
+          "west":"SQUARE"
+        },
+        {
+          "color":"GREEN",
+          "isSpawn": false,
+          "north":"WALL",
+          "east":"WALL",
+          "south":"DOOR",
+          "west":"DOOR"
+        }
+      ],
+      [
+        {
+          "color":"RED",
+          "isSpawn": true,
+          "north":"DOOR",
+          "east":"SQUARE",
+          "south":"WALL",
+          "west":"WALL"
+        },
+        {
+          "color":"RED",
+          "isSpawn": false,
+          "north":"WALL",
+          "east":"WALL",
+          "south":"DOOR",
+          "west":"SQUARE"
+        },
+        {
+          "color":"YELLOW",
+          "isSpawn": false,
+          "north":"DOOR",
+          "east":"SQUARE",
+          "south":"SQUARE",
+          "west":"WALL"
+        },
+        {
+          "color":"YELLOW",
+          "isSpawn": false,
+          "north":"DOOR",
+          "east":"WALL",
+          "south":"SQUARE",
+          "west":"SQUARE"
+        }
+      ],
+      [
+        null,
+        {
+          "color":"GREY",
+          "isSpawn": false,
+          "north":"DOOR",
+          "east":"DOOR",
+          "south":"WALL",
+          "west":"WALL"
+        },
+        {
+          "color":"YELLOW",
+          "isSpawn": false,
+          "north":"SQUARE",
+          "east":"SQUARE",
+          "south":"WALL",
+          "west":"DOOR"
+        },
+        {
+          "color":"YELLOW",
+          "isSpawn": true,
+          "north":"SQUARE",
+          "east":"WALL",
+          "south":"WALL",
+          "west":"SQUARE"
+        }
+      ]
+    ]
+  },
+  {
+    "id":3,
+    "map": [
+      [
+        {
+          "color":"RED",
+          "isSpawn": false,
+          "north":"WALL",
+          "east":"DOOR",
+          "south":"SQUARE",
+          "west":"WALL"
+        },
+        {
+          "color":"BLUE",
+          "isSpawn": false,
+          "north":"WALL",
+          "east":"SQUARE",
+          "south":"DOOR",
+          "west":"DOOR"
+        },
+        {
+          "color":"BLUE",
+          "isSpawn": true,
+          "north":"WALL",
+          "east":"DOOR",
+          "south":"DOOR",
+          "west":"SQUARE"
+        },
+        {
+          "color":"GREEN",
+          "isSpawn": false,
+          "north":"WALL",
+          "east":"WALL",
+          "south":"DOOR",
+          "west":"DOOR"
+        }
+      ],
+      [
+        {
+          "color":"RED",
+          "isSpawn": true,
+          "north":"SQUARE",
+          "east":"WALL",
+          "south":"DOOR",
+          "west":"WALL"
+        },
+        {
+          "color":"PURPLE",
+          "isSpawn": false,
+          "north":"DOOR",
+          "east":"WALL",
+          "south":"DOOR",
+          "west":"WALL"
+        },
+        {
+          "color":"YELLOW",
+          "isSpawn": false,
+          "north":"DOOR",
+          "east":"SQUARE",
+          "south":"SQUARE",
+          "west":"WALL"
+        },
+        {
+          "color":"YELLOW",
+          "isSpawn": false,
+          "north":"DOOR",
+          "east":"WALL",
+          "south":"SQUARE",
+          "west":"SQUARE"
+        }
+      ],
+      [
+        {
+          "color":"GREY",
+          "isSpawn": false,
+          "north":"DOOR",
+          "east":"SQUARE",
+          "south":"WALL",
+          "west":"WALL"
+        },
+        {
+          "color":"GREY",
+          "isSpawn": false,
+          "north":"DOOR",
+          "east":"DOOR",
+          "south":"WALL",
+          "west":"SQUARE"
+        },
+        {
+          "color":"YELLOW",
+          "isSpawn": false,
+          "north":"SQUARE",
+          "east":"SQUARE",
+          "south":"WALL",
+          "west":"DOOR"
+        },
+        {
+          "color":"YELLOW",
+          "isSpawn": true,
+          "north":"SQUARE",
+          "east":"WALL",
+          "south":"WALL",
+          "west":"SQUARE"
+        }
+      ]
+    ]
+  },
+  {
+    "id":4,
+    "map": [
+      [
+        {
+          "color":"RED",
+          "isSpawn": false,
+          "north":"WALL",
+          "east":"DOOR",
+          "south":"SQUARE",
+          "west":"WALL"
+        },
+        {
+          "color":"BLUE",
+          "isSpawn": false,
+          "north":"WALL",
+          "east":"SQUARE",
+          "south":"DOOR",
+          "west":"DOOR"
+        },
+        {
+          "color":"BLUE",
+          "isSpawn": true,
+          "north":"WALL",
+          "east":"WALL",
+          "south":"DOOR",
+          "west":"SQUARE"
+        },
+        null
+      ],
+      [
+        {
+          "color":"RED",
+          "isSpawn": true,
+          "north":"SQUARE",
+          "east":"WALL",
+          "south":"DOOR",
+          "west":"WALL"
+        },
+        {
+          "color":"PURPLE",
+          "isSpawn": false,
+          "north":"DOOR",
+          "east":"SQUARE",
+          "south":"DOOR",
+          "west":"WALL"
+        },
+        {
+          "color":"PURPLE",
+          "isSpawn": false,
+          "north":"DOOR",
+          "east":"DOOR",
+          "south":"WALL",
+          "west":"SQUARE"
+        },
+        {
+          "color":"YELLOW",
+          "isSpawn": false,
+          "north":"WALL",
+          "east":"WALL",
+          "south":"SQUARE",
+          "west":"DOOR"
+        }
+      ],
+      [
+        {
+          "color":"GREY",
+          "isSpawn": false,
+          "north":"DOOR",
+          "east":"SQUARE",
+          "south":"WALL",
+          "west":"WALL"
+        },
+        {
+          "color":"GREY",
+          "isSpawn": false,
+          "north":"DOOR",
+          "east":"SQUARE",
+          "south":"WALL",
+          "west":"SQUARE"
+        },
+        {
+          "color":"GREY",
+          "isSpawn": false,
+          "north":"WALL",
+          "east":"DOOR",
+          "south":"WALL",
+          "west":"SQUARE"
+        },
+        {
+          "color":"YELLOW",
+          "isSpawn": true,
+          "north":"SQUARE",
+          "east":"WALL",
+          "south":"WALL",
+          "west":"SQUARE"
+        }
+      ]
+    ]
+  }
+]

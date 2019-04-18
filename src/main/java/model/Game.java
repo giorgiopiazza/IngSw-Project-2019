@@ -42,7 +42,6 @@ public class Game {
         weaponsCardsDeck = new Deck();
         powerupCardsDeck = new Deck();
         ammoCardsDeck = new Deck();
-        gameMap = new Map();
     }
 
     /**
@@ -280,7 +279,7 @@ public class Game {
         return gameMap;
     }
 
-    public ArrayList<UserPlayer> getPlayers() {
-        return (ArrayList<UserPlayer>) players;
+    public List<UserPlayer> getPlayers() {
+        return players;
     }
 }
