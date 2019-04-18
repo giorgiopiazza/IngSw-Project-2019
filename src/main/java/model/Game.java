@@ -42,7 +42,6 @@ public class Game {
         weaponsCardsDeck = new Deck();
         powerupCardsDeck = new Deck();
         ammoCardsDeck = new Deck();
-        gameMap = new Map();
     }
 
     /**
@@ -281,12 +280,11 @@ public class Game {
     }
 
     /**
-     * @return the ArrayList of players in the game
+     * @return the List of players in the game
      */
-    public ArrayList<UserPlayer> getPlayers() {
-        return (ArrayList<UserPlayer>) players;
+    public List<UserPlayer> getPlayers() {
+        return players;
     }
-
     /**
      * Method to obtain the UserPlayer with the specified ID
      *
