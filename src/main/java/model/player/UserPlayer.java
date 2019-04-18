@@ -95,7 +95,7 @@ public class UserPlayer extends Player {
     }
 
     /**
-     * Discards a powerup from your hand
+     * Discards the specified powerup from your hand
      *
      * @param powerup the powerup to be discarded
      * @return true if the powerup has been discarded
@@ -106,6 +106,26 @@ public class UserPlayer extends Player {
             throw new EmptyHandException("powerups");
         }
         powerups.remove(powerup);
+        return true;
+    }
+
+    /**
+     * Discards the powerup of the specified index from your hand
+     *
+     * @param i the index of the powerup you want to discard
+     * @return true if the powerup has been discarded
+     * @throws EmptyHandException if your hand has no powerups
+     */
+    public boolean discardPowerupByIndex(int i) throws EmptyHandException {
+        if (i > powerups.size()) {
+            throw new IllegalArgumentException("The index of the powerup you are trying to discard is too high!");
+        }
+
+        if (powerups.isEmpty()) {
+            throw new EmptyHandException("powerups");
+        }
+
+        powerups.remove(i);
         return true;
     }
 

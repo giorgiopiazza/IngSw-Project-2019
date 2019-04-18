@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class PlayerBoard {
+public class    PlayerBoard {
     private List<Player> damages;
     private List<Player> marks;
 

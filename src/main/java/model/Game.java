@@ -280,7 +280,23 @@ public class Game {
         return gameMap;
     }
 
+    /**
+     * @return the ArrayList of players in the game
+     */
     public ArrayList<UserPlayer> getPlayers() {
         return (ArrayList<UserPlayer>) players;
+    }
+
+    /**
+     * Method to obtain the UserPlayer with the specified ID
+     *
+     * @param ID you want to obtain the related UserPlayer
+     * @return the UserPlayer with the ID passed
+     */
+    public Player getPlayerByID(int ID) {
+        for(Player p: players) {
+            if(p.getID() == ID) return p;
+        }
+        throw new MissingIDException(ID);
     }
 }
