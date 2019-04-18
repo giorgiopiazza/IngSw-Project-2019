@@ -1,10 +1,8 @@
 package model.cards.weaponstates;
 
 import exceptions.cards.WeaponNotChargedException;
-import model.cards.Target;
 import model.cards.WeaponCard;
 import model.cards.effects.Effect;
-import model.player.Player;
 
 /**
  * Interface used to manage the state of a Weapon
@@ -37,10 +35,9 @@ public interface WeaponState {
     /**
      * Method that executes the effect of the WeaponState
      *
-     * @param effect the effect of the Weapon to be executed
-     * @param target contains informations of how and on who the effect is executed
-     * @param playerDealer the Player who uses the Weapon's effect
-     * @throws WeaponNotChargedException exception thrown in case the Weapon is not charged
+     *
+     * @param effect
+     * @param command @throws WeaponNotChargedException exception thrown in case the Weapon is not charged
      */
-    void use(Effect effect, Target target, Player playerDealer) throws WeaponNotChargedException;
+    void use(Effect effect, String command) throws WeaponNotChargedException;
 }

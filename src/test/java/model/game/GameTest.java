@@ -22,7 +22,7 @@ class GameTest {
     @Test
     void getInstance() {
         assertFalse(instance.isStarted());
-        assertFalse(instance.isTerminator());
+        assertFalse(instance.isTerminatorPresent());
 
         assertEquals(instance, Game.getInstance());
     }
@@ -128,7 +128,6 @@ class GameTest {
         instance.addPlayer(mock(UserPlayer.class));
 
         assertThrows(MaxPlayerException.class, () -> instance.setTerminator(true));
-        assertThrows(TerminatorNotPresentException.class, instance::getTerminator);
 
         instance.startGame();
 

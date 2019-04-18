@@ -1,28 +1,22 @@
 package model.cards.effects;
 
-import exceptions.cards.DamageDistributionException;
-import model.player.Player;
-
 public class ExtraDamageDecorator extends ExtraEffectDecorator {
+    private final int[] damageDistribution;
 
-    private int[] extraDamageDistribution;
-
-    public ExtraDamageDecorator(Effect effect, int[] extraDamageDistribution) throws DamageDistributionException{
+    public ExtraDamageDecorator(Effect effect, int[] extraDamageDistribution) {
         this.effect = effect;
-        if(effect.target.getRoom().isPresent()) {
-            this.extraDamageDistribution = new int[0];
-        } else {
-            if(extraDamageDistribution.length != effect.target.getTargets().length) throw new DamageDistributionException();
-            this.extraDamageDistribution = extraDamageDistribution;
-        }
-
+        this.damageDistribution = extraDamageDistribution;
     }
 
     @Override
-    public void execute(Player damageDealer) {
-        effect.execute(damageDealer);
-        for(int i = 0; i < this.effect.target.getTargets().length; ++i) {
-            this.effect.target.getTargets()[i].getPlayerBoard().addDamage(damageDealer, extraDamageDistribution[i]);
-        }
+    public void execute(String command) {
+        effect.execute(command);
+
+        /*
+        if (damageDistribution.length > 1) {
+            IntStream.range(0, targets.size()).forEach(i -> targets.get(i).getPlayerBoard().addDamage(damageDealer, damageDistribution[i]));
+        } else {
+            IntStream.range(0, targets.size()).forEach(i -> targets.get(i).getPlayerBoard().addDamage(damageDealer, damageDistribution[0]));
+        }*/
     }
 }

@@ -7,34 +7,26 @@ import model.cards.effects.Effect;
 import model.cards.weaponstates.ChargedWeapon;
 import model.cards.weaponstates.UnchargedWeapon;
 import model.cards.weaponstates.WeaponState;
-import model.player.Player;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Map;
-import java.util.UUID;
+import java.util.List;
 
 public class WeaponCard extends UsableCard {
     private final Ammo[] cost;
-    private final Map<Effect, Ammo[]> secondaryEffects;     // each effect is mapped to his cost
+    private final List<Effect> secondaryEffects;
     private WeaponState weaponState;
     public static final int CHARGED = 0;
     public static final int UNCHARGED = 1;
     public static final int SEMI_CHARGED = 2;
 
     public WeaponCard(String name, File image, Effect baseEffect, Ammo[] cost,
-                      Map<Effect, Ammo[]> secondaryEffects, WeaponState weaponState) {
+                      List<Effect> secondaryEffects, WeaponState weaponState) {
         super(name, image, baseEffect);
         this.cost = cost;
         this.secondaryEffects = secondaryEffects;
         this.weaponState = weaponState;
-    }
 
-    /**
-     * @return the map of secondary effects where the key is the effect and the mapped object its cost
-     */
-    public Map<Effect, Ammo[]> getEffects() {
-        return this.secondaryEffects;
     }
 
     /**
@@ -94,21 +86,19 @@ public class WeaponCard extends UsableCard {
     public void recharge() throws WeaponAlreadyChargedException {
         if (this.rechargeable()) {
             setStatus(new ChargedWeapon());
-        } else throw new WeaponAlreadyChargedException(this.getName());
+        } else {
+            throw new WeaponAlreadyChargedException(this.getName());
+        }
     }
 
-    /**
-     * Method that executes the effect of the Weapon depending on it's state
-     *
-     * @param effect       the effect of the Weapon to be executed
-     * @param target       contains informations of how and on who the effect is executed
-     * @param playerDealer the Player who uses the Weapon's effect
-     * @throws WeaponNotChargedException exception thrown in case the Weapon is not charged
-     */
-    public void use(Effect effect, Target target, Player playerDealer) throws WeaponNotChargedException {
+    public void use(String command) throws WeaponNotChargedException {
         if (isCharged()) {
-            weaponState.use(effect, target, playerDealer);
+
+            //weaponState.use(effect, command);
+
             setStatus(new UnchargedWeapon());
-        } else throw new WeaponNotChargedException(this.getName());
+        } else {
+            throw new WeaponNotChargedException(this.getName());
+        }
     }
 }

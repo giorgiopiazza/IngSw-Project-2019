@@ -9,9 +9,6 @@ import model.player.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- */
 public class Game {
     /**
      * Maximum number of skulls in a game: 8
@@ -191,7 +188,7 @@ public class Game {
         killShotsTrack = new KillShot[MAX_KILLSHOT];
     }
 
-    public boolean isTerminator() {
+    public boolean isTerminatorPresent() {
         return terminatorPresent;
     }
 
@@ -271,11 +268,9 @@ public class Game {
      * Return the instance of terminator <code>player</code> for this game
      *
      * @return the terminator instance
-     * @throws TerminatorNotPresentException if terminator not set for this game instance
      */
-    public Player getTerminator() throws TerminatorNotPresentException {
-        if (!terminatorPresent) throw new TerminatorNotPresentException();
-        return terminator;
+    public Player getTerminator() {
+        return (terminatorPresent) ? terminator : null;
     }
 
     /**
@@ -283,5 +278,9 @@ public class Game {
      */
     public Map getGameMap() {
         return gameMap;
+    }
+
+    public ArrayList<UserPlayer> getPlayers() {
+        return (ArrayList<UserPlayer>) players;
     }
 }

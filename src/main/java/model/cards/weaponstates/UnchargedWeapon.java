@@ -1,10 +1,8 @@
 package model.cards.weaponstates;
 
 import exceptions.cards.WeaponNotChargedException;
-import model.cards.Target;
-import model.cards.effects.Effect;
 import model.cards.WeaponCard;
-import model.player.Player;
+import model.cards.effects.Effect;
 
 public class UnchargedWeapon implements WeaponState {
 
@@ -24,7 +22,7 @@ public class UnchargedWeapon implements WeaponState {
     }
 
     @Override
-    public void use(Effect effect, Target target, Player playerDealer) throws WeaponNotChargedException {
+    public void use(Effect effect, String command) throws WeaponNotChargedException {
         throw new WeaponNotChargedException();
     }
 }

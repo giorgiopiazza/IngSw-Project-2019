@@ -30,6 +30,7 @@ class WeaponCardTest {
     private WeaponState full;
     private WeaponState empty;
 
+    /*
     @BeforeEach
     void before() {
         full = new ChargedWeapon();
@@ -73,5 +74,5 @@ class WeaponCardTest {
 
         assertThrows(WeaponNotChargedException.class,
                 () -> weaponTest.use(mock(Effect.class), mock(Target.class), mock(Player.class)));
-    }
+    }*/
 }

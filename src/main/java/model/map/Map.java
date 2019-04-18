@@ -1,5 +1,12 @@
 package model.map;
 
+import model.Game;
+import model.player.Player;
+import model.player.PlayerPosition;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class Map {
     /**
      * Maximum number of map lines: 3
@@ -42,5 +49,25 @@ public class Map {
 
     public Square getSquare(int x, int y) {
         return rooms[x][y];
+    }
+
+    public Player[] getPlayersInSquare(PlayerPosition pos) {
+        Game game = Game.getInstance();
+        List<Player> players = new ArrayList<>();
+
+        for (Player p : game.getPlayers()) {
+            if (p.getPosition().equals(pos)) {
+                players.add(p);
+            }
+        }
+
+        if (game.isTerminatorPresent()) {
+            Player term = game.getTerminator();
+            if (term.getPosition().equals(pos)) {
+                players.add(term);
+            }
+        }
+
+        return players.toArray(new Player[0]);
     }
 }

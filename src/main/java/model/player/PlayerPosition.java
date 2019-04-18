@@ -1,5 +1,7 @@
 package model.player;
 
+import java.util.Objects;
+
 public class PlayerPosition {
 
     private int coordX;
@@ -26,4 +28,17 @@ public class PlayerPosition {
         this.coordY = coordY;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PlayerPosition that = (PlayerPosition) o;
+        return coordX == that.coordX &&
+                coordY == that.coordY;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(coordX, coordY);
+    }
 }
