@@ -1,6 +1,7 @@
 package utility;
 
 import exceptions.command.InvalidCommandException;
+import model.player.PlayerPosition;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,24 +64,57 @@ public class CommandUtility {
         throw new InvalidCommandException();
     }
 
-    public static List<Integer> getPowerupAmmoID(String[] splitCommand) {
-        List<Integer> powerupsID = new ArrayList<>();
-        int pos = getCommandParamPosition(splitCommand, "-a");
+    /**
+     * Returns an ArrayList of the powerups given in the command
+     *
+     * @param splitCommand array in which the command is split
+     * @param param the starting part of the string you need to tale the IDs
+     * @return the ArrayList of indexes of the IDs after a - parameter
+     */
+    public static List<Integer> getAttributesID(String[] splitCommand, String param) {
+        List<Integer> attributesID = new ArrayList<>();
+        int pos = getCommandParamPosition(splitCommand, param);
 
         if (pos == -1) {
-            return powerupsID;
+            return attributesID;
         }
 
-        String[] commandPowerups = splitCommand[pos].split(",");
+        String[] commandPowerups = splitCommand[pos + 1].split(",");
 
         for (String powerup : commandPowerups) {
             try {
-                powerupsID.add(Integer.parseInt(powerup));
+                attributesID.add(Integer.parseInt(powerup));
             } catch (NumberFormatException e) {
                 throw new InvalidCommandException();
             }
         }
 
-        return powerupsID;
+        return attributesID;
+    }
+
+    public static List<PlayerPosition> getPositions(String[] splitCommand, String param) {
+        List<PlayerPosition> positions = new ArrayList<>();
+        int pos = getCommandParamPosition(splitCommand, param);
+
+        if(pos == -1) {
+            return positions;
+        }
+
+        String[] squaresTargeted = splitCommand[pos + 1].split(",");
+        String[] cords;
+
+        for(String square : squaresTargeted) {  // squares in the command must be passed in order as the damage distribution is
+            try {
+                PlayerPosition tempSquare = new PlayerPosition(0,0);
+                cords = square.split("_");
+                tempSquare.setCoordX(Integer.parseInt(cords[0]));
+                tempSquare.setCoordY(Integer.parseInt(cords[1]));
+                positions.add(tempSquare);
+            } catch (NumberFormatException e) {
+                throw new InvalidCommandException();
+            }
+        }
+
+        return positions;
     }
 }

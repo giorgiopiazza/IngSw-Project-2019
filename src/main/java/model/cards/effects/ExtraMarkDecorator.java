@@ -1,11 +1,15 @@
 package model.cards.effects;
 
-public class ExtraMarkDecorator extends ExtraEffectDecorator {
-    private int[] extraMarkDistribution;
+import enumerations.TargetType;
 
-    public ExtraMarkDecorator(Effect effect, int[] extraMarkDistribution) {
+public class ExtraMarkDecorator extends ExtraEffectDecorator {
+    private final int[] extraMarkDistribution;
+    private final TargetType targetType;
+
+    public ExtraMarkDecorator(Effect effect, int[] extraMarkDistribution, TargetType targetType) {
         this.effect = effect;
         this.extraMarkDistribution = extraMarkDistribution;
+        this.targetType = targetType;
     }
 
     @Override

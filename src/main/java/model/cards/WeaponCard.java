@@ -146,7 +146,7 @@ public class WeaponCard extends UsableCard {
         AmmoQuantity effectCost = effect.getCost();
         PowerupCard[] powerupCards = shootingPlayer.getPowerups();
 
-        List<Integer> powerupsID = CommandUtility.getPowerupAmmoID(splitCommand);
+        List<Integer> powerupsID = CommandUtility.getAttributesID(splitCommand, "-a");
         List<Integer> usedPowerupsID = new ArrayList<>();
 
         AmmoQuantity costWithoutPowerups = getCostWithoutPowerup(effectCost, powerupsID, usedPowerupsID, powerupCards);
