@@ -12,6 +12,8 @@ import model.cards.effects.Effect;
 import model.cards.weaponstates.ChargedWeapon;
 import model.cards.weaponstates.UnchargedWeapon;
 import model.cards.weaponstates.WeaponState;
+import model.player.AmmoQuantity;
+import model.player.Player;
 import model.player.UserPlayer;
 import utility.CommandUtility;
 
@@ -110,109 +112,86 @@ public class WeaponCard extends UsableCard {
      * @throws NotEnoughAmmoException    in case the weapon even with powerups can not be payed
      */
     public void use(String command) throws WeaponNotChargedException, NotEnoughAmmoException {
-        UserPlayer shootingPlayer;
-        BaseEffect effect;
-        String[] splitCommand;
-        String[] utilitySplit;
-        int position;
-        int effectNum;
-        int powerups[];
-        ArrayList<Ammo> costList;
         if (isCharged()) {
-            // first I split the command String with blanks as I can access each singular action argument
-            splitCommand = command.split(" ");
+            Effect effect;
 
-            // i save the player that is using the card
-            shootingPlayer = (UserPlayer) Game.getInstance().getPlayerByID(CommandUtility.getCommandSplitPosition(splitCommand, "-pid"));
+            String[] splitCommand = command.split(" ");
+            int pid = CommandUtility.getPlayerID(splitCommand);
+            int eid = CommandUtility.getEffectID(splitCommand);
 
-            // i use getCommandSplitPosition to find the position of the effect
-            position = CommandUtility.getCommandSplitPosition(splitCommand, "-e");
+            UserPlayer shootingPlayer = (UserPlayer) Game.getInstance().getPlayerByID(pid);
 
-            try {   // control that after -e there exists a number
-                effectNum = Integer.parseInt(splitCommand[position + 1]);
-            } catch (NumberFormatException e) {
+            if (eid == 0) {
+                effect = getBaseEffect();
+            } else if (eid <= secondaryEffects.size()) {
+                effect = secondaryEffects.get(eid - 1);
+            } else {
                 throw new InvalidCommandException();
             }
 
-            // i take the corresponding effect I find in the command, if the number is too high the command is Invalid
-            if (splitCommand[position + 1].equals("0")) {
-                effect = (BaseEffect) getBaseEffect();
-            } else if (effectNum <= secondaryEffects.size()) {
-                effect = (BaseEffect) secondaryEffects.get(effectNum - 1);
-            } else throw new InvalidCommandException();
-            //effect.validate();
+            if (effect.validate(command)) {
+                payEffectCost(command, shootingPlayer, effect);
 
-
-            if (effect.getCost().length > 0) {
-                costList = new ArrayList<>(Arrays.asList(effect.getCost()));
-                int redCost = Collections.frequency(costList, Ammo.RED);
-                int yellowCost = Collections.frequency(costList, Ammo.YELLOW);
-                int blueCost = Collections.frequency(costList, Ammo.BLUE);
-
-                if (command.contains("-a")) {    // if command contains powerups i try to use them to pay the effect
-                    // i use getCommandSplitPosition to find the position of the powerups
-                    position = CommandUtility.getCommandSplitPosition(splitCommand, "-a");
-
-                    try {   // control that after -a exists powerups and puts the powerup you want to use in powerups
-                        utilitySplit = splitCommand[position + 1].split(",");
-                        powerups = new int[utilitySplit.length];
-                        for (int i = 0; i < utilitySplit.length; ++i) {
-                            powerups[i] = Integer.parseInt(utilitySplit[i]);
-
-                        }
-                    } catch (NumberFormatException e) {
-                        throw new InvalidCommandException();
-                    }
-
-                    // i first try to pay the effect with powerups
-                    for (int i = 0; i < powerups.length; ++i) {
-                        Ammo tempAmmo = shootingPlayer.getPowerups()[powerups[i]].getValue();
-
-                        try {
-                            switch (tempAmmo) {
-                                case RED:
-                                    if (redCost > 0) {
-                                        shootingPlayer.discardPowerupByIndex(i);
-                                        --redCost;
-                                        costList.remove(tempAmmo);
-                                    }
-                                    break;
-                                case YELLOW:
-                                    if (yellowCost > 0) {
-                                        shootingPlayer.discardPowerupByIndex(i);
-                                        --yellowCost;
-                                        costList.remove(tempAmmo);
-                                    }
-                                    break;
-                                default:
-                                    if (blueCost > 0) {
-                                        shootingPlayer.discardPowerupByIndex(i);
-                                        --blueCost;
-                                        costList.remove(tempAmmo);
-                                    }
-                            }
-                        } catch (EmptyHandException e) {
-                            // this exception should never be thrown because the control that the player has the powerup is already done here
-                            throw new InvalidCommandException();
-                        }
-                    }
-                }
-
-                // then I end to pay the effect if it hasn't be already payed with powerups
-                if ((redCost != 0) && (yellowCost != 0) && (blueCost != 0)) {
-                    try {
-                        shootingPlayer.getPlayerBoard().useAmmo(costList);
-                    } catch (NotEnoughAmmoException e) {
-                        throw new NotEnoughAmmoException();
-                    }
-                }
+                weaponState.use(effect, command);
+                setStatus(new UnchargedWeapon());
+            } else {
+                throw new InvalidCommandException();
             }
-            // command can be modelled to be lighter in the weaponstate.use call
-            weaponState.use(effect, command);
-
-            setStatus(new UnchargedWeapon());
         } else {
             throw new WeaponNotChargedException(this.getName());
+        }
+    }
+
+    private void payEffectCost(String command, UserPlayer shootingPlayer, Effect effect) throws NotEnoughAmmoException {
+        String[] splitCommand = command.split(" ");
+
+        AmmoQuantity effectCost = effect.getCost();
+        PowerupCard[] powerupCards = shootingPlayer.getPowerups();
+
+        List<Integer> powerupsID = CommandUtility.getPowerupAmmoID(splitCommand);
+        List<Integer> usedPowerupsID = new ArrayList<>();
+
+        int redCost = effectCost.getRedAmmo();
+        int blueCost = effectCost.getBlueAmmo();
+        int yellowCost = effectCost.getYellowAmmo();
+
+        if (!powerupsID.isEmpty()) {
+            for (Integer id : powerupsID) {
+                switch(powerupCards[id].getValue()) {
+                    case RED:
+                        if (redCost > 0) {
+                            redCost--;
+                            usedPowerupsID.add(id);
+                        }
+                        break;
+                    case BLUE:
+                        if (blueCost > 0) {
+                            blueCost--;
+                            usedPowerupsID.add(id);
+                        }
+                        break;
+                    default:
+                        if (yellowCost > 0) {
+                            yellowCost--;
+                            usedPowerupsID.add(id);
+                        }
+                }
+            }
+        }
+
+        AmmoQuantity costWithoutPowerups = new AmmoQuantity(redCost, blueCost, yellowCost);
+        shootingPlayer.getPlayerBoard().useAmmo(costWithoutPowerups);
+
+        if (!usedPowerupsID.isEmpty()) {
+            Collections.sort(usedPowerupsID, Collections.reverseOrder());
+
+            try {
+                for (Integer id : usedPowerupsID) {
+                    shootingPlayer.discardPowerupByIndex(id);
+                }
+            } catch (EmptyHandException e) {
+                throw new InvalidCommandException();
+            }
         }
     }
 }
