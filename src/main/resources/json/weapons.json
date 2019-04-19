@@ -11,7 +11,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-			"target": "player",
+			"target": ["player"],
             "targetNum": 1,
             "damageDistribution": [2],
 			"markDistribution": [1]
@@ -22,7 +22,7 @@
 		  "cost": ["RED"],
           "properties": {
             "visible": true,
-			"target": "player",
+			"target": ["player"],
             "targetNum": 2,
             "damageDistribution": [2, 0],
 			"markDistribution": [1, 1]
@@ -41,7 +41,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-			"target": "player",
+			"target": ["player"],
             "maxTargetNum":2,
             "damageDistribution": [1,1]
           }
@@ -51,7 +51,7 @@
 		  "cost": ["YELLOW"],
           "properties": {
             "visible": true,
-			"target": "player",
+			"target": ["player"],
             "maxTargetNum": 2,
             "damageDistribution": [2, 1]
           }
@@ -61,7 +61,7 @@
 		  "cost": ["BLUE"],
           "properties": {
             "visible": true,
-			"target": "player",
+			"target": ["player"],
             "maxTargetNum": 3,
             "damageDistribution": [1, 2, 1]
           }
@@ -71,7 +71,7 @@
 		  "cost": ["YELLOW", "BLUE"],
           "properties": {
             "visible": true,
-			"target": "player",
+			"target": ["player"],
             "maxTargetNum": 3,
             "damageDistribution": [2, 2, 1]
           }
@@ -89,7 +89,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-			"target": "player",
+			"target": ["player"],
             "targetNum": 1,
             "damageDistribution": [2]
           }
@@ -99,7 +99,7 @@
 		  "cost": ["BLUE"],
           "properties": {
             "concatenatedVisible": true,
-			"target": "player",
+			"target": ["player"],
             "targetNum": 2,
             "damageDistribution": [2, 1]
           }
@@ -109,7 +109,7 @@
 		  "cost": ["BLUE", "BLUE"],
           "properties": {
             "concatenatedVisible": true,
-			"target": "player",
+			"target": ["player"],
             "targetNum": 3,
             "damageDistribution": [2, 1, 2]
           }
@@ -127,7 +127,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-			"target": "player",
+			"target": ["player"],
             "targetNum": 1,
             "damageDistribution": [2]
           }
@@ -136,7 +136,7 @@
           "id": 1,
           "properties": {
             "visible": true,
-			"target": "player",
+			"target": ["player"],
             "targetNum": 1,
             "damageDistribution": [2],
 			"move": 2
@@ -147,7 +147,7 @@
 		  "cost": ["BLUE"],
           "properties": {
             "visible": true,
-			"target": "player",
+			"target": ["player"],
             "targetNum": 1,
             "damageDistribution": [3]
           }
@@ -157,7 +157,7 @@
 		  "cost": ["BLUE"],
           "properties": {
             "visible": true,
-			"target": "player",
+			"target": ["player"],
             "targetNum": 1,
             "damageDistribution": [3],
 			"move": 2
@@ -176,7 +176,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-			"target": "player",
+			"target": ["player"],
             "targetNum": 1,
             "damageDistribution": [3],
 			"markDistribution": [1],
@@ -196,7 +196,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-            "target": "room",
+            "target": ["room"],
 			"targetNum": 1,
             "damageDistribution": [1],
 			"distance": 0
@@ -207,7 +207,7 @@
 		  "cost": ["BLUE","RED"],
           "properties": {
             "visible": true,
-            "target": "room",
+            "target": ["room"],
 			"targetNum": 1,
             "damageDistribution": [2],
 			"distance": 0
@@ -226,7 +226,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-			"target": "player",
+			"target": ["player"],
 			"targetNum": 1,
             "damageDistribution": [1],
 			"maxMoveTarget": 2,
@@ -238,7 +238,7 @@
 		  "cost": ["RED","YELLOW"],
           "properties": {
             "visible": true,
-			"target": "player",
+			"target": ["player"],
 			"targetNum": 1,
             "damageDistribution": [3],
 			"maxMoveTarget": 2,
@@ -259,7 +259,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-			"target": "player",
+			"target": ["player"],
 			"targetNum": 1,
             "damageDistribution": [2],
 			"minDistance": 1,
@@ -272,7 +272,7 @@
 		  "cost": ["RED"],
           "properties": {
             "visible": true,
-			"target": "player",
+			"target": ["player"],
 			"maxTargetNum": 3,
             "damageDistribution": [2, 1, 1],
 			"minDistance": 1,
@@ -293,7 +293,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-			"target": "room",
+			"target": ["room"],
 			"targetNum": 1,
             "damageDistribution": [1],
 			"distance": 1
@@ -303,7 +303,7 @@
           "id": 1,
           "properties": {
             "visible": true,
-			"target": "square",
+			"target": ["square"],
 			"targetNum": 1,
             "damageDistribution": [1],
 			"markDistribution": [1],
@@ -323,7 +323,7 @@
           "id": 0,
           "properties": {
             "visible": false,
-			"target": "player",
+			"target": ["player"],
 			"targetNum": 1,
             "damageDistribution": [3]
           }
@@ -341,22 +341,409 @@
           "id": 0,
           "properties": {
             "visible": true,
-			"target": "player",
+			"target": ["player", "room"],
 			"targetNum": 1,
-            "damageDistribution": [1],
-			"markDistribution": [1],
-			"minDistance": 1
+            "samePosition": true,
+            "subEffects": [{
+              "damageDistribution": [1],
+              "minDistance": 1
+            }, {
+              "damageDistribution": [1],
+              "minDistance": 1
+            }]
           }
         },
 		{
           "id": 1,
+          "cost": ["RED"],
           "properties": {
             "visible": true,
-			"target": "player",
+			"target": ["player", "room"],
 			"targetNum": 1,
+            "samePosition": true,
+            "subEffects": [{
+              "damageDistribution": [1],
+              "minDistance": 1
+            }, {
+              "damageDistribution": [2],
+              "minDistance": 1
+            }]
+          }
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "cost": ["RED"],
+      "name": "Flamethrower",
+      "exclusive": true,
+      "orderedEffects": false,
+      "effects": [
+        {
+          "id": 0,
+          "properties": {
+            "visible": true,
+            "target": ["player"],
+            "maxTargetNum": 2,
+            "damageDistribution": [1, 1],
+            "inLine": true,
+            "minDistance": 1
+          }
+        },
+        {
+          "id": 1,
+          "cost": ["YELLOW", "YELLOW"],
+          "properties": {
+            "visible": true,
+            "target": ["room"],
+            "targetNum": 2,
+            "damageDistribution": [2, 1],
+            "inLine": true,
+            "minDistance": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "cost": ["RED"],
+      "name": "Grenade Launcher",
+      "exclusive": false,
+      "orderedEffects": false,
+      "effects": [
+        {
+          "id": 0,
+          "properties": {
+            "visible": true,
+            "target": ["player"],
+            "targetNum": 1,
             "damageDistribution": [1],
-			"markDistribution": [2],
-			"minDistance": 1
+            "maxMoveTarget": 1,
+            "moveTargetBefore": false
+          }
+        },
+        {
+          "id": 1,
+          "cost": ["RED"],
+          "properties": {
+            "visible": true,
+            "target": ["player","room"],
+            "targetNum": 2,
+            "subEffects": [{
+              "damageDistribution": [1],
+              "maxMoveTarget": 1,
+              "moveTargetBefore": false
+            }, {
+              "damageDistribution": [1]
+            }]
+          }
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "cost": ["RED", "RED"],
+      "name": "Rocket Launcher",
+      "exclusive": false,
+      "orderedEffects": false,
+      "effects": [
+        {
+          "id": 0,
+          "properties": {
+            "visible": true,
+            "target": ["player"],
+            "targetNum": 1,
+            "damageDistribution": [2],
+            "minDistance": 1,
+            "maxMoveTarget": 1,
+            "moveTargetBefore": false
+          }
+        },
+        {
+          "id": 1,
+          "cost": ["BLUE"],
+          "properties": {
+            "visible": true,
+            "target": ["player"],
+            "targetNum": 1,
+            "damageDistribution": [2],
+            "minDistance": 1,
+            "move": 2,
+            "maxMoveTarget": 1,
+            "moveTargetBefore": false
+          }
+        },
+        {
+          "id": 2,
+          "cost": ["YELLOW"],
+          "properties": {
+            "visible": true,
+            "target": ["room","player"],
+            "samePosition": true,
+            "targetNum": 2,
+            "subEffects": [{
+              "damageDistribution": [1],
+              "minDistance": 1
+            }, {
+              "damageDistribution": [2],
+              "minDistance": 1,
+              "maxMoveTarget": 1,
+              "moveTargetBefore": false
+            }]
+          }
+        },
+        {
+          "id": 3,
+          "cost": ["BLUE","YELLOW"],
+          "properties": {
+            "visible": true,
+            "move": 2,
+            "target": ["room","player"],
+            "samePosition": true,
+            "targetNum": 2,
+            "subEffects": [{
+              "damageDistribution": [1],
+              "minDistance": 1
+            }, {
+              "damageDistribution": [2],
+              "minDistance": 1,
+              "maxMoveTarget": 1,
+              "moveTargetBefore": false
+            }]
+          }
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "cost": ["YELLOW", "YELLOW", "BLUE"],
+      "name": "Railgun",
+      "exclusive": true,
+      "orderedEffects": false,
+      "effects": [
+        {
+          "id": 0,
+          "properties": {
+            "target": ["player"],
+            "targetNum": 1,
+            "damageDistribution": [3],
+            "inLine": true
+          }
+        },
+        {
+          "id": 1,
+          "properties": {
+            "target": ["player"],
+            "maxTargetNum": 2,
+            "damageDistribution": [2, 2],
+            "inLine": true
+          }
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "cost": ["YELLOW", "RED"],
+      "name": "Cyberblade",
+      "exclusive": false,
+      "orderedEffects": false,
+      "effects": [
+        {
+          "id": 0,
+          "properties": {
+            "visible": true,
+            "target": ["player"],
+            "targetNum": 1,
+            "damageDistribution": [2],
+            "distance": 0
+          }
+        },
+        {
+          "id": 1,
+          "properties": {
+            "visible": true,
+            "target": ["player"],
+            "targetNum": 1,
+            "move": 1,
+            "damageDistribution": [2],
+            "distance": 0
+          }
+        },
+        {
+          "id": 2,
+          "cost": ["YELLOW"],
+          "properties": {
+            "visible": true,
+            "target": ["player"],
+            "targetNum": 2,
+            "damageDistribution": [2, 2],
+            "distance": 0
+          }
+        },
+        {
+          "id": 3,
+          "cost": ["YELLOW"],
+          "properties": {
+            "visible": true,
+            "target": ["player"],
+            "targetNum": 2,
+            "damageDistribution": [2, 2],
+            "move": 1,
+            "distance": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "cost": ["YELLOW", "RED"],
+      "name": "ZX-2",
+      "exclusive": true,
+      "orderedEffects": false,
+      "effects": [
+        {
+          "id": 0,
+          "properties": {
+            "visible": true,
+            "target": ["player"],
+            "targetNum": 1,
+            "damageDistribution": [1],
+            "markDistribution": [2]
+          }
+        },
+        {
+          "id": 1,
+          "properties": {
+            "visible": true,
+            "target": ["player"],
+            "maxTargetNum": 3,
+            "markDistribution": [1, 1, 1]
+          }
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "cost": ["YELLOW", "YELLOW"],
+      "name": "Shotgun",
+      "exclusive": true,
+      "orderedEffects": false,
+      "effects": [
+        {
+          "id": 0,
+          "properties": {
+            "visible": true,
+            "target": ["player"],
+            "targetNum": 1,
+            "damageDistribution": [3],
+            "distance": 0,
+            "maxMoveTarget": 1,
+            "moveTargetBefore": false
+          }
+        },
+        {
+          "id": 1,
+          "properties": {
+            "visible": true,
+            "target": ["player"],
+            "targetNum": 1,
+            "damageDistribution": [2],
+            "distance": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "cost": ["YELLOW", "BLUE"],
+      "name": "Power Glove",
+      "exclusive": true,
+      "orderedEffects": false,
+      "effects": [
+        {
+          "id": 0,
+          "properties": {
+            "visible": true,
+            "target": ["player"],
+            "targetNum": 1,
+            "damageDistribution": [1],
+            "markDistribution": [2],
+            "minDistance": 1,
+            "moveToLastTarget": true
+          }
+        },
+        {
+          "id": 1,
+          "properties": {
+            "visible": true,
+            "target": ["player"],
+            "maxTargetNum": 2,
+            "damageDistribution": [2],
+            "minDistance": 1,
+            "inLine": true,
+            "moveToLastTarget": true
+          }
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "cost": ["YELLOW"],
+      "name": "Shockwave",
+      "exclusive": true,
+      "orderedEffects": false,
+      "effects": [
+        {
+          "id": 0,
+          "properties": {
+            "visible": true,
+            "target": ["player"],
+            "maxTargetNum": 3,
+            "damageDistribution": [1],
+            "distance": 1
+          }
+        },
+        {
+          "id": 1,
+          "cost": ["YELLOW"],
+          "properties": {
+            "visible": true,
+            "target": ["square"],
+            "maxTargetNum": 3,
+            "damageDistribution": [1],
+            "distance": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "cost": ["YELLOW"],
+      "name": "Sledgehammer",
+      "exclusive": true,
+      "orderedEffects": false,
+      "effects": [
+        {
+          "id": 0,
+          "properties": {
+            "visible": true,
+            "target": ["player"],
+            "targetNum": 1,
+            "damageDistribution": [2],
+            "distance": 0
+          }
+        },
+        {
+          "id": 1,
+          "cost": ["RED"],
+          "properties": {
+            "visible": true,
+            "target": ["player"],
+            "targetNum": 1,
+            "damageDistribution": [3],
+            "distance": 0,
+            "maxMoveTarget": 2,
+            "moveTargetBefore": false
           }
         }
       ]
