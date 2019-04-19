@@ -1,0 +1,365 @@
+{
+  "weapons": [
+    {
+      "id": 0,
+	  "cost": ["BLUE","BLUE"],
+      "name": "Lock Rifle",
+	  "exclusive": false,
+	  "orderedEffects": false,
+      "effects": [
+        {
+          "id": 0,
+          "properties": {
+            "visible": true,
+			"target": "player",
+            "targetNum": 1,
+            "damageDistribution": [2],
+			"markDistribution": [1]
+          }
+        },
+        {
+          "id": 1,
+		  "cost": ["RED"],
+          "properties": {
+            "visible": true,
+			"target": "player",
+            "targetNum": 2,
+            "damageDistribution": [2, 0],
+			"markDistribution": [1, 1]
+          }
+        }
+      ]
+    }, 
+	{
+      "id": 1,
+	  "cost": ["BLUE","RED"],
+      "name": "Machine Gun",
+	  "exclusive": false,
+	  "orderedEffects": false,
+      "effects": [
+        {
+          "id": 0,
+          "properties": {
+            "visible": true,
+			"target": "player",
+            "maxTargetNum":2,
+            "damageDistribution": [1,1]
+          }
+        },
+        {
+          "id": 1,
+		  "cost": ["YELLOW"],
+          "properties": {
+            "visible": true,
+			"target": "player",
+            "maxTargetNum": 2,
+            "damageDistribution": [2, 1]
+          }
+        },
+		{
+          "id": 2,
+		  "cost": ["BLUE"],
+          "properties": {
+            "visible": true,
+			"target": "player",
+            "maxTargetNum": 3,
+            "damageDistribution": [1, 2, 1]
+          }
+        },
+		{
+          "id": 3,
+		  "cost": ["YELLOW", "BLUE"],
+          "properties": {
+            "visible": true,
+			"target": "player",
+            "maxTargetNum": 3,
+            "damageDistribution": [2, 2, 1]
+          }
+        }
+      ]
+    },    
+	{
+      "id": 2,
+	  "cost": ["BLUE","RED"],
+      "name": "T.H.O.R.",
+	  "exclusive": false,
+	  "orderedEffects": true,
+      "effects": [
+        {
+          "id": 0,
+          "properties": {
+            "visible": true,
+			"target": "player",
+            "targetNum": 1,
+            "damageDistribution": [2]
+          }
+        },
+        {
+          "id": 1,
+		  "cost": ["BLUE"],
+          "properties": {
+            "concatenatedVisible": true,
+			"target": "player",
+            "targetNum": 2,
+            "damageDistribution": [2, 1]
+          }
+        },
+		{
+          "id": 2,
+		  "cost": ["BLUE", "BLUE"],
+          "properties": {
+            "concatenatedVisible": true,
+			"target": "player",
+            "targetNum": 3,
+            "damageDistribution": [2, 1, 2]
+          }
+        }
+      ]
+    }, 
+	{
+      "id": 3,
+	  "cost": ["BLUE","YELLOW"],
+      "name": "Plasma Gun",
+	  "exclusive": false,
+	  "orderedEffects": false,
+      "effects": [
+        {
+          "id": 0,
+          "properties": {
+            "visible": true,
+			"target": "player",
+            "targetNum": 1,
+            "damageDistribution": [2]
+          }
+        },
+        {
+          "id": 1,
+          "properties": {
+            "visible": true,
+			"target": "player",
+            "targetNum": 1,
+            "damageDistribution": [2],
+			"move": 2
+          }
+        },
+		{
+          "id": 2,
+		  "cost": ["BLUE"],
+          "properties": {
+            "visible": true,
+			"target": "player",
+            "targetNum": 1,
+            "damageDistribution": [3]
+          }
+        },
+		{
+          "id": 3,
+		  "cost": ["BLUE"],
+          "properties": {
+            "visible": true,
+			"target": "player",
+            "targetNum": 1,
+            "damageDistribution": [3],
+			"move": 2
+          }
+        }
+      ]
+    },
+	{
+      "id": 4,
+	  "cost": ["BLUE","BLUE","YELLOW"],
+      "name": "Whisper",
+	  "exclusive": false,
+	  "orderedEffects": false,
+      "effects": [
+        {
+          "id": 0,
+          "properties": {
+            "visible": true,
+			"target": "player",
+            "targetNum": 1,
+            "damageDistribution": [3],
+			"markDistribution": [1],
+			"minDistance": 2
+          }
+        }
+      ]
+    },
+	{
+      "id": 5,
+	  "cost": ["BLUE"],
+      "name": "Electroscythe",
+	  "exclusive": true,
+	  "orderedEffects": false,
+      "effects": [
+        {
+          "id": 0,
+          "properties": {
+            "visible": true,
+            "target": "room",
+			"targetNum": 1,
+            "damageDistribution": [1],
+			"distance": 0
+          }
+        },
+        {
+          "id": 1,
+		  "cost": ["BLUE","RED"],
+          "properties": {
+            "visible": true,
+            "target": "room",
+			"targetNum": 1,
+            "damageDistribution": [2],
+			"distance": 0
+          }
+        }
+      ]
+    },
+	{
+      "id": 6,
+	  "cost": ["BLUE"],
+      "name": "Tractor Beam",
+	  "exclusive": true,
+	  "orderedEffects": false,
+      "effects": [
+        {
+          "id": 0,
+          "properties": {
+            "visible": true,
+			"target": "player",
+			"targetNum": 1,
+            "damageDistribution": [1],
+			"maxMoveTarget": 2,
+			"moveTargetBefore": true
+          }
+        },
+        {
+          "id": 1,
+		  "cost": ["RED","YELLOW"],
+          "properties": {
+            "visible": true,
+			"target": "player",
+			"targetNum": 1,
+            "damageDistribution": [3],
+			"maxMoveTarget": 2,
+			"moveTargetBefore": true,
+			"distance": 0
+          }
+        }
+      ]
+    },
+	{
+      "id": 7,
+	  "cost": ["RED", "BLUE"],
+      "name": "Vortex Cannon",
+	  "exclusive": false,
+	  "orderedEffects": false,
+      "effects": [
+        {
+          "id": 0,
+          "properties": {
+            "visible": true,
+			"target": "player",
+			"targetNum": 1,
+            "damageDistribution": [2],
+			"minDistance": 1,
+			"moveTarget": 1,
+			"moveTargetBefore": true
+          }
+        },
+        {
+          "id": 1,
+		  "cost": ["RED"],
+          "properties": {
+            "visible": true,
+			"target": "player",
+			"maxTargetNum": 3,
+            "damageDistribution": [2, 1, 1],
+			"minDistance": 1,
+			"moveTarget": 1,
+			"moveTargetBefore": true
+          }
+        }
+      ]
+    },
+	{
+      "id": 8,
+	  "cost": ["RED", "BLUE"],
+      "name": "Furnace",
+	  "exclusive": true,
+	  "orderedEffects": false,
+      "effects": [
+        {
+          "id": 0,
+          "properties": {
+            "visible": true,
+			"target": "room",
+			"targetNum": 1,
+            "damageDistribution": [1],
+			"distance": 1
+          }
+        },
+        {
+          "id": 1,
+          "properties": {
+            "visible": true,
+			"target": "square",
+			"targetNum": 1,
+            "damageDistribution": [1],
+			"markDistribution": [1],
+			"distance": 1
+          }
+        }
+      ]
+    },
+	{
+      "id": 9,
+	  "cost": ["RED", "RED", "BLUE"],
+      "name": "Heatseeker",
+	  "exclusive": false,
+	  "orderedEffects": false,
+      "effects": [
+        {
+          "id": 0,
+          "properties": {
+            "visible": false,
+			"target": "player",
+			"targetNum": 1,
+            "damageDistribution": [3]
+          }
+        }
+      ]
+    },
+	{
+      "id": 10,
+	  "cost": ["RED", "YELLOW"],
+      "name": "Hellion",
+	  "exclusive": true,
+	  "orderedEffects": false,
+      "effects": [
+        {
+          "id": 0,
+          "properties": {
+            "visible": true,
+			"target": "player",
+			"targetNum": 1,
+            "damageDistribution": [1],
+			"markDistribution": [1],
+			"minDistance": 1
+          }
+        },
+		{
+          "id": 1,
+          "properties": {
+            "visible": true,
+			"target": "player",
+			"targetNum": 1,
+            "damageDistribution": [1],
+			"markDistribution": [2],
+			"minDistance": 1
+          }
+        }
+      ]
+    }
+  ]
+}
