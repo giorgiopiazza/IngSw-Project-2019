@@ -285,6 +285,7 @@ public class Game {
     public List<UserPlayer> getPlayers() {
         return players;
     }
+
     /**
      * Method to obtain the UserPlayer with the specified ID
      *

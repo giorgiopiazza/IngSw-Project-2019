@@ -196,7 +196,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-            "target": ["room"],
+            "target": ["square"],
 			"targetNum": 1,
             "damageDistribution": [1],
 			"distance": 0
@@ -207,7 +207,7 @@
 		  "cost": ["BLUE","RED"],
           "properties": {
             "visible": true,
-            "target": ["room"],
+            "target": ["square"],
 			"targetNum": 1,
             "damageDistribution": [2],
 			"distance": 0
@@ -341,14 +341,14 @@
           "id": 0,
           "properties": {
             "visible": true,
-			"target": ["player", "room"],
+			"target": ["player", "square"],
 			"targetNum": 1,
             "samePosition": true,
             "subEffects": [{
               "damageDistribution": [1],
               "minDistance": 1
             }, {
-              "damageDistribution": [1],
+              "markDistribution": [1],
               "minDistance": 1
             }]
           }
@@ -358,14 +358,14 @@
           "cost": ["RED"],
           "properties": {
             "visible": true,
-			"target": ["player", "room"],
+			"target": ["player", "square"],
 			"targetNum": 1,
             "samePosition": true,
             "subEffects": [{
               "damageDistribution": [1],
               "minDistance": 1
             }, {
-              "damageDistribution": [2],
+              "markDistribution": [2],
               "minDistance": 1
             }]
           }
@@ -395,7 +395,7 @@
           "cost": ["YELLOW", "YELLOW"],
           "properties": {
             "visible": true,
-            "target": ["room"],
+            "target": ["square"],
             "targetNum": 2,
             "damageDistribution": [2, 1],
             "inLine": true,
@@ -427,7 +427,7 @@
           "cost": ["RED"],
           "properties": {
             "visible": true,
-            "target": ["player","room"],
+            "target": ["player","square"],
             "targetNum": 2,
             "subEffects": [{
               "damageDistribution": [1],
@@ -478,7 +478,7 @@
           "cost": ["YELLOW"],
           "properties": {
             "visible": true,
-            "target": ["room","player"],
+            "target": ["square","player"],
             "samePosition": true,
             "targetNum": 2,
             "subEffects": [{
@@ -498,7 +498,7 @@
           "properties": {
             "visible": true,
             "move": 2,
-            "target": ["room","player"],
+            "target": ["square","player"],
             "samePosition": true,
             "targetNum": 2,
             "subEffects": [{
@@ -743,6 +743,7 @@
             "damageDistribution": [3],
             "distance": 0,
             "maxMoveTarget": 2,
+            "inline": true,
             "moveTargetBefore": false
           }
         }
