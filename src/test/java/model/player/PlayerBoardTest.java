@@ -100,19 +100,22 @@ class PlayerBoardTest {
     void addAmmo() {
 
         playerBoard.addAmmo(Ammo.BLUE);
-        assertArrayEquals(new Ammo[]{Ammo.BLUE}, playerBoard.getAmmo());
+        assertEquals(new AmmoQuantity(0, 1, 0), playerBoard.getAmmo());
 
         playerBoard.addAmmo(Ammo.BLUE);
-        assertArrayEquals(new Ammo[]{Ammo.BLUE, Ammo.BLUE}, playerBoard.getAmmo());
+        assertEquals(new AmmoQuantity(0, 2, 0), playerBoard.getAmmo());
 
         assertThrows(NullPointerException.class, () -> playerBoard.addAmmo(null));
-        assertArrayEquals(new Ammo[]{Ammo.BLUE, Ammo.BLUE}, playerBoard.getAmmo());
+        assertEquals(new AmmoQuantity(0, 2, 0), playerBoard.getAmmo());
 
         playerBoard.addAmmo(Ammo.YELLOW);
-        assertArrayEquals(new Ammo[]{Ammo.BLUE, Ammo.BLUE, Ammo.YELLOW}, playerBoard.getAmmo());
+        assertEquals(new AmmoQuantity(0, 2, 1), playerBoard.getAmmo());
 
         playerBoard.addAmmo(Ammo.BLUE);
-        assertArrayEquals(new Ammo[]{Ammo.BLUE, Ammo.BLUE, Ammo.YELLOW, Ammo.BLUE}, playerBoard.getAmmo());
+        assertEquals(new AmmoQuantity(0, 3, 1), playerBoard.getAmmo());
+
+        playerBoard.addAmmo(Ammo.BLUE);
+        assertEquals(new AmmoQuantity(0, 3, 1), playerBoard.getAmmo());
     }
 
     @Test
@@ -123,11 +126,13 @@ class PlayerBoardTest {
         playerBoard.addAmmo(Ammo.BLUE);
         playerBoard.addAmmo(Ammo.RED);
 
-        playerBoard.useAmmo(new ArrayList<>(Arrays.asList(Ammo.BLUE, Ammo.BLUE)));
-        playerBoard.useAmmo(new ArrayList<>(Arrays.asList(Ammo.YELLOW, Ammo.RED)));
+        playerBoard.useAmmo(new AmmoQuantity(0, 2, 0));
+        assertEquals(new AmmoQuantity(1, 1, 1), playerBoard.getAmmo());
+        playerBoard.useAmmo(new AmmoQuantity(1, 0, 1));
+        assertEquals(new AmmoQuantity(0, 1, 0), playerBoard.getAmmo());
 
-        assertThrows(NotEnoughAmmoException.class, () -> playerBoard.useAmmo(new ArrayList<>(Arrays.asList(Ammo.BLUE, Ammo.BLUE))));
-        assertThrows(NotEnoughAmmoException.class, () -> playerBoard.useAmmo(new ArrayList<>(Arrays.asList(Ammo.YELLOW, Ammo.YELLOW))));
-        assertThrows(NotEnoughAmmoException.class, () -> playerBoard.useAmmo(new ArrayList<>(Arrays.asList(Ammo.RED, Ammo.RED))));
+        assertThrows(NotEnoughAmmoException.class, () -> playerBoard.useAmmo(new AmmoQuantity(0, 2, 0)));
+        assertThrows(NotEnoughAmmoException.class, () -> playerBoard.useAmmo(new AmmoQuantity(0, 0, 2)));
+        assertThrows(NotEnoughAmmoException.class, () -> playerBoard.useAmmo(new AmmoQuantity(2, 0, 0)));
     }
 }

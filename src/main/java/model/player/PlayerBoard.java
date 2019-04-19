@@ -10,12 +10,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class    PlayerBoard {
+public class PlayerBoard {
     private List<Player> damages;
     private List<Player> marks;
 
     private int skulls;
-    private List<Ammo> ammo;
+    private AmmoQuantity ammo;
 
     private List<Integer> boardPoints;
     /**
@@ -32,7 +32,7 @@ public class    PlayerBoard {
         marks = new ArrayList<>();
 
         skulls = 0;
-        ammo = new ArrayList<>();
+        ammo = new AmmoQuantity(1, 1, 1);
 
         boardFlipped = false;
         boardPoints = new ArrayList<>(Arrays.asList(8, 6, 4, 2, 1, 1));
@@ -108,21 +108,16 @@ public class    PlayerBoard {
             throw new NullPointerException("Ammo cannot be null");
         }
 
-        if (Collections.frequency(this.ammo, ammo) < 3) {
-            this.ammo.add(ammo);
+        switch (ammo) {
+            case RED:
+                this.ammo.addRedAmmo();
+                break;
+            case BLUE:
+                this.ammo.addBlueAmmo();
+                break;
+            default:
+                this.ammo.addYellowAmmo();
         }
-    }
-
-    /**
-     * Checks if there are enough ammo to afford the cost
-     *
-     * @param cost of the operation
-     * @return {@code true} if there are enough ammo, {@code false} otherwise
-     */
-    private boolean hasEnoughAmmo(List<Ammo> cost) {
-        return Collections.frequency(cost, Ammo.BLUE) <= Collections.frequency(ammo, Ammo.BLUE) &&
-                Collections.frequency(cost, Ammo.YELLOW) <= Collections.frequency(ammo, Ammo.YELLOW) &&
-                Collections.frequency(cost, Ammo.RED) <= Collections.frequency(ammo, Ammo.RED);
     }
 
     /**
@@ -131,45 +126,15 @@ public class    PlayerBoard {
      * @param cost of operation
      * @throws NotEnoughAmmoException if there aren't enough ammo to pay the operation
      */
-    public void useAmmo(List<Ammo> cost) throws NotEnoughAmmoException {
-        if (!hasEnoughAmmo(cost)) {
-            throw new NotEnoughAmmoException();
-        }
-
-        int red = Collections.frequency(cost, Ammo.RED);
-        int blue = Collections.frequency(cost, Ammo.BLUE);
-        int yellow = Collections.frequency(cost, Ammo.YELLOW);
-
-        for (int i = ammo.size() - 1; i >= 0; --i) {
-            Ammo tempAmmo = ammo.get(i);
-
-            switch (tempAmmo) {
-                case RED:
-                    if (red > 0) {
-                        ammo.remove(i);
-                        --red;
-                    }
-                    break;
-                case BLUE:
-                    if (blue > 0) {
-                        ammo.remove(i);
-                        --blue;
-                    }
-                    break;
-                default:
-                    if (yellow > 0) {
-                        ammo.remove(i);
-                        --yellow;
-                    }
-            }
-        }
+    public void useAmmo(AmmoQuantity cost) throws NotEnoughAmmoException {
+        ammo = ammo.difference(cost);
     }
 
     /**
      * @return an array of player boards ammo
      */
-    public Ammo[] getAmmo() {
-        return ammo.toArray(new Ammo[0]);
+    public AmmoQuantity getAmmo() {
+        return ammo;
     }
 
     /**
