@@ -98,24 +98,20 @@ class PlayerBoardTest {
 
     @Test
     void addAmmo() {
+        playerBoard.addAmmo(Ammo.BLUE);
+        assertEquals(new AmmoQuantity(1, 2, 1), playerBoard.getAmmo());
 
         playerBoard.addAmmo(Ammo.BLUE);
-        assertEquals(new AmmoQuantity(0, 1, 0), playerBoard.getAmmo());
-
-        playerBoard.addAmmo(Ammo.BLUE);
-        assertEquals(new AmmoQuantity(0, 2, 0), playerBoard.getAmmo());
+        assertEquals(new AmmoQuantity(1, 3, 1), playerBoard.getAmmo());
 
         assertThrows(NullPointerException.class, () -> playerBoard.addAmmo(null));
-        assertEquals(new AmmoQuantity(0, 2, 0), playerBoard.getAmmo());
+        assertEquals(new AmmoQuantity(1, 3, 1), playerBoard.getAmmo());
 
         playerBoard.addAmmo(Ammo.YELLOW);
-        assertEquals(new AmmoQuantity(0, 2, 1), playerBoard.getAmmo());
+        assertEquals(new AmmoQuantity(1, 3, 2), playerBoard.getAmmo());
 
         playerBoard.addAmmo(Ammo.BLUE);
-        assertEquals(new AmmoQuantity(0, 3, 1), playerBoard.getAmmo());
-
-        playerBoard.addAmmo(Ammo.BLUE);
-        assertEquals(new AmmoQuantity(0, 3, 1), playerBoard.getAmmo());
+        assertEquals(new AmmoQuantity(1, 3, 2), playerBoard.getAmmo());
     }
 
     @Test
@@ -123,10 +119,9 @@ class PlayerBoardTest {
         playerBoard.addAmmo(Ammo.BLUE);
         playerBoard.addAmmo(Ammo.BLUE);
         playerBoard.addAmmo(Ammo.YELLOW);
-        playerBoard.addAmmo(Ammo.BLUE);
         playerBoard.addAmmo(Ammo.RED);
 
-        playerBoard.useAmmo(new AmmoQuantity(0, 2, 0));
+        playerBoard.useAmmo(new AmmoQuantity(1, 2, 1));
         assertEquals(new AmmoQuantity(1, 1, 1), playerBoard.getAmmo());
         playerBoard.useAmmo(new AmmoQuantity(1, 0, 1));
         assertEquals(new AmmoQuantity(0, 1, 0), playerBoard.getAmmo());
