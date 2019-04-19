@@ -170,29 +170,31 @@ public class WeaponCard extends UsableCard {
         int blueCost = effectCost.getBlueAmmo();
         int yellowCost = effectCost.getYellowAmmo();
 
-        if (!powerupsID.isEmpty()) {
-            for (Integer id : powerupsID) {
-                Ammo ammo = powerupCards[id].getValue();
+        if (powerupsID.isEmpty()) {
+            return new AmmoQuantity(redCost, blueCost, yellowCost);
+        }
 
-                switch (ammo) {
-                    case RED:
-                        if (redCost > 0) {
-                            redCost--;
-                            usedPowerupsID.add(id);
-                        }
-                        break;
-                    case BLUE:
-                        if (blueCost > 0) {
-                            blueCost--;
-                            usedPowerupsID.add(id);
-                        }
-                        break;
-                    default:
-                        if (yellowCost > 0) {
-                            yellowCost--;
-                            usedPowerupsID.add(id);
-                        }
-                }
+        for (Integer id : powerupsID) {
+            Ammo ammo = powerupCards[id].getValue();
+
+            switch (ammo) {
+                case RED:
+                    if (redCost > 0) {
+                        redCost--;
+                        usedPowerupsID.add(id);
+                    }
+                    break;
+                case BLUE:
+                    if (blueCost > 0) {
+                        blueCost--;
+                        usedPowerupsID.add(id);
+                    }
+                    break;
+                default:
+                    if (yellowCost > 0) {
+                        yellowCost--;
+                        usedPowerupsID.add(id);
+                    }
             }
         }
 
