@@ -151,13 +151,32 @@ public class WeaponCard extends UsableCard {
         List<Integer> powerupsID = CommandUtility.getPowerupAmmoID(splitCommand);
         List<Integer> usedPowerupsID = new ArrayList<>();
 
+        AmmoQuantity costWithoutPowerups = getCostWithoutPowerup(effectCost, powerupsID, usedPowerupsID, powerupCards);
+        shootingPlayer.getPlayerBoard().useAmmo(costWithoutPowerups);
+
+        if (!usedPowerupsID.isEmpty()) {
+            Collections.sort(usedPowerupsID, Collections.reverseOrder());
+
+            try {
+                for (Integer id : usedPowerupsID) {
+                    shootingPlayer.discardPowerupByIndex(id);
+                }
+            } catch (EmptyHandException e) {
+                throw new InvalidCommandException();
+            }
+        }
+    }
+
+    private AmmoQuantity getCostWithoutPowerup(AmmoQuantity effectCost, List<Integer> powerupsID, List<Integer> usedPowerupsID, PowerupCard[] powerupCards) {
         int redCost = effectCost.getRedAmmo();
         int blueCost = effectCost.getBlueAmmo();
         int yellowCost = effectCost.getYellowAmmo();
 
         if (!powerupsID.isEmpty()) {
             for (Integer id : powerupsID) {
-                switch(powerupCards[id].getValue()) {
+                Ammo ammo = powerupCards[id].getValue();
+
+                switch (ammo) {
                     case RED:
                         if (redCost > 0) {
                             redCost--;
@@ -179,19 +198,6 @@ public class WeaponCard extends UsableCard {
             }
         }
 
-        AmmoQuantity costWithoutPowerups = new AmmoQuantity(redCost, blueCost, yellowCost);
-        shootingPlayer.getPlayerBoard().useAmmo(costWithoutPowerups);
-
-        if (!usedPowerupsID.isEmpty()) {
-            Collections.sort(usedPowerupsID, Collections.reverseOrder());
-
-            try {
-                for (Integer id : usedPowerupsID) {
-                    shootingPlayer.discardPowerupByIndex(id);
-                }
-            } catch (EmptyHandException e) {
-                throw new InvalidCommandException();
-            }
-        }
+        return new AmmoQuantity(redCost, blueCost, yellowCost);
     }
 }
