@@ -7,13 +7,11 @@ import exceptions.command.InvalidCommandException;
 import exceptions.player.EmptyHandException;
 import exceptions.playerboard.NotEnoughAmmoException;
 import model.Game;
-import model.cards.effects.BaseEffect;
 import model.cards.effects.Effect;
 import model.cards.weaponstates.ChargedWeapon;
 import model.cards.weaponstates.UnchargedWeapon;
 import model.cards.weaponstates.WeaponState;
 import model.player.AmmoQuantity;
-import model.player.Player;
 import model.player.UserPlayer;
 import utility.CommandUtility;
 

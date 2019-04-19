@@ -288,13 +288,13 @@ public class Game {
     /**
      * Method to obtain the UserPlayer with the specified ID
      *
-     * @param ID you want to obtain the related UserPlayer
+     * @param id you want to obtain the related UserPlayer
      * @return the UserPlayer with the ID passed
      */
-    public Player getPlayerByID(int ID) {
+    public Player getPlayerByID(int id) {
         for(Player p: players) {
-            if(p.getID() == ID) return p;
+            if(p.getId() == id) return p;
         }
-        throw new MissingIDException(ID);
+        throw new MissingIDException(id);
     }
 }

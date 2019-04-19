@@ -32,7 +32,7 @@ public class PlayerBoard {
         marks = new ArrayList<>();
 
         skulls = 0;
-        ammo = new AmmoQuantity(1, 1, 1);
+        ammo = new AmmoQuantity(0, 0, 0);
 
         boardFlipped = false;
         boardPoints = new ArrayList<>(Arrays.asList(8, 6, 4, 2, 1, 1));

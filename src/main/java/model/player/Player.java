@@ -8,7 +8,7 @@ import model.map.Square;
 public abstract class Player {
     private final String nickname;
     private static int uniqueID = 0;
-    private final int ID;
+    private final int id;
     protected Color color;
     private final PlayerBoard playerBoard;
     private PlayerPosition position;
@@ -17,7 +17,7 @@ public abstract class Player {
     public Player(String nickname, Color color, PlayerBoard playerBoard) {
 
         this.nickname = nickname;
-        this.ID = uniqueID;
+        this.id = uniqueID;
         this.color = color;
         this.position = null;
         this.playerBoard = playerBoard;
@@ -30,8 +30,8 @@ public abstract class Player {
         return this.nickname;
     }
 
-    public int getID() {
-        return this.ID;
+    public int getId() {
+        return this.id;
     }
 
     public Color getColor() {
