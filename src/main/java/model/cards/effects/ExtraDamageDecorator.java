@@ -17,6 +17,13 @@ public class ExtraDamageDecorator extends ExtraEffectDecorator {
         this.targetType = targetType;
     }
 
+    /**
+     * Method that spreads the damages of the effect to all targets.
+     * A target can be {@code PLAYER}, {@code SQUARE} or {@code ROOM} and the damage
+     * distribution depends on this.
+     *
+     * @param command the command that will be used to damage players
+     */
     @Override
     public void execute(String command) {
         effect.execute(command);

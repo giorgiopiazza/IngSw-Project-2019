@@ -18,6 +18,13 @@ public class ExtraMarkDecorator extends ExtraEffectDecorator {
         this.targetType = targetType;
     }
 
+    /**
+     * Method that spreads the marks of the effect to the targets.
+     * A target can be {@code PLAYER}, {@code SQUARE} or {@code ROOM} and the mark
+     * distribution depends on this.
+     *
+     * @param command the command that will be used to mark players.
+     */
     @Override
     public void execute(String command) {
         effect.execute(command);
