@@ -43,16 +43,16 @@ public class WeaponCard extends UsableCard {
      *
      * @return an array of Ammo which is the recharging Cost of the Weapon
      */
-    public Ammo[] getRechargeCost() {
+    public AmmoQuantity getRechargeCost() {
         switch (this.weaponState.status()) {
             case UNCHARGED:
-                return cost;
+                return new AmmoQuantity(cost);
 
             case SEMI_CHARGED:
-                return Arrays.copyOfRange(cost, 1, cost.length);
+                return new AmmoQuantity(Arrays.copyOfRange(cost, 1, cost.length));
 
             default:
-                return new Ammo[0];
+                return new AmmoQuantity(new Ammo[0]);
         }
     }
 

@@ -1,8 +1,13 @@
 package model.cards.effects;
 
+import enumerations.MoveTarget;
+
 public class ExtraMoveDecorator extends ExtraEffectDecorator {
-    public ExtraMoveDecorator(Effect effect) {
+    private final MoveTarget moveTarget;
+
+    public ExtraMoveDecorator(Effect effect, MoveTarget moveTarget) {
         this.effect = effect;
+        this.moveTarget = moveTarget;
     }
 
     @Override

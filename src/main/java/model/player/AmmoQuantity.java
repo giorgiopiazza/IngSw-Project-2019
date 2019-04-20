@@ -1,18 +1,32 @@
 package model.player;
 
+import enumerations.Ammo;
 import exceptions.playerboard.NotEnoughAmmoException;
 
-import java.util.Objects;
+import java.util.*;
 
 public class AmmoQuantity {
-    int redAmmo;
-    int blueAmmo;
-    int yellowAmmo;
+    private int redAmmo;
+    private int blueAmmo;
+    private int yellowAmmo;
+
+    public AmmoQuantity() {
+        redAmmo = 0;
+        blueAmmo = 0;
+        yellowAmmo = 0;
+    }
 
     public AmmoQuantity(int redAmmo, int blueAmmo, int yellowAmmo) {
         this.redAmmo = redAmmo;
         this.blueAmmo = blueAmmo;
         this.yellowAmmo = yellowAmmo;
+    }
+
+    public AmmoQuantity(Ammo[] ammo) {
+        List<Ammo> ammoList = new ArrayList<>(Arrays.asList(ammo));
+        redAmmo = (Collections.frequency(ammoList, Ammo.RED) < 3) ? Collections.frequency(ammoList, Ammo.RED) : 3;
+        blueAmmo = (Collections.frequency(ammoList, Ammo.BLUE) < 3) ? Collections.frequency(ammoList, Ammo.BLUE) : 3;
+        yellowAmmo = (Collections.frequency(ammoList, Ammo.YELLOW) < 3) ? Collections.frequency(ammoList, Ammo.YELLOW) : 3;
     }
 
     public int getRedAmmo() {
