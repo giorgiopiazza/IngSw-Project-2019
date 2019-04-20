@@ -6,8 +6,6 @@ import model.Game;
 import model.player.Player;
 import model.player.PlayerPosition;
 import utility.CommandUtility;
-
-import java.util.ArrayList;
 import java.util.List;
 
 public class ExtraDamageDecorator extends ExtraEffectDecorator {
@@ -22,18 +20,18 @@ public class ExtraDamageDecorator extends ExtraEffectDecorator {
 
     @Override
     public void execute(String command) {
-        List<Integer> targets = new ArrayList<>();
         effect.execute(command);
 
+        List<Integer> targetsID;
         String[] splitCommand = command.split(" ");
         Player shooter = Game.getInstance().getPlayerByID(CommandUtility.getPlayerID(splitCommand));
 
         switch (targetType) {
             case PLAYER:
                 if(command.contains("-t")) {
-                    targets = CommandUtility.getAttributesID(splitCommand, "-t");
-                    for (int i = 0; i < targets.size(); ++i) {
-                        Game.getInstance().getPlayerByID(targets.get(i)).getPlayerBoard().addDamage(shooter, damageDistribution[i]);
+                    targetsID = CommandUtility.getAttributesID(splitCommand, "-t");
+                    for (int i = 0; i < targetsID.size(); ++i) {
+                        Game.getInstance().getPlayerByID(targetsID.get(i)).getPlayerBoard().addDamage(shooter, damageDistribution[i]);
                     }
                 } else {
                     throw new InvalidCommandException();
@@ -43,21 +41,20 @@ public class ExtraDamageDecorator extends ExtraEffectDecorator {
                 if(command.contains("-v")) {
                     List<PlayerPosition> squares = CommandUtility.getPositions(splitCommand, "-v");
                     for(int i = 0; i < squares.size(); ++i) {
-                        Player[] target = Game.getInstance().getGameMap().getPlayersInSquare(squares.get(i));
-                        for(Player damaged : target) {
+                        Player[] targetSquare = Game.getInstance().getGameMap().getPlayersInSquare(squares.get(i));
+                        for(Player damaged : targetSquare) {
                             damaged.getPlayerBoard().addDamage(shooter, damageDistribution[i]);
                         }
                     }
                 }
+                break;
             default:
-                //TODO take targets from the given ROOM, add getPlayersInRoom in Map class
-
+                if(command.contains("-x")) {
+                    List<Player> targetRoom = Game.getInstance().getGameMap().getPlayersInRoom(CommandUtility.getRoomColor(splitCommand));
+                    for(Player damaged : targetRoom) {
+                        damaged.getPlayerBoard().addDamage(shooter, damageDistribution[0]);
+                    }
+                }
         }
-        /*
-        if (damageDistribution.length > 1) {
-            IntStream.range(0, targets.size()).forEach(i -> targets.get(i).getPlayerBoard().addDamage(damageDealer, damageDistribution[i]));
-        } else {
-            IntStream.range(0, targets.size()).forEach(i -> targets.get(i).getPlayerBoard().addDamage(damageDealer, damageDistribution[0]));
-        }*/
     }
 }

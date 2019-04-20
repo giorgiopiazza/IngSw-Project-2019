@@ -159,10 +159,23 @@ public class Map {
         return true;
     }
 
+    /**
+     * Returns the square specifying his coordinates
+     *
+     * @param x the X of the square
+     * @param y the Y of the square
+     * @return the Square whose coordX is x and coordY is y
+     */
     public Square getSquare(int x, int y) {
         return rooms[x][y];
     }
 
+    /**
+     * Method to obtain all the players who are in the specified position
+     *
+     * @param pos the position in which there are the Players returned
+     * @return the players who are in the position pos
+     */
     public Player[] getPlayersInSquare(PlayerPosition pos) {
         Game game = Game.getInstance();
         List<Player> players = new ArrayList<>();
@@ -181,6 +194,32 @@ public class Map {
         }
 
         return players.toArray(new Player[0]);
+    }
+
+    /**
+     * Method to obtain all the players who are in the specified room
+     *
+     * @param roomColor the Color of the room in which there are the players returned
+     * @return the ArrayList of players who are in the room of color roomColor
+     */
+    public List<Player> getPlayersInRoom(Color roomColor) {
+        Game game = Game.getInstance();
+        List<Player> players = new ArrayList<>();
+
+        for (Player p: game.getPlayers()) {
+            if(getSquare(p.getPosition().getCoordX(), p.getPosition().getCoordY()).getColor().equals(roomColor)) {
+                players.add(p);
+            }
+        }
+
+        if(game.isTerminatorPresent()) {
+            Player term = game.getTerminator();
+            if(getSquare(term.getPosition().getCoordX(), term.getPosition().getCoordY()).getColor().equals(roomColor)) {
+                players.add(term);
+            }
+        }
+
+        return players;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package utility;
 
+import enumerations.Color;
 import exceptions.command.InvalidCommandException;
 import model.player.PlayerPosition;
 
@@ -65,10 +66,30 @@ public class CommandUtility {
     }
 
     /**
+     * Returns the Color of the specified room in the command
+     *
+     * @param splitCommand array in which the command is split
+     * @return the Color of the room
+     */
+    public static Color getRoomColor(String[] splitCommand) {
+        int pos = getCommandParamPosition(splitCommand, "-x");
+
+        if (pos != -1) {
+            try {
+                return Color.valueOf(splitCommand[pos +1]);
+            } catch (NumberFormatException e) {
+                throw new InvalidCommandException();
+            }
+        }
+
+        throw new InvalidCommandException();
+    }
+
+    /**
      * Returns an ArrayList of the powerups given in the command
      *
      * @param splitCommand array in which the command is split
-     * @param param the starting part of the string you need to tale the IDs
+     * @param param the starting part of the string you need to take the IDs
      * @return the ArrayList of indexes of the IDs after a - parameter
      */
     public static List<Integer> getAttributesID(String[] splitCommand, String param) {
@@ -92,6 +113,13 @@ public class CommandUtility {
         return attributesID;
     }
 
+    /**
+     * Returns an ArrayList with the target positions in the command
+     *
+     * @param splitCommand array in which the command is split
+     * @param param the starting part of the string you need to take the positions
+     * @return the ArrayList of positions targets after a - parameter
+     */
     public static List<PlayerPosition> getPositions(String[] splitCommand, String param) {
         List<PlayerPosition> positions = new ArrayList<>();
         int pos = getCommandParamPosition(splitCommand, param);
