@@ -342,12 +342,13 @@
           "properties": {
             "visible": true,
 			"target": ["player", "square"],
-			"targetNum": 1,
             "samePosition": true,
             "subEffects": [{
+              "targetNum": 1,
               "damageDistribution": [1],
               "minDistance": 1
             }, {
+              "targetNum": 1,
               "markDistribution": [1],
               "minDistance": 1
             }]
@@ -359,12 +360,13 @@
           "properties": {
             "visible": true,
 			"target": ["player", "square"],
-			"targetNum": 1,
             "samePosition": true,
             "subEffects": [{
+              "targetNum": 1,
               "damageDistribution": [1],
               "minDistance": 1
             }, {
+              "targetNum": 1,
               "markDistribution": [2],
               "minDistance": 1
             }]
@@ -428,12 +430,13 @@
           "properties": {
             "visible": true,
             "target": ["player","square"],
-            "targetNum": 2,
             "subEffects": [{
+              "targetNum": 1,
               "damageDistribution": [1],
               "maxMoveTarget": 1,
               "moveTargetBefore": false
             }, {
+              "targetNum": 1,
               "damageDistribution": [1]
             }]
           }
@@ -480,11 +483,12 @@
             "visible": true,
             "target": ["square","player"],
             "samePosition": true,
-            "targetNum": 2,
             "subEffects": [{
+              "targetNum": 1,
               "damageDistribution": [1],
               "minDistance": 1
             }, {
+              "targetNum": 1,
               "damageDistribution": [2],
               "minDistance": 1,
               "maxMoveTarget": 1,
@@ -500,11 +504,12 @@
             "move": 2,
             "target": ["square","player"],
             "samePosition": true,
-            "targetNum": 2,
             "subEffects": [{
+              "targetNum": 1,
               "damageDistribution": [1],
               "minDistance": 1
             }, {
+              "targetNum": 1,
               "damageDistribution": [2],
               "minDistance": 1,
               "maxMoveTarget": 1,
@@ -710,7 +715,7 @@
             "visible": true,
             "target": ["square"],
             "maxTargetNum": 3,
-            "damageDistribution": [1],
+            "damageDistribution": [1, 1, 1],
             "distance": 1
           }
         }

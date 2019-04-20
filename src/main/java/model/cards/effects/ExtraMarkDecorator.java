@@ -1,7 +1,6 @@
 package model.cards.effects;
 
 import enumerations.TargetType;
-import exceptions.command.InvalidCommandException;
 import model.Game;
 import model.player.Player;
 import model.player.PlayerPosition;
@@ -29,32 +28,24 @@ public class ExtraMarkDecorator extends ExtraEffectDecorator {
 
         switch (targetType) {
             case PLAYER:
-                if(command.contains("-t")) {
-                    targetsID = CommandUtility.getAttributesID(splitCommand, "-t");
-                    for (int i = 0; i < targetsID.size(); ++i) {
-                        Game.getInstance().getPlayerByID(targetsID.get(i)).getPlayerBoard().addMark(shooter, markDistribution[i]);
-                    }
-                } else {
-                    throw new InvalidCommandException();
+                targetsID = CommandUtility.getAttributesID(splitCommand, "-t");
+                for (int i = 0; i < targetsID.size(); ++i) {
+                    Game.getInstance().getPlayerByID(targetsID.get(i)).getPlayerBoard().addMark(shooter, markDistribution[i]);
                 }
                 break;
             case SQUARE:
-                if(command.contains("-v")) {
-                    List<PlayerPosition> squares = CommandUtility.getPositions(splitCommand, "-v");
-                    for(int i = 0; i < squares.size(); ++i) {
-                        Player[] targetSquare = Game.getInstance().getGameMap().getPlayersInSquare(squares.get(i));
-                        for(Player marked : targetSquare) {
-                            marked.getPlayerBoard().addMark(shooter, markDistribution[i]);
-                        }
+                List<PlayerPosition> squares = CommandUtility.getPositions(splitCommand, "-v");
+                for(int i = 0; i < squares.size(); ++i) {
+                    Player[] targetSquare = Game.getInstance().getGameMap().getPlayersInSquare(squares.get(i));
+                    for(Player marked : targetSquare) {
+                        marked.getPlayerBoard().addMark(shooter, markDistribution[i]);
                     }
                 }
                 break;
             default:
-                if(command.contains("-x")) {
-                    List<Player> targetRoom = Game.getInstance().getGameMap().getPlayersInRoom(CommandUtility.getRoomColor(splitCommand));
-                    for(Player marked : targetRoom) {
-                        marked.getPlayerBoard().addMark(shooter, markDistribution[0]);
-                    }
+                List<Player> targetRoom = Game.getInstance().getGameMap().getPlayersInRoom(CommandUtility.getRoomColor(splitCommand));
+                for(Player marked : targetRoom) {
+                    marked.getPlayerBoard().addMark(shooter, markDistribution[0]);
                 }
         }
     }
