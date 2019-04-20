@@ -6,9 +6,6 @@ import exceptions.map.MapUnknowException;
 import model.Game;
 import model.player.Player;
 import model.player.PlayerPosition;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -54,6 +51,7 @@ public class Map {
 
     private Square[][] rooms;
 
+    /*
     public Map(int mapType) {
         InputStream is = getClass().getClassLoader().getResourceAsStream("json/maps.json");
         JSONArray array = new JSONArray(new JSONTokener(is));
@@ -132,7 +130,7 @@ public class Map {
         }
 
         this.rooms = map;
-    }
+    } */
 
     /**
      * Create a new map using the <code>rooms</code> matrix passed if the maximum size is respected MAX_ROWS x MAX_COLUMNS

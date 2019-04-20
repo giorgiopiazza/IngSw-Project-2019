@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 class MapTest {
-    private Map map;
+/*    private Map map;
     private Square[][] rooms;
     private SpawnSquare spawnSquare;
 
@@ -59,5 +59,5 @@ class MapTest {
         assertFalse(spawnSquare.removeWeapon(2));
         assertFalse(spawnSquare.removeWeapon(1));
         assertFalse(spawnSquare.removeWeapon(0));
-    }
+    }*/
 }
