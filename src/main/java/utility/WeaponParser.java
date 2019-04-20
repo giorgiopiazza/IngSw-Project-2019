@@ -28,12 +28,16 @@ public class WeaponParser {
     private static final String MOVE_TARGET = "moveTarget";
     private static final String MAX_MOVE_TARGET = "moveTarget";
 
+    private WeaponParser() {
+        throw new IllegalStateException("Utility class");
+    }
+
     /**
      * Parse all the weapons from weapons.json
      *
      * @return a list of all the WeaponCard
      */
-    public static List<WeaponCard> parseCards() {
+    public static List<WeaponCard> parseWeaponCards() {
         List<WeaponCard> cards = new ArrayList<>();
 
         InputStream is = WeaponParser.class.getResourceAsStream(PATH);
