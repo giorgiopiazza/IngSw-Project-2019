@@ -19,6 +19,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WeaponParser {
+    private static final String PATH = "/json/weapons.json";
+    private static final String COST = "cost";
+    private static final String TARGET = "target";
+    private static final String DAMAGE_DISTRIBUTION = "damageDistribution";
+    private static final String MARK_DISTRIBUTION = "markDistribution";
+    private static final String MOVE = "move";
+    private static final String MOVE_TARGET = "moveTarget";
+    private static final String MAX_MOVE_TARGET = "moveTarget";
+
     /**
      * Parse all the weapons from weapons.json
      *
@@ -27,7 +36,7 @@ public class WeaponParser {
     public static List<WeaponCard> parseCards() {
         List<WeaponCard> cards = new ArrayList<>();
 
-        InputStream is = WeaponParser.class.getResourceAsStream("/json/weapons.json");
+        InputStream is = WeaponParser.class.getResourceAsStream(PATH);
 
         if (is == null) {
             return cards;
@@ -43,7 +52,7 @@ public class WeaponParser {
 
             String name = weapon.get("name").getAsString();
             File image = null;
-            Ammo[] cost = parseAmmoJsonArray(weapon.get("cost").getAsJsonArray());
+            Ammo[] cost = parseAmmoJsonArray(weapon.getAsJsonArray(COST));
 
             // Effects Parse
             JsonArray effects = weapon.getAsJsonArray("effects");
@@ -64,17 +73,23 @@ public class WeaponParser {
         return cards;
     }
 
+    /**
+     * Parses an effect from a JsonObject of the effect
+     *
+     * @param jsonEffect jsonObject of the effect
+     * @return the parsed effect
+     */
     private static Effect parseEffect(JsonObject jsonEffect) {
         Ammo[] cost = new Ammo[0];
 
-        if (!jsonEffect.has("cost")) {
-            cost = parseAmmoJsonArray(jsonEffect.get("cost").getAsJsonArray());
+        if (!jsonEffect.has(COST)) {
+            cost = parseAmmoJsonArray(jsonEffect.getAsJsonArray(COST));
         }
 
         Effect effect = new BaseEffect(new AmmoQuantity(cost));
         JsonObject properties = jsonEffect.getAsJsonObject("properties");
 
-        if (properties.get("target").getAsJsonArray().size() == 1) {
+        if (properties.get(TARGET).getAsJsonArray().size() == 1) {
             effect = decorateSingleEffect(effect, properties);
         } else {
             effect = decorateMultipleEffect(effect, properties);
@@ -83,36 +98,84 @@ public class WeaponParser {
         return effect;
     }
 
+    /**
+     * Decorates the base effect with a single effect
+     *
+     * @param effect base effect
+     * @param properties JsonObject of the properties of the effect
+     * @return the decorated effect
+     */
     private static Effect decorateSingleEffect(Effect effect, JsonObject properties) {
-        TargetType targetType = TargetType.valueOf(properties.get("target").getAsJsonArray().get(0).getAsString());
+        TargetType targetType = TargetType.valueOf(properties.getAsJsonArray(TARGET).get(0).getAsString());
 
-        if (properties.has("damageDistribution")) {
+        if (properties.has(DAMAGE_DISTRIBUTION)) {
             effect = new ExtraDamageDecorator(effect,
-                    parseIntJsonArray(properties.get("damageDistribution").getAsJsonArray()),
+                    parseIntJsonArray(properties.get(DAMAGE_DISTRIBUTION).getAsJsonArray()),
                     targetType);
         }
 
-        if (properties.has("markDistribution")) {
+        if (properties.has(MARK_DISTRIBUTION)) {
             effect = new ExtraMarkDecorator(effect,
-                    parseIntJsonArray(properties.get("markDistribution").getAsJsonArray()),
+                    parseIntJsonArray(properties.get(MARK_DISTRIBUTION).getAsJsonArray()),
                     targetType);
         }
 
-        if (properties.has("move")) {
+        if (properties.has(MOVE)) {
             effect = new ExtraMoveDecorator(effect, MoveTarget.PLAYER);
         }
 
-        if (properties.has("moveTarget") || properties.has("maxMoveTarget")) {
+        if (properties.has(MOVE_TARGET) || properties.has(MAX_MOVE_TARGET)) {
             effect = new ExtraMoveDecorator(effect, MoveTarget.TARGET);
         }
 
         return effect;
     }
 
+    /**
+     * Decorates the base effect with a multiple effect
+     *
+     * @param effect base effect
+     * @param properties JsonObject of the properties of the effect
+     * @return the decorated effect
+     */
     private static Effect decorateMultipleEffect(Effect effect, JsonObject properties) {
+        TargetType[] targets = parseTargetTypeJsonArray(properties.getAsJsonArray(TARGET));
+        JsonArray subeffects = properties.getAsJsonArray("subEffects");
+
+        for (int i = targets.length - 1; i >= 0; --i) {
+            JsonObject subeffect = subeffects.get(i).getAsJsonObject();
+
+            if (subeffect.has(DAMAGE_DISTRIBUTION)) {
+                effect = new ExtraDamageDecorator(effect,
+                        parseIntJsonArray(properties.get(DAMAGE_DISTRIBUTION).getAsJsonArray()),
+                        targets[i]);
+            }
+
+            if (subeffect.has(MARK_DISTRIBUTION)) {
+                effect = new ExtraMarkDecorator(effect,
+                        parseIntJsonArray(properties.get(MARK_DISTRIBUTION).getAsJsonArray()),
+                        targets[i]);
+            }
+
+            if (subeffect.has(MOVE)) {
+                effect = new ExtraMoveDecorator(effect, MoveTarget.PLAYER);
+            }
+
+            if (subeffect.has(MOVE_TARGET) || properties.has(MAX_MOVE_TARGET)) {
+                effect = new ExtraMoveDecorator(effect, MoveTarget.TARGET);
+            }
+
+        }
+
         return effect;
     }
 
+    /**
+     * Parses an array of int from a JsonArray
+     *
+     * @param jsonArray JsonArray made of int
+     * @return the parsed array made of int
+     */
     private static int[] parseIntJsonArray(JsonArray jsonArray) {
         List<Integer> list = new ArrayList<>();
 
@@ -123,7 +186,12 @@ public class WeaponParser {
         return list.stream().mapToInt(i -> i).toArray();
     }
 
-
+    /**
+     * Parses an array of Ammo from a JsonArray
+     *
+     * @param jsonArray JsonArray made of Ammo
+     * @return the parsed array made of Ammo
+     */
     private static Ammo[] parseAmmoJsonArray(JsonArray jsonArray) {
         List<Ammo> list = new ArrayList<>();
 
@@ -132,5 +200,21 @@ public class WeaponParser {
         }
 
         return list.toArray(new Ammo[0]);
+    }
+
+    /**
+     * Parses an array of TargetType from a JsonArray
+     *
+     * @param jsonArray JsonArray made of TargetType
+     * @return the parsed array made of TargetType
+     */
+    private static TargetType[] parseTargetTypeJsonArray(JsonArray jsonArray) {
+        List<TargetType> list = new ArrayList<>();
+
+        for (JsonElement elem : jsonArray) {
+            list.add(TargetType.valueOf(elem.getAsString()));
+        }
+
+        return list.toArray(new TargetType[0]);
     }
 }
