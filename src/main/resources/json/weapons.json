@@ -11,7 +11,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-			"target": ["player"],
+			"target": ["PLAYER"],
             "targetNum": 1,
             "damageDistribution": [2],
 			"markDistribution": [1]
@@ -22,7 +22,7 @@
 		  "cost": ["RED"],
           "properties": {
             "visible": true,
-			"target": ["player"],
+			"target": ["PLAYER"],
             "targetNum": 2,
             "damageDistribution": [2, 0],
 			"markDistribution": [1, 1]
@@ -41,7 +41,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-			"target": ["player"],
+			"target": ["PLAYER"],
             "maxTargetNum":2,
             "damageDistribution": [1,1]
           }
@@ -51,7 +51,7 @@
 		  "cost": ["YELLOW"],
           "properties": {
             "visible": true,
-			"target": ["player"],
+			"target": ["PLAYER"],
             "maxTargetNum": 2,
             "damageDistribution": [2, 1]
           }
@@ -61,7 +61,7 @@
 		  "cost": ["BLUE"],
           "properties": {
             "visible": true,
-			"target": ["player"],
+			"target": ["PLAYER"],
             "maxTargetNum": 3,
             "damageDistribution": [1, 2, 1]
           }
@@ -71,7 +71,7 @@
 		  "cost": ["YELLOW", "BLUE"],
           "properties": {
             "visible": true,
-			"target": ["player"],
+			"target": ["PLAYER"],
             "maxTargetNum": 3,
             "damageDistribution": [2, 2, 1]
           }
@@ -89,7 +89,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-			"target": ["player"],
+			"target": ["PLAYER"],
             "targetNum": 1,
             "damageDistribution": [2]
           }
@@ -99,7 +99,7 @@
 		  "cost": ["BLUE"],
           "properties": {
             "concatenatedVisible": true,
-			"target": ["player"],
+			"target": ["PLAYER"],
             "targetNum": 2,
             "damageDistribution": [2, 1]
           }
@@ -109,7 +109,7 @@
 		  "cost": ["BLUE", "BLUE"],
           "properties": {
             "concatenatedVisible": true,
-			"target": ["player"],
+			"target": ["PLAYER"],
             "targetNum": 3,
             "damageDistribution": [2, 1, 2]
           }
@@ -127,7 +127,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-			"target": ["player"],
+			"target": ["PLAYER"],
             "targetNum": 1,
             "damageDistribution": [2]
           }
@@ -136,7 +136,7 @@
           "id": 1,
           "properties": {
             "visible": true,
-			"target": ["player"],
+			"target": ["PLAYER"],
             "targetNum": 1,
             "damageDistribution": [2],
 			"move": 2
@@ -147,7 +147,7 @@
 		  "cost": ["BLUE"],
           "properties": {
             "visible": true,
-			"target": ["player"],
+			"target": ["PLAYER"],
             "targetNum": 1,
             "damageDistribution": [3]
           }
@@ -157,7 +157,7 @@
 		  "cost": ["BLUE"],
           "properties": {
             "visible": true,
-			"target": ["player"],
+			"target": ["PLAYER"],
             "targetNum": 1,
             "damageDistribution": [3],
 			"move": 2
@@ -176,7 +176,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-			"target": ["player"],
+			"target": ["PLAYER"],
             "targetNum": 1,
             "damageDistribution": [3],
 			"markDistribution": [1],
@@ -196,7 +196,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-            "target": ["square"],
+            "target": ["SQUARE"],
 			"targetNum": 1,
             "damageDistribution": [1],
 			"distance": 0
@@ -207,7 +207,7 @@
 		  "cost": ["BLUE","RED"],
           "properties": {
             "visible": true,
-            "target": ["square"],
+            "target": ["SQUARE"],
 			"targetNum": 1,
             "damageDistribution": [2],
 			"distance": 0
@@ -226,7 +226,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-			"target": ["player"],
+			"target": ["PLAYER"],
 			"targetNum": 1,
             "damageDistribution": [1],
 			"maxMoveTarget": 2,
@@ -238,7 +238,7 @@
 		  "cost": ["RED","YELLOW"],
           "properties": {
             "visible": true,
-			"target": ["player"],
+			"target": ["PLAYER"],
 			"targetNum": 1,
             "damageDistribution": [3],
 			"maxMoveTarget": 2,
@@ -259,7 +259,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-			"target": ["player"],
+			"target": ["PLAYER"],
 			"targetNum": 1,
             "damageDistribution": [2],
 			"minDistance": 1,
@@ -272,7 +272,7 @@
 		  "cost": ["RED"],
           "properties": {
             "visible": true,
-			"target": ["player"],
+			"target": ["PLAYER"],
 			"maxTargetNum": 3,
             "damageDistribution": [2, 1, 1],
 			"minDistance": 1,
@@ -293,7 +293,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-			"target": ["room"],
+			"target": ["ROOM"],
 			"targetNum": 1,
             "damageDistribution": [1],
 			"distance": 1
@@ -303,7 +303,7 @@
           "id": 1,
           "properties": {
             "visible": true,
-			"target": ["square"],
+			"target": ["SQUARE"],
 			"targetNum": 1,
             "damageDistribution": [1],
 			"markDistribution": [1],
@@ -323,7 +323,7 @@
           "id": 0,
           "properties": {
             "visible": false,
-			"target": ["player"],
+			"target": ["PLAYER"],
 			"targetNum": 1,
             "damageDistribution": [3]
           }
@@ -341,7 +341,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-			"target": ["player", "square"],
+			"target": ["PLAYER", "SQUARE"],
             "samePosition": true,
             "subEffects": [{
               "targetNum": 1,
@@ -359,7 +359,7 @@
           "cost": ["RED"],
           "properties": {
             "visible": true,
-			"target": ["player", "square"],
+			"target": ["PLAYER", "SQUARE"],
             "samePosition": true,
             "subEffects": [{
               "targetNum": 1,
@@ -385,7 +385,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-            "target": ["player"],
+            "target": ["PLAYER"],
             "maxTargetNum": 2,
             "damageDistribution": [1, 1],
             "inLine": true,
@@ -397,7 +397,7 @@
           "cost": ["YELLOW", "YELLOW"],
           "properties": {
             "visible": true,
-            "target": ["square"],
+            "target": ["SQUARE"],
             "targetNum": 2,
             "damageDistribution": [2, 1],
             "inLine": true,
@@ -417,7 +417,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-            "target": ["player"],
+            "target": ["PLAYER"],
             "targetNum": 1,
             "damageDistribution": [1],
             "maxMoveTarget": 1,
@@ -429,7 +429,7 @@
           "cost": ["RED"],
           "properties": {
             "visible": true,
-            "target": ["player","square"],
+            "target": ["PLAYER","SQUARE"],
             "subEffects": [{
               "targetNum": 1,
               "damageDistribution": [1],
@@ -454,7 +454,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-            "target": ["player"],
+            "target": ["PLAYER"],
             "targetNum": 1,
             "damageDistribution": [2],
             "minDistance": 1,
@@ -467,7 +467,7 @@
           "cost": ["BLUE"],
           "properties": {
             "visible": true,
-            "target": ["player"],
+            "target": ["PLAYER"],
             "targetNum": 1,
             "damageDistribution": [2],
             "minDistance": 1,
@@ -481,7 +481,7 @@
           "cost": ["YELLOW"],
           "properties": {
             "visible": true,
-            "target": ["square","player"],
+            "target": ["SQUARE","PLAYER"],
             "samePosition": true,
             "subEffects": [{
               "targetNum": 1,
@@ -502,7 +502,7 @@
           "properties": {
             "visible": true,
             "move": 2,
-            "target": ["square","player"],
+            "target": ["SQUARE","PLAYER"],
             "samePosition": true,
             "subEffects": [{
               "targetNum": 1,
@@ -529,7 +529,7 @@
         {
           "id": 0,
           "properties": {
-            "target": ["player"],
+            "target": ["PLAYER"],
             "targetNum": 1,
             "damageDistribution": [3],
             "inLine": true
@@ -538,7 +538,7 @@
         {
           "id": 1,
           "properties": {
-            "target": ["player"],
+            "target": ["PLAYER"],
             "maxTargetNum": 2,
             "damageDistribution": [2, 2],
             "inLine": true
@@ -557,7 +557,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-            "target": ["player"],
+            "target": ["PLAYER"],
             "targetNum": 1,
             "damageDistribution": [2],
             "distance": 0
@@ -567,7 +567,7 @@
           "id": 1,
           "properties": {
             "visible": true,
-            "target": ["player"],
+            "target": ["PLAYER"],
             "targetNum": 1,
             "move": 1,
             "damageDistribution": [2],
@@ -579,7 +579,7 @@
           "cost": ["YELLOW"],
           "properties": {
             "visible": true,
-            "target": ["player"],
+            "target": ["PLAYER"],
             "targetNum": 2,
             "damageDistribution": [2, 2],
             "distance": 0
@@ -590,7 +590,7 @@
           "cost": ["YELLOW"],
           "properties": {
             "visible": true,
-            "target": ["player"],
+            "target": ["PLAYER"],
             "targetNum": 2,
             "damageDistribution": [2, 2],
             "move": 1,
@@ -610,7 +610,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-            "target": ["player"],
+            "target": ["PLAYER"],
             "targetNum": 1,
             "damageDistribution": [1],
             "markDistribution": [2]
@@ -620,7 +620,7 @@
           "id": 1,
           "properties": {
             "visible": true,
-            "target": ["player"],
+            "target": ["PLAYER"],
             "maxTargetNum": 3,
             "markDistribution": [1, 1, 1]
           }
@@ -638,7 +638,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-            "target": ["player"],
+            "target": ["PLAYER"],
             "targetNum": 1,
             "damageDistribution": [3],
             "distance": 0,
@@ -650,7 +650,7 @@
           "id": 1,
           "properties": {
             "visible": true,
-            "target": ["player"],
+            "target": ["PLAYER"],
             "targetNum": 1,
             "damageDistribution": [2],
             "distance": 1
@@ -669,7 +669,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-            "target": ["player"],
+            "target": ["PLAYER"],
             "targetNum": 1,
             "damageDistribution": [1],
             "markDistribution": [2],
@@ -681,7 +681,7 @@
           "id": 1,
           "properties": {
             "visible": true,
-            "target": ["player"],
+            "target": ["PLAYER"],
             "maxTargetNum": 2,
             "damageDistribution": [2],
             "minDistance": 1,
@@ -702,7 +702,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-            "target": ["player"],
+            "target": ["PLAYER"],
             "maxTargetNum": 3,
             "damageDistribution": [1],
             "distance": 1
@@ -713,7 +713,7 @@
           "cost": ["YELLOW"],
           "properties": {
             "visible": true,
-            "target": ["square"],
+            "target": ["SQUARE"],
             "maxTargetNum": 3,
             "damageDistribution": [1, 1, 1],
             "distance": 1
@@ -732,7 +732,7 @@
           "id": 0,
           "properties": {
             "visible": true,
-            "target": ["player"],
+            "target": ["PLAYER"],
             "targetNum": 1,
             "damageDistribution": [2],
             "distance": 0
@@ -743,7 +743,7 @@
           "cost": ["RED"],
           "properties": {
             "visible": true,
-            "target": ["player"],
+            "target": ["PLAYER"],
             "targetNum": 1,
             "damageDistribution": [3],
             "distance": 0,
