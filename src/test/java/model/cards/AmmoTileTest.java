@@ -1,21 +1,24 @@
 package model.cards;
 
-import enumerations.Ammo;
 import enumerations.Color;
+import model.player.AmmoQuantity;
 import model.player.PlayerBoard;
 import model.player.UserPlayer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class AmmoTileTest {
 
-    private List<Ammo> onlyTileAmmo;
-    private List<Ammo> lessAmmo;
+    private AmmoQuantity onlyRed;
+    private AmmoQuantity onlyBlue;
+    private AmmoQuantity onlyYellow;
+    private AmmoQuantity defaultAllDifferent;
+    private AmmoQuantity redAndBlue;
+    private AmmoQuantity redAndYellow;
+    private AmmoQuantity blueAndYellow;
+    private AmmoQuantity redBlueAndPowerup;
 
     private AmmoTile onlyAmmoTile;
     private AmmoTile ammoPowerupTile;
@@ -27,14 +30,21 @@ public class AmmoTileTest {
 
     @BeforeEach
     void before() {
-        onlyTileAmmo = new ArrayList<>(Arrays.asList(Ammo.RED, Ammo.RED, Ammo.YELLOW));
-        lessAmmo = new ArrayList<>(Arrays.asList(Ammo.RED,Ammo.RED));
+        defaultAllDifferent = new AmmoQuantity(1,1,1);
+        onlyRed = new AmmoQuantity(3,0,0);
+        onlyBlue = new AmmoQuantity(0,3,0);
+        onlyYellow = new AmmoQuantity(0,0,3);
+        redAndBlue = new AmmoQuantity(1,2,0);
+        redAndYellow = new AmmoQuantity(1,0,2);
+        blueAndYellow = new AmmoQuantity(0,1,2);
+        redBlueAndPowerup = new AmmoQuantity(1,1,0);
+
         boardA = new PlayerBoard();
         boardB = new PlayerBoard();
         playerTestA = new UserPlayer("playerTestA", Color.YELLOW, true, boardA, false);
         playerTestB = new UserPlayer("playerTestB", Color.RED, false, boardB, false);
-        onlyAmmoTile = new AmmoTile(null, onlyTileAmmo, false);
-        ammoPowerupTile = new AmmoTile(null, lessAmmo, true);
+        onlyAmmoTile = new AmmoTile(null, defaultAllDifferent, false);
+        ammoPowerupTile = new AmmoTile(null, redBlueAndPowerup, true);
     }
 
     @Test
@@ -42,27 +52,18 @@ public class AmmoTileTest {
         assertFalse(onlyAmmoTile.isPickPowerup());
         assertTrue(ammoPowerupTile.isPickPowerup());
 
-        for(int i = 0; i < onlyTileAmmo.size(); ++i) {
-            assertEquals(onlyTileAmmo.get(i), onlyAmmoTile.getAmmoOnTile().get(i));
-        }
-
-        for(int i = 0; i < lessAmmo.size(); ++i) {
-            assertEquals(lessAmmo.get(i), ammoPowerupTile.getAmmoOnTile().get(i));
-        }
+        assertEquals(1, onlyAmmoTile.getAmmoOnTile().getRedAmmo());
+        assertEquals(1, onlyAmmoTile.getAmmoOnTile().getBlueAmmo());
+        assertEquals(1, onlyAmmoTile.getAmmoOnTile().getYellowAmmo());
+        assertEquals(1, ammoPowerupTile.getAmmoOnTile().getRedAmmo());
+        assertEquals(1, ammoPowerupTile.getAmmoOnTile().getBlueAmmo());
+        assertEquals(0, ammoPowerupTile.getAmmoOnTile().getYellowAmmo());
     }
 
     @Test
     void resourceGrant() {
         assertThrows(NullPointerException.class, () -> onlyAmmoTile.giveResources(null));
 
-        /* TODO when implemented the method to istance a poweupDeck as a powerup can be picked
-        ammoPowerupTile.giveResources(playerTestA);
-        onlyAmmoTile.giveResources(playerTestB);
-
-        assertArrayEquals(lessAmmo.toArray(new Ammo[0]), playerTestA.getPlayerBoard().getAmmo());
-        assertEquals(1, playerTestA.getPowerups().length);
-
-        assertEquals(0, playerTestB.getPowerups().length);
-        */
+        // TODO when implemented the method to instance a powerupDeck as a powerup can be picked in the method giveResources
     }
 }
