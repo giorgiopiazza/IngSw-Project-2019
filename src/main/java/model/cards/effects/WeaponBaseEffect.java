@@ -18,7 +18,7 @@ public class WeaponBaseEffect extends Effect {
      *
      * @param cost the cost of the effect
      */
-    void setCost(AmmoQuantity cost) { this.cost = cost; }
+    public void setCost(AmmoQuantity cost) { this.cost = cost; }
 
     /**
      * @return the cost of the Effect

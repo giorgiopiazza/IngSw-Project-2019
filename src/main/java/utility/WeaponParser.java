@@ -1,9 +1,6 @@
 package utility;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import enumerations.Ammo;
 import enumerations.TargetType;
 import model.cards.WeaponCard;
@@ -14,10 +11,7 @@ import model.player.AmmoQuantity;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class WeaponParser {
     private static final String PATH = "/json/weapons.json";
@@ -25,6 +19,19 @@ public class WeaponParser {
     private static final String TARGET = "target";
     private static final String DAMAGE_DISTRIBUTION = "damageDistribution";
     private static final String MARK_DISTRIBUTION = "markDistribution";
+
+    // properties
+
+    private static final String VISIBLE = "visible";
+    private static final String CONCATENATED_VISIBLE = "concatenatedVisible";
+    private static final String INLINE = "inLine";
+    private static final String DISTANCE = "distance";
+    private static final String MIN_DISTANCE = "minDistance";
+    private static final String SAME_POSITION = "samePosition";
+    private static final String TARGET_NUM = "targetNum";
+    private static final String MAX_TARGET_NUM = "maxTargetNum";
+    private static final String MOVE_TARGET_BEFORE = "moveTargetBefore";
+    private static final String MOVE_TO_LAST_TARGET = "moveToLastTarget";
     private static final String MOVE = "move";
     private static final String MOVE_TARGET = "moveTarget";
     private static final String MAX_MOVE_TARGET = "moveTarget";
@@ -91,11 +98,11 @@ public class WeaponParser {
             cost = parseAmmoJsonArray(jsonEffect.getAsJsonArray(COST));
         }
 
-        // Parse WeaponProperties and put them in a Map<String,String>
+        JsonObject properties = jsonEffect.getAsJsonObject("properties");
         Map<String, String> weaponProperties = new HashMap<>();
+        weaponProperties = getProperties(properties);
 
         Effect effect = new WeaponBaseEffect(new AmmoQuantity(cost), weaponProperties);
-        JsonObject properties = jsonEffect.getAsJsonObject("properties");
 
         if (properties.get(TARGET).getAsJsonArray().size() == 1) {
             effect = decorateSingleEffect(effect, properties);
@@ -215,5 +222,39 @@ public class WeaponParser {
         }
 
         return list.toArray(new TargetType[0]);
+    }
+
+    /**
+     * Parses a Map of properties from a JsonObject
+     *
+     * @param properties JsonObject that contains visibility properties
+     * @return a Map<String,String> where the key is the visibility rule and the value is its definition
+     */
+    private static Map<String, String> getProperties(JsonObject properties) {
+        Map<String, String> effectProperties = new HashMap<>();
+        Set<String> keys;
+
+        if(properties.has(TARGET)) {
+            properties.remove(TARGET);
+        }
+
+        if(properties.has(DAMAGE_DISTRIBUTION)) {
+            properties.remove(DAMAGE_DISTRIBUTION);
+        }
+
+        if(properties.has(MARK_DISTRIBUTION)) {
+            properties.remove(MARK_DISTRIBUTION);
+        }
+
+        keys = properties.keySet();
+        Iterator<String> keysIterator = keys.iterator();
+
+        while(keysIterator.hasNext()) {
+            String tempKey = keysIterator.next();
+            String tempValue = properties.get(tempKey).getAsString();
+            effectProperties.put(tempKey, tempValue);
+        }
+
+        return effectProperties;
     }
 }
