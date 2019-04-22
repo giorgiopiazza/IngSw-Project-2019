@@ -15,7 +15,9 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class WeaponParser {
     private static final String PATH = "/json/weapons.json";
@@ -89,7 +91,10 @@ public class WeaponParser {
             cost = parseAmmoJsonArray(jsonEffect.getAsJsonArray(COST));
         }
 
-        Effect effect = new BaseEffect(new AmmoQuantity(cost));
+        // Parse WeaponProperties and put them in a Map<String,String>
+        Map<String, String> weaponProperties = new HashMap<>();
+
+        Effect effect = new WeaponBaseEffect(new AmmoQuantity(cost), weaponProperties);
         JsonObject properties = jsonEffect.getAsJsonObject("properties");
 
         if (properties.get(TARGET).getAsJsonArray().size() == 1) {

@@ -1,24 +1,17 @@
 package model.cards.effects;
 
-import model.player.AmmoQuantity;
+import java.util.Map;
 
 public abstract class Effect {
-    private AmmoQuantity cost;
+    private Map<String, String> properties;
 
-    /**
-     * Setter of the cost of an Effect
-     *
-     * @param cost the cost of the effect
-     */
-    void setCost(AmmoQuantity cost) { this.cost = cost; }
-
-    /**
-     * @return the cost of the Effect
-     */
-    public AmmoQuantity getCost() {
-        return this.cost;
+    public void setProperties(Map<String, String> properties) {
+        this.properties = properties;
     }
 
+    public Map<String, String> getProperties() {
+        return this.properties;
+    }
     /**
      * Method that executes the effect of a Weapon dealing, marking or moving TargetPlayers
      *
