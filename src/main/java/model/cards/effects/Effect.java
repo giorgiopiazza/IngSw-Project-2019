@@ -1,6 +1,8 @@
 package model.cards.effects;
 
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class Effect {
     private Map<String, String> properties;
@@ -12,6 +14,19 @@ public abstract class Effect {
     public Map<String, String> getProperties() {
         return this.properties;
     }
+
+    public void addProperties(Map<String, String> addingMap, String separator) {
+        Set<String> addKeys = addingMap.keySet();
+        Iterator<String> addIterator = addKeys.iterator();
+
+        this.properties.put(separator, separator);
+        while(addIterator.hasNext()) {
+            String tempKey = addIterator.next();
+            String tempValue = addingMap.get(tempKey);
+            this.properties.put(tempKey, tempValue);
+        }
+    }
+
     /**
      * Method that executes the effect of a Weapon dealing, marking or moving TargetPlayers
      *

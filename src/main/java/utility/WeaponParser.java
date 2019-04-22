@@ -19,19 +19,6 @@ public class WeaponParser {
     private static final String TARGET = "target";
     private static final String DAMAGE_DISTRIBUTION = "damageDistribution";
     private static final String MARK_DISTRIBUTION = "markDistribution";
-
-    // properties
-
-    private static final String VISIBLE = "visible";
-    private static final String CONCATENATED_VISIBLE = "concatenatedVisible";
-    private static final String INLINE = "inLine";
-    private static final String DISTANCE = "distance";
-    private static final String MIN_DISTANCE = "minDistance";
-    private static final String SAME_POSITION = "samePosition";
-    private static final String TARGET_NUM = "targetNum";
-    private static final String MAX_TARGET_NUM = "maxTargetNum";
-    private static final String MOVE_TARGET_BEFORE = "moveTargetBefore";
-    private static final String MOVE_TO_LAST_TARGET = "moveToLastTarget";
     private static final String MOVE = "move";
     private static final String MOVE_TARGET = "moveTarget";
     private static final String MAX_MOVE_TARGET = "moveTarget";
@@ -99,7 +86,7 @@ public class WeaponParser {
         }
 
         JsonObject properties = jsonEffect.getAsJsonObject("properties");
-        Map<String, String> weaponProperties = new HashMap<>();
+        Map<String, String> weaponProperties;
         weaponProperties = getProperties(properties);
 
         Effect effect = new WeaponBaseEffect(new AmmoQuantity(cost), weaponProperties);
@@ -155,6 +142,7 @@ public class WeaponParser {
 
         for (int i = targets.length - 1; i >= 0; --i) {
             JsonObject subeffect = subeffects.get(i).getAsJsonObject();
+            Map<String, String> addingProperties = getProperties(subeffect);
 
             if (subeffect.has(DAMAGE_DISTRIBUTION)) {
                 effect = new ExtraDamageDecorator(effect,
@@ -171,6 +159,7 @@ public class WeaponParser {
             if (subeffect.has(MOVE_TARGET) || properties.has(MAX_MOVE_TARGET) || properties.has(MOVE)) {
                 effect = new ExtraMoveDecorator(effect);
             }
+            effect.addProperties(addingProperties, targets[i].toString());
         }
 
         return effect;
@@ -228,30 +217,32 @@ public class WeaponParser {
      * Parses a Map of properties from a JsonObject
      *
      * @param properties JsonObject that contains visibility properties
-     * @return a Map<String,String> where the key is the visibility rule and the value is its definition
+     * @return a LinkedHashMap<String,String> where the key is the visibility rule and the value is its definition
      */
     private static Map<String, String> getProperties(JsonObject properties) {
-        Map<String, String> effectProperties = new HashMap<>();
+        // I create a linked hash map as I can iterate on it with the order I put his elements
+        Map<String, String> effectProperties = new LinkedHashMap<>();
+        JsonObject justVisibilityProperties = properties.deepCopy();
         Set<String> keys;
 
         if(properties.has(TARGET)) {
-            properties.remove(TARGET);
+            justVisibilityProperties.remove(TARGET);
         }
 
         if(properties.has(DAMAGE_DISTRIBUTION)) {
-            properties.remove(DAMAGE_DISTRIBUTION);
+            justVisibilityProperties.remove(DAMAGE_DISTRIBUTION);
         }
 
         if(properties.has(MARK_DISTRIBUTION)) {
-            properties.remove(MARK_DISTRIBUTION);
+            justVisibilityProperties.remove(MARK_DISTRIBUTION);
         }
 
-        keys = properties.keySet();
+        keys = justVisibilityProperties.keySet();
         Iterator<String> keysIterator = keys.iterator();
 
         while(keysIterator.hasNext()) {
             String tempKey = keysIterator.next();
-            String tempValue = properties.get(tempKey).getAsString();
+            String tempValue = justVisibilityProperties.get(tempKey).getAsString();
             effectProperties.put(tempKey, tempValue);
         }
 
