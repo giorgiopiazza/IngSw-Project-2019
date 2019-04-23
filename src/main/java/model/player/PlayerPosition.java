@@ -1,5 +1,10 @@
 package model.player;
 
+import enumerations.Direction;
+import exceptions.player.NoDirectionException;
+import exceptions.player.SamePositionException;
+import model.map.Map;
+
 import java.util.Objects;
 
 public class PlayerPosition {
@@ -26,6 +31,57 @@ public class PlayerPosition {
 
     public void setCoordY(int coordY) {
         this.coordY = coordY;
+    }
+
+    public void setPosition(PlayerPosition position) {
+        this.coordX = position.getCoordX();
+        this.coordY = position.getCoordY();
+    }
+
+    /**
+     * Method that returns the direction in which the position passed is
+     *
+     * @param endingPos the position you need to know her direction
+     * @return the Direction in which the endingPos position is situated
+     */
+    public Direction getDirection(PlayerPosition endingPos) throws NoDirectionException {
+        if (this.equals(endingPos)) throw new SamePositionException();
+
+        PlayerPosition tempPos = new PlayerPosition(0, 0);
+
+        tempPos.setPosition(this);
+        for (int i = 0; i < (Map.MAX_ROWS - this.getCoordX()); ++i) {
+            tempPos.setCoordX(this.getCoordX() - i);
+            if (tempPos.equals(endingPos)) {
+                return Direction.NORTH;
+            }
+        }
+
+        tempPos.setPosition(this);
+        for (int i = 0; i < (Map.MAX_COLUMNS - this.getCoordY()); ++i) {
+            tempPos.setCoordY(this.getCoordY() + i);
+            if (tempPos.equals(endingPos)) {
+                return Direction.EAST;
+            }
+        }
+
+        tempPos.setPosition(this);
+        for (int i = 0; i < (Map.MAX_ROWS - this.getCoordX()); ++i) {
+            tempPos.setCoordX(this.getCoordX() + i);
+            if(tempPos.equals(endingPos)) {
+                return Direction.EAST;
+            }
+        }
+
+        tempPos.setPosition(this);
+        for (int i = 0; i < (Map.MAX_COLUMNS - this.getCoordX()); ++i) {
+            tempPos.setCoordY(this.getCoordY() - i);
+            if(tempPos.equals(endingPos)) {
+                return Direction.WEST;
+            }
+        }
+
+        throw new NoDirectionException();
     }
 
     @Override
