@@ -3,13 +3,22 @@ package model.cards;
 import enumerations.Ammo;
 import exceptions.cards.WeaponAlreadyChargedException;
 import exceptions.cards.WeaponNotChargedException;
+import exceptions.command.InvalidCommandException;
+import exceptions.player.EmptyHandException;
+import exceptions.playerboard.NotEnoughAmmoException;
+import model.Game;
 import model.cards.effects.Effect;
 import model.cards.weaponstates.ChargedWeapon;
 import model.cards.weaponstates.UnchargedWeapon;
 import model.cards.weaponstates.WeaponState;
+import model.player.AmmoQuantity;
+import model.player.UserPlayer;
+import utility.CommandUtility;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class WeaponCard extends UsableCard {
@@ -34,16 +43,16 @@ public class WeaponCard extends UsableCard {
      *
      * @return an array of Ammo which is the recharging Cost of the Weapon
      */
-    public Ammo[] getRechargeCost() {
+    public AmmoQuantity getRechargeCost() {
         switch (this.weaponState.status()) {
             case UNCHARGED:
-                return cost;
+                return new AmmoQuantity(cost);
 
             case SEMI_CHARGED:
-                return Arrays.copyOfRange(cost, 1, cost.length);
+                return new AmmoQuantity(Arrays.copyOfRange(cost, 1, cost.length));
 
             default:
-                return new Ammo[0];
+                return new AmmoQuantity(new Ammo[0]);
         }
     }
 
@@ -91,14 +100,104 @@ public class WeaponCard extends UsableCard {
         }
     }
 
-    public void use(String command) throws WeaponNotChargedException {
+    /**
+     * Main method called by the player who wants to use this weapon. It parses the command obtaining
+     * what he needs to verify first things of a shooting session: which is the effect used, if it can
+     * be payed and if the player uses powerups to pay it
+     *
+     * @param command is the String that comes from the controller to execute the FIRE action
+     * @throws WeaponNotChargedException in case the weapon can not be used because not charged
+     * @throws NotEnoughAmmoException    in case the weapon even with powerups can not be payed
+     */
+    public void use(String command) throws WeaponNotChargedException, NotEnoughAmmoException {
         if (isCharged()) {
+            Effect effect;
 
-            //weaponState.use(effect, command);
+            String[] splitCommand = command.split(" ");
+            int pid = CommandUtility.getPlayerID(splitCommand);
+            int eid = CommandUtility.getEffectID(splitCommand);
 
-            setStatus(new UnchargedWeapon());
+            UserPlayer shootingPlayer = (UserPlayer) Game.getInstance().getPlayerByID(pid);
+
+            if (eid == 0) {
+                effect = getBaseEffect();
+            } else if (eid <= secondaryEffects.size()) {
+                effect = secondaryEffects.get(eid - 1);
+            } else {
+                throw new InvalidCommandException();
+            }
+
+            if (effect.validate(command)) {
+                payEffectCost(command, shootingPlayer, effect);
+
+                weaponState.use(effect, command);
+                setStatus(new UnchargedWeapon());
+            } else {
+                throw new InvalidCommandException();
+            }
         } else {
             throw new WeaponNotChargedException(this.getName());
         }
+    }
+
+    private void payEffectCost(String command, UserPlayer shootingPlayer, Effect effect) throws NotEnoughAmmoException {
+        String[] splitCommand = command.split(" ");
+
+        AmmoQuantity effectCost = effect.getCost();
+        PowerupCard[] powerupCards = shootingPlayer.getPowerups();
+
+        List<Integer> powerupsID = CommandUtility.getAttributesID(splitCommand, "-a");
+        List<Integer> usedPowerupsID = new ArrayList<>();
+
+        AmmoQuantity costWithoutPowerups = getCostWithoutPowerup(effectCost, powerupsID, usedPowerupsID, powerupCards);
+        shootingPlayer.getPlayerBoard().useAmmo(costWithoutPowerups);
+
+        if (!usedPowerupsID.isEmpty()) {
+            Collections.sort(usedPowerupsID, Collections.reverseOrder());
+
+            try {
+                for (Integer id : usedPowerupsID) {
+                    shootingPlayer.discardPowerupByIndex(id);
+                }
+            } catch (EmptyHandException e) {
+                throw new InvalidCommandException();
+            }
+        }
+    }
+
+    private AmmoQuantity getCostWithoutPowerup(AmmoQuantity effectCost, List<Integer> powerupsID, List<Integer> usedPowerupsID, PowerupCard[] powerupCards) {
+        int redCost = effectCost.getRedAmmo();
+        int blueCost = effectCost.getBlueAmmo();
+        int yellowCost = effectCost.getYellowAmmo();
+
+        if (powerupsID.isEmpty()) {
+            return new AmmoQuantity(redCost, blueCost, yellowCost);
+        }
+
+        for (Integer id : powerupsID) {
+            Ammo ammo = powerupCards[id].getValue();
+
+            switch (ammo) {
+                case RED:
+                    if (redCost > 0) {
+                        redCost--;
+                        usedPowerupsID.add(id);
+                    }
+                    break;
+                case BLUE:
+                    if (blueCost > 0) {
+                        blueCost--;
+                        usedPowerupsID.add(id);
+                    }
+                    break;
+                default:
+                    if (yellowCost > 0) {
+                        yellowCost--;
+                        usedPowerupsID.add(id);
+                    }
+            }
+        }
+
+        return new AmmoQuantity(redCost, blueCost, yellowCost);
     }
 }

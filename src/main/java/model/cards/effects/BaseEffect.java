@@ -1,20 +1,21 @@
 package model.cards.effects;
 
-import enumerations.Ammo;
+import model.player.AmmoQuantity;
 
 public class BaseEffect extends Effect {
-    private final Ammo[] cost;
+    // TODO we can add a description of the effect to give a better understanding of the weapon while playing with CLI
 
-    public BaseEffect(Ammo[] cost) {
-        this.cost = cost;
-    }
-
-    public Ammo[] getCost() {
-        return this.cost;
+    public BaseEffect(AmmoQuantity cost) {
+        setCost(cost);
     }
 
     @Override
     public void execute(String command) {
+        // Basic Effect does nothing
+    }
 
+    @Override
+    public boolean validate(String command) {
+        return true;
     }
 }

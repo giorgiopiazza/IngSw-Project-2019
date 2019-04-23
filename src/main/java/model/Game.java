@@ -2,7 +2,6 @@ package model;
 
 import enumerations.Color;
 import exceptions.game.*;
-import exceptions.map.MapUnknowException;
 import model.cards.Deck;
 import model.map.Map;
 import model.player.*;
@@ -280,12 +279,23 @@ public class Game {
         return gameMap;
     }
 
+    /**
+     * @return the List of players in the game
+     */
     public List<UserPlayer> getPlayers() {
         return players;
     }
 
-    public void setGameMap(int matType) {
-        if(matType > 4 || matType < 1) throw new MapUnknowException();
-        this.gameMap = new Map(matType);
+    /**
+     * Method to obtain the UserPlayer with the specified ID
+     *
+     * @param id you want to obtain the related UserPlayer
+     * @return the UserPlayer with the ID passed
+     */
+    public Player getPlayerByID(int id) {
+        for(Player p: players) {
+            if(p.getId() == id) return p;
+        }
+        throw new MissingIDException(id);
     }
 }

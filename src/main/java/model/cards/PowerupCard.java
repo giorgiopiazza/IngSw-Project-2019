@@ -1,15 +1,19 @@
 package model.cards;
 
-import enumerations.Color;
+import enumerations.Ammo;
 import model.cards.effects.Effect;
 
 import java.io.File;
 
 public class PowerupCard extends UsableCard {
-    private Color color;
+    private final Ammo value;
 
-    public PowerupCard(String name, File image, Color color, Effect baseEffect) {
+    public Ammo getValue() {
+        return this.value;
+    }
+
+    public PowerupCard(String name, File image, Ammo value, Effect baseEffect) {
         super(name, image, baseEffect);
-        this.color = color;
+        this.value = value;
     }
 }

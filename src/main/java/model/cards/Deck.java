@@ -51,7 +51,7 @@ public class Deck {
      * @param card the <code>card</code> to add
      */
     public void addCard(Card card) {
-        if(card == null) throw new NullPointerException("card cannot be null");
+        if(card == null) throw new NullPointerException("Card cannot be null");
         cardsDeck.add(card);
     }
 

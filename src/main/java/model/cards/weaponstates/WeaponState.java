@@ -37,7 +37,8 @@ public interface WeaponState {
      *
      *
      * @param effect
-     * @param command @throws WeaponNotChargedException exception thrown in case the Weapon is not charged
+     * @param command
+     * @throws WeaponNotChargedException exception thrown in case the Weapon is not charged
      */
     void use(Effect effect, String command) throws WeaponNotChargedException;
 }
