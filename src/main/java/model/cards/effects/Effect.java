@@ -1,22 +1,30 @@
 package model.cards.effects;
 
-import model.player.AmmoQuantity;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 public abstract class Effect {
-    private AmmoQuantity cost;
+    private Map<String, String> properties;
 
-    /**
-     * Setter of the cost of an Effect
-     *
-     * @param cost the cost of the effect
-     */
-    void setCost(AmmoQuantity cost) { this.cost = cost; }
+    public void setProperties(Map<String, String> properties) {
+        this.properties = properties;
+    }
 
-    /**
-     * @return the cost of the Effect
-     */
-    public AmmoQuantity getCost() {
-        return this.cost;
+    public Map<String, String> getProperties() {
+        return this.properties;
+    }
+
+    public void addProperties(Map<String, String> addingMap, String separator) {
+        Set<String> addKeys = addingMap.keySet();
+        Iterator<String> addIterator = addKeys.iterator();
+
+        this.properties.put(separator, separator);
+        while(addIterator.hasNext()) {
+            String tempKey = addIterator.next();
+            String tempValue = addingMap.get(tempKey);
+            this.properties.put(tempKey, tempValue);
+        }
     }
 
     /**
