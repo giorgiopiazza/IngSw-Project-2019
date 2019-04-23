@@ -2,6 +2,7 @@ package model;
 
 import enumerations.Color;
 import exceptions.game.*;
+import exceptions.map.MapUnknowException;
 import model.cards.Deck;
 import model.map.Map;
 import model.player.*;
@@ -281,5 +282,10 @@ public class Game {
 
     public List<UserPlayer> getPlayers() {
         return players;
+    }
+
+    public void setGameMap(int matType) {
+        if(matType > 4 || matType < 1) throw new MapUnknowException();
+        this.gameMap = new Map(matType);
     }
 }

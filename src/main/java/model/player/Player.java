@@ -3,6 +3,7 @@ package model.player;
 import enumerations.Color;
 import enumerations.SquareAdjacency;
 import model.Game;
+import model.map.Map;
 import model.map.Square;
 
 public abstract class Player {
@@ -32,6 +33,63 @@ public abstract class Player {
 
     public PlayerPosition getPosition() {
         return position;
+    }
+
+    public int distanceOf(Player other) {
+        if(this.samePosition(other)) return 0;
+        return calcDistanceRecursive(this.position.getCoordX(), this.position.getCoordY(), other.position.getCoordX(), other.position.getCoordY());
+    }
+
+    private int calcDistanceRecursive(int xp1, int yp1, int xp2, int yp2) {
+        Map map = Game.getInstance().getGameMap();
+        Square current = map.getSquare(xp2, yp2);
+
+        if(xp1 == xp2 && yp1 == yp2) return 0;
+        else if (xp1 > xp2) {
+            if (current.getSouth() == SquareAdjacency.DOOR || current.getSouth() == SquareAdjacency.SQUARE) {
+                return calcDistanceRecursive(xp1, yp1, xp2 + 1, yp2) + 1;
+            } else if (current.getEast() == SquareAdjacency.SQUARE || current.getEast() == SquareAdjacency.DOOR) {
+                return calcDistanceRecursive(xp1, yp1, xp2, yp2 + 1) + 1;
+            } else if (current.getWest() == SquareAdjacency.DOOR || current.getWest() == SquareAdjacency.SQUARE) {
+                return calcDistanceRecursive(xp1, yp1, xp2, yp2 - 1) + 1;
+            } else {
+                return calcDistanceRecursive(xp1, yp1, xp2 - 1, yp2) + 1;
+            }
+        } else if (yp1 > yp2) {
+            if (current.getEast() == SquareAdjacency.DOOR || current.getEast() == SquareAdjacency.SQUARE) {
+                return calcDistanceRecursive(xp1, yp1, xp2, yp2 + 1) + 1;
+            } else if (current.getNorth() == SquareAdjacency.DOOR || current.getNorth() == SquareAdjacency.SQUARE) {
+                return calcDistanceRecursive(xp1, yp1, xp2 - 1, yp2) + 1;
+            } else if (current.getSouth() == SquareAdjacency.DOOR || current.getSouth() == SquareAdjacency.SQUARE) {
+                return calcDistanceRecursive(xp1, yp1, xp2 + 1, yp2) + 1;
+            } else {
+                return calcDistanceRecursive(xp1, yp1, xp2, yp2 - 1) + 1;
+            }
+        } else if (xp1 < xp2) {
+            if (current.getNorth() == SquareAdjacency.DOOR || current.getNorth() == SquareAdjacency.SQUARE) {
+                return calcDistanceRecursive(xp1, yp1, xp2 - 1, yp2) + 1;
+            } else if (current.getEast() == SquareAdjacency.SQUARE || current.getEast() == SquareAdjacency.DOOR) {
+                return calcDistanceRecursive(xp1, yp1, xp2, yp2 + 1) + 1;
+            } else if (current.getWest() == SquareAdjacency.DOOR || current.getWest() == SquareAdjacency.SQUARE) {
+                return calcDistanceRecursive(xp1, yp1, xp2, yp2 - 1) + 1;
+            } else {
+                return calcDistanceRecursive(xp1, yp1, xp2 + 1, yp2) + 1;
+            }
+        } else {
+            if (current.getWest() == SquareAdjacency.DOOR || current.getWest() == SquareAdjacency.SQUARE) {
+                return calcDistanceRecursive(xp1, yp1, xp2, yp2 - 1) + 1;
+            } else if (current.getNorth() == SquareAdjacency.DOOR || current.getNorth() == SquareAdjacency.SQUARE) {
+                return calcDistanceRecursive(xp1, yp1, xp2 - 1, yp2) + 1;
+            } else if (current.getSouth() == SquareAdjacency.DOOR || current.getSouth() == SquareAdjacency.SQUARE) {
+                return calcDistanceRecursive(xp1, yp1, xp2 + 1, yp2) + 1;
+            } else {
+                return calcDistanceRecursive(xp1, yp1, xp2, yp2 + 1) + 1;
+            }
+        }
+    }
+
+    public boolean samePosition(Player other) {
+        return other.position.getCoordX() == this.position.getCoordX() && other.position.getCoordY() == this.position.getCoordY();
     }
 
     public void setPosition(PlayerPosition position) {
