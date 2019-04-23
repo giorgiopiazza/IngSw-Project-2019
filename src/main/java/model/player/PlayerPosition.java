@@ -1,9 +1,12 @@
 package model.player;
 
 import enumerations.Direction;
+import enumerations.SquareAdjacency;
 import exceptions.player.NoDirectionException;
 import exceptions.player.SamePositionException;
+import model.Game;
 import model.map.Map;
+import model.map.Square;
 
 import java.util.Objects;
 
@@ -68,7 +71,7 @@ public class PlayerPosition {
         tempPos.setPosition(this);
         for (int i = 0; i < (Map.MAX_ROWS - this.getCoordX()); ++i) {
             tempPos.setCoordX(this.getCoordX() + i);
-            if(tempPos.equals(endingPos)) {
+            if (tempPos.equals(endingPos)) {
                 return Direction.EAST;
             }
         }
@@ -76,7 +79,7 @@ public class PlayerPosition {
         tempPos.setPosition(this);
         for (int i = 0; i < (Map.MAX_COLUMNS - this.getCoordX()); ++i) {
             tempPos.setCoordY(this.getCoordY() - i);
-            if(tempPos.equals(endingPos)) {
+            if (tempPos.equals(endingPos)) {
                 return Direction.WEST;
             }
         }

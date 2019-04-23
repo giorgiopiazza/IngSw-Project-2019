@@ -673,7 +673,7 @@
             "targetNum": 1,
             "damageDistribution": [1],
             "markDistribution": [2],
-            "minDistance": 1,
+            "distance": 1,
             "moveToLastTarget": true
           }
         },
