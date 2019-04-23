@@ -53,7 +53,7 @@ public class WeaponCard extends UsableCard {
                 return new AmmoQuantity(Arrays.copyOfRange(cost, 1, cost.length));
 
             default:
-                return new AmmoQuantity(new Ammo[0]);
+                return new AmmoQuantity();
         }
     }
 
