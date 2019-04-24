@@ -14,7 +14,6 @@ import java.io.InputStreamReader;
 import java.util.*;
 
 public class WeaponParser {
-    private static final String PATH = "/json/weapons.json";
     private static final String COST = "cost";
     private static final String TARGET = "target";
     private static final String DAMAGE_DISTRIBUTION = "damageDistribution";
@@ -32,10 +31,12 @@ public class WeaponParser {
      *
      * @return a list of all the WeaponCard
      */
-    public static List<WeaponCard> parseWeaponCards() {
+    public static List<WeaponCard> parseCards() {
         List<WeaponCard> cards = new ArrayList<>();
 
-        InputStream is = WeaponParser.class.getResourceAsStream(PATH);
+        String path = File.separatorChar + "json" + File.separatorChar + "weapons.json";
+
+        InputStream is = WeaponParser.class.getResourceAsStream(path);
 
         if (is == null) {
             return cards;
@@ -81,7 +82,7 @@ public class WeaponParser {
     private static Effect parseEffect(JsonObject jsonEffect) {
         Ammo[] cost = new Ammo[0];
 
-        if (!jsonEffect.has(COST)) {
+        if (jsonEffect.has(COST)) {
             cost = parseAmmoJsonArray(jsonEffect.getAsJsonArray(COST));
         }
 
@@ -103,7 +104,7 @@ public class WeaponParser {
     /**
      * Decorates the base effect with a single effect
      *
-     * @param effect base effect
+     * @param effect     base effect
      * @param properties JsonObject of the properties of the effect
      * @return the decorated effect
      */
@@ -132,7 +133,7 @@ public class WeaponParser {
     /**
      * Decorates the base effect with a multiple effect
      *
-     * @param effect base effect
+     * @param effect     base effect
      * @param properties JsonObject of the properties of the effect
      * @return the decorated effect
      */
@@ -146,20 +147,24 @@ public class WeaponParser {
 
             if (subeffect.has(DAMAGE_DISTRIBUTION)) {
                 effect = new ExtraDamageDecorator(effect,
-                        parseIntJsonArray(properties.get(DAMAGE_DISTRIBUTION).getAsJsonArray()),
+                        parseIntJsonArray(subeffect.get(DAMAGE_DISTRIBUTION).getAsJsonArray()),
                         targets[i]);
             }
 
             if (subeffect.has(MARK_DISTRIBUTION)) {
                 effect = new ExtraMarkDecorator(effect,
-                        parseIntJsonArray(properties.get(MARK_DISTRIBUTION).getAsJsonArray()),
+                        parseIntJsonArray(subeffect.get(MARK_DISTRIBUTION).getAsJsonArray()),
                         targets[i]);
             }
 
-            if (subeffect.has(MOVE_TARGET) || properties.has(MAX_MOVE_TARGET) || properties.has(MOVE)) {
+            if (subeffect.has(MOVE_TARGET) || subeffect.has(MAX_MOVE_TARGET)) {
                 effect = new ExtraMoveDecorator(effect);
             }
             effect.addProperties(addingProperties, targets[i].toString());
+        }
+
+        if (properties.has(MOVE)) {
+            effect = new ExtraMoveDecorator(effect);
         }
 
         return effect;
@@ -225,23 +230,21 @@ public class WeaponParser {
         JsonObject justVisibilityProperties = properties.deepCopy();
         Set<String> keys;
 
-        if(properties.has(TARGET)) {
+        if (properties.has(TARGET)) {
             justVisibilityProperties.remove(TARGET);
         }
 
-        if(properties.has(DAMAGE_DISTRIBUTION)) {
+        if (properties.has(DAMAGE_DISTRIBUTION)) {
             justVisibilityProperties.remove(DAMAGE_DISTRIBUTION);
         }
 
-        if(properties.has(MARK_DISTRIBUTION)) {
+        if (properties.has(MARK_DISTRIBUTION)) {
             justVisibilityProperties.remove(MARK_DISTRIBUTION);
         }
 
         keys = justVisibilityProperties.keySet();
-        Iterator<String> keysIterator = keys.iterator();
 
-        while(keysIterator.hasNext()) {
-            String tempKey = keysIterator.next();
+        for (String tempKey : keys) {
             String tempValue = justVisibilityProperties.get(tempKey).getAsString();
             effectProperties.put(tempKey, tempValue);
         }
