@@ -78,12 +78,19 @@ public class WeaponParser {
      */
     private static Effect parseEffect(JsonObject jsonEffect) {
         Ammo[] cost = new Ammo[0];
+        TargetType[] target = new TargetType[0];
 
         if (jsonEffect.has(COST)) {
             cost = parseAmmoJsonArray(jsonEffect.getAsJsonArray(COST));
         }
 
         JsonObject properties = jsonEffect.getAsJsonObject("properties");
+
+        if(properties.has("target")) {
+            JsonArray targets = properties.getAsJsonArray("target");
+            target = parseTargetTypeJsonArray(targets);
+        }
+
         Map<String, String> weaponProperties;
         if(properties.has("subEffects")) {
             weaponProperties = getPropertiesWithSubEffects(properties);
@@ -91,7 +98,7 @@ public class WeaponParser {
             weaponProperties = getProperties(properties);
         }
 
-        Effect effect = new WeaponBaseEffect(new AmmoQuantity(cost), weaponProperties);
+        Effect effect = new WeaponBaseEffect(new AmmoQuantity(cost), weaponProperties, target);
 
         if (properties.get(TARGET).getAsJsonArray().size() == 1) {
             effect = decorateSingleEffect(effect, properties);
@@ -264,7 +271,7 @@ public class WeaponParser {
      * @return a LinkedHashMap<String, String> where the key is the visibility rule and the value is its definition
      */
     private static Map<String, String> getPropertiesWithSubEffects(JsonObject properties) {
-        Map<String, String> effectProperties = new LinkedHashMap<>();
+
         JsonObject justVisibilityProperties = properties.deepCopy();
         Set<String> keys;
 
@@ -273,12 +280,11 @@ public class WeaponParser {
         justVisibilityProperties.remove("subEffects");
         justVisibilityProperties.remove(TARGET);
 
-        effectProperties.putAll(getProperties(justVisibilityProperties));
-
+        Map<String, String> effectProperties = new LinkedHashMap<>(getProperties(justVisibilityProperties));
         TargetType[] separators = parseTargetTypeJsonArray(targets);
         for(int i = 0; i < separators.length; ++i) {
             keys = subEffects.get(i).getAsJsonObject().keySet();
-            effectProperties.put(separators[i].toString(), separators[i].toString());
+            effectProperties.put(separators[i].toString(), "stop");
             for (String tempKey : keys) {
                 String tempValue = subEffects.get(i).getAsJsonObject().get(tempKey).getAsString();
                 effectProperties.put(tempKey, tempValue);
