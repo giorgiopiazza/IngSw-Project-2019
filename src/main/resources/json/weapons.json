@@ -29,7 +29,7 @@
           }
         }
       ]
-    }, 
+    },
 	{
       "id": 1,
 	  "cost": ["BLUE","RED"],
@@ -77,7 +77,7 @@
           }
         }
       ]
-    },    
+    },
 	{
       "id": 2,
 	  "cost": ["BLUE","RED"],
@@ -115,7 +115,7 @@
           }
         }
       ]
-    }, 
+    },
 	{
       "id": 3,
 	  "cost": ["BLUE","YELLOW"],
@@ -673,7 +673,7 @@
             "targetNum": 1,
             "damageDistribution": [1],
             "markDistribution": [2],
-            "minDistance": 1,
+            "distance": 1,
             "moveToLastTarget": true
           }
         },
@@ -683,7 +683,7 @@
             "visible": true,
             "target": ["PLAYER"],
             "maxTargetNum": 2,
-            "damageDistribution": [2],
+            "damageDistribution": [2, 2],
             "minDistance": 1,
             "inLine": true,
             "moveToLastTarget": true

@@ -1,5 +1,6 @@
 package model.cards.effects;
 
+import enumerations.MoveTarget;
 import model.Game;
 import model.player.Player;
 import model.player.PlayerPosition;
@@ -8,8 +9,11 @@ import utility.CommandUtility;
 import java.util.List;
 
 public class ExtraMoveDecorator extends ExtraEffectDecorator {
-    public ExtraMoveDecorator(Effect effect) {
+    private final MoveTarget moveTarget;
+
+    public ExtraMoveDecorator(Effect effect, MoveTarget moveTarget) {
         this.effect = effect;
+        this.moveTarget = moveTarget;
     }
 
     /**
@@ -25,21 +29,21 @@ public class ExtraMoveDecorator extends ExtraEffectDecorator {
 
         String[] splitCommand = command.split(" ");
 
-        if(command.contains("-m")) {
-            Player shooter = Game.getInstance().getPlayerByID(CommandUtility.getPlayerID(splitCommand));
-            List<PlayerPosition> shooterMovement = CommandUtility.getPositions(splitCommand, "-m");
+        switch (moveTarget) {
+            case PLAYER:
+                Player shooter = Game.getInstance().getPlayerByID(CommandUtility.getPlayerID(splitCommand));
+                List<PlayerPosition> shooterMovement = CommandUtility.getPositions(splitCommand, "-m");
+                shooter.changePosition(shooterMovement.get(0).getCoordX(), shooterMovement.get(0).getCoordY());
+                break;
+            default:    // TARGET
+                List<Integer> targetsID = CommandUtility.getAttributesID(splitCommand, "-t");
+                List<PlayerPosition> movingPositions = CommandUtility.getPositions(splitCommand, "-u");
 
-            shooter.changePosition(shooterMovement.get(0).getCoordX(), shooterMovement.get(0).getCoordY());
-        }
+                for(int i = 0; i < movingPositions.size(); ++i) {
+                    Game.getInstance().getPlayerByID(targetsID.get(i)).changePosition(
+                            movingPositions.get(i).getCoordX(), movingPositions.get(i).getCoordY());
+                }
 
-        if(command.contains("-u")) {
-            List<Integer> targetsID = CommandUtility.getAttributesID(splitCommand, "-t");
-            List<PlayerPosition> movingPositions = CommandUtility.getPositions(splitCommand, "-u");
-
-            for(int i = 0; i < movingPositions.size(); ++i) {
-                Game.getInstance().getPlayerByID(targetsID.get(i)).changePosition(
-                        movingPositions.get(i).getCoordX(), movingPositions.get(i).getCoordY());
-            }
         }
     }
 }

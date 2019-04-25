@@ -8,6 +8,7 @@ import exceptions.player.EmptyHandException;
 import exceptions.playerboard.NotEnoughAmmoException;
 import model.Game;
 import model.cards.effects.Effect;
+import model.cards.effects.WeaponBaseEffect;
 import model.cards.weaponstates.ChargedWeapon;
 import model.cards.weaponstates.UnchargedWeapon;
 import model.cards.weaponstates.WeaponState;
@@ -52,7 +53,7 @@ public class WeaponCard extends UsableCard {
                 return new AmmoQuantity(Arrays.copyOfRange(cost, 1, cost.length));
 
             default:
-                return new AmmoQuantity(new Ammo[0]);
+                return new AmmoQuantity();
         }
     }
 
@@ -143,7 +144,7 @@ public class WeaponCard extends UsableCard {
     private void payEffectCost(String command, UserPlayer shootingPlayer, Effect effect) throws NotEnoughAmmoException {
         String[] splitCommand = command.split(" ");
 
-        AmmoQuantity effectCost = effect.getCost();
+        AmmoQuantity effectCost = ((WeaponBaseEffect)effect).getCost();
         PowerupCard[] powerupCards = shootingPlayer.getPowerups();
 
         List<Integer> powerupsID = CommandUtility.getAttributesID(splitCommand, "-a");

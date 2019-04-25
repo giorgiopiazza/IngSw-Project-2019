@@ -1,0 +1,59 @@
+{
+  "ammoTiles": [
+    {
+      "quantity": 3,
+      "ammo": ["YELLOW","RED","RED"],
+      "powerUp": false
+    },
+    {
+      "quantity": 3,
+      "ammo": ["YELLOW","BLUE","BLUE"],
+      "powerUp": false
+    },
+    {
+      "quantity": 3,
+      "ammo": ["RED","YELLOW","YELLOW"],
+      "powerUp": false
+    },
+    {
+      "quantity": 3,
+      "ammo": ["RED","BLUE","BLUE"],
+      "powerUp": false
+    },
+    {
+      "quantity": 3,
+      "ammo": ["BLUE","RED","RED"],
+      "powerUp": false
+    },
+    {
+      "quantity": 3,
+      "ammo": ["BLUE","YELLOW","YELLOW"],
+      "powerUp": false
+    },
+    {
+      "quantity": 4,
+      "ammo": ["YELLOW","RED"],
+      "powerUp": true
+    },
+    {
+      "quantity": 4,
+      "ammo": ["YELLOW","BLUE"],
+      "powerUp": true
+    },
+    {
+      "quantity": 4,
+      "ammo": ["RED","BLUE"],
+      "powerUp": true
+    },
+    {
+      "quantity": 3,
+      "ammo": ["YELLOW","YELLOW"],
+      "powerUp": true
+    },
+    {
+      "quantity": 3,
+      "ammo": ["BLUE","BLUE"],
+      "powerUp": true
+    }
+  ]
+}
