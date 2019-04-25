@@ -2,6 +2,7 @@ package utility;
 
 import com.google.gson.*;
 import enumerations.Ammo;
+import enumerations.MoveTarget;
 import enumerations.TargetType;
 import model.cards.WeaponCard;
 import model.cards.effects.*;
@@ -127,8 +128,12 @@ public class WeaponParser {
                     targetType);
         }
 
-        if (properties.has(MOVE_TARGET) || properties.has(MAX_MOVE_TARGET) || properties.has(MOVE)) {
-            effect = new ExtraMoveDecorator(effect);
+        if (properties.has(MOVE)) {
+            effect = new ExtraMoveDecorator(effect, MoveTarget.PLAYER);
+        }
+
+        if (properties.has(MOVE_TARGET) || properties.has(MAX_MOVE_TARGET)) {
+            effect = new ExtraMoveDecorator(effect, MoveTarget.TARGET);
         }
 
         return effect;
@@ -160,13 +165,13 @@ public class WeaponParser {
                         targets[i]);
             }
 
-            if (subeffect.has(MOVE_TARGET) || subeffect.has(MAX_MOVE_TARGET)) {
-                effect = new ExtraMoveDecorator(effect);
+            if (properties.has(MOVE)) {
+                effect = new ExtraMoveDecorator(effect, MoveTarget.PLAYER);
             }
-        }
 
-        if (properties.has(MOVE)) {
-            effect = new ExtraMoveDecorator(effect);
+            if (subeffect.has(MOVE_TARGET) || subeffect.has(MAX_MOVE_TARGET)) {
+                effect = new ExtraMoveDecorator(effect, MoveTarget.TARGET);
+            }
         }
 
         return effect;
