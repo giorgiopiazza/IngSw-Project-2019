@@ -66,7 +66,7 @@ public abstract class Player {
      * @return true if {@code this} player is in the same position as {@code other} player, otherwise false
      */
     public boolean samePosition(Player other) {
-        return other.position.getCoordX() == this.position.getCoordX() && other.position.getCoordY() == this.position.getCoordY();
+        return this.position.samePosition(other.position);
     }
 
     public void setPosition(PlayerPosition position) {

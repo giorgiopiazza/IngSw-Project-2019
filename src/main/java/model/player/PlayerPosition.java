@@ -113,13 +113,19 @@ public class PlayerPosition {
         return "[" + coordX + ", " + coordY + "]";
     }
 
+    /**
+     * This method calculates the minimum distance between {@code this} position and {@code other} position
+     *
+     * @param other another position
+     * @return the minimum distance between two players
+     */
     public int distanceOf(PlayerPosition other) {
         List<Integer> cases = new ArrayList<>();
         List<Integer> stepsList = new ArrayList<>();
         List<PlayerPosition> alreadyVisited = new ArrayList<>();
 
         PlayerPosition p1 = new PlayerPosition(this);
-        PlayerPosition p2 = other;
+        PlayerPosition p2 = new PlayerPosition(other);
 
         int steps = 0;
 
