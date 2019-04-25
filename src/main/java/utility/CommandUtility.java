@@ -102,11 +102,11 @@ public class CommandUtility {
             return attributesID;
         }
 
-        String[] commandPowerups = splitCommand[pos + 1].split(",");
+        String[] commandString = splitCommand[pos + 1].split(",");
 
-        for (String powerup : commandPowerups) {
+        for (String addingID : commandString) {
             try {
-                attributesID.add(Integer.parseInt(powerup));
+                attributesID.add(Integer.parseInt(addingID));
             } catch (NumberFormatException e) {
                 throw new InvalidCommandException();
             }

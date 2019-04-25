@@ -1,14 +1,15 @@
 package utility;
 
 import enumerations.Direction;
+import enumerations.TargetType;
 import exceptions.player.NoDirectionException;
 import model.Game;
 import model.player.Player;
 import model.player.PlayerPosition;
 
-import java.util.List;
+import java.util.*;
 
-public class Validator {
+public class PropertiesValidator {
 
     /**
      * Method that returns true if all the targets are visible by the Player
@@ -227,5 +228,31 @@ public class Validator {
         }
 
         return true;
+    }
+
+    /**
+     * Method used before validating a subEffect. It temporally sets the effect properties only
+     * with the ones that the specified target needs
+     * At the end of this method the original Map of properties is modified, remember to set it back
+     * to the first one if needed
+     *
+     * @param allProperties the Map containing all properties
+     * @param targetOther the starting point of the Map from which we need to remove the properties
+     */
+    public static void setTempMap(Map<String, String> allProperties, TargetType targetOther) {
+        // here a LinkedHashMap is always passed is the iterator working right even if static type is Map?
+        boolean foundTarget = false;
+
+        for (Map.Entry<String, String> entry : allProperties.entrySet()) {
+            if(foundTarget && !entry.getValue().equals("stop")) {
+                allProperties.remove(entry.getKey());
+            }
+
+            if(entry.getKey().equals(targetOther.toString())) {
+                foundTarget = true;
+                allProperties.remove(entry.getKey());
+            }
+        }
+
     }
 }
