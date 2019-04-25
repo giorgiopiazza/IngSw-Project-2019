@@ -57,17 +57,15 @@ public abstract class Player {
         List<Integer> stepsList = new ArrayList<>();
         List<PlayerPosition> alreadyVisited = new ArrayList<>();
 
-        int x1 = this.position.getCoordX();
-        int x2 = other.position.getCoordX();
-        int y1 = this.position.getCoordY();
-        int y2 = other.position.getCoordY();
+        PlayerPosition p1 = new PlayerPosition(this.position.getCoordX(), this.position.getCoordY());
+        PlayerPosition p2 = new PlayerPosition(other.position.getCoordX(), other.position.getCoordY());
 
         int steps = 0;
 
         do {
-            alreadyVisited.add(new PlayerPosition(x2, y2));
+            alreadyVisited.add(p2);
 
-            selectCases(cases, alreadyVisited, x2, y2); // need to beautify the code
+            selectCases(cases, alreadyVisited, p2); // need to beautify the code
 
             // increment the counter of the steps performed
             steps++;
@@ -76,20 +74,10 @@ public abstract class Player {
                 steps = 1000;
                 break;
             } else {
-                Intero xP1 = new Intero(x1);
-                Intero xP2 = new Intero(x2);
-                Intero yP1 = new Intero(y1);
-                Intero yP2 = new Intero(y2);
-
-                subProcessSwitches(alreadyVisited, stepsList, cases, xP1, yP1, xP2, yP2, steps);
-
-                x1 = xP1.n;
-                x2 = xP2.n;
-                y1 = yP1.n;
-                y2 = yP2.n;
+                subProcessSwitches(alreadyVisited, stepsList, cases, p1, p2, steps);
             }
            cases.clear();
-        } while(x1 != x2 || y1 != y2);
+        } while(p1.getCoordX() != p2.getCoordX() || p1.getCoordY() != p2.getCoordY());
 
         stepsList.add(steps);
 
@@ -205,35 +193,23 @@ public abstract class Player {
      *
      * @param alreadyVisited list of already visited squares
      * @param stepsList list with the number of steps of all paths
-     * @param xp1 x position of player 1
-     * @param yp1 y position of player 1
-     * @param xp2 x position of player 2
-     * @param yp2 y position of player 2
+     * @param p1 player 1 position
+     * @param p2 player 2 position
      */
-    private static void subProcessDistanceOf(List<PlayerPosition> alreadyVisited, List<Integer> stepsList, int xp1, int yp1, int xp2, int yp2, int steps) {
+    private static void subProcessDistanceOf(List<PlayerPosition> alreadyVisited, List<Integer> stepsList, PlayerPosition p1, PlayerPosition p2, int steps) {
         List<Integer> cases = new ArrayList<>();
 
-        while (xp1 != xp2 || yp1 != yp2) {
-            alreadyVisited.add(new PlayerPosition(xp2, yp2));
+        while (p1.getCoordX() != p2.getCoordX() || p1.getCoordY() != p2.getCoordY()) {
+            alreadyVisited.add(p2);
             // increment the counter of the steps performed
-            selectCases(cases, alreadyVisited, xp2, yp2);
+            selectCases(cases, alreadyVisited, p2);
             steps++;
 
             if(cases.isEmpty()) {
                 stepsList.add(1000);
                 return;
             } else {
-                Intero xP1 = new Intero(xp1);
-                Intero xP2 = new Intero(xp2);
-                Intero yP1 = new Intero(yp1);
-                Intero yP2 = new Intero(yp2);
-
-                subProcessSwitches(alreadyVisited, stepsList, cases, xP1, yP1, xP2, yP2, steps);
-
-                xp1 = xP1.n;
-                xp2 = xP2.n;
-                yp1 = yP1.n;
-                yp2 = yP2.n;
+                subProcessSwitches(alreadyVisited, stepsList, cases, p1, p2, steps);
             }
             cases.clear();
         }
@@ -247,43 +223,41 @@ public abstract class Player {
      * @param alreadyVisited list of already visited squares
      * @param stepsList list with the number of steps of all paths
      * @param cases list containing the cases to be processed by the switch
-     * @param xp1 x position of player 1
-     * @param yp1 y position of player 1
-     * @param xp2 x position of player 2
-     * @param yp2 y position of player 2
+     * @param p1 player 1 position
+     * @param p2 player 2 position
      * @param steps number of steps already made
      */
-    private static void subProcessSwitches(List<PlayerPosition> alreadyVisited, List<Integer> stepsList, List<Integer> cases, Intero xp1, Intero yp1, Intero xp2, Intero yp2, int steps) {
+    private static void subProcessSwitches(List<PlayerPosition> alreadyVisited, List<Integer> stepsList, List<Integer> cases, PlayerPosition p1, PlayerPosition p2, int steps) {
         // other paths
         for (int i = 1; i < cases.size(); i++) {
             switch (cases.get(i)) {
                 case 1:
-                    subProcessDistanceOf(new ArrayList<>(alreadyVisited), stepsList, xp1.n, yp1.n, xp2.n + 1, yp2.n, steps);
+                    subProcessDistanceOf(new ArrayList<>(alreadyVisited), stepsList, p1, new PlayerPosition(p2.getCoordX() + 1, p2.getCoordY()), steps);
                     break;
                 case 2:
-                    subProcessDistanceOf(new ArrayList<>(alreadyVisited), stepsList, xp1.n, yp1.n, xp2.n, yp2.n + 1, steps);
+                    subProcessDistanceOf(new ArrayList<>(alreadyVisited), stepsList, p1, new PlayerPosition(p2.getCoordX(), p2.getCoordY() + 1), steps);
                     break;
                 case 3:
-                    subProcessDistanceOf(new ArrayList<>(alreadyVisited), stepsList, xp1.n, yp1.n, xp2.n - 1, yp2.n, steps);
+                    subProcessDistanceOf(new ArrayList<>(alreadyVisited), stepsList, p1, new PlayerPosition(p2.getCoordX() - 1, p2.getCoordY()), steps);
                     break;
                 case 4:
-                    subProcessDistanceOf(new ArrayList<>(alreadyVisited), stepsList, xp1.n, yp1.n, xp2.n, yp2.n - 1, steps);
+                    subProcessDistanceOf(new ArrayList<>(alreadyVisited), stepsList, p1, new PlayerPosition(p2.getCoordX(), p2.getCoordY() - 1), steps);
                     break;
             }
         }
         // path that is examined by this process
         switch (cases.get(0)) {
             case 1:
-                xp2.n++;
+                p2.setCoordX(p2.getCoordX() + 1);
                 break;
             case 2:
-                yp2.n++;
+                p2.setCoordY(p2.getCoordY() + 1);
                 break;
             case 3:
-                xp2.n--;
+                p2.setCoordX(p2.getCoordX() - 1);
                 break;
             case 4:
-                yp2.n--;
+                p2.setCoordY(p2.getCoordY() - 1);
                 break;
         }
     }
@@ -292,22 +266,21 @@ public abstract class Player {
      * Adds to the list {@code cases} the possible ways to go
      *
      * @param cases list with cases accepted
-     * @param x the x pos of player
-     * @param y the y pos of player
+     * @param pos the position of player
      */
-    private static void selectCases(List<Integer> cases, List<PlayerPosition> alreadyVisited, int x, int y) {
-        Square current = Game.getInstance().getGameMap().getSquare(x, y);
+    private static void selectCases(List<Integer> cases, List<PlayerPosition> alreadyVisited, PlayerPosition pos) {
+        Square current = Game.getInstance().getGameMap().getSquare(pos.getCoordX(), pos.getCoordY());
 
-        if ((current.getSouth() == SquareAdjacency.DOOR || current.getSouth() == SquareAdjacency.SQUARE) && validateVisitedPosition(alreadyVisited, x + 1, y)) {
+        if ((current.getSouth() == SquareAdjacency.DOOR || current.getSouth() == SquareAdjacency.SQUARE) && validateVisitedPosition(alreadyVisited, pos.getCoordX() + 1, pos.getCoordY())) {
             cases.add(1);
         }
-        if ((current.getEast() == SquareAdjacency.DOOR || current.getEast() == SquareAdjacency.SQUARE) && validateVisitedPosition(alreadyVisited, x, y + 1)) {
+        if ((current.getEast() == SquareAdjacency.DOOR || current.getEast() == SquareAdjacency.SQUARE) && validateVisitedPosition(alreadyVisited, pos.getCoordX(), pos.getCoordY() + 1)) {
             cases.add(2);
         }
-        if ((current.getNorth() == SquareAdjacency.DOOR || current.getNorth() == SquareAdjacency.SQUARE) && validateVisitedPosition(alreadyVisited, x - 1, y)) {
+        if ((current.getNorth() == SquareAdjacency.DOOR || current.getNorth() == SquareAdjacency.SQUARE) && validateVisitedPosition(alreadyVisited, pos.getCoordX() - 1, pos.getCoordY())) {
             cases.add(3);
         }
-        if ((current.getWest() == SquareAdjacency.DOOR || current.getWest() == SquareAdjacency.SQUARE) && validateVisitedPosition(alreadyVisited, x, y - 1)) {
+        if ((current.getWest() == SquareAdjacency.DOOR || current.getWest() == SquareAdjacency.SQUARE) && validateVisitedPosition(alreadyVisited, pos.getCoordX(), pos.getCoordY() - 1)) {
             cases.add(4);
         }
     }
@@ -328,13 +301,5 @@ public abstract class Player {
         }
         // new position never visited
         return true;
-    }
-
-    /**
-     * created class because sonar was acting up
-     */
-    private static class Intero {
-        private int n;
-        public Intero(int n) { this.n = n; }
     }
 }
