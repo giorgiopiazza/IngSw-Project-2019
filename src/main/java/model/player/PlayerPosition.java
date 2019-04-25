@@ -8,6 +8,8 @@ import model.Game;
 import model.map.Map;
 import model.map.Square;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class PlayerPosition {
@@ -109,5 +111,150 @@ public class PlayerPosition {
     @Override
     public String toString() {
         return "[" + coordX + ", " + coordY + "]";
+    }
+
+    public int distanceOf(PlayerPosition other) {
+        List<Integer> cases = new ArrayList<>();
+        List<Integer> stepsList = new ArrayList<>();
+        List<PlayerPosition> alreadyVisited = new ArrayList<>();
+
+        PlayerPosition p1 = new PlayerPosition(this);
+        PlayerPosition p2 = other;
+
+        int steps = 0;
+
+        do {
+            alreadyVisited.add(new PlayerPosition(p2));
+
+            selectCases(cases, alreadyVisited, p2); // need to beautify the code
+
+            // increment the counter of the steps performed
+            steps++;
+            // if not even a step has been taken it is because all the roads for that path have been tried with a negative outcome
+            if(cases.isEmpty()) {
+                steps = 1000;
+                break;
+            } else {
+                subProcessSwitches(alreadyVisited, stepsList, cases, p1, p2, steps);
+            }
+            cases.clear();
+        } while(!p1.equals(p2));
+
+        stepsList.add(steps);
+        int minSteps;
+
+        minSteps = 999;
+
+        for (Integer integer : stepsList) {
+            if (minSteps > integer) minSteps = integer;
+        }
+
+        return minSteps;
+    }
+
+    /**
+     * This method return true if {@code this} player is in the same position as {@code other} player, otherwise false
+     *
+     * @param other another player in game
+     * @return true if {@code this} player is in the same position as {@code other} player, otherwise false
+     */
+    public boolean samePosition(PlayerPosition other) {
+        return other.coordX == this.coordX && other.coordY == this.coordY;
+    }
+
+    /**
+     * This static method needs to the other paths that are not executed by the distanceOf
+     *
+     * @param alreadyVisited list of already visited squares
+     * @param stepsList list with the number of steps of all paths
+     * @param p1 player 1 position
+     * @param p2 player 2 position
+     */
+    private static void subProcessDistanceOf(List<PlayerPosition> alreadyVisited, List<Integer> stepsList, PlayerPosition p1, PlayerPosition p2, int steps) {
+        List<Integer> cases = new ArrayList<>();
+
+        while (!p1.equals(p2)) {
+            alreadyVisited.add(new PlayerPosition(p2));
+            // increment the counter of the steps performed
+            selectCases(cases, alreadyVisited, p2);
+            steps++;
+
+            if(cases.isEmpty()) {
+                stepsList.add(1000);
+                return;
+            } else {
+                subProcessSwitches(alreadyVisited, stepsList, cases, p1, p2, steps);
+            }
+            cases.clear();
+        }
+        stepsList.add(steps);
+    }
+
+    /**
+     * Static method created to simplify distanceOf code
+     *
+     * @param alreadyVisited list of already visited squares
+     * @param stepsList list with the number of steps of all paths
+     * @param cases list containing the cases to be processed by the switch
+     * @param p1 player 1 position
+     * @param p2 player 2 position
+     * @param steps number of steps already made
+     */
+    private static void subProcessSwitches(List<PlayerPosition> alreadyVisited, List<Integer> stepsList, List<Integer> cases, PlayerPosition p1, PlayerPosition p2, int steps) {
+        // other paths
+        for (int i = 1; i < cases.size(); i++) {
+            switch (cases.get(i)) {
+                case 1:
+                    subProcessDistanceOf(new ArrayList<>(alreadyVisited), stepsList, p1, new PlayerPosition(p2.getCoordX() + 1, p2.getCoordY()), steps);
+                    break;
+                case 2:
+                    subProcessDistanceOf(new ArrayList<>(alreadyVisited), stepsList, p1, new PlayerPosition(p2.getCoordX(), p2.getCoordY() + 1), steps);
+                    break;
+                case 3:
+                    subProcessDistanceOf(new ArrayList<>(alreadyVisited), stepsList, p1, new PlayerPosition(p2.getCoordX() - 1, p2.getCoordY()), steps);
+                    break;
+                case 4:
+                    subProcessDistanceOf(new ArrayList<>(alreadyVisited), stepsList, p1, new PlayerPosition(p2.getCoordX(), p2.getCoordY() - 1), steps);
+                    break;
+            }
+        }
+        // path that is examined by this process
+        switch (cases.get(0)) {
+            case 1:
+                p2.setCoordX(p2.getCoordX() + 1);
+                break;
+            case 2:
+                p2.setCoordY(p2.getCoordY() + 1);
+                break;
+            case 3:
+                p2.setCoordX(p2.getCoordX() - 1);
+                break;
+            case 4:
+                p2.setCoordY(p2.getCoordY() - 1);
+                break;
+        }
+    }
+
+    /**
+     * Adds to the list {@code cases} the possible ways to go
+     *
+     * @param cases list with cases accepted
+     * @param pos the position of player
+     */
+    private static void selectCases(List<Integer> cases, List<PlayerPosition> alreadyVisited, PlayerPosition pos) {
+        Square current = Game.getInstance().getGameMap().getSquare(pos.getCoordX(), pos.getCoordY());
+
+        if ((current.getSouth() == SquareAdjacency.DOOR || current.getSouth() == SquareAdjacency.SQUARE) && !alreadyVisited.contains(new PlayerPosition(pos.getCoordX() + 1, pos.getCoordY()))) {
+            cases.add(1);
+        }
+        if ((current.getEast() == SquareAdjacency.DOOR || current.getEast() == SquareAdjacency.SQUARE) && !alreadyVisited.contains(new PlayerPosition(pos.getCoordX(), pos.getCoordY() + 1))) {
+            cases.add(2);
+        }
+        if ((current.getNorth() == SquareAdjacency.DOOR || current.getNorth() == SquareAdjacency.SQUARE) && !alreadyVisited.contains(new PlayerPosition(pos.getCoordX() - 1, pos.getCoordY()))) {
+            cases.add(3);
+        }
+        if ((current.getWest() == SquareAdjacency.DOOR || current.getWest() == SquareAdjacency.SQUARE) && !alreadyVisited.contains(new PlayerPosition(pos.getCoordX(), pos.getCoordY() - 1))) {
+            cases.add(4);
+        }
     }
 }
