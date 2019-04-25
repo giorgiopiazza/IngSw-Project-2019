@@ -1,13 +1,21 @@
 package model.map;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonToken;
 import enumerations.Color;
 import enumerations.SquareAdjacency;
+import exceptions.AdrenalinaRuntimeException;
+import exceptions.file.JsonFileNotFoundException;
 import exceptions.map.MapUnknowException;
 import model.Game;
 import model.player.Player;
 import model.player.PlayerPosition;
 
+import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,45 +58,51 @@ public class Map {
     public static final int MAP_4 = 4;
 
     private Square[][] rooms;
+    private static final String PATH = "/json/maps.json";
 
-    /*
+
     public Map(int mapType) {
-        InputStream is = getClass().getClassLoader().getResourceAsStream("json/maps.json");
-        JSONArray array = new JSONArray(new JSONTokener(is));
-        JSONObject mapObject = null;
+        InputStream is = Map.class.getResourceAsStream(PATH);
+
+        if(is == null) throw new JsonFileNotFoundException("File " + PATH + " not found");
+
+        JsonParser parser = new JsonParser();
+        JsonArray array = parser.parse(new InputStreamReader(is)).getAsJsonArray();
+
+        JsonObject mapObject = null;
 
         Square[][] map;
         map = new Square[MAX_ROWS][MAX_COLUMNS];
 
         switch (mapType) {
             case MAP_1:
-                for (int i=0;i<array.length();i++) {
-                    if(!array.isNull(i) && array.getJSONObject(i).getInt("id") == MAP_1) {
-                        mapObject = array.getJSONObject(i);
+                for (int i=0;i<array.size();i++) {
+                    if(!array.get(i).isJsonNull() && array.get(i).getAsJsonObject().get("id").getAsInt() == MAP_1) {
+                        mapObject = array.get(i).getAsJsonObject();
                     }
                 }
                 break;
 
             case MAP_2:
-                for (int i=0;i<array.length();i++) {
-                    if(!array.isNull(i) && array.getJSONObject(i).getInt("id") == MAP_2) {
-                        mapObject = array.getJSONObject(i);
+                for (int i=0;i<array.size();i++) {
+                    if(!array.get(i).isJsonNull() && array.get(i).getAsJsonObject().get("id").getAsInt() == MAP_2) {
+                        mapObject = array.get(i).getAsJsonObject();
                     }
                 }
                 break;
 
             case MAP_3:
-                for (int i=0;i<array.length();i++) {
-                    if(!array.isNull(i) && array.getJSONObject(i).getInt("id") == MAP_3) {
-                        mapObject = array.getJSONObject(i);
+                for (int i=0;i<array.size();i++) {
+                    if(!array.get(i).isJsonNull() && array.get(i).getAsJsonObject().get("id").getAsInt() == MAP_3) {
+                        mapObject = array.get(i).getAsJsonObject();
                     }
                 }
                 break;
 
             case MAP_4:
-                for (int i=0;i<array.length();i++) {
-                    if(!array.isNull(i) && array.getJSONObject(i).getInt("id") == MAP_4) {
-                        mapObject = array.getJSONObject(i);
+                for (int i=0;i<array.size();i++) {
+                    if (!array.get(i).isJsonNull() && array.get(i).getAsJsonObject().get("id").getAsInt() == MAP_4) {
+                        mapObject = array.get(i).getAsJsonObject();
                     }
                 }
                 break;
@@ -99,30 +113,30 @@ public class Map {
 
         if (mapObject == null) throw new MapUnknowException();
 
-        JSONArray matrix = mapObject.getJSONArray("map");
+        JsonArray matrix = mapObject.get("map").getAsJsonArray();
 
-        for (int i=0;i<matrix.length();i++) {
-            JSONArray row = matrix.getJSONArray(i);
-            for (int j=0;j<row.length();j++) {
-                if(row.isNull(j)) {
+        for (int i=0;i<matrix.size();i++) {
+            JsonArray row = matrix.get(i).getAsJsonArray();
+            for (int j=0;j<row.size();j++) {
+                if(row.get(j).isJsonNull()) {
                     map[i][j] = null;
                 } else {
-                    JSONObject square = row.getJSONObject(j);
-                    if (square.getBoolean("isSpawn")) {
+                    JsonObject square = row.get(j).getAsJsonObject();
+                    if (square.get("isSpawn").getAsBoolean()) {
                         map[i][j] = new SpawnSquare(
-                                Color.valueOf(square.getString("color")),
-                                SquareAdjacency.valueOf(square.getString("north")),
-                                SquareAdjacency.valueOf(square.getString("east")),
-                                SquareAdjacency.valueOf(square.getString("south")),
-                                SquareAdjacency.valueOf(square.getString("west"))
+                                Color.valueOf(square.get("color").getAsString()),
+                                SquareAdjacency.valueOf(square.get("north").getAsString()),
+                                SquareAdjacency.valueOf(square.get("east").getAsString()),
+                                SquareAdjacency.valueOf(square.get("south").getAsString()),
+                                SquareAdjacency.valueOf(square.get("west").getAsString())
                         );
                     } else {
                         map[i][j] = new CardSquare(
-                                Color.valueOf(square.getString("color")),
-                                SquareAdjacency.valueOf(square.getString("north")),
-                                SquareAdjacency.valueOf(square.getString("east")),
-                                SquareAdjacency.valueOf(square.getString("south")),
-                                SquareAdjacency.valueOf(square.getString("west"))
+                                Color.valueOf(square.get("color").getAsString()),
+                                SquareAdjacency.valueOf(square.get("north").getAsString()),
+                                SquareAdjacency.valueOf(square.get("east").getAsString()),
+                                SquareAdjacency.valueOf(square.get("south").getAsString()),
+                                SquareAdjacency.valueOf(square.get("west").getAsString())
                         );
                     }
                 }
@@ -130,7 +144,7 @@ public class Map {
         }
 
         this.rooms = map;
-    } */
+    }
 
     /**
      * Create a new map using the <code>rooms</code> matrix passed if the maximum size is respected MAX_ROWS x MAX_COLUMNS

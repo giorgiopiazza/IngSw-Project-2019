@@ -41,4 +41,9 @@ public class PlayerPosition {
     public int hashCode() {
         return Objects.hash(coordX, coordY);
     }
+
+    @Override
+    public String toString() {
+        return "[" + coordX + ", " + coordY + "]";
+    }
 }

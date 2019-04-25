@@ -44,6 +44,10 @@ public class Game {
         ammoCardsDeck = new Deck();
     }
 
+    public void setGameMap(int mapType) {
+        this.gameMap = new Map(mapType);
+    }
+
     /**
      * The singleton instance of the game returns, if it has not been created it allocates it as well
      *

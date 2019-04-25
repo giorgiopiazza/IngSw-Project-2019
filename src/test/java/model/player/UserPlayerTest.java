@@ -48,28 +48,26 @@ class UserPlayerTest {
     }
 
     @Test
-    void playersDistance() {
+    void distanceOf() {
         Player p1 = new UserPlayer("p1", Color.YELLOW, true, new PlayerBoard(), false);
         Player p2 = new UserPlayer("p2", Color.GREEN, true, new PlayerBoard(), false);
 
-        //Game.getInstance().setGameMap(Map.MAP_4);
+        Game.getInstance().setGameMap(Map.MAP_3);
 
-        Logger.getGlobal().log(Level.INFO, Game.getInstance().getGameMap() + "");
-/*
         p1.setPosition(new PlayerPosition(2, 0));
         p2.setPosition(new PlayerPosition(1, 3));
 
-        Logger.getGlobal().log(Level.INFO, p1.distanceOf(p2) + "");
+        assertEquals(4, p1.distanceOf(p2));
 
         p1.setPosition(new PlayerPosition(0, 0));
         p2.setPosition(new PlayerPosition(1, 3));
 
-        Logger.getGlobal().log(Level.INFO, p1.distanceOf(p2) + "");
-*/
+        assertEquals(4, p1.distanceOf(p2));
+
         p1.setPosition(new PlayerPosition(1, 0));
         p2.setPosition(new PlayerPosition(0, 2));
 
-        //Logger.getGlobal().log(Level.INFO, p1.distanceOf(p2) + "");
+        assertEquals(3, p1.distanceOf(p2));
     }
 
     @Test
