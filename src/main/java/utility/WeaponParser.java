@@ -3,6 +3,7 @@ package utility;
 import com.google.gson.*;
 import enumerations.Ammo;
 import enumerations.MoveTarget;
+import enumerations.Properties;
 import enumerations.TargetType;
 import model.cards.WeaponCard;
 import model.cards.effects.*;
@@ -17,11 +18,6 @@ import java.util.*;
 public class WeaponParser {
     private static final String COST = "cost";
     private static final String TARGET = "target";
-    private static final String DAMAGE_DISTRIBUTION = "damageDistribution";
-    private static final String MARK_DISTRIBUTION = "markDistribution";
-    private static final String MOVE = "move";
-    private static final String MOVE_TARGET = "moveTarget";
-    private static final String MAX_MOVE_TARGET = "moveTarget";
 
     private WeaponParser() {
         throw new IllegalStateException("Utility class");
@@ -116,23 +112,23 @@ public class WeaponParser {
     private static Effect decorateSingleEffect(Effect effect, JsonObject properties) {
         TargetType targetType = TargetType.valueOf(properties.getAsJsonArray(TARGET).get(0).getAsString());
 
-        if (properties.has(DAMAGE_DISTRIBUTION)) {
+        if (properties.has(Properties.DAMAGE_DISTRIBUTION.getJKey())) {
             effect = new ExtraDamageDecorator(effect,
-                    parseIntJsonArray(properties.get(DAMAGE_DISTRIBUTION).getAsJsonArray()),
+                    parseIntJsonArray(properties.get(Properties.DAMAGE_DISTRIBUTION.getJKey()).getAsJsonArray()),
                     targetType);
         }
 
-        if (properties.has(MARK_DISTRIBUTION)) {
+        if (properties.has(Properties.MARK_DISTRIBUTION.getJKey())) {
             effect = new ExtraMarkDecorator(effect,
-                    parseIntJsonArray(properties.get(MARK_DISTRIBUTION).getAsJsonArray()),
+                    parseIntJsonArray(properties.get(Properties.MARK_DISTRIBUTION.getJKey()).getAsJsonArray()),
                     targetType);
         }
 
-        if (properties.has(MOVE)) {
+        if (properties.has(Properties.MOVE.getJKey())) {
             effect = new ExtraMoveDecorator(effect, MoveTarget.PLAYER);
         }
 
-        if (properties.has(MOVE_TARGET) || properties.has(MAX_MOVE_TARGET)) {
+        if (properties.has(Properties.MOVE_TARGET.getJKey()) || properties.has(Properties.MAX_MOVE_TARGET.getJKey())) {
             effect = new ExtraMoveDecorator(effect, MoveTarget.TARGET);
         }
 
@@ -153,23 +149,23 @@ public class WeaponParser {
         for (int i = targets.length - 1; i >= 0; --i) {
             JsonObject subeffect = subeffects.get(i).getAsJsonObject();
 
-            if (subeffect.has(DAMAGE_DISTRIBUTION)) {
+            if (subeffect.has(Properties.DAMAGE_DISTRIBUTION.getJKey())) {
                 effect = new ExtraDamageDecorator(effect,
-                        parseIntJsonArray(subeffect.get(DAMAGE_DISTRIBUTION).getAsJsonArray()),
+                        parseIntJsonArray(subeffect.get(Properties.DAMAGE_DISTRIBUTION.getJKey()).getAsJsonArray()),
                         targets[i]);
             }
 
-            if (subeffect.has(MARK_DISTRIBUTION)) {
+            if (subeffect.has(Properties.MARK_DISTRIBUTION.getJKey())) {
                 effect = new ExtraMarkDecorator(effect,
-                        parseIntJsonArray(subeffect.get(MARK_DISTRIBUTION).getAsJsonArray()),
+                        parseIntJsonArray(subeffect.get(Properties.MARK_DISTRIBUTION.getJKey()).getAsJsonArray()),
                         targets[i]);
             }
 
-            if (properties.has(MOVE)) {
+            if (properties.has(Properties.MOVE.getJKey())) {
                 effect = new ExtraMoveDecorator(effect, MoveTarget.PLAYER);
             }
 
-            if (subeffect.has(MOVE_TARGET) || subeffect.has(MAX_MOVE_TARGET)) {
+            if (subeffect.has(Properties.MOVE_TARGET.getJKey()) || subeffect.has(Properties.MAX_MOVE_TARGET.getJKey())) {
                 effect = new ExtraMoveDecorator(effect, MoveTarget.TARGET);
             }
         }
@@ -241,12 +237,12 @@ public class WeaponParser {
             justVisibilityProperties.remove(TARGET);
         }
 
-        if (properties.has(DAMAGE_DISTRIBUTION)) {
-            justVisibilityProperties.remove(DAMAGE_DISTRIBUTION);
+        if (properties.has(Properties.DAMAGE_DISTRIBUTION.getJKey())) {
+            justVisibilityProperties.remove(Properties.DAMAGE_DISTRIBUTION.getJKey());
         }
 
-        if (properties.has(MARK_DISTRIBUTION)) {
-            justVisibilityProperties.remove(MARK_DISTRIBUTION);
+        if (properties.has(Properties.MARK_DISTRIBUTION.getJKey())) {
+            justVisibilityProperties.remove(Properties.MARK_DISTRIBUTION.getJKey());
         }
 
         keys = justVisibilityProperties.keySet();
