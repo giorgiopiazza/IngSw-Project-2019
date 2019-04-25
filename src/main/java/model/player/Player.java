@@ -6,6 +6,7 @@ import model.Game;
 import model.map.Square;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public abstract class Player {
@@ -63,7 +64,7 @@ public abstract class Player {
         int steps = 0;
 
         do {
-            alreadyVisited.add(p2);
+            alreadyVisited.add(new PlayerPosition(p2));
 
             selectCases(cases, alreadyVisited, p2); // need to beautify the code
 
@@ -77,10 +78,9 @@ public abstract class Player {
                 subProcessSwitches(alreadyVisited, stepsList, cases, p1, p2, steps);
             }
            cases.clear();
-        } while(p1.getCoordX() != p2.getCoordX() || p1.getCoordY() != p2.getCoordY());
+        } while(!p1.equals(p2));
 
         stepsList.add(steps);
-
         int minSteps;
 
         minSteps = 999;
@@ -199,8 +199,8 @@ public abstract class Player {
     private static void subProcessDistanceOf(List<PlayerPosition> alreadyVisited, List<Integer> stepsList, PlayerPosition p1, PlayerPosition p2, int steps) {
         List<Integer> cases = new ArrayList<>();
 
-        while (p1.getCoordX() != p2.getCoordX() || p1.getCoordY() != p2.getCoordY()) {
-            alreadyVisited.add(p2);
+        while (!p1.equals(p2)) {
+            alreadyVisited.add(new PlayerPosition(p2));
             // increment the counter of the steps performed
             selectCases(cases, alreadyVisited, p2);
             steps++;
@@ -213,7 +213,6 @@ public abstract class Player {
             }
             cases.clear();
         }
-
         stepsList.add(steps);
     }
 
@@ -271,35 +270,17 @@ public abstract class Player {
     private static void selectCases(List<Integer> cases, List<PlayerPosition> alreadyVisited, PlayerPosition pos) {
         Square current = Game.getInstance().getGameMap().getSquare(pos.getCoordX(), pos.getCoordY());
 
-        if ((current.getSouth() == SquareAdjacency.DOOR || current.getSouth() == SquareAdjacency.SQUARE) && validateVisitedPosition(alreadyVisited, pos.getCoordX() + 1, pos.getCoordY())) {
+        if ((current.getSouth() == SquareAdjacency.DOOR || current.getSouth() == SquareAdjacency.SQUARE) && !alreadyVisited.contains(new PlayerPosition(pos.getCoordX() + 1, pos.getCoordY()))) {
             cases.add(1);
         }
-        if ((current.getEast() == SquareAdjacency.DOOR || current.getEast() == SquareAdjacency.SQUARE) && validateVisitedPosition(alreadyVisited, pos.getCoordX(), pos.getCoordY() + 1)) {
+        if ((current.getEast() == SquareAdjacency.DOOR || current.getEast() == SquareAdjacency.SQUARE) && !alreadyVisited.contains(new PlayerPosition(pos.getCoordX(), pos.getCoordY() + 1))) {
             cases.add(2);
         }
-        if ((current.getNorth() == SquareAdjacency.DOOR || current.getNorth() == SquareAdjacency.SQUARE) && validateVisitedPosition(alreadyVisited, pos.getCoordX() - 1, pos.getCoordY())) {
+        if ((current.getNorth() == SquareAdjacency.DOOR || current.getNorth() == SquareAdjacency.SQUARE) && !alreadyVisited.contains(new PlayerPosition(pos.getCoordX() - 1, pos.getCoordY()))) {
             cases.add(3);
         }
-        if ((current.getWest() == SquareAdjacency.DOOR || current.getWest() == SquareAdjacency.SQUARE) && validateVisitedPosition(alreadyVisited, pos.getCoordX(), pos.getCoordY() - 1)) {
+        if ((current.getWest() == SquareAdjacency.DOOR || current.getWest() == SquareAdjacency.SQUARE) && !alreadyVisited.contains(new PlayerPosition(pos.getCoordX(), pos.getCoordY() - 1))) {
             cases.add(4);
         }
-    }
-
-    /**
-     * If the newPos has never been traveled, it is true again, otherwise false
-     *
-     * @param alreadyVisited list of already visited squares
-     * @param newX new x position
-     * @param newY new y position
-     * @return {@code}true if the new position has never been visited, otherwise {@code}false
-     */
-    private static boolean validateVisitedPosition(List<PlayerPosition> alreadyVisited, int newX, int newY) {
-        PlayerPosition newPos = new PlayerPosition(newX, newY);
-
-        for (PlayerPosition pos : alreadyVisited) {
-            if (pos.equals(newPos)) return false;
-        }
-        // new position never visited
-        return true;
     }
 }

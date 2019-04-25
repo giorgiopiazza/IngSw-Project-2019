@@ -20,6 +20,11 @@ public class PlayerPosition {
         this.coordY = coordY;
     }
 
+    public PlayerPosition(PlayerPosition another) {
+        this.coordX = another.coordX;
+        this.coordY = another.coordY;
+    }
+
     public int getCoordX() {
         return this.coordX;
     }
