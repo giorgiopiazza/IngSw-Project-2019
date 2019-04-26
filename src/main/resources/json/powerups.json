@@ -32,11 +32,9 @@
   {
     "title" : "NEWTON",
     "properties" : {
-      "visible" : true,
-      "cost" : 0,
-      "target" : ["PLAYER"],
-      "targetNum" : 1,
-      "markDistribution" : [1]
+      "moveInLine" : true,
+      "maxMoveTarget" : 2,
+      "target" : ["PLAYER"]
     },
     "values" : [
       { "color" : "YELLOW", "number" : 2, "image" : "/resources/img/raggio_yellow.png" },
@@ -47,11 +45,8 @@
   {
     "title" : "TELEPORTER",
     "properties" : {
-      "visible" : true,
-      "cost" : 0,
-      "target" : ["PLAYER"],
-      "targetNum" : 1,
-      "markDistribution" : [1]
+      "tp" : true,
+      "target" : ["SQUARE"]
     },
     "values" : [
       { "color" : "YELLOW", "number" : 2, "image" : "/resources/img/tp_yellow.png" },
