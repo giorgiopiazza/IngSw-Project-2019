@@ -1,12 +1,14 @@
 package utility;
 
 import enumerations.Color;
+import enumerations.TargetType;
 import exceptions.command.InvalidCommandException;
 import model.Game;
 import model.player.Player;
 import model.player.PlayerPosition;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CommandUtility {
@@ -163,5 +165,73 @@ public class CommandUtility {
         }
 
         return positions;
+    }
+
+    /**
+     * Method used to return the value of a boolean parameter in the command
+     *
+     * @param splitCommand Array of string containing the command
+     * @param param the param we want to know his boolean value
+     * @return the boolean value after the specified parameter
+     */
+    public static boolean getBoolParam(String[] splitCommand, String param) {
+        int pos = getCommandParamPosition(splitCommand, param);
+        return Boolean.parseBoolean(splitCommand[pos + 1]);
+    }
+
+    /**
+     * Method used to set a command that can be used for a validate.
+     * It removes from the original one the parts that are not needed to
+     * be validated for the target specified
+     *
+     * @param command String containing the original command
+     * @param target  the TargetType we only need informations in the new String
+     * @return the String with no other informations that the ones we need for the target
+     */
+    public static String setTempCommand(String command, TargetType target) {
+        String[] splitCommand = command.split(" ");
+        List<String> splitList = new ArrayList<>(Arrays.asList(splitCommand));
+
+        switch (target) {
+            case PLAYER:
+                if (command.contains("-v")) {
+                    int pos = getCommandParamPosition(splitCommand, "-v");
+                    splitList.remove(pos);
+                    splitList.remove(pos + 1);
+                }
+                if (command.contains("-x")) {
+                    int pos = getCommandParamPosition(splitCommand, "-x");
+                    splitList.remove(pos);
+                    splitList.remove(pos);
+                }
+
+                return String.join(" ", splitList);
+            case SQUARE:
+                if (command.contains("-t")) {
+                    int pos = getCommandParamPosition(splitCommand, "-t");
+                    splitList.remove(pos);
+                    splitList.remove(pos + 1);
+                }
+                if (command.contains("-x")) {
+                    int pos = getCommandParamPosition(splitCommand, "-x");
+                    splitList.remove(pos);
+                    splitList.remove(pos + 1);
+                }
+
+                return String.join(" ", splitList);
+            default:
+                if (command.contains("-t")) {
+                    int pos = getCommandParamPosition(splitCommand, "-t");
+                    splitList.remove(pos);
+                    splitList.remove(pos + 1);
+                }
+                if (command.contains("-v")) {
+                    int pos = getCommandParamPosition(splitCommand, "-v");
+                    splitList.remove(pos);
+                    splitList.remove(pos + 1);
+                }
+
+                return String.join(" ", splitList);
+        }
     }
 }

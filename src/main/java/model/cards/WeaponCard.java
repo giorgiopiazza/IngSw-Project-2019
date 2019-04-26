@@ -1,6 +1,7 @@
 package model.cards;
 
 import enumerations.Ammo;
+import exceptions.AdrenalinaException;
 import exceptions.cards.WeaponAlreadyChargedException;
 import exceptions.cards.WeaponNotChargedException;
 import exceptions.command.InvalidCommandException;
@@ -110,7 +111,7 @@ public class WeaponCard extends UsableCard {
      * @throws WeaponNotChargedException in case the weapon can not be used because not charged
      * @throws NotEnoughAmmoException    in case the weapon even with powerups can not be payed
      */
-    public void use(String command) throws WeaponNotChargedException, NotEnoughAmmoException {
+    public void use(String command) throws AdrenalinaException {
         if (isCharged()) {
             Effect effect;
 

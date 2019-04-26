@@ -135,6 +135,17 @@ public class CommandValidator {
              */
     }
 
+    /**
+     * Method used to verify if the specified target is far from the shooter the specified distance.
+     * Using the boolean parameter we indicate that the distance has to be exactly the one specified
+     * otherwise the minimum distance
+     *
+     * @param command String containing the command
+     * @param target TargetType from which we need to verify the distance
+     * @param distance integer specifying the distance to verify
+     * @param exactDistance boolean true if the distance is exact, otherwise the minimum one
+     * @return true if the target's distance fits with the one specified, otherwise false
+     */
     public static boolean areFar(String command, TargetType target, int distance, boolean exactDistance) {
         Player shooter = Game.getInstance().getPlayerByID(CommandUtility.getPlayerID(command.split("")));
 
@@ -145,7 +156,6 @@ public class CommandValidator {
                 List<Player> targets = CommandUtility.getPlayersByIDs(CommandUtility.getAttributesID(command.split(" "), "-t"));
 
                 for(int i = 0; i < targets.size(); ++i) {
-                    /* TODO delete comment when distanceOf is ready for two positions
                     if(exactDistance) {
                         if(shooter.getPosition().distanceOf(targets.get(i).getPosition()) != distance) {
                             return false;
@@ -155,7 +165,6 @@ public class CommandValidator {
                             return false;
                         }
                     }
-                     */
                 }
 
                 return true;
@@ -163,7 +172,6 @@ public class CommandValidator {
                 List<PlayerPosition> squaresPositions = CommandUtility.getPositions(command.split(" "), "-v");
 
                 for(int i = 0; i < squaresPositions.size(); ++i) {
-                    /* TODO delete comment when distanceOf is ready for two positions
                     if(exactDistance) {
                         if(shooter.getPosition().distanceOf(squaresPositions.get(i)) != distance) {
                             return false;
@@ -173,7 +181,6 @@ public class CommandValidator {
                             return false;
                         }
                     }
-                     */
                 }
 
                 return true;

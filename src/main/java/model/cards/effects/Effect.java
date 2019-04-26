@@ -1,6 +1,7 @@
 package model.cards.effects;
 
 import enumerations.TargetType;
+import exceptions.AdrenalinaException;
 
 import java.util.Map;
 
@@ -37,5 +38,5 @@ public abstract class Effect {
      * @param command sent
      * @return {@code true} if the command is valid, {@code false} otherwise
      */
-    public abstract boolean validate(String command);
+    public abstract boolean validate(String command) throws AdrenalinaException;
 }
