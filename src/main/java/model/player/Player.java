@@ -28,6 +28,16 @@ public abstract class Player {
         ++uniqueID;
     }
 
+    // constructor to create a dummy
+    public Player(PlayerPosition position) {
+        this.nickname = null;
+        this.id = -1;
+        this.color = null;
+        this.playerBoard = null;
+        this.position = position;
+        this.points = -1;
+    }
+
     public String getNickname() {
         return this.nickname;
     }
@@ -140,12 +150,10 @@ public abstract class Player {
         points = this.points + pointsGained;
     }
 
-    public boolean canSee(Player target) {
-        if (target == null) {
+    public boolean canSee(PlayerPosition pos) {
+        if (pos == null) {
             throw new NullPointerException("Target can't be null");
         }
-
-        PlayerPosition pos = target.getPosition();
 
         Square targetSquare = Game.getInstance().getGameMap().getSquare(pos.getCoordX(), pos.getCoordY());
         Square playerSquare = Game.getInstance().getGameMap().getSquare(getPosition().getCoordX(), getPosition().getCoordY());
