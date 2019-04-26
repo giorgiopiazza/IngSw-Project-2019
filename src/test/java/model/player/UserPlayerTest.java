@@ -54,6 +54,26 @@ class UserPlayerTest {
 
         Game.getInstance().setGameMap(Map.MAP_3);
 
+        p1.setPosition(new PlayerPosition(0, 0));
+        p2.setPosition(new PlayerPosition(0, 0));
+
+        assertEquals(0, p1.distanceOf(p2));
+
+        p1.setPosition(new PlayerPosition(1, 1));
+        p2.setPosition(new PlayerPosition(0, 1));
+
+        assertEquals(1, p1.distanceOf(p2));
+
+        p1.setPosition(new PlayerPosition(0, 2));
+        p2.setPosition(new PlayerPosition(1, 3));
+
+        assertEquals(2, p1.distanceOf(p2));
+
+        p1.setPosition(new PlayerPosition(1, 0));
+        p2.setPosition(new PlayerPosition(1, 1));
+
+        assertEquals(3, p1.distanceOf(p2));
+
         p1.setPosition(new PlayerPosition(2, 0));
         p2.setPosition(new PlayerPosition(1, 3));
 
@@ -64,10 +84,10 @@ class UserPlayerTest {
 
         assertEquals(4, p1.distanceOf(p2));
 
-        p1.setPosition(new PlayerPosition(1, 0));
-        p2.setPosition(new PlayerPosition(0, 2));
+        p1.setPosition(new PlayerPosition(0, 3));
+        p2.setPosition(new PlayerPosition(2, 0));
 
-        assertEquals(3, p1.distanceOf(p2));
+        assertEquals(5, p1.distanceOf(p2));
     }
 
     @Test
