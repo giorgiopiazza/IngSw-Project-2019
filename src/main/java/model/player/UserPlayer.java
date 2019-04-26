@@ -26,6 +26,16 @@ public class UserPlayer extends Player {
         this.terminator = terminator;
     }
 
+    // constructor to create a dummy
+    public UserPlayer(PlayerPosition position) {
+        super(position);
+        this.weapons = null;
+        this.powerups = null;
+        this.firstPlayer = false;
+        this.terminator = false;
+
+    }
+
     public void setTerminator(boolean terminator) {
         this.terminator = terminator;
     }
