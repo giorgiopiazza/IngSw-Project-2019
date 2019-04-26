@@ -2,6 +2,7 @@ package model.cards;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public class Deck {
     private ArrayList<Card> cardsDeck;
@@ -46,9 +47,9 @@ public class Deck {
     }
 
     /**
-     * Add a <code>card</code> to the deck
+     * Add a {@code card} to the deck
      *
-     * @param card the <code>card</code> to add
+     * @param card the {@code card} to add
      */
     public void addCard(Card card) {
         if(card == null) throw new NullPointerException("Card cannot be null");

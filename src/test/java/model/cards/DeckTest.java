@@ -2,6 +2,7 @@ package model.cards;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import utility.PowerupParser;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -64,4 +65,8 @@ class DeckTest {
         noGarbage.flush();
     }
 
+    @Test
+    void powerupDeck() {
+        Deck deck = PowerupParser.parsePowerUpCards();
+    }
 }
