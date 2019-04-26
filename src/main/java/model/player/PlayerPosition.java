@@ -113,6 +113,49 @@ public class PlayerPosition {
         return "[" + coordX + ", " + coordY + "]";
     }
 
+    public boolean canSee(PlayerPosition pos) {
+        if (pos == null) {
+            throw new NullPointerException("Target can't be null");
+        }
+
+        Square targetSquare = Game.getInstance().getGameMap().getSquare(pos.getCoordX(), pos.getCoordY());
+        Square playerSquare = Game.getInstance().getGameMap().getSquare(getCoordX(), getCoordY());
+
+        if (targetSquare.getColor() == playerSquare.getColor()) {
+            return true;
+        }
+
+        Square tempSquare;
+
+        if (playerSquare.getNorth() == SquareAdjacency.DOOR) {
+            tempSquare = Game.getInstance().getGameMap().getSquare(pos.getCoordX(), pos.getCoordY() - 1);
+            if (tempSquare.getColor() == playerSquare.getColor()) {
+                return true;
+            }
+        }
+
+        if (playerSquare.getEast() == SquareAdjacency.DOOR) {
+            tempSquare = Game.getInstance().getGameMap().getSquare(pos.getCoordX() + 1, pos.getCoordY());
+            if (tempSquare.getColor() == playerSquare.getColor()) {
+                return true;
+            }
+        }
+
+        if (playerSquare.getSouth() == SquareAdjacency.DOOR) {
+            tempSquare = Game.getInstance().getGameMap().getSquare(pos.getCoordX(), pos.getCoordY() + 1);
+            if (tempSquare.getColor() == playerSquare.getColor()) {
+                return true;
+            }
+        }
+
+        if (playerSquare.getWest() == SquareAdjacency.DOOR) {
+            tempSquare = Game.getInstance().getGameMap().getSquare(pos.getCoordX() - 1, pos.getCoordY());
+            return tempSquare.getColor() == playerSquare.getColor();
+        }
+
+        return false;
+    }
+
     /**
      * This method calculates the minimum distance between {@code this} position and {@code other} position
      *
