@@ -7,6 +7,7 @@ import model.player.AmmoQuantity;
 import model.player.UserPlayer;
 
 import java.io.File;
+import java.util.Objects;
 
 public class AmmoTile extends Card {
 
@@ -60,5 +61,14 @@ public class AmmoTile extends Card {
         if (pickPowerup && (pickingPlayer.getPowerups().length < 3)) {
             pickingPlayer.addPowerup((PowerupCard) Game.getInstance().getPowerupCardsDeck().draw());
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AmmoTile)) return false;
+        if (!super.equals(o)) return false;
+        AmmoTile ammoTile = (AmmoTile) o;
+        return pickPowerup == ammoTile.pickPowerup && ammoTile.ammoOnTile.equals(this.ammoOnTile);
     }
 }

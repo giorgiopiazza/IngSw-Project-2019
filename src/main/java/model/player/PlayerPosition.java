@@ -120,19 +120,22 @@ public class PlayerPosition {
      * @return the minimum distance between two players
      */
     public int distanceOf(PlayerPosition other) {
+        // list with possible paths, one for every path
         List<Integer> cases = new ArrayList<>();
+        // list with the number of steps of a completed journey, the same for all paths
         List<Integer> stepsList = new ArrayList<>();
+        // list with the squares already visited, so that you can't retrace your steps
         List<PlayerPosition> alreadyVisited = new ArrayList<>();
-
+        // Create two new instances because I'm going to work on it
         PlayerPosition p1 = new PlayerPosition(this);
         PlayerPosition p2 = new PlayerPosition(other);
 
-        int steps = 0;
+        int steps = 0; // number of steps for this path
 
         do {
             alreadyVisited.add(new PlayerPosition(p2));
 
-            selectCases(cases, alreadyVisited, p2); // need to beautify the code
+            selectCases(cases, alreadyVisited, p2); // need to minify the code complexity
 
             // increment the counter of the steps performed
             steps++;

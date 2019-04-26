@@ -21,4 +21,13 @@ public abstract class UsableCard extends Card {
     public Effect getBaseEffect() {
         return this.baseEffect;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof UsableCard)) return false;
+        UsableCard that = (UsableCard) o;
+        return getName().equals(that.getName()) &&
+                getBaseEffect().equals(that.getBaseEffect());
+    }
 }
