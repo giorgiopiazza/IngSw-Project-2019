@@ -302,4 +302,21 @@ public class Game {
         }
         throw new MissingIDException(id);
     }
+
+
+    /**
+     * Method to obtain the positions of the players passed
+     *
+     * @param players ArrayList of players you need their position
+     * @return the ArrayList of positions of the players
+     */
+    public List<PlayerPosition> getPlayersPositions(List<Player> players) {
+        List<PlayerPosition> positions = new ArrayList<>();
+
+        for(Player player : players) {
+            positions.add(player.getPosition());
+        }
+
+        return positions;
+    }
 }
