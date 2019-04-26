@@ -8,9 +8,9 @@
       "markDistribution" : [1]
     },
     "values" : [
-      { "color" : "YELLOW", "image" : "/resources/img/venom_yellow.png" },
-      { "color" : "RED", "image" : "/resources/img/venom_red.png" },
-      { "color" : "BLUE", "image" : "/resources/img/venom_blue.png" }
+      { "color" : "YELLOW", "image" : "/img/powerups/venom_yellow.png" },
+      { "color" : "RED", "image" : "/img/powerups/venom_red.png" },
+      { "color" : "BLUE", "image" : "/img/powerups/venom_blue.png" }
     ]
   },
   {
@@ -23,9 +23,9 @@
       "damageDistribution" : [1]
     },
     "values" : [
-      { "color" : "YELLOW", "image" : "/resources/img/mirino_yellow.png" },
-      { "color" : "RED", "image" : "/resources/img/mirino_red.png" },
-      { "color" : "BLUE", "image" : "/resources/img/mirino_blue.png" }
+      { "color" : "YELLOW", "image" : "/img/powerups/mirino_yellow.png" },
+      { "color" : "RED", "image" : "/img/powerups/mirino_red.png" },
+      { "color" : "BLUE", "image" : "/img/powerups/mirino_blue.png" }
     ]
   },
   {
@@ -36,9 +36,9 @@
       "target" : ["PLAYER"]
     },
     "values" : [
-      { "color" : "YELLOW", "image" : "/resources/img/raggio_yellow.png" },
-      { "color" : "RED", "image" : "/resources/img/raggio_red.png" },
-      { "color" : "BLUE", "image" : "/resources/img/raggio_blue.png" }
+      { "color" : "YELLOW", "image" : "/img/powerups/raggio_yellow.png" },
+      { "color" : "RED", "image" : "/img/powerups/raggio_red.png" },
+      { "color" : "BLUE", "image" : "/img/powerups/raggio_blue.png" }
     ]
   },
   {
@@ -48,9 +48,9 @@
       "target" : ["SQUARE"]
     },
     "values" : [
-      { "color" : "YELLOW", "image" : "/resources/img/tp_yellow.png" },
-      { "color" : "RED", "image" : "/resources/img/tp_red.png" },
-      { "color" : "BLUE", "image" : "/resources/img/tp_blue.png" }
+      { "color" : "YELLOW", "image" : "/img/powerups/tp_yellow.png" },
+      { "color" : "RED", "image" : "/img/powerups/tp_red.png" },
+      { "color" : "BLUE", "image" : "/img/powerups/tp_blue.png" }
     ]
   }
 ]
