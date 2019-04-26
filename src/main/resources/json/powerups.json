@@ -1,0 +1,62 @@
+[
+  {
+    "title" : "TAGBACK GRENADE",
+    "properties" : {
+      "visible" : true,
+      "cost" : 0,
+      "target" : ["PLAYER"],
+      "targetNum" : 1,
+      "markDistribution" : [1]
+    },
+    "values" : [
+      { "color" : "YELLOW", "number" : 2, "image" : "/resources/img/venom_yellow.png" },
+      { "color" : "RED", "number" : 2, "image" : "/resources/img/venom_red.png" },
+      { "color" : "BLUE", "number" : 2, "image" : "/resources/img/venom_blue.png" }
+    ]
+  },
+  {
+    "title" : "TARGETING SCOPE",
+    "properties" : {
+      "visible" : false,
+      "cost" : 1,
+      "target" : ["PLAYER"],
+      "targetNum" : 1,
+      "damageDistribution" : [1]
+    },
+    "values" : [
+      { "color" : "YELLOW", "number" : 2, "image" : "/resources/img/mirino_yellow.png" },
+      { "color" : "RED", "number" : 2, "image" : "/resources/img/mirino_red.png" },
+      { "color" : "BLUE", "number" : 2, "image" : "/resources/img/mirino_blue.png" }
+    ]
+  },
+  {
+    "title" : "NEWTON",
+    "properties" : {
+      "visible" : true,
+      "cost" : 0,
+      "target" : ["PLAYER"],
+      "targetNum" : 1,
+      "markDistribution" : [1]
+    },
+    "values" : [
+      { "color" : "YELLOW", "number" : 2, "image" : "/resources/img/raggio_yellow.png" },
+      { "color" : "RED", "number" : 2, "image" : "/resources/img/raggio_red.png" },
+      { "color" : "BLUE", "number" : 2, "image" : "/resources/img/raggio_blue.png" }
+    ]
+  },
+  {
+    "title" : "TELEPORTER",
+    "properties" : {
+      "visible" : true,
+      "cost" : 0,
+      "target" : ["PLAYER"],
+      "targetNum" : 1,
+      "markDistribution" : [1]
+    },
+    "values" : [
+      { "color" : "YELLOW", "number" : 2, "image" : "/resources/img/tp_yellow.png" },
+      { "color" : "RED", "number" : 2, "image" : "/resources/img/tp_red.png" },
+      { "color" : "BLUE", "number" : 2, "image" : "/resources/img/tp_blue.png" }
+    ]
+  }
+]
