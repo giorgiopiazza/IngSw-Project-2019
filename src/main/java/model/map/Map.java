@@ -234,6 +234,27 @@ public class Map {
         return players;
     }
 
+    /**
+     * Method to obtain all the squares of the same room
+     *
+     * @param roomColor the Color of the room
+     * @return an ArrayList of all the squares with the same Color
+     */
+    public List<PlayerPosition> getRoom(Color roomColor) {
+        List<PlayerPosition> room = new ArrayList<>();
+
+        for(int i = 0; i < MAX_ROWS; ++i) {
+            for(int j = 0; j < MAX_COLUMNS; ++j) {
+                if(rooms[i][j].getColor().equals(roomColor)) {
+                    PlayerPosition tempPos = new PlayerPosition(i,j);
+                    room.add(tempPos);
+                }
+            }
+        }
+
+        return room;
+    }
+
     @Override
     public String toString() {
         StringBuilder buffer = new StringBuilder();
