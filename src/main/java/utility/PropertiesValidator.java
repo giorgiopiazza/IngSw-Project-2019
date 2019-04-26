@@ -90,58 +90,12 @@ public class PropertiesValidator {
                 Direction directionChosen = shooter.getPosition().getDirection(targets.get(i).getPosition());
                 for (int j = i + 1; j < targets.size(); ++j) {
                     if (!shooter.getPosition().equals(targets.get(i).getPosition()) &&
-                            !directionChosen.equals(targets.get(j).getPosition())) {
+                            !directionChosen.equals(shooter.getPosition().getDirection(targets.get(j).getPosition()))) {
                         return false;
                     }
                 }
                 return true;
             }
-        }
-
-        return true;
-    }
-
-    /**
-     * Method that verifies if each target is distant from the shooter exactly the distance passed
-     *
-     * @param shooterID the ID of the shooting player
-     * @param targetsID the IDs of the targets you want to know their distance from the shooter
-     * @param distance  the distance to verify
-     * @return true if each target is distant distance from the shooter, otherwise false
-     */
-    public static boolean areDistant(int shooterID, List<Integer> targetsID, int distance) {
-        Player shooter = Game.getInstance().getPlayerByID(shooterID);
-        List<Player> targets = CommandUtility.getPlayersByIDs(targetsID);
-
-        for (int i = 0; i < targets.size(); ++i) {
-            /* TODO delete comment when distanceOf is ready for two positions
-            if (shooter.getPosition().distanceOf(targets.get(i).getPosition()) != distance) {
-                return false;
-            }
-             */
-        }
-
-        return true;
-    }
-
-    /**
-     * Method that verifies if each target has a distance from the shooter that is higher than minDisance
-     *
-     * @param shooterID   the ID of the shooting player
-     * @param targetsID   the IDs of the targets you want to know their distance from the shooter
-     * @param minDistance the minDistance to verify
-     * @return true if each target is distant from the shooter a disance that is higher than minDistance, otherwise false
-     */
-    public static boolean areMinDistant(int shooterID, List<Integer> targetsID, int minDistance) {
-        Player shooter = Game.getInstance().getPlayerByID(shooterID);
-        List<Player> targets = CommandUtility.getPlayersByIDs(targetsID);
-
-        for (int i = 0; i < targets.size(); ++i) {
-            /* TODO delete comment when distanceOf is ready for two positions
-            if (shooter.getPosition().distanceOf(targets.get(i).getPosition()) < minDistance) {
-                return false;
-            }
-             */
         }
 
         return true;

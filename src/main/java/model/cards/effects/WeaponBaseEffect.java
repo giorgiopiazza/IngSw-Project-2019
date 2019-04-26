@@ -45,15 +45,19 @@ public class WeaponBaseEffect extends Effect {
         // subEffects validation
         if(getTargets().length > 1) {
             Map<String, String> mapCopy = new LinkedHashMap<>(getProperties());
-            TargetType[] targetCopy = getTargets().clone();// slide cugola cazzo forse non funziona perchè fa la clone dei riferimenti non degli oggetti
+            TargetType targetCopy[] = new TargetType[getTargets().length];
+            System.arraycopy(getTargets(), 0, targetCopy, 0, getTargets().length);
+
             for(int i = 0; i < getTargets().length; ++i) {
                 PropertiesValidator.setTempMap(getProperties(), getTargets()[i]);
                 setTargets(Arrays.copyOf(getTargets(), getTargets().length - 1));
+
                 if(!validate(command)) {
                     setProperties(mapCopy);
                     setTargets(targetCopy);
                     return false;
                 }
+
                 setProperties(mapCopy);
                 setTargets(targetCopy);
             }
