@@ -116,7 +116,7 @@ public class WeaponParser {
      * @param properties JsonObject of the properties of the effect
      * @return the decorated effect
      */
-    private static Effect decorateSingleEffect(Effect effect, JsonObject properties) {
+    public static Effect decorateSingleEffect(Effect effect, JsonObject properties) {
         TargetType targetType = TargetType.valueOf(properties.getAsJsonArray(TARGET).get(0).getAsString());
 
         if (properties.has(Properties.DAMAGE_DISTRIBUTION.getJKey())) {
@@ -218,7 +218,7 @@ public class WeaponParser {
      * @param jsonArray JsonArray made of TargetType
      * @return the parsed array made of TargetType
      */
-    private static TargetType[] parseTargetTypeJsonArray(JsonArray jsonArray) {
+    public static TargetType[] parseTargetTypeJsonArray(JsonArray jsonArray) {
         List<TargetType> list = new ArrayList<>();
 
         for (JsonElement elem : jsonArray) {
@@ -234,7 +234,7 @@ public class WeaponParser {
      * @param properties JsonObject that contains visibility properties
      * @return a LinkedHashMap<String,String> where the key is the visibility rule and the value is its definition
      */
-    private static Map<String, String> getProperties(JsonObject properties) {
+    public static Map<String, String> getProperties(JsonObject properties) {
         // I create a linked hash map as I can iterate on it with the order I put his elements
         Map<String, String> effectProperties = new LinkedHashMap<>();
         JsonObject justVisibilityProperties = properties.deepCopy();
