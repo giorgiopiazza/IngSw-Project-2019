@@ -9,7 +9,6 @@ import model.Game;
 import model.player.AmmoQuantity;
 import model.player.Player;
 import model.player.PlayerPosition;
-import model.player.UserPlayer;
 import utility.CommandUtility;
 import utility.CommandValidator;
 import utility.PropertiesValidator;
@@ -56,7 +55,7 @@ public class WeaponBaseEffect extends Effect {
         // subEffects validation
         if (getTargets().length > 1) {
             Map<String, String> mapCopy = new LinkedHashMap<>(getProperties());
-            TargetType targetCopy[] = new TargetType[getTargets().length];
+            TargetType[] targetCopy = new TargetType[getTargets().length];
             System.arraycopy(getTargets(), 0, targetCopy, 0, getTargets().length);
 
             for (int i = 0; i < getTargets().length; ++i) {
@@ -76,19 +75,19 @@ public class WeaponBaseEffect extends Effect {
         }
 
         // target and command validation
-        if (!CommandValidator.targetValidate(command, getTargets()[0])) {
+        if (!CommandValidator.isTargetTypeValid(command, getTargets()[0])) {
             return false;
         }
 
         // number of target validation
         if (getProperties().containsKey(Properties.TARGET_NUM.getJKey())) {
             int exactNumber = Integer.parseInt(getProperties().get(Properties.TARGET_NUM.getJKey()));
-            if (!CommandValidator.targetNum(command, getTargets()[0], exactNumber, true)) {
+            if (!CommandValidator.isTargetNumValid(command, getTargets()[0], exactNumber, true)) {
                 return false;
             }
         } else if (getProperties().containsKey(Properties.MAX_TARGET_NUM.getJKey())) {
             int number = Integer.parseInt(getProperties().get(Properties.MAX_TARGET_NUM.getJKey()));
-            if (!CommandValidator.targetNum(command, getTargets()[0], number, false)) {
+            if (!CommandValidator.isTargetNumValid(command, getTargets()[0], number, false)) {
                 return false;
             }
         } else {
@@ -98,12 +97,12 @@ public class WeaponBaseEffect extends Effect {
         // distance validation
         if (getProperties().containsKey(Properties.DISTANCE.getJKey())) {
             int exactDistance = Integer.parseInt(getProperties().get(Properties.DISTANCE.getJKey()));
-            if (!CommandValidator.areFar(command, getTargets()[0], exactDistance, true)) {
+            if (!CommandValidator.isTargetDistanceValid(command, getTargets()[0], exactDistance, true)) {
                 return false;
             }
         } else if (getProperties().containsKey(Properties.MIN_DISTANCE.getJKey())) {
             int distance = Integer.parseInt(getProperties().get(Properties.MIN_DISTANCE.getJKey()));
-            if (!CommandValidator.areFar(command, getTargets()[0], distance, false)) {
+            if (!CommandValidator.isTargetDistanceValid(command, getTargets()[0], distance, false)) {
                 return false;
             }
         } else {

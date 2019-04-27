@@ -18,6 +18,7 @@ import java.util.*;
 public class WeaponParser {
     private static final String COST = "cost";
     private static final String TARGET = "target";
+    private static final String SUB_EFFECTS = "subEffects";
 
     private WeaponParser() {
         throw new IllegalStateException("Utility class");
@@ -86,13 +87,13 @@ public class WeaponParser {
 
         JsonObject properties = jsonEffect.getAsJsonObject("properties");
 
-        if(properties.has("target")) {
-            JsonArray targets = properties.getAsJsonArray("target");
+        if(properties.has(TARGET)) {
+            JsonArray targets = properties.getAsJsonArray(TARGET);
             target = parseTargetTypeJsonArray(targets);
         }
 
         Map<String, String> weaponProperties;
-        if(properties.has("subEffects")) {
+        if(properties.has(SUB_EFFECTS)) {
             weaponProperties = getPropertiesWithSubEffects(properties);
         } else {
             weaponProperties = getProperties(properties);
@@ -151,30 +152,30 @@ public class WeaponParser {
      */
     private static Effect decorateMultipleEffect(Effect effect, JsonObject properties) {
         TargetType[] targets = parseTargetTypeJsonArray(properties.getAsJsonArray(TARGET));
-        JsonArray subeffects = properties.getAsJsonArray("subEffects");
+        JsonArray subEffects = properties.getAsJsonArray(SUB_EFFECTS);
 
         for (int i = targets.length - 1; i >= 0; --i) {
-            JsonObject subeffect = subeffects.get(i).getAsJsonObject();
+            JsonObject subEffect = subEffects.get(i).getAsJsonObject();
 
-            if (subeffect.has(Properties.DAMAGE_DISTRIBUTION.getJKey())) {
+            if (subEffect.has(Properties.DAMAGE_DISTRIBUTION.getJKey())) {
                 effect = new ExtraDamageDecorator(effect,
-                        parseIntJsonArray(subeffect.get(Properties.DAMAGE_DISTRIBUTION.getJKey()).getAsJsonArray()),
+                        parseIntJsonArray(subEffect.get(Properties.DAMAGE_DISTRIBUTION.getJKey()).getAsJsonArray()),
                         targets[i]);
             }
 
-            if (subeffect.has(Properties.MARK_DISTRIBUTION.getJKey())) {
+            if (subEffect.has(Properties.MARK_DISTRIBUTION.getJKey())) {
                 effect = new ExtraMarkDecorator(effect,
-                        parseIntJsonArray(subeffect.get(Properties.MARK_DISTRIBUTION.getJKey()).getAsJsonArray()),
+                        parseIntJsonArray(subEffect.get(Properties.MARK_DISTRIBUTION.getJKey()).getAsJsonArray()),
                         targets[i]);
             }
 
-            if (properties.has(Properties.MOVE.getJKey())) {
-                effect = new ExtraMoveDecorator(effect, MoveTarget.PLAYER);
-            }
-
-            if (subeffect.has(Properties.MOVE_TARGET.getJKey()) || subeffect.has(Properties.MAX_MOVE_TARGET.getJKey())) {
+            if (subEffect.has(Properties.MOVE_TARGET.getJKey()) || subEffect.has(Properties.MAX_MOVE_TARGET.getJKey())) {
                 effect = new ExtraMoveDecorator(effect, MoveTarget.TARGET);
             }
+        }
+
+        if (properties.has(Properties.MOVE.getJKey())) {
+            effect = new ExtraMoveDecorator(effect, MoveTarget.PLAYER);
         }
 
         return effect;
@@ -275,9 +276,9 @@ public class WeaponParser {
         JsonObject justVisibilityProperties = properties.deepCopy();
         Set<String> keys;
 
-        JsonArray subEffects = properties.getAsJsonArray("subEffects");
+        JsonArray subEffects = properties.getAsJsonArray(SUB_EFFECTS);
         JsonArray targets = properties.getAsJsonArray(TARGET);
-        justVisibilityProperties.remove("subEffects");
+        justVisibilityProperties.remove(SUB_EFFECTS);
         justVisibilityProperties.remove(TARGET);
 
         Map<String, String> effectProperties = new LinkedHashMap<>(getProperties(justVisibilityProperties));

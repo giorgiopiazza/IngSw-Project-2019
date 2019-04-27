@@ -6,6 +6,7 @@ import model.Game;
 import model.player.Player;
 import model.player.PlayerPosition;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CommandValidator {
@@ -18,125 +19,70 @@ public class CommandValidator {
      * Method that verifies the conformity of the command with the target.
      * For example an effect whose target is a Player can not have a command that specifies a room as target
      *
-     * @param command String containing the command
-     * @param target the target to verify
+     * @param command    String containing the command
+     * @param targetType the target to verify
      * @return true if the command contains the right parameters for the target
+     * @throws NullPointerException    if target is null
+     * @throws InvalidCommandException if the command is invalid
      */
-    public static boolean targetValidate(String command, TargetType target) {
-        switch (target) {
+    public static boolean isTargetTypeValid(String command, TargetType targetType) {
+        if (targetType == null) throw new NullPointerException();
+
+        switch (targetType) {
             case PLAYER:
-                if(command.contains("-t")) {
-                    if (command.contains("-v")) throw new InvalidCommandException();
-                    if (command.contains("-x")) throw new InvalidCommandException();
-
-                    return true;
-                } else throw new InvalidCommandException();
+                if (!command.contains("-t")) {
+                    throw new InvalidCommandException();
+                }
+                break;
             case SQUARE:
-                if(command.contains("-v")) {
-                    if (command.contains("-t")) throw new InvalidCommandException();
-                    if (command.contains("-x")) throw new InvalidCommandException();
-
-                    return true;
-                } else throw new InvalidCommandException();
+                if (!command.contains("-v")) {
+                    throw new InvalidCommandException();
+                }
+                break;
             default:
-                if(command.contains("-x")) {
-                    if (command.contains("-t")) throw new InvalidCommandException();
-                    if (command.contains("-v")) throw new InvalidCommandException();
-
-                    return true;
-                } else throw new InvalidCommandException();
+                if (!command.contains("-x")) {
+                    throw new InvalidCommandException();
+                }
         }
+
+        return true;
     }
 
     /**
      * Method that verifies if the effect can shoot to the number of targets
      * in the command
      *
-     * @param command the String containing the command
-     * @param target array of TargetType specifying the type of target the effects can shoot
-     * @param number int that states the number of targets that the effect can have
+     * @param command     the String containing the command
+     * @param targetType  array of TargetType specifying the type of target the effects can shoot
+     * @param number      int that states the number of targets that the effect can have
      * @param exactNumber boolean, if true the number of target is exactly number, if false number is the maximum
      * @return true if the number of targets is compatible with number
+     * @throws NullPointerException if target is null
      */
-    public static boolean targetNum(String command, TargetType target, int number, boolean exactNumber) {
+    public static boolean isTargetNumValid(String command, TargetType targetType, int number, boolean exactNumber) {
+        int targetNum;
 
-        if(target == null) throw new NullPointerException();
+        if (targetType == null) throw new NullPointerException();
 
-        switch (target) {
+        switch (targetType) {
             case PLAYER:
                 List<Integer> targetsIDs = CommandUtility.getAttributesID(command.split(" "), "-t");
 
-                if(exactNumber) {
-                    return (targetsIDs.size() == number);
-                } else {
-                    return (targetsIDs.size() <= number);
-                }
+                targetNum = targetsIDs.size();
+                break;
             case SQUARE:
                 List<PlayerPosition> squares = CommandUtility.getPositions(command.split(" "), "-v");
 
-                if(exactNumber) {
-                    return (squares.size() == number);
-                } else {
-                    return (squares.size() <= number);
-                }
+                targetNum = squares.size();
+                break;
             default:
                 List<Integer> rooms = CommandUtility.getAttributesID(command.split(" "), "-x");
 
-                if(exactNumber) {
-                    return (rooms.size() == number);
-                } else {
-                    return (rooms.size() <= number);
-                }
+                targetNum = rooms.size();
         }
-            /*
-            int targetsNum = targets.length;
-            if(targetsNum == 2) {
-                if((targets[0].equals(TargetType.PLAYER) && targets[1].equals(TargetType.SQUARE)) ||
-                    targets[0].equals(TargetType.SQUARE) && targets[1].equals(TargetType.PLAYER)) {
-                    if(command.contains("-x")) throw new InvalidCommandException();
 
-                    List<Integer> targetsIDs = CommandUtility.getAttributesID(command.split(" "), "-t");
-                    List<PlayerPosition> squares = CommandUtility.getPositions(command.split(" "), "-v");
-
-                    if(exactNumber) {
-                        return (targetsIDs.size() == number) && (squares.size() == number);
-                    } else {
-                        return (targetsIDs.size() <= number) && (squares.size() <= number);
-                    }
-
-
-                }
-
-                if((targets[0].equals(TargetType.PLAYER) && targets[1].equals(TargetType.ROOM)) ||
-                    targets[0].equals(TargetType.ROOM) && targets[1].equals(TargetType.PLAYER)) {
-                    if(command.contains("-v")) throw new InvalidCommandException();
-
-                    List<Integer> targetsIDs = CommandUtility.getAttributesID(command.split(" "), "-t");
-                    List<Integer> rooms = CommandUtility.getAttributesID(command.split(" "), "-x");
-
-                    if(exactNumber) {
-                        return (targetsIDs.size() == number) && (rooms.size() == number);
-                    } else {
-                        return (targetsIDs.size() <= number) && (rooms.size() <= number);
-                    }
-
-                }
-
-                if((targets[0].equals(TargetType.SQUARE) && targets[1].equals(TargetType.ROOM)) ||
-                    targets[0].equals(TargetType.ROOM) && targets[1].equals(TargetType.SQUARE)) {
-                    if(command.contains("-t")) throw new InvalidCommandException();
-
-                    List<PlayerPosition> squares = CommandUtility.getPositions(command.split(" "), "-v");
-                    List<Integer> rooms = CommandUtility.getAttributesID(command.split(" "), "-x");
-
-                    if(!exactNumber) {
-                        return (squares.size() <= number) && (rooms.size() <=number);
-                    } else {
-                        return (squares.size() == number) && (rooms.size() ==number);
-                    }
-                }
-
-             */
+        return ((exactNumber && targetNum == number) ||
+                (!exactNumber && targetNum <= number));
     }
 
     /**
@@ -144,53 +90,49 @@ public class CommandValidator {
      * Using the boolean parameter we indicate that the distance has to be exactly the one specified
      * otherwise the minimum distance
      *
-     * @param command String containing the command
-     * @param target TargetType from which we need to verify the distance
-     * @param distance integer specifying the distance to verify
+     * @param command       String containing the command
+     * @param targetType    TargetType from which we need to verify the distance
+     * @param distance      integer specifying the distance to verify
      * @param exactDistance boolean true if the distance is exact, otherwise the minimum one
      * @return true if the target's distance fits with the one specified, otherwise false
+     * @throws NullPointerException    if target is null
+     * @throws InvalidCommandException if the command is invalid
      */
-    public static boolean areFar(String command, TargetType target, int distance, boolean exactDistance) {
+    public static boolean isTargetDistanceValid(String command, TargetType targetType, int distance, boolean exactDistance) {
+        int tempDist;
+        List<PlayerPosition> squaresPositions;
         Player shooter = Game.getInstance().getPlayerByID(CommandUtility.getPlayerID(command.split("")));
 
-        if(target == null) throw new NullPointerException();
+        if (targetType == null) throw new NullPointerException();
 
-        switch (target) {
+        switch (targetType) {
             case PLAYER:
                 List<Player> targets = CommandUtility.getPlayersByIDs(CommandUtility.getAttributesID(command.split(" "), "-t"));
 
-                for(int i = 0; i < targets.size(); ++i) {
-                    if(exactDistance) {
-                        if(shooter.getPosition().distanceOf(targets.get(i).getPosition()) != distance) {
-                            return false;
-                        }
-                    } else {
-                        if(shooter.getPosition().distanceOf(targets.get(i).getPosition()) < distance) {
-                            return false;
-                        }
-                    }
+                // Builds the ArrayList of targets PlayerPosition
+                squaresPositions = new ArrayList<>();
+                for (Player target : targets) {
+                    squaresPositions.add(target.getPosition());
                 }
 
-                return true;
+                break;
             case SQUARE:
-                List<PlayerPosition> squaresPositions = CommandUtility.getPositions(command.split(" "), "-v");
-
-                for(int i = 0; i < squaresPositions.size(); ++i) {
-                    if(exactDistance) {
-                        if(shooter.getPosition().distanceOf(squaresPositions.get(i)) != distance) {
-                            return false;
-                        }
-                    } else {
-                        if(shooter.getPosition().distanceOf(squaresPositions.get(i)) < distance) {
-                            return false;
-                        }
-                    }
-                }
-
-                return true;
+                squaresPositions = CommandUtility.getPositions(command.split(" "), "-v");
+                break;
             default:
-                // rooms do not have a definition of distance
+                // Rooms do not have a definition of distance
                 throw new InvalidCommandException();
         }
+
+        for (PlayerPosition position : squaresPositions) {
+            tempDist = shooter.getPosition().distanceOf(position);
+
+            if ((exactDistance && tempDist != distance) ||
+                    (!exactDistance && tempDist < distance)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
