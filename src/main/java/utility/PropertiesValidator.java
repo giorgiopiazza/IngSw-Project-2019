@@ -13,6 +13,9 @@ import java.util.*;
 
 public class PropertiesValidator {
 
+    private PropertiesValidator() {
+        throw new IllegalStateException("Utility class");
+    }
 
     /**
      * Method that verifies if the startingPos can see all the other positions

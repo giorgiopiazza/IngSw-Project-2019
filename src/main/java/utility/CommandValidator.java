@@ -10,6 +10,10 @@ import java.util.List;
 
 public class CommandValidator {
 
+    private CommandValidator() {
+        throw new IllegalStateException("Utility class");
+    }
+
     /**
      * Method that verifies the conformity of the command with the target.
      * For example an effect whose target is a Player can not have a command that specifies a room as target
