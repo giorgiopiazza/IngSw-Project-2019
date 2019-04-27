@@ -100,7 +100,7 @@ public class CommandValidator {
      */
     public static boolean isTargetDistanceValid(String command, TargetType targetType, int distance, boolean exactDistance) {
         int tempDist;
-        List<PlayerPosition> squaresPositions;
+        List<PlayerPosition> squares;
         Player shooter = Game.getInstance().getPlayerByID(CommandUtility.getPlayerID(command.split("")));
 
         if (targetType == null) throw new NullPointerException();
@@ -110,21 +110,20 @@ public class CommandValidator {
                 List<Player> targets = CommandUtility.getPlayersByIDs(CommandUtility.getAttributesID(command.split(" "), "-t"));
 
                 // Builds the ArrayList of targets PlayerPosition
-                squaresPositions = new ArrayList<>();
+                squares = new ArrayList<>();
                 for (Player target : targets) {
-                    squaresPositions.add(target.getPosition());
+                    squares.add(target.getPosition());
                 }
-
                 break;
             case SQUARE:
-                squaresPositions = CommandUtility.getPositions(command.split(" "), "-v");
+                squares = CommandUtility.getPositions(command.split(" "), "-v");
                 break;
             default:
                 // Rooms do not have a definition of distance
                 throw new InvalidCommandException();
         }
 
-        for (PlayerPosition position : squaresPositions) {
+        for (PlayerPosition position : squares) {
             tempDist = shooter.getPosition().distanceOf(position);
 
             if ((exactDistance && tempDist != distance) ||
