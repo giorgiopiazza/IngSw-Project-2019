@@ -20,7 +20,7 @@ public class PropertiesValidator {
     }
 
     /**
-     * Method that verifies if the startingPos can see all the other positions
+     * Method that verifies if the shooterPosition can see all the other positions
      *
      * @param shooterPosition PlayerPosition of the shooter
      * @param targetPositions PlayerPosition of the targets
@@ -37,21 +37,23 @@ public class PropertiesValidator {
     }
 
     /**
-     * Method that verifies if the positions are concatenatedVisible with the startingPos
+     * Method that verifies if the starting position (shooterPosition) is concatenatedVisible
+     * with all the others in the List. PlayerPositions are concatenated visible if and only if
+     * each position can see the one next to her in the List
      *
-     * @param startingPos PLayerPosition beginning of the chain
-     * @param positions   the positions you want to see if are concatenatedVisible
-     * @return true if all the positions are concatenated visible, otherwise false
+     * @param shooterPosition PlayerPosition of the shooter
+     * @param targetPositions PlayerPosition of the targets
+     * @return true if the positions are concatenatedVisible, otherwise false
      */
-    public static boolean areConcatenatedVisible(PlayerPosition startingPos, List<PlayerPosition> positions) {
+    public static boolean areConcatenatedVisible(PlayerPosition shooterPosition, List<PlayerPosition> targetPositions) {
         PlayerPosition tempVisiblePos;
 
-        if (positions.size() == 1) {
-            return startingPos.canSee(positions.get(0));
+        if (targetPositions.size() == 1) {
+            return shooterPosition.canSee(targetPositions.get(0));
         }
 
-        tempVisiblePos = startingPos;
-        for (PlayerPosition position : positions) {
+        tempVisiblePos = shooterPosition;
+        for (PlayerPosition position : targetPositions) {
             if (!tempVisiblePos.canSee(position)) {
                 return false;
             }
@@ -59,41 +61,6 @@ public class PropertiesValidator {
         }
 
         return true;
-    }
-
-    /**
-     * Method that verifies if the targets are concatenated visible,
-     * always working on the position of the target
-     *
-     * @param command    String containing the command
-     * @param targetType TargetType to verify concatenated visibility in command
-     * @return true if targets are concatenatedVisible, otherwise false
-     */
-    public static boolean areConcatenatedVisible(String command, TargetType targetType) {
-        List<PlayerPosition> squares;
-
-        String[] splitCommand = command.split(" ");
-        Player shooter = Game.getInstance().getPlayerByID(CommandUtility.getShooterPlayerID(splitCommand));
-
-        switch (targetType) {
-            case PLAYER:
-                List<Player> targets = CommandUtility.getPlayersByIDs(CommandUtility.getAttributesID(splitCommand, "-t"));
-
-                // Builds the ArrayList of targets PlayerPosition
-                squares = new ArrayList<>();
-                for (Player target : targets) {
-                    squares.add(target.getPosition());
-                }
-                break;
-            case SQUARE:
-                squares = CommandUtility.getPositions(splitCommand, "-v");
-                break;
-            default:
-                // Rooms can never be concatenated visible
-                throw new InvalidCommandException();
-        }
-
-        return areConcatenatedVisible(shooter.getPosition(), squares);
     }
 
     /**
@@ -254,7 +221,19 @@ public class PropertiesValidator {
         return true;
     }
 
-
+    /**
+     * Method that verifies if each target position is far enough from the shooter's one
+     * Using the boolean attribute exactDistance the method splits in two different validations:
+     * if true the distance passed must be the same for all positions, if false it is the minimum
+     * distance from which the positions have to be from the shooter one
+     *
+     * @param shooterPosition PlayerPosition of the shooter
+     * @param targetPositions List of PlayerPositions of the targets
+     * @param targetType      TargetType of the target positions
+     * @param distance        int specifying the distance
+     * @param exactDistance   boolean to verify the exact or minimum distance (true -> exact)
+     * @return true if all the target positions are distant enough from the shooting one, otherwise false
+     */
     private static boolean isDistantEnough(PlayerPosition shooterPosition, List<PlayerPosition> targetPositions, TargetType targetType, int distance, boolean exactDistance) {
         int tempDist;
 
@@ -352,6 +331,17 @@ public class PropertiesValidator {
         return !(properties.containsKey(Properties.MOVE_INLINE.getJKey()) && !PropertiesValidator.isMovingDirectionally(command));
     }
 
+
+    /**
+     * Method that verifies if the distance between the shooter and the target positions are valid due to
+     * the properties found in the Map properties and the TargetType of the targets
+     *
+     * @param properties      Map containing the properties of the effect
+     * @param shooterPosition PlayerPosition of the shooter
+     * @param targetPositions List of PlayerPosition of the targets
+     * @param targetType      TargetType of the targets
+     * @return true if all the target positions are valid with the shooting one, otherwise false
+     */
     public static boolean isDistanceValid(Map<String, String> properties, PlayerPosition shooterPosition, List<PlayerPosition> targetPositions, TargetType targetType) {
         // Distance validation
         int distance;
@@ -370,25 +360,45 @@ public class PropertiesValidator {
         return isDistantEnough(shooterPosition, targetPositions, targetType, distance, exactDistance);
     }
 
+
+    /**
+     * Method that verifies the poritioning properties of the effect: inLine and moveToLastTarget
+     *
+     * @param properties      Map containing the properties of the effect
+     * @param shooterPosition PlayerPosition of the shooter
+     * @param targetPositions List of PlayerPosition of the targets
+     * @return true if both or only one of the two properties are verified, otherwise false
+     */
     public static boolean isPositioningValid(Map<String, String> properties, PlayerPosition shooterPosition, List<PlayerPosition> targetPositions) {
         return !((properties.containsKey(Properties.INLINE.getJKey()) && !areInLine(shooterPosition, targetPositions)) || // InLine targets validation
                 (properties.containsKey(Properties.MOVE_TO_LAST_TARGET.getJKey()) && !lastTargetPos(shooterPosition, targetPositions))); // Move to last target validation
     }
 
+
+    /**
+     * Method that verifies the visibility from the shooter position to the targets' ones
+     * Both visibilities are validated in this method taking care that an effect can never
+     * have them together in the same Map of properties
+     *
+     * @param properties      Map containing the properties of the effect
+     * @param shooterPosition PlayerPosition of the shooter
+     * @param targetPositions List of PlayerPosition of the targets
+     * @return true if the visibility is verified for each target position, otherwise false
+     */
     public static boolean isVisibilityValid(Map<String, String> properties, PlayerPosition shooterPosition, List<PlayerPosition> targetPositions) {
         // Targets Same Position
         if (properties.containsKey(Properties.SAME_POSITION.getJKey()) && !areInSamePosition(targetPositions)) {
             return false;
         }
 
-        // TODO Fatto di fretta, non sono certo che sia corretto
         if (properties.containsKey(Properties.VISIBLE.getJKey()) && (!Boolean.parseBoolean(properties.get(Properties.VISIBLE.getJKey())) && areVisible(shooterPosition, targetPositions) ||
                 (Boolean.parseBoolean(properties.get(Properties.VISIBLE.getJKey())) && !areVisible(shooterPosition, targetPositions)))) {
             return false;
+        } else if (properties.containsKey(Properties.CONCATENATED_VISIBLE.getJKey()) && !Boolean.parseBoolean(properties.get(Properties.CONCATENATED_VISIBLE.getJKey())) && // target positions can never be NOT concatenatedVisible
+                areConcatenatedVisible(shooterPosition, targetPositions)) {
+            return false;
+        } else {
+            return true;
         }
-
-        // TODO ConcatenatedVisibility
-
-        return true;
     }
 }
