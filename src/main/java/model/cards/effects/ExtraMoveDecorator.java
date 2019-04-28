@@ -30,7 +30,7 @@ public class ExtraMoveDecorator extends ExtraEffectDecorator {
         String[] splitCommand = command.split(" ");
 
         if (moveTarget == MoveTarget.PLAYER) {
-            Player shooter = Game.getInstance().getPlayerByID(CommandUtility.getPlayerID(splitCommand));
+            Player shooter = Game.getInstance().getPlayerByID(CommandUtility.getShooterPlayerID(splitCommand));
             List<PlayerPosition> shooterMovement = CommandUtility.getPositions(splitCommand, "-m");
             shooter.changePosition(shooterMovement.get(0).getCoordX(), shooterMovement.get(0).getCoordY());
         } else { // MoveTarget.TARGET

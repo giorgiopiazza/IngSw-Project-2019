@@ -42,7 +42,7 @@
           "properties": {
             "visible": true,
 			"target": ["PLAYER"],
-            "maxTargetNum":2,
+            "maxTargetNum": 2,
             "damageDistribution": [1,1]
           }
         },

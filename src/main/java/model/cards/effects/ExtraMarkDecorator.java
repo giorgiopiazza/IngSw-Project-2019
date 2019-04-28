@@ -31,7 +31,7 @@ public class ExtraMarkDecorator extends ExtraEffectDecorator {
 
         List<Integer> targetsID;
         String[] splitCommand = command.split(" ");
-        Player shooter = Game.getInstance().getPlayerByID(CommandUtility.getPlayerID(splitCommand));
+        Player shooter = Game.getInstance().getPlayerByID(CommandUtility.getShooterPlayerID(splitCommand));
 
         switch (targetType) {
             case PLAYER:

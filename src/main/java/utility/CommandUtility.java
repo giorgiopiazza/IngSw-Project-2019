@@ -40,7 +40,7 @@ public class CommandUtility {
      * @param splitCommand array in which the command is split
      * @return the ID of the player. If the ID is missing -1 is returned
      */
-    public static int getPlayerID(String[] splitCommand) {
+    public static int getShooterPlayerID(String[] splitCommand) {
         int pos = getCommandParamPosition(splitCommand, "-pid");
 
         if (pos != -1) {
@@ -132,11 +132,40 @@ public class CommandUtility {
         if (playersIDs == null) throw new NullPointerException("Can not take any player from null");
 
         List<Player> players = new ArrayList<>();
-        for (int i = 0; i < playersIDs.size(); ++i) {
-            players.add(Game.getInstance().getPlayerByID(playersIDs.get(i)));
+        for (int playerID : playersIDs) {
+            players.add(Game.getInstance().getPlayerByID(playerID));
         }
 
         return players;
+    }
+
+    public static List<PlayerPosition> getTargetPositions(String[] splitCommand, TargetType targetType) {
+        List<PlayerPosition> squares;
+        List<Player> targets;
+
+        switch (targetType) {
+            case PLAYER:
+                targets = CommandUtility.getPlayersByIDs(CommandUtility.getAttributesID(splitCommand, "-t"));
+                squares = new ArrayList<>();
+
+                for (Player targetPlayer : targets) {
+                    squares.add(targetPlayer.getPosition());
+                }
+
+                break;
+            case SQUARE:
+                squares = CommandUtility.getPositions(splitCommand, "-v");
+                break;
+            default:
+                targets = Game.getInstance().getGameMap().getPlayersInRoom(CommandUtility.getRoomColor(splitCommand));
+                squares = new ArrayList<>();
+
+                for (Player targetPlayer : targets) {
+                    squares.add(targetPlayer.getPosition());
+                }
+        }
+
+        return squares;
     }
 
     /**
@@ -185,15 +214,14 @@ public class CommandUtility {
     }
 
     /**
-     * Method used to set a command that can be used for a validate.
-     * It removes from the original one the parts that are not needed to
-     * be validated for the target specified
+     * Removes from the original command the parts that are not needed
+     * for the validation of the target specified
      *
      * @param command String containing the original command
-     * @param target  the TargetType we only need informations in the new String
-     * @return the String with no other informations that the ones we need for the target
+     * @param target  TargetType of the interested information
+     * @return the String with no other information that the ones we need for the target
      */
-    public static String setTempCommand(String command, TargetType target) {
+    public static String getSubCommand(String command, TargetType target) {
         String[] splitCommand = command.split(" ");
         List<String> splitList = new ArrayList<>(Arrays.asList(splitCommand));
 
@@ -202,7 +230,7 @@ public class CommandUtility {
                 if (command.contains("-v")) {
                     int pos = getCommandParamPosition(splitCommand, "-v");
                     splitList.remove(pos);
-                    splitList.remove(pos + 1);
+                    splitList.remove(pos);
                 }
                 if (command.contains("-x")) {
                     int pos = getCommandParamPosition(splitCommand, "-x");
@@ -215,12 +243,12 @@ public class CommandUtility {
                 if (command.contains("-t")) {
                     int pos = getCommandParamPosition(splitCommand, "-t");
                     splitList.remove(pos);
-                    splitList.remove(pos + 1);
+                    splitList.remove(pos);
                 }
                 if (command.contains("-x")) {
                     int pos = getCommandParamPosition(splitCommand, "-x");
                     splitList.remove(pos);
-                    splitList.remove(pos + 1);
+                    splitList.remove(pos);
                 }
 
                 return String.join(" ", splitList);
@@ -228,12 +256,12 @@ public class CommandUtility {
                 if (command.contains("-t")) {
                     int pos = getCommandParamPosition(splitCommand, "-t");
                     splitList.remove(pos);
-                    splitList.remove(pos + 1);
+                    splitList.remove(pos);
                 }
                 if (command.contains("-v")) {
                     int pos = getCommandParamPosition(splitCommand, "-v");
                     splitList.remove(pos);
-                    splitList.remove(pos + 1);
+                    splitList.remove(pos);
                 }
 
                 return String.join(" ", splitList);

@@ -1,13 +1,13 @@
 package utility;
 
+import enumerations.Properties;
 import enumerations.TargetType;
 import exceptions.command.InvalidCommandException;
-import model.Game;
-import model.player.Player;
+import exceptions.utility.InvalidWeaponPropertiesException;
 import model.player.PlayerPosition;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class CommandValidator {
 
@@ -25,7 +25,7 @@ public class CommandValidator {
      * @throws NullPointerException    if target is null
      * @throws InvalidCommandException if the command is invalid
      */
-    public static boolean isTargetTypeValid(String command, TargetType targetType) {
+    private static boolean isTargetTypeValid(String command, TargetType targetType) {
         if (targetType == null) throw new NullPointerException();
 
         switch (targetType) {
@@ -59,7 +59,7 @@ public class CommandValidator {
      * @return true if the number of targets is compatible with number
      * @throws NullPointerException if target is null
      */
-    public static boolean isTargetNumValid(String command, TargetType targetType, int number, boolean exactNumber) {
+    private static boolean isTargetNumValid(String command, TargetType targetType, int number, boolean exactNumber) {
         int targetNum;
 
         if (targetType == null) throw new NullPointerException();
@@ -86,52 +86,32 @@ public class CommandValidator {
     }
 
     /**
-     * Method used to verify if the specified target is far from the shooter the specified distance.
-     * Using the boolean parameter we indicate that the distance has to be exactly the one specified
-     * otherwise the minimum distance
+     * Checks if command targets are valid based on effect properties
      *
-     * @param command       String containing the command
-     * @param targetType    TargetType from which we need to verify the distance
-     * @param distance      integer specifying the distance to verify
-     * @param exactDistance boolean true if the distance is exact, otherwise the minimum one
-     * @return true if the target's distance fits with the one specified, otherwise false
-     * @throws NullPointerException    if target is null
-     * @throws InvalidCommandException if the command is invalid
+     * @param command    String of command
+     * @param properties Map of effect properties
+     * @param targetType TargetType of the effect target
+     * @return {@code true} if command targets are valid {@code false} otherwise
      */
-    public static boolean isTargetDistanceValid(String command, TargetType targetType, int distance, boolean exactDistance) {
-        int tempDist;
-        List<PlayerPosition> squares;
-        Player shooter = Game.getInstance().getPlayerByID(CommandUtility.getPlayerID(command.split("")));
-
-        if (targetType == null) throw new NullPointerException();
-
-        switch (targetType) {
-            case PLAYER:
-                List<Player> targets = CommandUtility.getPlayersByIDs(CommandUtility.getAttributesID(command.split(" "), "-t"));
-
-                // Builds the ArrayList of targets PlayerPosition
-                squares = new ArrayList<>();
-                for (Player target : targets) {
-                    squares.add(target.getPosition());
-                }
-                break;
-            case SQUARE:
-                squares = CommandUtility.getPositions(command.split(" "), "-v");
-                break;
-            default:
-                // Rooms do not have a definition of distance
-                throw new InvalidCommandException();
+    public static boolean isTargetValid(String command, Map<String, String> properties, TargetType targetType) {
+        // TargetType validation
+        if (!isTargetTypeValid(command, targetType)) {
+            return false;
         }
 
-        for (PlayerPosition position : squares) {
-            tempDist = shooter.getPosition().distanceOf(position);
-
-            if ((exactDistance && tempDist != distance) ||
-                    (!exactDistance && tempDist < distance)) {
-                return false;
-            }
+        // Target number validation
+        int targetNumber;
+        boolean exactNumber;
+        if (properties.containsKey(enumerations.Properties.TARGET_NUM.getJKey())) { // Exact target number
+            targetNumber = Integer.parseInt(properties.get(enumerations.Properties.TARGET_NUM.getJKey()));
+            exactNumber = true;
+        } else if (properties.containsKey(enumerations.Properties.MAX_TARGET_NUM.getJKey())) { // Maximum target number
+            targetNumber = Integer.parseInt(properties.get(Properties.MAX_TARGET_NUM.getJKey()));
+            exactNumber = false;
+        } else {
+            throw new InvalidWeaponPropertiesException();
         }
 
-        return true;
+        return isTargetNumValid(command, targetType, targetNumber, exactNumber);
     }
 }

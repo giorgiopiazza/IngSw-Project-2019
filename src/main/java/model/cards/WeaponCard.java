@@ -116,7 +116,7 @@ public class WeaponCard extends UsableCard {
             Effect effect;
 
             String[] splitCommand = command.split(" ");
-            int pid = CommandUtility.getPlayerID(splitCommand);
+            int pid = CommandUtility.getShooterPlayerID(splitCommand);
             int eid = CommandUtility.getEffectID(splitCommand);
 
             UserPlayer shootingPlayer = (UserPlayer) Game.getInstance().getPlayerByID(pid);

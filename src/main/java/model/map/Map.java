@@ -180,6 +180,16 @@ public class Map {
     }
 
     /**
+     * Returns the square specifying a playerPosition
+     *
+     * @param playerPosition position of a player
+     * @return the Square represented by the playerPosition
+     */
+    public Square getSquare(PlayerPosition playerPosition) {
+        return rooms[playerPosition.getCoordX()][playerPosition.getCoordY()];
+    }
+
+    /**
      * Method to obtain all the players who are in the specified position
      *
      * @param pos the position in which there are the Players returned
