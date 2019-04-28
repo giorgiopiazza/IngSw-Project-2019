@@ -66,9 +66,15 @@ public class AmmoTile extends Card {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof AmmoTile)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         AmmoTile ammoTile = (AmmoTile) o;
-        return pickPowerup == ammoTile.pickPowerup && ammoTile.ammoOnTile.equals(this.ammoOnTile);
+        return pickPowerup == ammoTile.pickPowerup &&
+                Objects.equals(ammoOnTile, ammoTile.ammoOnTile);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), ammoOnTile, pickPowerup);
     }
 }

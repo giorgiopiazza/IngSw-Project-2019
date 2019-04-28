@@ -21,8 +21,14 @@ public class PowerupCard extends UsableCard {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof PowerupCard)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
         PowerupCard that = (PowerupCard) o;
-        return super.equals(that) && this.value.equals(that.value);
+        return value == that.value;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), value);
     }
 }

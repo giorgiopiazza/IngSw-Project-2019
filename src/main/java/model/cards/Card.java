@@ -17,8 +17,13 @@ public abstract class Card {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Card)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         Card card = (Card) o;
-        return this.image.equals(card.image);
+        return Objects.equals(image, card.image);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(image);
     }
 }

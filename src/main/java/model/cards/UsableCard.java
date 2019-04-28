@@ -3,6 +3,7 @@ package model.cards;
 import model.cards.effects.Effect;
 
 import java.io.File;
+import java.util.Objects;
 
 public abstract class UsableCard extends Card {
     private final String name;
@@ -25,9 +26,15 @@ public abstract class UsableCard extends Card {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof UsableCard)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
         UsableCard that = (UsableCard) o;
-        return getName().equals(that.getName()) &&
-                getBaseEffect().equals(that.getBaseEffect());
+        return Objects.equals(name, that.name) &&
+                Objects.equals(baseEffect, that.baseEffect);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), name, baseEffect);
     }
 }
