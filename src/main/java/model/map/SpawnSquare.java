@@ -54,7 +54,7 @@ public class SpawnSquare extends Square {
      * @return true if the weapon is removed, otherwise false
      */
     public boolean removeWeapon(WeaponCard weapon) {
-        if(weapon == null) throw new NullPointerException("weapon cannot be null");
+        if (weapon == null) throw new NullPointerException("weapon cannot be null");
         for (int i = 0; i < MAX_WEAPONS; i++) {
             if (weapons[i] != null && weapons[i].equals(weapon)) {
                 weapons[i] = null;

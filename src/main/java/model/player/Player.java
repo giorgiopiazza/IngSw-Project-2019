@@ -45,7 +45,7 @@ public abstract class Player {
      * @return the minimum distance between two players
      */
     public int distanceOf(Player other) {
-        if(this.samePosition(other)) return 0;
+        if (this.samePosition(other)) return 0;
 
         PlayerPosition p1 = new PlayerPosition(this.position);
         PlayerPosition p2 = new PlayerPosition(other.position);
@@ -103,7 +103,7 @@ public abstract class Player {
     }
 
     public boolean canSee(Player other) {
-        if(this.samePosition(other)) return true;
+        if (this.samePosition(other)) return true;
 
         PlayerPosition p1 = new PlayerPosition(this.position);
         PlayerPosition p2 = new PlayerPosition(other.position);

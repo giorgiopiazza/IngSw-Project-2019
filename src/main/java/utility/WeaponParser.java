@@ -5,6 +5,7 @@ import enumerations.Ammo;
 import enumerations.MoveTarget;
 import enumerations.Properties;
 import enumerations.TargetType;
+import exceptions.file.JsonFileNotFoundException;
 import model.cards.WeaponCard;
 import model.cards.effects.*;
 import model.cards.weaponstates.SemiChargedWeapon;
@@ -37,7 +38,7 @@ public class WeaponParser {
         InputStream is = WeaponParser.class.getResourceAsStream(path);
 
         if (is == null) {
-            return cards;
+            throw new JsonFileNotFoundException("File " + path + " not found");
         }
 
         JsonParser parser = new JsonParser();

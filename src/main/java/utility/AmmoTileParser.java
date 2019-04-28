@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import enumerations.Ammo;
+import exceptions.file.JsonFileNotFoundException;
 import model.cards.AmmoTile;
 import model.player.AmmoQuantity;
 
@@ -28,7 +29,7 @@ public class AmmoTileParser {
         InputStream is = AmmoTileParser.class.getResourceAsStream(path);
 
         if (is == null) {
-            return cards;
+            throw new JsonFileNotFoundException("File " + path + " not found");
         }
 
         JsonParser parser = new JsonParser();

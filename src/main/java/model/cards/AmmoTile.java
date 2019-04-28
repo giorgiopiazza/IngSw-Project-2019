@@ -31,28 +31,28 @@ public class AmmoTile extends Card {
     public void giveResources(UserPlayer pickingPlayer) {
         if (pickingPlayer == null) throw new NullPointerException("Player can not be null");
 
-        if(ammoOnTile.getBlueAmmo() != 0) {
-            if(ammoOnTile.getBlueAmmo() < 0) throw new NegativeQuantityException();
+        if (ammoOnTile.getBlueAmmo() != 0) {
+            if (ammoOnTile.getBlueAmmo() < 0) throw new NegativeQuantityException();
             int tempAmmoCounter = ammoOnTile.getBlueAmmo();
-            for(int i = 0; i < tempAmmoCounter; ++i) {
+            for (int i = 0; i < tempAmmoCounter; ++i) {
                 Ammo tempAmmo = Ammo.BLUE;
                 pickingPlayer.getPlayerBoard().addAmmo(tempAmmo);
             }
         }
 
-        if(ammoOnTile.getRedAmmo() != 0) {
-            if(ammoOnTile.getRedAmmo() < 0) throw new NegativeQuantityException();
+        if (ammoOnTile.getRedAmmo() != 0) {
+            if (ammoOnTile.getRedAmmo() < 0) throw new NegativeQuantityException();
             int tempAmmoCounter = ammoOnTile.getRedAmmo();
-            for(int i = 0; i < tempAmmoCounter; ++i) {
+            for (int i = 0; i < tempAmmoCounter; ++i) {
                 Ammo tempAmmo = Ammo.RED;
                 pickingPlayer.getPlayerBoard().addAmmo(tempAmmo);
             }
         }
 
-        if(ammoOnTile.getYellowAmmo() != 0) {
-            if(ammoOnTile.getYellowAmmo() < 0) throw new NegativeQuantityException();
+        if (ammoOnTile.getYellowAmmo() != 0) {
+            if (ammoOnTile.getYellowAmmo() < 0) throw new NegativeQuantityException();
             int tempAmmoCounter = ammoOnTile.getYellowAmmo();
-            for(int i = 0; i < tempAmmoCounter; ++i) {
+            for (int i = 0; i < tempAmmoCounter; ++i) {
                 Ammo tempAmmo = Ammo.YELLOW;
                 pickingPlayer.getPlayerBoard().addAmmo(tempAmmo);
             }

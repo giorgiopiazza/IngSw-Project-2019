@@ -154,50 +154,50 @@ public class WeaponBaseEffect extends Effect {
         if (getProperties().containsKey(Properties.VISIBLE.getJKey())) {
             Player shooter = Game.getInstance().getPlayerByID(CommandUtility.getPlayerID(command.split(" ")));
 
-            if(getProperties().containsKey(Properties.MOVE_TARGET_BEFORE.getJKey()) && command.contains("-z")) {
+            if (getProperties().containsKey(Properties.MOVE_TARGET_BEFORE.getJKey()) && command.contains("-z")) {
                 throw new InvalidCommandException();
             }
 
             // targets move or must move before
-            if(getProperties().containsKey(Properties.MOVE_TARGET_BEFORE.getJKey()) ||
-                CommandUtility.getBoolParam(command.split(" "), "-z")) {
+            if (getProperties().containsKey(Properties.MOVE_TARGET_BEFORE.getJKey()) ||
+                    CommandUtility.getBoolParam(command.split(" "), "-z")) {
 
                 List<PlayerPosition> movingPositions = CommandUtility.getPositions(command.split(" "), "-u");
 
                 // also shooter must move before
-                if(command.contains("-y") && CommandUtility.getBoolParam(command.split(" "), "-y")) {
-                    if(!PropertiesValidator.areVisible(CommandUtility.getPositions(command.split(" "), "-m").get(0), movingPositions)) {
+                if (command.contains("-y") && CommandUtility.getBoolParam(command.split(" "), "-y")) {
+                    if (!PropertiesValidator.areVisible(CommandUtility.getPositions(command.split(" "), "-m").get(0), movingPositions)) {
                         return false;
                     }
                 } else {    // only targets must move before
-                    if(!PropertiesValidator.areVisible(shooter.getPosition(), movingPositions)) {
+                    if (!PropertiesValidator.areVisible(shooter.getPosition(), movingPositions)) {
                         return false;
                     }
                 }
 
                 // after the movement the targets are in the same position
-                if(getProperties().containsKey(Properties.SAME_POSITION.getJKey())) {
-                    if(!PropertiesValidator.inSamePosition(movingPositions)) {
+                if (getProperties().containsKey(Properties.SAME_POSITION.getJKey())) {
+                    if (!PropertiesValidator.inSamePosition(movingPositions)) {
                         return false;
                     }
                 }
             } else {    // target does NOT move before
                 List<Player> targets = CommandUtility.getPlayersByIDs(CommandUtility.getAttributesID(command.split(" "), "-t"));
                 // shooter moves before
-                if(command.contains("-y") && CommandUtility.getBoolParam(command.split(" "), "-y")) {
-                    if(!PropertiesValidator.areVisible(command, getTargets()[0], true)) {
+                if (command.contains("-y") && CommandUtility.getBoolParam(command.split(" "), "-y")) {
+                    if (!PropertiesValidator.areVisible(command, getTargets()[0], true)) {
                         return false;
                     }
                 }
 
                 // shooter does NOT move
-                if(!PropertiesValidator.areVisible(command, getTargets()[0], false)) {
+                if (!PropertiesValidator.areVisible(command, getTargets()[0], false)) {
                     return false;
                 }
 
                 // targets are in the same position
-                if(getProperties().containsKey(Properties.SAME_POSITION.getJKey())) {
-                    if(!PropertiesValidator.inSamePosition(Game.getInstance().getPlayersPositions(targets))) {
+                if (getProperties().containsKey(Properties.SAME_POSITION.getJKey())) {
+                    if (!PropertiesValidator.inSamePosition(Game.getInstance().getPlayersPositions(targets))) {
                         return false;
                     }
                 }
@@ -207,22 +207,22 @@ public class WeaponBaseEffect extends Effect {
         } else throw new InvalidWeaponPropertiesException();
 
         // moveToLastTarget validation
-        if(getProperties().containsKey(Properties.MOVE_TO_LAST_TARGET.getJKey())) {
-            if(command.contains("-u") && CommandUtility.getAttributesID(command.split(" "), "-t").size() ==
-                CommandUtility.getPositions(command.split(" "), "-u").size()) {
-                if(!PropertiesValidator.lastTargetPos(command, true)) {
+        if (getProperties().containsKey(Properties.MOVE_TO_LAST_TARGET.getJKey())) {
+            if (command.contains("-u") && CommandUtility.getAttributesID(command.split(" "), "-t").size() ==
+                    CommandUtility.getPositions(command.split(" "), "-u").size()) {
+                if (!PropertiesValidator.lastTargetPos(command, true)) {
                     return false;
                 }
             } else {
-                if(!PropertiesValidator.lastTargetPos(command, false)) {
+                if (!PropertiesValidator.lastTargetPos(command, false)) {
                     return false;
                 }
             }
         }
 
         // moveInLine validation (only targets can have this way of moving)
-        if(getProperties().containsKey(Properties.MOVE_INLINE.getJKey())) {
-            if(!PropertiesValidator.isMovingDirectionally(command)) {
+        if (getProperties().containsKey(Properties.MOVE_INLINE.getJKey())) {
+            if (!PropertiesValidator.isMovingDirectionally(command)) {
                 return false;
             }
         }

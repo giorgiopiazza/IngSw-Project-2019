@@ -53,7 +53,6 @@ public class PropertiesValidator {
             shooterPos = Game.getInstance().getPlayerByID(CommandUtility.getPlayerID(splitCommand)).getPosition();
         }
 
-
         switch (targetType) {
             case PLAYER:
                 List<Player> targets = CommandUtility.getPlayersByIDs(CommandUtility.getAttributesID(splitCommand, "-t"));

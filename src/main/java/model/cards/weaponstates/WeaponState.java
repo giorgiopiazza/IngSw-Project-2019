@@ -35,7 +35,6 @@ public interface WeaponState {
     /**
      * Method that executes the effect of the WeaponState
      *
-     *
      * @param effect
      * @param command
      * @throws WeaponNotChargedException exception thrown in case the Weapon is not charged

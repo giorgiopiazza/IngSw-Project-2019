@@ -94,7 +94,7 @@ public class Game {
      * Starts the game
      *
      * @throws GameAlreadyStartedException when game is already started
-     * @throws NotEnoughPlayersException when there aren't enough players for start the game
+     * @throws NotEnoughPlayersException   when there aren't enough players for start the game
      */
     public void startGame() throws GameAlreadyStartedException, NotEnoughPlayersException {
         if (started) throw new GameAlreadyStartedException("the game is already in progress");
@@ -124,7 +124,6 @@ public class Game {
     }
 
     /**
-     *
      * @throws GameAlreadyStartedException
      * @throws MaxPlayerException
      */
@@ -297,8 +296,8 @@ public class Game {
      * @return the UserPlayer with the ID passed
      */
     public Player getPlayerByID(int id) {
-        for(Player p: players) {
-            if(p.getId() == id) return p;
+        for (Player p : players) {
+            if (p.getId() == id) return p;
         }
         throw new MissingIDException(id);
     }
@@ -313,7 +312,7 @@ public class Game {
     public List<PlayerPosition> getPlayersPositions(List<Player> players) {
         List<PlayerPosition> positions = new ArrayList<>();
 
-        for(Player player : players) {
+        for (Player player : players) {
             positions.add(player.getPosition());
         }
 

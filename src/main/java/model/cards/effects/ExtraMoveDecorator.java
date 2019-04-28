@@ -29,21 +29,18 @@ public class ExtraMoveDecorator extends ExtraEffectDecorator {
 
         String[] splitCommand = command.split(" ");
 
-        switch (moveTarget) {
-            case PLAYER:
-                Player shooter = Game.getInstance().getPlayerByID(CommandUtility.getPlayerID(splitCommand));
-                List<PlayerPosition> shooterMovement = CommandUtility.getPositions(splitCommand, "-m");
-                shooter.changePosition(shooterMovement.get(0).getCoordX(), shooterMovement.get(0).getCoordY());
-                break;
-            default:    // TARGET
-                List<Integer> targetsID = CommandUtility.getAttributesID(splitCommand, "-t");
-                List<PlayerPosition> movingPositions = CommandUtility.getPositions(splitCommand, "-u");
+        if (moveTarget == MoveTarget.PLAYER) {
+            Player shooter = Game.getInstance().getPlayerByID(CommandUtility.getPlayerID(splitCommand));
+            List<PlayerPosition> shooterMovement = CommandUtility.getPositions(splitCommand, "-m");
+            shooter.changePosition(shooterMovement.get(0).getCoordX(), shooterMovement.get(0).getCoordY());
+        } else { // MoveTarget.TARGET
+            List<Integer> targetsID = CommandUtility.getAttributesID(splitCommand, "-t");
+            List<PlayerPosition> movingPositions = CommandUtility.getPositions(splitCommand, "-u");
 
-                for(int i = 0; i < movingPositions.size(); ++i) {
-                    Game.getInstance().getPlayerByID(targetsID.get(i)).changePosition(
-                            movingPositions.get(i).getCoordX(), movingPositions.get(i).getCoordY());
-                }
-
+            for (int i = 0; i < movingPositions.size(); ++i) {
+                Game.getInstance().getPlayerByID(targetsID.get(i)).changePosition(
+                        movingPositions.get(i).getCoordX(), movingPositions.get(i).getCoordY());
+            }
         }
     }
 }

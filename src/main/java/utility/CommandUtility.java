@@ -12,6 +12,11 @@ import java.util.Arrays;
 import java.util.List;
 
 public class CommandUtility {
+
+    private CommandUtility() {
+        throw new IllegalStateException("Utility class");
+    }
+
     /**
      * Returns the position of the param in the array of string obtained by splitting
      * the original command on blanks
@@ -171,7 +176,7 @@ public class CommandUtility {
      * Method used to return the value of a boolean parameter in the command
      *
      * @param splitCommand Array of string containing the command
-     * @param param the param we want to know his boolean value
+     * @param param        the param we want to know his boolean value
      * @return the boolean value after the specified parameter
      */
     public static boolean getBoolParam(String[] splitCommand, String param) {

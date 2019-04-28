@@ -145,7 +145,7 @@ public class WeaponCard extends UsableCard {
     private void payEffectCost(String command, UserPlayer shootingPlayer, Effect effect) throws NotEnoughAmmoException {
         String[] splitCommand = command.split(" ");
 
-        AmmoQuantity effectCost = ((WeaponBaseEffect)effect).getCost();
+        AmmoQuantity effectCost = ((WeaponBaseEffect) effect).getCost();
         PowerupCard[] powerupCards = shootingPlayer.getPowerups();
 
         List<Integer> powerupsID = CommandUtility.getAttributesID(splitCommand, "-a");

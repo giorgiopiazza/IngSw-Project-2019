@@ -5,6 +5,7 @@ import model.Game;
 import model.player.Player;
 import model.player.PlayerPosition;
 import utility.CommandUtility;
+
 import java.util.List;
 
 public class ExtraDamageDecorator extends ExtraEffectDecorator {
@@ -41,16 +42,16 @@ public class ExtraDamageDecorator extends ExtraEffectDecorator {
                 break;
             case SQUARE:
                 List<PlayerPosition> squares = CommandUtility.getPositions(splitCommand, "-v");
-                for(int i = 0; i < squares.size(); ++i) {
+                for (int i = 0; i < squares.size(); ++i) {
                     Player[] targetSquare = Game.getInstance().getGameMap().getPlayersInSquare(squares.get(i));
-                    for(Player damaged : targetSquare) {
+                    for (Player damaged : targetSquare) {
                         damaged.getPlayerBoard().addDamage(shooter, damageDistribution[i]);
                     }
                 }
                 break;
             default:
                 List<Player> targetRoom = Game.getInstance().getGameMap().getPlayersInRoom(CommandUtility.getRoomColor(splitCommand));
-                for(Player damaged : targetRoom) {
+                for (Player damaged : targetRoom) {
                     damaged.getPlayerBoard().addDamage(shooter, damageDistribution[0]);
                 }
         }

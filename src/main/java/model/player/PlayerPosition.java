@@ -183,14 +183,14 @@ public class PlayerPosition {
             // increment the counter of the steps performed
             steps++;
             // if not even a step has been taken it is because all the roads for that path have been tried with a negative outcome
-            if(cases.isEmpty()) {
+            if (cases.isEmpty()) {
                 steps = 1000;
                 break;
             } else {
                 subProcessSwitches(alreadyVisited, stepsList, cases, p1, p2, steps);
             }
             cases.clear();
-        } while(!p1.equals(p2));
+        } while (!p1.equals(p2));
 
         stepsList.add(steps);
         int minSteps;
@@ -218,9 +218,9 @@ public class PlayerPosition {
      * This static method needs to the other paths that are not executed by the distanceOf
      *
      * @param alreadyVisited list of already visited squares
-     * @param stepsList list with the number of steps of all paths
-     * @param p1 player 1 position
-     * @param p2 player 2 position
+     * @param stepsList      list with the number of steps of all paths
+     * @param p1             player 1 position
+     * @param p2             player 2 position
      */
     private static void subProcessDistanceOf(List<PlayerPosition> alreadyVisited, List<Integer> stepsList, PlayerPosition p1, PlayerPosition p2, int steps) {
         List<Integer> cases = new ArrayList<>();
@@ -231,7 +231,7 @@ public class PlayerPosition {
             selectCases(cases, alreadyVisited, p2);
             steps++;
 
-            if(cases.isEmpty()) {
+            if (cases.isEmpty()) {
                 stepsList.add(1000);
                 return;
             } else {
@@ -246,11 +246,11 @@ public class PlayerPosition {
      * Static method created to simplify distanceOf code
      *
      * @param alreadyVisited list of already visited squares
-     * @param stepsList list with the number of steps of all paths
-     * @param cases list containing the cases to be processed by the switch
-     * @param p1 player 1 position
-     * @param p2 player 2 position
-     * @param steps number of steps already made
+     * @param stepsList      list with the number of steps of all paths
+     * @param cases          list containing the cases to be processed by the switch
+     * @param p1             player 1 position
+     * @param p2             player 2 position
+     * @param steps          number of steps already made
      */
     private static void subProcessSwitches(List<PlayerPosition> alreadyVisited, List<Integer> stepsList, List<Integer> cases, PlayerPosition p1, PlayerPosition p2, int steps) {
         // other paths
@@ -265,9 +265,8 @@ public class PlayerPosition {
                 case 3:
                     subProcessDistanceOf(new ArrayList<>(alreadyVisited), stepsList, p1, new PlayerPosition(p2.getCoordX() - 1, p2.getCoordY()), steps);
                     break;
-                case 4:
+                default:
                     subProcessDistanceOf(new ArrayList<>(alreadyVisited), stepsList, p1, new PlayerPosition(p2.getCoordX(), p2.getCoordY() - 1), steps);
-                    break;
             }
         }
         // path that is examined by this process
@@ -281,9 +280,8 @@ public class PlayerPosition {
             case 3:
                 p2.setCoordX(p2.getCoordX() - 1);
                 break;
-            case 4:
+            default:
                 p2.setCoordY(p2.getCoordY() - 1);
-                break;
         }
     }
 
@@ -291,7 +289,7 @@ public class PlayerPosition {
      * Adds to the list {@code cases} the possible ways to go
      *
      * @param cases list with cases accepted
-     * @param pos the position of player
+     * @param pos   the position of player
      */
     private static void selectCases(List<Integer> cases, List<PlayerPosition> alreadyVisited, PlayerPosition pos) {
         Square current = Game.getInstance().getGameMap().getSquare(pos.getCoordX(), pos.getCoordY());

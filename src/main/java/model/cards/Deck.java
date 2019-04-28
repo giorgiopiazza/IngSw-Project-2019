@@ -2,7 +2,6 @@ package model.cards;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 public class Deck {
     private ArrayList<Card> cardsDeck;
@@ -23,7 +22,7 @@ public class Deck {
      */
     public Deck(boolean garbage) {
         cardsDeck = new ArrayList<>();
-        if(garbage) discard = new ArrayList<>();
+        if (garbage) discard = new ArrayList<>();
         this.garbage = garbage;
     }
 
@@ -32,14 +31,14 @@ public class Deck {
      */
     public void flush() {
         cardsDeck.clear();
-        if(garbage) discard.clear();
+        if (garbage) discard.clear();
     }
 
     /**
      * Move the discarded cards into the deck and shuffle it
      */
     public void shuffle() {
-        if(garbage) {
+        if (garbage) {
             cardsDeck.addAll(discard);
             discard.clear();
         }
@@ -52,7 +51,7 @@ public class Deck {
      * @param card the {@code card} to add
      */
     public void addCard(Card card) {
-        if(card == null) throw new NullPointerException("Card cannot be null");
+        if (card == null) throw new NullPointerException("Card cannot be null");
         cardsDeck.add(card);
     }
 
@@ -75,9 +74,9 @@ public class Deck {
      * @param card the card to be discarded
      */
     public void discardCard(Card card) {
-        if(card == null) throw new NullPointerException("card cannot be null");
+        if (card == null) throw new NullPointerException("card cannot be null");
 
-        if(garbage) discard.add(0, card);
+        if (garbage) discard.add(0, card);
         else cardsDeck.add(card);
     }
 
@@ -96,7 +95,7 @@ public class Deck {
      * @return number of cards in the discard deck
      */
     public int numOfDiscards() {
-        if(!garbage) throw new NullPointerException("deck of discarded cards is null");
+        if (!garbage) throw new NullPointerException("deck of discarded cards is null");
         return discard.size();
     }
 }

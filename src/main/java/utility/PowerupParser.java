@@ -5,7 +5,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import enumerations.Ammo;
-import enumerations.Color;
 import enumerations.TargetType;
 import exceptions.file.JsonFileNotFoundException;
 import model.cards.Card;
@@ -13,8 +12,6 @@ import model.cards.Deck;
 import model.cards.PowerupCard;
 import model.cards.effects.Effect;
 import model.cards.effects.PowerupBaseEffect;
-import model.cards.effects.WeaponBaseEffect;
-import model.player.AmmoQuantity;
 
 import java.io.File;
 import java.io.InputStream;
@@ -22,26 +19,23 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class PowerupParser {
-
-    private static final String PATH = "/json/powerups.json";
 
     private PowerupParser() {
         throw new IllegalStateException("Utility class");
     }
 
     /**
-     *
      * @return {@code deck} with all the necessary powerups cards in a game
      */
     public static Deck parsePowerUpCards() {
         Deck deck = new Deck(true);
-        InputStream is = PowerupParser.class.getResourceAsStream(PATH);
+        String path = File.separatorChar + "json" + File.separatorChar + "powerups.json";
 
-        if(is == null) throw new JsonFileNotFoundException("File " + PATH + " not found");
+        InputStream is = PowerupParser.class.getResourceAsStream(path);
+
+        if (is == null) throw new JsonFileNotFoundException("File " + path + " not found");
 
         JsonParser parser = new JsonParser();
         JsonArray array = parser.parse(new InputStreamReader(is)).getAsJsonArray();
@@ -61,7 +55,6 @@ public class PowerupParser {
     }
 
     /**
-     *
      * @param name
      * @param values
      * @param properties

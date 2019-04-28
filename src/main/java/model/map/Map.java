@@ -3,17 +3,15 @@ package model.map;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonToken;
 import enumerations.Color;
 import enumerations.SquareAdjacency;
-import exceptions.AdrenalinaRuntimeException;
 import exceptions.file.JsonFileNotFoundException;
 import exceptions.map.MapUnknowException;
 import model.Game;
 import model.player.Player;
 import model.player.PlayerPosition;
 
-import java.io.FileNotFoundException;
+import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -32,14 +30,14 @@ public class Map {
      * Map of type:
      * B B B
      * R R R Y
-     *   W W Y
+     * W W Y
      */
     public static final int MAP_1 = 1;
     /**
      * Map of type:
      * B B B G
      * R R Y Y
-     *   W Y Y
+     * W Y Y
      */
     public static final int MAP_2 = 2;
     /**
@@ -58,13 +56,12 @@ public class Map {
     public static final int MAP_4 = 4;
 
     private Square[][] rooms;
-    private static final String PATH = "/json/maps.json";
-
 
     public Map(int mapType) {
-        InputStream is = Map.class.getResourceAsStream(PATH);
+        String path = File.separatorChar + "json" + File.separatorChar + "maps.json";
+        InputStream is = Map.class.getResourceAsStream(path);
 
-        if(is == null) throw new JsonFileNotFoundException("File " + PATH + " not found");
+        if (is == null) throw new JsonFileNotFoundException("File " + path + " not found");
 
         JsonParser parser = new JsonParser();
         JsonArray array = parser.parse(new InputStreamReader(is)).getAsJsonArray();
@@ -76,31 +73,31 @@ public class Map {
 
         switch (mapType) {
             case MAP_1:
-                for (int i=0;i<array.size();i++) {
-                    if(!array.get(i).isJsonNull() && array.get(i).getAsJsonObject().get("id").getAsInt() == MAP_1) {
+                for (int i = 0; i < array.size(); i++) {
+                    if (!array.get(i).isJsonNull() && array.get(i).getAsJsonObject().get("id").getAsInt() == MAP_1) {
                         mapObject = array.get(i).getAsJsonObject();
                     }
                 }
                 break;
 
             case MAP_2:
-                for (int i=0;i<array.size();i++) {
-                    if(!array.get(i).isJsonNull() && array.get(i).getAsJsonObject().get("id").getAsInt() == MAP_2) {
+                for (int i = 0; i < array.size(); i++) {
+                    if (!array.get(i).isJsonNull() && array.get(i).getAsJsonObject().get("id").getAsInt() == MAP_2) {
                         mapObject = array.get(i).getAsJsonObject();
                     }
                 }
                 break;
 
             case MAP_3:
-                for (int i=0;i<array.size();i++) {
-                    if(!array.get(i).isJsonNull() && array.get(i).getAsJsonObject().get("id").getAsInt() == MAP_3) {
+                for (int i = 0; i < array.size(); i++) {
+                    if (!array.get(i).isJsonNull() && array.get(i).getAsJsonObject().get("id").getAsInt() == MAP_3) {
                         mapObject = array.get(i).getAsJsonObject();
                     }
                 }
                 break;
 
             case MAP_4:
-                for (int i=0;i<array.size();i++) {
+                for (int i = 0; i < array.size(); i++) {
                     if (!array.get(i).isJsonNull() && array.get(i).getAsJsonObject().get("id").getAsInt() == MAP_4) {
                         mapObject = array.get(i).getAsJsonObject();
                     }
@@ -115,10 +112,10 @@ public class Map {
 
         JsonArray matrix = mapObject.get("map").getAsJsonArray();
 
-        for (int i=0;i<matrix.size();i++) {
+        for (int i = 0; i < matrix.size(); i++) {
             JsonArray row = matrix.get(i).getAsJsonArray();
-            for (int j=0;j<row.size();j++) {
-                if(row.get(j).isJsonNull()) {
+            for (int j = 0; j < row.size(); j++) {
+                if (row.get(j).isJsonNull()) {
                     map[i][j] = null;
                 } else {
                     JsonObject square = row.get(j).getAsJsonObject();
@@ -147,7 +144,7 @@ public class Map {
     }
 
     /**
-     * Create a new map using the <code>rooms</code> matrix passed if the maximum size is respected MAX_ROWS x MAX_COLUMNS
+     * Create a new map using the {@code rooms} matrix passed if the maximum size is respected MAX_ROWS x MAX_COLUMNS
      *
      * @param rooms matrix containing the map rooms, maximum size MAX_ROWS x MAX_COLUMNS
      * @return true if the parameter respects the MAX_ROWS x MAX_COLUMNS dimension, otherwise false
@@ -156,15 +153,15 @@ public class Map {
         int width = rooms.length;
         int height = rooms[0].length;
 
-        if(width > MAX_ROWS) return false;
-        if(height > MAX_COLUMNS) return false;
+        if (width > MAX_ROWS) return false;
+        if (height > MAX_COLUMNS) return false;
 
-        for(int i=0;i<MAX_ROWS;i++) {
-            for(int j=0;j<MAX_COLUMNS;j++)
+        for (int i = 0; i < MAX_ROWS; i++) {
+            for (int j = 0; j < MAX_COLUMNS; j++)
                 this.rooms[i][j] = null;
         }
 
-        for(int i=0;i<width;i++) {
+        for (int i = 0; i < width; i++) {
             System.arraycopy(rooms[i], 0, this.rooms[i], 0, height);
         }
 
@@ -218,15 +215,15 @@ public class Map {
         Game game = Game.getInstance();
         List<Player> players = new ArrayList<>();
 
-        for (Player p: game.getPlayers()) {
-            if(getSquare(p.getPosition().getCoordX(), p.getPosition().getCoordY()).getColor().equals(roomColor)) {
+        for (Player p : game.getPlayers()) {
+            if (getSquare(p.getPosition().getCoordX(), p.getPosition().getCoordY()).getColor().equals(roomColor)) {
                 players.add(p);
             }
         }
 
-        if(game.isTerminatorPresent()) {
+        if (game.isTerminatorPresent()) {
             Player term = game.getTerminator();
-            if(getSquare(term.getPosition().getCoordX(), term.getPosition().getCoordY()).getColor().equals(roomColor)) {
+            if (getSquare(term.getPosition().getCoordX(), term.getPosition().getCoordY()).getColor().equals(roomColor)) {
                 players.add(term);
             }
         }
@@ -243,10 +240,10 @@ public class Map {
     public List<PlayerPosition> getRoom(Color roomColor) {
         List<PlayerPosition> room = new ArrayList<>();
 
-        for(int i = 0; i < MAX_ROWS; ++i) {
-            for(int j = 0; j < MAX_COLUMNS; ++j) {
-                if(rooms[i][j].getColor().equals(roomColor)) {
-                    PlayerPosition tempPos = new PlayerPosition(i,j);
+        for (int i = 0; i < MAX_ROWS; ++i) {
+            for (int j = 0; j < MAX_COLUMNS; ++j) {
+                if (rooms[i][j].getColor().equals(roomColor)) {
+                    PlayerPosition tempPos = new PlayerPosition(i, j);
                     room.add(tempPos);
                 }
             }
@@ -261,8 +258,8 @@ public class Map {
 
         buffer.append('\n');
 
-        for (int i=0;i<MAX_ROWS;i++) {
-            for (int j=0;j<MAX_COLUMNS;j++) {
+        for (int i = 0; i < MAX_ROWS; i++) {
+            for (int j = 0; j < MAX_COLUMNS; j++) {
                 if (rooms[i][j] == null) {
                     buffer.append(" \t");
                 } else {
