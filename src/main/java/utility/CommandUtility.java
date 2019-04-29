@@ -1,5 +1,6 @@
 package utility;
 
+import enumerations.Ammo;
 import enumerations.Color;
 import enumerations.TargetType;
 import exceptions.command.InvalidCommandException;
@@ -55,13 +56,33 @@ public class CommandUtility {
     }
 
     /**
-     * Returns the effectID from the command
+     * Returns the effect ID from the command
      *
      * @param splitCommand array in which the command is split
      * @return the ID of the effect
      */
     public static int getEffectID(String[] splitCommand) {
         int pos = getCommandParamPosition(splitCommand, "-e");
+
+        if (pos != -1) {
+            try {
+                return Integer.parseInt(splitCommand[pos + 1]);
+            } catch (NumberFormatException e) {
+                throw new InvalidCommandException();
+            }
+        }
+
+        throw new InvalidCommandException();
+    }
+
+    /**
+     * Returns the powerup ID from the command
+     *
+     * @param splitCommand array in which the command is split
+     * @return the ID of the powerup
+     */
+    public static int getPowerupID(String[] splitCommand) {
+        int pos = getCommandParamPosition(splitCommand, "-ip");
 
         if (pos != -1) {
             try {
@@ -120,6 +141,20 @@ public class CommandUtility {
         }
 
         return attributesID;
+    }
+
+    public static Ammo getPowerupPaymentAmmo(String[] splitCommand) {
+        int pos = getCommandParamPosition(splitCommand, "-c");
+
+        if (pos != -1) {
+            try {
+                return Ammo.valueOf(splitCommand[pos + 1]);
+            } catch (NumberFormatException e) {
+                throw new InvalidCommandException();
+            }
+        }
+
+        throw new InvalidCommandException();
     }
 
     /**

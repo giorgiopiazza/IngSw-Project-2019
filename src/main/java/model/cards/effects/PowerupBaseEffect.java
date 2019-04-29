@@ -12,21 +12,21 @@ import java.util.List;
 import java.util.Map;
 
 public class PowerupBaseEffect extends Effect {
-    private final int cost;     // or a boolean, in this way is more general for effects that cost more than one ammo
+    private final boolean cost;
 
     public PowerupBaseEffect(Map<String, String> properties, TargetType[] targets) {
-        this.cost = 0;
+        this.cost = false;
         setTargets(targets);
         setProperties(properties);
     }
 
-    public PowerupBaseEffect(int generalCost, Map<String, String> properties, TargetType[] targets) {
-        this.cost = generalCost;
+    public PowerupBaseEffect(boolean cost, Map<String, String> properties, TargetType[] targets) {
+        this.cost = cost;
         setTargets(targets);
         setProperties(properties);
     }
 
-    public int getCost() {
+    public boolean hasCost() {
         return this.cost;
     }
 

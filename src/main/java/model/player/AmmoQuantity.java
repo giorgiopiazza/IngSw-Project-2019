@@ -29,6 +29,19 @@ public class AmmoQuantity {
         yellowAmmo = (Collections.frequency(ammoList, Ammo.YELLOW) < 3) ? Collections.frequency(ammoList, Ammo.YELLOW) : 3;
     }
 
+    public void addAmmo(Ammo ammo) {
+        switch (ammo) {
+            case RED:
+                addRedAmmo();
+                break;
+            case BLUE:
+                addBlueAmmo();
+                break;
+            default:
+                addYellowAmmo();
+        }
+    }
+
     public int getRedAmmo() {
         return redAmmo;
     }
