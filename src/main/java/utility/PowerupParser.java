@@ -27,40 +27,49 @@ public class PowerupParser {
     }
 
     /**
-     * @return {@code deck} with all the necessary powerups cards in a game
+     * Parse all the powerups from powerup.json
+     *
+     * @return {@code deck} of all the powerups
      */
-    public static Deck parsePowerUpCards() {
+    public static Deck parseCards() {
         Deck deck = new Deck(true);
         String path = File.separatorChar + "json" + File.separatorChar + "powerups.json";
 
         InputStream is = PowerupParser.class.getResourceAsStream(path);
 
-        if (is == null) throw new JsonFileNotFoundException("File " + path + " not found");
+        if (is == null) {
+            throw new JsonFileNotFoundException("File " + path + " not found");
+        }
 
         JsonParser parser = new JsonParser();
-        JsonArray array = parser.parse(new InputStreamReader(is)).getAsJsonArray();
+        JsonObject json = parser.parse(new InputStreamReader(is)).getAsJsonObject();
+        JsonArray powerups = json.getAsJsonArray("powerups");
 
-        for (JsonElement je : array) {
+        for (JsonElement je : powerups) {
             JsonObject jo = je.getAsJsonObject();
-            String name = jo.get("title").getAsString();
 
-            List<PowerupCard> cards = parsePowerupsColor(name, jo.getAsJsonArray("values"), jo.getAsJsonObject("properties"));
+            List<PowerupCard> cards = parseColor(jo);
 
             for (Card card : cards) {
                 deck.addCard(card);
             }
         }
 
+        deck.shuffle();
         return deck;
     }
 
     /**
-     * @param name
-     * @param values
-     * @param properties
-     * @return
+     * Parses PowerupCard for each color
+     *
+     * @param jsonObject JsonObject of a powerup
+     * @return a list of PowerupCard
      */
-    private static List<PowerupCard> parsePowerupsColor(String name, JsonArray values, JsonObject properties) {
+    private static List<PowerupCard> parseColor(JsonObject jsonObject) {
+        String name = jsonObject.get("title").getAsString();
+        JsonArray values = jsonObject.getAsJsonArray("values");
+        JsonObject properties = jsonObject.getAsJsonObject("properties");
+
         TargetType[] target = new TargetType[0];
         List<PowerupCard> cards = new ArrayList<>();
 
@@ -82,14 +91,17 @@ public class PowerupParser {
 
         effect = WeaponParser.decorateSingleEffect(effect, properties);
 
+        int quantity = jsonObject.get("quantity").getAsInt();
+
         for (JsonElement je : values) {
             JsonObject jo = je.getAsJsonObject();
 
             File image = new File(PowerupParser.class.getResource(jo.get("image").getAsString()).getFile());
             Ammo ammo = Ammo.valueOf(jo.get("color").getAsString());
 
-            cards.add(new PowerupCard(name, image, ammo, effect));
-            cards.add(new PowerupCard(name, image, ammo, effect));
+            for (int i = 0; i < quantity; ++i) {
+                cards.add(new PowerupCard(name, image, ammo, effect));
+            }
         }
 
         return cards;

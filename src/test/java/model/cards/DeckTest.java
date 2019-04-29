@@ -67,6 +67,6 @@ class DeckTest {
 
     @Test
     void powerupDeck() {
-        Deck deck = PowerupParser.parsePowerUpCards();
+        Deck deck = PowerupParser.parseCards();
     }
 }

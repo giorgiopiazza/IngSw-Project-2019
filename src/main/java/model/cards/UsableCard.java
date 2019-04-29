@@ -1,5 +1,6 @@
 package model.cards;
 
+import exceptions.AdrenalinaException;
 import model.cards.effects.Effect;
 
 import java.io.File;
@@ -37,4 +38,6 @@ public abstract class UsableCard extends Card {
     public int hashCode() {
         return Objects.hash(super.hashCode(), name, baseEffect);
     }
+
+    public abstract void use(String command) throws AdrenalinaException;
 }

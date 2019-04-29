@@ -7,13 +7,13 @@ import com.google.gson.JsonParser;
 import enumerations.Ammo;
 import exceptions.file.JsonFileNotFoundException;
 import model.cards.AmmoTile;
+import model.cards.Deck;
 import model.player.AmmoQuantity;
 
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class AmmoTileParser {
@@ -21,8 +21,8 @@ public class AmmoTileParser {
         throw new IllegalStateException("Utility class");
     }
 
-    public static List<AmmoTile> parseCards() {
-        List<AmmoTile> cards = new ArrayList<>();
+    public static Deck parseCards() {
+        Deck deck = new Deck(true);
 
         String path = File.separatorChar + "json" + File.separatorChar + "ammotiles.json";
 
@@ -51,11 +51,11 @@ public class AmmoTileParser {
             Ammo[] ammo = list.toArray(new Ammo[0]);
 
             for (int i = 0; i < ammoTile.get("quantity").getAsInt(); ++i) {
-                cards.add(new AmmoTile(image, new AmmoQuantity(ammo), powerUp));
+                deck.addCard(new AmmoTile(image, new AmmoQuantity(ammo), powerUp));
             }
         }
 
-        Collections.shuffle(cards);
-        return cards;
+        deck.shuffle();
+        return deck;
     }
 }

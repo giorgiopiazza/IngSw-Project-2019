@@ -1,6 +1,7 @@
 package model.cards;
 
 import enumerations.Ammo;
+import exceptions.AdrenalinaException;
 import model.cards.effects.Effect;
 
 import java.io.File;
@@ -16,6 +17,11 @@ public class PowerupCard extends UsableCard {
     public PowerupCard(String name, File image, Ammo value, Effect baseEffect) {
         super(name, image, baseEffect);
         this.value = value;
+    }
+
+    @Override
+    public void use(String command) throws AdrenalinaException {
+        // TODO
     }
 
     @Override

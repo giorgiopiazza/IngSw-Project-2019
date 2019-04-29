@@ -6,6 +6,7 @@ import enumerations.MoveTarget;
 import enumerations.Properties;
 import enumerations.TargetType;
 import exceptions.file.JsonFileNotFoundException;
+import model.cards.Deck;
 import model.cards.WeaponCard;
 import model.cards.effects.*;
 import model.cards.weaponstates.SemiChargedWeapon;
@@ -28,10 +29,10 @@ public class WeaponParser {
     /**
      * Parse all the weapons from weapons.json
      *
-     * @return a list of all the WeaponCard
+     * @return a deck of all the WeaponCard
      */
-    public static List<WeaponCard> parseCards() {
-        List<WeaponCard> cards = new ArrayList<>();
+    public static Deck parseCards() {
+        Deck deck = new Deck();
 
         String path = File.separatorChar + "json" + File.separatorChar + "weapons.json";
 
@@ -66,10 +67,11 @@ public class WeaponParser {
             }
 
             // Card creation
-            cards.add(new WeaponCard(name, image, baseEffect, cost, secondaryEffects, new SemiChargedWeapon()));
+            deck.addCard((new WeaponCard(name, image, baseEffect, cost, secondaryEffects, new SemiChargedWeapon())));
         }
 
-        return cards;
+        deck.shuffle();
+        return deck;
     }
 
     /**

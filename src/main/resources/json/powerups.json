@@ -1,56 +1,62 @@
-[
-  {
-    "title" : "TAGBACK GRENADE",
-    "properties" : {
-      "visible" : true,
-      "target" : ["PLAYER"],
-      "targetNum" : 1,
-      "markDistribution" : [1]
+{
+  "powerups": [
+    {
+      "title" : "TAGBACK GRENADE",
+      "quantity": 2,
+      "properties" : {
+        "visible" : true,
+        "target" : ["PLAYER"],
+        "targetNum" : 1,
+        "markDistribution" : [1]
+      },
+      "values" : [
+        { "color" : "YELLOW", "image" : "/img/powerups/venom_yellow.png" },
+        { "color" : "RED", "image" : "/img/powerups/venom_red.png" },
+        { "color" : "BLUE", "image" : "/img/powerups/venom_blue.png" }
+      ]
     },
-    "values" : [
-      { "color" : "YELLOW", "image" : "/img/powerups/venom_yellow.png" },
-      { "color" : "RED", "image" : "/img/powerups/venom_red.png" },
-      { "color" : "BLUE", "image" : "/img/powerups/venom_blue.png" }
-    ]
-  },
-  {
-    "title" : "TARGETING SCOPE",
-    "properties" : {
-      "visible" : false,
-      "cost" : 1,
-      "target" : ["PLAYER"],
-      "targetNum" : 1,
-      "damageDistribution" : [1]
+    {
+      "title" : "TARGETING SCOPE",
+      "quantity": 2,
+      "properties" : {
+        "visible" : false,
+        "cost" : 1,
+        "target" : ["PLAYER"],
+        "targetNum" : 1,
+        "damageDistribution" : [1]
+      },
+      "values" : [
+        { "color" : "YELLOW", "image" : "/img/powerups/mirino_yellow.png" },
+        { "color" : "RED", "image" : "/img/powerups/mirino_red.png" },
+        { "color" : "BLUE", "image" : "/img/powerups/mirino_blue.png" }
+      ]
     },
-    "values" : [
-      { "color" : "YELLOW", "image" : "/img/powerups/mirino_yellow.png" },
-      { "color" : "RED", "image" : "/img/powerups/mirino_red.png" },
-      { "color" : "BLUE", "image" : "/img/powerups/mirino_blue.png" }
-    ]
-  },
-  {
-    "title" : "NEWTON",
-    "properties" : {
-      "moveInLine" : true,
-      "maxMoveTarget" : 2,
-      "target" : ["PLAYER"]
+    {
+      "title" : "NEWTON",
+      "quantity": 2,
+      "properties" : {
+        "moveInLine" : true,
+        "maxMoveTarget" : 2,
+        "target" : ["PLAYER"]
+      },
+      "values" : [
+        { "color" : "YELLOW", "image" : "/img/powerups/raggio_yellow.png" },
+        { "color" : "RED", "image" : "/img/powerups/raggio_red.png" },
+        { "color" : "BLUE", "image" : "/img/powerups/raggio_blue.png" }
+      ]
     },
-    "values" : [
-      { "color" : "YELLOW", "image" : "/img/powerups/raggio_yellow.png" },
-      { "color" : "RED", "image" : "/img/powerups/raggio_red.png" },
-      { "color" : "BLUE", "image" : "/img/powerups/raggio_blue.png" }
-    ]
-  },
-  {
-    "title" : "TELEPORTER",
-    "properties" : {
-      "tp" : true,
-      "target" : ["SQUARE"]
-    },
-    "values" : [
-      { "color" : "YELLOW", "image" : "/img/powerups/tp_yellow.png" },
-      { "color" : "RED", "image" : "/img/powerups/tp_red.png" },
-      { "color" : "BLUE", "image" : "/img/powerups/tp_blue.png" }
-    ]
-  }
-]
+    {
+      "title" : "TELEPORTER",
+      "quantity": 2,
+      "properties" : {
+        "tp" : true,
+        "target" : ["SQUARE"]
+      },
+      "values" : [
+        { "color" : "YELLOW", "image" : "/img/powerups/tp_yellow.png" },
+        { "color" : "RED", "image" : "/img/powerups/tp_red.png" },
+        { "color" : "BLUE", "image" : "/img/powerups/tp_blue.png" }
+      ]
+    }
+  ]
+}

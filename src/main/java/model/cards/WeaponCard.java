@@ -111,6 +111,7 @@ public class WeaponCard extends UsableCard {
      * @throws WeaponNotChargedException in case the weapon can not be used because not charged
      * @throws NotEnoughAmmoException    in case the weapon even with powerups can not be payed
      */
+    @Override
     public void use(String command) throws AdrenalinaException {
         if (isCharged()) {
             Effect effect;
