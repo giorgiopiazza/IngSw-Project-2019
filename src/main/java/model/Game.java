@@ -5,6 +5,9 @@ import exceptions.game.*;
 import model.cards.Deck;
 import model.map.Map;
 import model.player.*;
+import utility.AmmoTileParser;
+import utility.PowerupParser;
+import utility.WeaponParser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,10 +41,7 @@ public class Game {
         killShotNum = 8;
         terminatorPresent = false;
         started = false;
-        // TODO: mettere le giuste carte in ogni deck, per ora creo deck vuoto
-        weaponsCardsDeck = new Deck();
-        powerupCardsDeck = new Deck();
-        ammoCardsDeck = new Deck();
+        initializeDecks();
     }
 
     public void setGameMap(int mapType) {
@@ -114,7 +114,9 @@ public class Game {
      * Initializes the three decks: {@code weaponsCardDeck}, {@code ammoCardsDeck} and {@code powerupCardsDeck}
      */
     private void initializeDecks() {
-
+        this.weaponsCardsDeck = WeaponParser.parseCards();
+        this.ammoCardsDeck = AmmoTileParser.parseCards();
+        this.powerupCardsDeck = PowerupParser.parseCards();
     }
 
     public void stopGame() throws GameAlreadyStartedException {

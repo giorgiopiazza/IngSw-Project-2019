@@ -33,9 +33,9 @@ public class PowerupParser {
      */
     public static Deck parseCards() {
         Deck deck = new Deck(true);
-        String path = File.separatorChar + "json" + File.separatorChar + "powerups.json";
+        String path = "json/powerups.json";
 
-        InputStream is = PowerupParser.class.getResourceAsStream(path);
+        InputStream is = PowerupParser.class.getClassLoader().getResourceAsStream(path);
 
         if (is == null) {
             throw new JsonFileNotFoundException("File " + path + " not found");

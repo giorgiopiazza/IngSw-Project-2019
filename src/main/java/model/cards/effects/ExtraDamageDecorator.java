@@ -30,7 +30,8 @@ public class ExtraDamageDecorator extends ExtraEffectDecorator {
         effect.execute(command);
 
         List<Integer> targetsID;
-        String[] splitCommand = command.split(" ");
+        String[] splitCommand;
+        splitCommand = command.split(" ");
         Player shooter = Game.getInstance().getPlayerByID(CommandUtility.getCommandUserID(splitCommand));
 
         switch (targetType) {

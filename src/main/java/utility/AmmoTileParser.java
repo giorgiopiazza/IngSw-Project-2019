@@ -24,9 +24,9 @@ public class AmmoTileParser {
     public static Deck parseCards() {
         Deck deck = new Deck(true);
 
-        String path = File.separatorChar + "json" + File.separatorChar + "ammotiles.json";
+        String path = "json/ammotiles.json";
 
-        InputStream is = AmmoTileParser.class.getResourceAsStream(path);
+        InputStream is = AmmoTileParser.class.getClassLoader().getResourceAsStream(path);
 
         if (is == null) {
             throw new JsonFileNotFoundException("File " + path + " not found");

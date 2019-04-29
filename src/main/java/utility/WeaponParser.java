@@ -34,15 +34,16 @@ public class WeaponParser {
     public static Deck parseCards() {
         Deck deck = new Deck();
 
-        String path = File.separatorChar + "json" + File.separatorChar + "weapons.json";
+        String path = "json/weapons.json";
 
-        InputStream is = WeaponParser.class.getResourceAsStream(path);
+        InputStream is = WeaponParser.class.getClassLoader().getResourceAsStream(path);
 
         if (is == null) {
             throw new JsonFileNotFoundException("File " + path + " not found");
         }
 
-        JsonParser parser = new JsonParser();
+        JsonParser parser;
+        parser = new JsonParser();
 
         JsonObject json = parser.parse(new InputStreamReader(is)).getAsJsonObject();
         JsonArray weapons = json.getAsJsonArray("weapons");

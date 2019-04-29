@@ -31,6 +31,16 @@ public class AmmoTile extends Card {
     public void giveResources(UserPlayer pickingPlayer) {
         if (pickingPlayer == null) throw new NullPointerException("Player can not be null");
 
+        addBlueAmmo(pickingPlayer);
+        addRedAmmo(pickingPlayer);
+        addYellowAmmo(pickingPlayer);
+
+        if (pickPowerup && (pickingPlayer.getPowerups().length < 3)) {
+            pickingPlayer.addPowerup((PowerupCard) Game.getInstance().getPowerupCardsDeck().draw());
+        }
+    }
+
+    private void addBlueAmmo(UserPlayer pickingPlayer) {
         if (ammoOnTile.getBlueAmmo() != 0) {
             if (ammoOnTile.getBlueAmmo() < 0) throw new NegativeQuantityException();
             int tempAmmoCounter = ammoOnTile.getBlueAmmo();
@@ -39,7 +49,9 @@ public class AmmoTile extends Card {
                 pickingPlayer.getPlayerBoard().addAmmo(tempAmmo);
             }
         }
+    }
 
+    private void addRedAmmo(UserPlayer pickingPlayer) {
         if (ammoOnTile.getRedAmmo() != 0) {
             if (ammoOnTile.getRedAmmo() < 0) throw new NegativeQuantityException();
             int tempAmmoCounter = ammoOnTile.getRedAmmo();
@@ -48,7 +60,9 @@ public class AmmoTile extends Card {
                 pickingPlayer.getPlayerBoard().addAmmo(tempAmmo);
             }
         }
+    }
 
+    private void addYellowAmmo(UserPlayer pickingPlayer) {
         if (ammoOnTile.getYellowAmmo() != 0) {
             if (ammoOnTile.getYellowAmmo() < 0) throw new NegativeQuantityException();
             int tempAmmoCounter = ammoOnTile.getYellowAmmo();
@@ -56,10 +70,6 @@ public class AmmoTile extends Card {
                 Ammo tempAmmo = Ammo.YELLOW;
                 pickingPlayer.getPlayerBoard().addAmmo(tempAmmo);
             }
-        }
-
-        if (pickPowerup && (pickingPlayer.getPowerups().length < 3)) {
-            pickingPlayer.addPowerup((PowerupCard) Game.getInstance().getPowerupCardsDeck().draw());
         }
     }
 

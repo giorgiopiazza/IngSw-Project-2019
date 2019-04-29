@@ -149,10 +149,6 @@ public class CommandValidator {
 
         if(powerupIndex < 1 || powerupIndex > 3) {
             throw new InvalidCommandException();
-        } else if (powerupUser.getPowerups().length < powerupIndex){
-            return false;
-        } else {
-            return true;
-        }
+        } else return powerupUser.getPowerups().length >= powerupIndex;
     }
 }

@@ -61,10 +61,6 @@ public class PowerupBaseEffect extends Effect {
         }
 
         // visibility validation
-        if(!PropertiesValidator.isVisibilityValid(getProperties(), powerupUserPos, targetPos)) {
-            return false;
-        }
-
-        return true;
+        return PropertiesValidator.isVisibilityValid(getProperties(), powerupUserPos, targetPos);
     }
 }

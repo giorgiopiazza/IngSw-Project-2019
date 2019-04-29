@@ -11,7 +11,6 @@ import model.Game;
 import model.player.Player;
 import model.player.PlayerPosition;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -58,8 +57,8 @@ public class Map {
     private Square[][] rooms;
 
     public Map(int mapType) {
-        String path = File.separatorChar + "json" + File.separatorChar + "maps.json";
-        InputStream is = Map.class.getResourceAsStream(path);
+        String path = "json/maps.json";
+        InputStream is = Map.class.getClassLoader().getResourceAsStream(path);
 
         if (is == null) throw new JsonFileNotFoundException("File " + path + " not found");
 
@@ -73,35 +72,19 @@ public class Map {
 
         switch (mapType) {
             case MAP_1:
-                for (int i = 0; i < array.size(); i++) {
-                    if (!array.get(i).isJsonNull() && array.get(i).getAsJsonObject().get("id").getAsInt() == MAP_1) {
-                        mapObject = array.get(i).getAsJsonObject();
-                    }
-                }
+                mapObject = getMapObject(array, MAP_1);
                 break;
 
             case MAP_2:
-                for (int i = 0; i < array.size(); i++) {
-                    if (!array.get(i).isJsonNull() && array.get(i).getAsJsonObject().get("id").getAsInt() == MAP_2) {
-                        mapObject = array.get(i).getAsJsonObject();
-                    }
-                }
+                mapObject = getMapObject(array, MAP_2);
                 break;
 
             case MAP_3:
-                for (int i = 0; i < array.size(); i++) {
-                    if (!array.get(i).isJsonNull() && array.get(i).getAsJsonObject().get("id").getAsInt() == MAP_3) {
-                        mapObject = array.get(i).getAsJsonObject();
-                    }
-                }
+                mapObject = getMapObject(array, MAP_3);
                 break;
 
             case MAP_4:
-                for (int i = 0; i < array.size(); i++) {
-                    if (!array.get(i).isJsonNull() && array.get(i).getAsJsonObject().get("id").getAsInt() == MAP_4) {
-                        mapObject = array.get(i).getAsJsonObject();
-                    }
-                }
+                mapObject = getMapObject(array, MAP_4);
                 break;
 
             default:
@@ -112,6 +95,12 @@ public class Map {
 
         JsonArray matrix = mapObject.get("map").getAsJsonArray();
 
+        fillMap(matrix, map);
+
+        this.rooms = map;
+    }
+
+    private void fillMap(JsonArray matrix, Square[][] map) {
         for (int i = 0; i < matrix.size(); i++) {
             JsonArray row = matrix.get(i).getAsJsonArray();
             for (int j = 0; j < row.size(); j++) {
@@ -139,33 +128,16 @@ public class Map {
                 }
             }
         }
-
-        this.rooms = map;
     }
 
-    /**
-     * Create a new map using the {@code rooms} matrix passed if the maximum size is respected MAX_ROWS x MAX_COLUMNS
-     *
-     * @param rooms matrix containing the map rooms, maximum size MAX_ROWS x MAX_COLUMNS
-     * @return true if the parameter respects the MAX_ROWS x MAX_COLUMNS dimension, otherwise false
-     */
-    private boolean fillMap(Square[][] rooms) {
-        int width = rooms.length;
-        int height = rooms[0].length;
-
-        if (width > MAX_ROWS) return false;
-        if (height > MAX_COLUMNS) return false;
-
-        for (int i = 0; i < MAX_ROWS; i++) {
-            for (int j = 0; j < MAX_COLUMNS; j++)
-                this.rooms[i][j] = null;
+    private JsonObject getMapObject(JsonArray array, int mapType) {
+        JsonObject mapObject = null;
+        for (int i = 0; i < array.size(); i++) {
+            if (!array.get(i).isJsonNull() && array.get(i).getAsJsonObject().get("id").getAsInt() == mapType) {
+                mapObject = array.get(i).getAsJsonObject();
+            }
         }
-
-        for (int i = 0; i < width; i++) {
-            System.arraycopy(rooms[i], 0, this.rooms[i], 0, height);
-        }
-
-        return true;
+        return mapObject;
     }
 
     /**
