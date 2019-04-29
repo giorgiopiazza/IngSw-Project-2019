@@ -40,7 +40,7 @@ public class CommandUtility {
      * @param splitCommand array in which the command is split
      * @return the ID of the player. If the ID is missing -1 is returned
      */
-    public static int getShooterPlayerID(String[] splitCommand) {
+    public static int getCommandUserID(String[] splitCommand) {
         int pos = getCommandParamPosition(splitCommand, "-pid");
 
         if (pos != -1) {
@@ -139,7 +139,7 @@ public class CommandUtility {
         return players;
     }
 
-    public static List<PlayerPosition> getTargetPositions(String[] splitCommand, TargetType targetType) {
+    public static List<PlayerPosition>  getTargetPositions(String[] splitCommand, TargetType targetType) {
         List<PlayerPosition> squares;
         List<Player> targets;
 

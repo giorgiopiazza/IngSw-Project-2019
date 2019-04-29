@@ -57,7 +57,7 @@ public class WeaponBaseEffect extends Effect {
 
     private boolean subValidate(String command, Map<String, String> properties, TargetType targetType) {
         String[] commandSplit = command.split(" ");
-        PlayerPosition shooterPosition = Game.getInstance().getPlayerByID(CommandUtility.getShooterPlayerID(commandSplit)).getPosition();
+        PlayerPosition shooterPosition = Game.getInstance().getPlayerByID(CommandUtility.getCommandUserID(commandSplit)).getPosition();
         List<PlayerPosition> targetPositions = CommandUtility.getTargetPositions(commandSplit, targetType);
 
         // Command targets validation

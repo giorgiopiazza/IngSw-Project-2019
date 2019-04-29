@@ -3,7 +3,7 @@ package utility;
 import enumerations.Properties;
 import enumerations.TargetType;
 import exceptions.command.InvalidCommandException;
-import exceptions.utility.InvalidWeaponPropertiesException;
+import exceptions.utility.InvalidPropertiesException;
 import model.player.PlayerPosition;
 
 import java.util.List;
@@ -25,7 +25,7 @@ public class CommandValidator {
      * @throws NullPointerException    if target is null
      * @throws InvalidCommandException if the command is invalid
      */
-    private static boolean isTargetTypeValid(String command, TargetType targetType) {
+    private static boolean  isTargetTypeValid(String command, TargetType targetType) {
         if (targetType == null) return false;
 
         switch (targetType) {
@@ -109,7 +109,7 @@ public class CommandValidator {
             targetNumber = Integer.parseInt(properties.get(Properties.MAX_TARGET_NUM.getJKey()));
             exactNumber = false;
         } else {
-            throw new InvalidWeaponPropertiesException();
+            throw new InvalidPropertiesException();
         }
 
         return isTargetNumValid(command, targetType, targetNumber, exactNumber);

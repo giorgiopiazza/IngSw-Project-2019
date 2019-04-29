@@ -196,7 +196,7 @@ public class PropertiesValidator {
      * @return true if each targetPosition identifies a direction from the shooter's one
      */
     private static boolean isMovingDirectionally(String command) {
-        Player shooter = Game.getInstance().getPlayerByID(CommandUtility.getShooterPlayerID(command.split(" ")));
+        Player shooter = Game.getInstance().getPlayerByID(CommandUtility.getCommandUserID(command.split(" ")));
         List<PlayerPosition> positions = CommandUtility.getPositions(command.split(" "), "-u");
 
         for (PlayerPosition position : positions) {
@@ -288,7 +288,7 @@ public class PropertiesValidator {
         // Player move validation
         if (properties.containsKey(Properties.MOVE.getJKey())) {
             List<PlayerPosition> movingPos = CommandUtility.getPositions(command.split(" "), "-m");
-            int playerID = CommandUtility.getShooterPlayerID(command.split(" "));
+            int playerID = CommandUtility.getCommandUserID(command.split(" "));
             int moveDistance = Integer.parseInt(properties.get(Properties.MOVE.getJKey()));
 
             if (movingPos.isEmpty() || !PropertiesValidator.canMove(playerID, movingPos.get(0), moveDistance)) {

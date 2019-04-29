@@ -50,7 +50,7 @@
       "quantity": 2,
       "properties" : {
         "tp" : true,
-        "target" : ["SQUARE"]
+        "target" : ["PLAYER"]
       },
       "values" : [
         { "color" : "YELLOW", "image" : "/img/powerups/tp_yellow.png" },

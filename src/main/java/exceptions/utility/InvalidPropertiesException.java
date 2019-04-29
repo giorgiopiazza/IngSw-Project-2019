@@ -2,8 +2,8 @@ package exceptions.utility;
 
 import exceptions.AdrenalinaRuntimeException;
 
-public class InvalidWeaponPropertiesException extends AdrenalinaRuntimeException {
-    public InvalidWeaponPropertiesException() {
+public class InvalidPropertiesException extends AdrenalinaRuntimeException {
+    public InvalidPropertiesException() {
         super("The weapon properties parsed are not valid");
     }
 }
