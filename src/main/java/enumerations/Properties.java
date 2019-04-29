@@ -12,7 +12,7 @@ public enum Properties {
     private String jKey;
 
     Properties(String jKey) {
-        this.jKey = getJKey();
+        this.jKey = jKey;
     }
 
     public String getJKey() {

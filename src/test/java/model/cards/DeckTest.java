@@ -2,7 +2,9 @@ package model.cards;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import utility.AmmoTileParser;
 import utility.PowerupParser;
+import utility.WeaponParser;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -66,7 +68,17 @@ class DeckTest {
     }
 
     @Test
+    void weaponDeck() {
+        Deck deck = WeaponParser.parseCards();
+    }
+
+    @Test
     void powerupDeck() {
         Deck deck = PowerupParser.parseCards();
+    }
+
+    @Test
+    void ammoTileDeck() {
+        Deck deck = AmmoTileParser.parseCards();
     }
 }
