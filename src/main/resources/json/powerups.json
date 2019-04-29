@@ -18,9 +18,9 @@
     {
       "title" : "TARGETING SCOPE",
       "quantity": 2,
+      "cost" : 1,
       "properties" : {
         "visible" : false,
-        "cost" : 1,
         "target" : ["PLAYER"],
         "targetNum" : 1,
         "damageDistribution" : [1]

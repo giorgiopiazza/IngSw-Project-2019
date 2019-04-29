@@ -83,8 +83,8 @@ public class PowerupParser {
 
         Effect effect;
 
-        if (properties.has("cost")) {
-            effect = new PowerupBaseEffect(properties.get("cost").getAsInt(), powerupProperties, target);
+        if (jsonObject.has("cost")) {
+            effect = new PowerupBaseEffect(jsonObject.get("cost").getAsInt(), powerupProperties, target);
         } else {
             effect = new PowerupBaseEffect(powerupProperties, target);
         }
