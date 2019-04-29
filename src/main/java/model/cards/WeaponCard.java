@@ -117,21 +117,25 @@ public class WeaponCard extends UsableCard {
             Effect effect;
 
             String[] splitCommand = command.split(" ");
-            int pid = CommandUtility.getCommandUserID(splitCommand);
-            int eid = CommandUtility.getEffectID(splitCommand);
+            int pId = CommandUtility.getCommandUserID(splitCommand);
+            int eId = CommandUtility.getEffectID(splitCommand);
 
-            UserPlayer shootingPlayer = (UserPlayer) Game.getInstance().getPlayerByID(pid);
+            if (pId >= Game.getInstance().playersNumber()) {
+                throw new InvalidCommandException();
+            }
 
-            if (eid == 0) {
+            UserPlayer shootingPlayer = (UserPlayer) Game.getInstance().getPlayerByID(pId);
+
+            if (eId == 0) {
                 effect = getBaseEffect();
-            } else if (eid <= secondaryEffects.size()) {
-                effect = secondaryEffects.get(eid - 1);
+            } else if (eId <= secondaryEffects.size()) {
+                effect = secondaryEffects.get(eId - 1);
             } else {
                 throw new InvalidCommandException();
             }
 
             if (effect.validate(command)) {
-                payEffectCost(command, shootingPlayer, effect);
+                payEffectCost(command, shootingPlayer, ((WeaponBaseEffect) effect).getCost());
 
                 weaponState.use(effect, command);
                 setStatus(new UnchargedWeapon());
@@ -143,16 +147,15 @@ public class WeaponCard extends UsableCard {
         }
     }
 
-    private void payEffectCost(String command, UserPlayer shootingPlayer, Effect effect) throws NotEnoughAmmoException {
+    private void payEffectCost(String command, UserPlayer shootingPlayer, AmmoQuantity cost) throws NotEnoughAmmoException {
         String[] splitCommand = command.split(" ");
 
-        AmmoQuantity effectCost = ((WeaponBaseEffect) effect).getCost();
         PowerupCard[] powerupCards = shootingPlayer.getPowerups();
 
         List<Integer> powerupsID = CommandUtility.getAttributesID(splitCommand, "-a");
         List<Integer> usedPowerupsID = new ArrayList<>();
 
-        AmmoQuantity costWithoutPowerups = getCostWithoutPowerup(effectCost, powerupsID, usedPowerupsID, powerupCards);
+        AmmoQuantity costWithoutPowerups = getCostWithoutPowerup(cost, powerupsID, usedPowerupsID, powerupCards);
         shootingPlayer.getPlayerBoard().useAmmo(costWithoutPowerups);
 
         if (!usedPowerupsID.isEmpty()) {
@@ -168,10 +171,10 @@ public class WeaponCard extends UsableCard {
         }
     }
 
-    private AmmoQuantity getCostWithoutPowerup(AmmoQuantity effectCost, List<Integer> powerupsID, List<Integer> usedPowerupsID, PowerupCard[] powerupCards) {
-        int redCost = effectCost.getRedAmmo();
-        int blueCost = effectCost.getBlueAmmo();
-        int yellowCost = effectCost.getYellowAmmo();
+    private AmmoQuantity getCostWithoutPowerup(AmmoQuantity cost, List<Integer> powerupsID, List<Integer> usedPowerupsID, PowerupCard[] powerupCards) {
+        int redCost = cost.getRedAmmo();
+        int blueCost = cost.getBlueAmmo();
+        int yellowCost = cost.getYellowAmmo();
 
         if (powerupsID.isEmpty()) {
             return new AmmoQuantity(redCost, blueCost, yellowCost);
