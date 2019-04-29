@@ -1,8 +1,6 @@
 package model.cards.effects;
 
-import enumerations.Properties;
 import enumerations.TargetType;
-import exceptions.utility.InvalidWeaponPropertiesException;
 import model.Game;
 import model.player.AmmoQuantity;
 import model.player.PlayerPosition;
@@ -14,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 
 public class WeaponBaseEffect extends Effect {
-    // TODO we can add a description of the effect to give a better understanding of the weapon while playing with CLI
     private AmmoQuantity cost;
 
     public WeaponBaseEffect(AmmoQuantity cost, Map<String, String> properties, TargetType[] targets) {
@@ -63,9 +60,11 @@ public class WeaponBaseEffect extends Effect {
         PlayerPosition shooterPosition = Game.getInstance().getPlayerByID(CommandUtility.getShooterPlayerID(commandSplit)).getPosition();
         List<PlayerPosition> targetPositions = CommandUtility.getTargetPositions(commandSplit, targetType);
 
+        // Command targets validation
         if (!CommandValidator.isTargetValid(command, properties, targetType))
             return false;
 
+        // Player moves validation
         if (!PropertiesValidator.isMoveValid(command, properties))
             return false;
 
@@ -74,13 +73,8 @@ public class WeaponBaseEffect extends Effect {
             shooterPosition = CommandUtility.getPositions(command.split(" "), "-m").get(0);
         }
 
-        // TODO Fatto di fretta, si può migliorare
-        if (properties.containsKey(Properties.MOVE_TARGET_BEFORE.getJKey()) && command.contains("-z") &&
-                (Boolean.parseBoolean(properties.get(Properties.MOVE_TARGET_BEFORE.getJKey())) &&
-                        !CommandUtility.getBoolParam(command.split(" "), "-z")) &&
-                (!Boolean.parseBoolean(properties.get(Properties.MOVE_TARGET_BEFORE.getJKey())) &&
-                        CommandUtility.getBoolParam(command.split(" "), "-z"))
-                || properties.containsKey(Properties.MOVE_TARGET_BEFORE.getJKey()) && !command.contains("-z")) {
+        // Move before validation
+        if (!CommandValidator.isMoveBeforeValid(command, properties)) {
             return false;
         }
 
@@ -89,10 +83,12 @@ public class WeaponBaseEffect extends Effect {
             targetPositions = CommandUtility.getPositions(command.split(" "), "-u");
         }
 
+        // Target distance validation
         if (!PropertiesValidator.isDistanceValid(properties, shooterPosition, targetPositions, targetType)) {
             return false;
         }
 
+        // Target visibility validation
         if (!PropertiesValidator.isVisibilityValid(properties, shooterPosition, targetPositions)) {
             return false;
         }
@@ -107,10 +103,7 @@ public class WeaponBaseEffect extends Effect {
             targetPositions = CommandUtility.getPositions(command.split(" "), "-u");
         }
 
-        if (targetType == TargetType.PLAYER && !PropertiesValidator.isPositioningValid(properties, shooterPosition, targetPositions)) {
-            return false;
-        }
-
-        return true;
+        // After move positioning validation
+        return !(targetType == TargetType.PLAYER && !PropertiesValidator.isPositioningValid(properties, shooterPosition, targetPositions));
     }
 }

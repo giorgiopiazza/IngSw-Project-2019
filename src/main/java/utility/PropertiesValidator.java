@@ -1,10 +1,8 @@
 package utility;
 
-import enumerations.Color;
 import enumerations.Direction;
 import enumerations.Properties;
 import enumerations.TargetType;
-import exceptions.command.InvalidCommandException;
 import exceptions.player.NoDirectionException;
 import exceptions.player.SamePositionException;
 import model.Game;
@@ -26,9 +24,26 @@ public class PropertiesValidator {
      * @param targetPositions PlayerPosition of the targets
      * @return true if the positions are visible, otherwise false
      */
-    public static boolean areVisible(PlayerPosition shooterPosition, List<PlayerPosition> targetPositions) {
+    private static boolean areAllVisible(PlayerPosition shooterPosition, List<PlayerPosition> targetPositions) {
         for (PlayerPosition position : targetPositions) {
             if (!shooterPosition.canSee(position)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Method that verifies if the shooterPosition can't see all the other positions
+     *
+     * @param shooterPosition PlayerPosition of the shooter
+     * @param targetPositions PlayerPosition of the targets
+     * @return true if the positions are invisible, otherwise false
+     */
+    private static boolean areAllInvisible(PlayerPosition shooterPosition, List<PlayerPosition> targetPositions) {
+        for (PlayerPosition position : targetPositions) {
+            if (shooterPosition.canSee(position)) {
                 return false;
             }
         }
@@ -45,7 +60,7 @@ public class PropertiesValidator {
      * @param targetPositions PlayerPosition of the targets
      * @return true if the positions are concatenatedVisible, otherwise false
      */
-    public static boolean areConcatenatedVisible(PlayerPosition shooterPosition, List<PlayerPosition> targetPositions) {
+    private static boolean areConcatenatedVisible(PlayerPosition shooterPosition, List<PlayerPosition> targetPositions) {
         PlayerPosition tempVisiblePos;
 
         if (targetPositions.size() == 1) {
@@ -140,43 +155,21 @@ public class PropertiesValidator {
      *
      * @param targetsID  the IDs of the targets to verify their movement
      * @param targetsPos the positions in which each target should move
-     * @param move       integer representing the exact distance between a target player and his moving position
+     * @param move       integer representing the distance between a target player and his moving position
+     * @param exactMove  boolean to verify the exact or maximum move distance (true -> exact)
      * @return true if every target player can move to the position, otherwise false
      */
-    private static boolean canMove(List<Integer> targetsID, List<PlayerPosition> targetsPos, int move) {
-        if (targetsID.size() != targetsPos.size()) {
+    private static boolean canMove(List<Integer> targetsID, List<PlayerPosition> targetsPos, int move, boolean exactMove) {
+        if (targetsID.isEmpty() || targetsPos.isEmpty() || (targetsID.size() != targetsPos.size())) {
             return false;
         }
 
         List<Player> targets = CommandUtility.getPlayersByIDs(targetsID);
 
         for (int i = 0; i < targetsPos.size(); ++i) {
-            if (targets.get(i).getPosition().distanceOf(targetsPos.get(i)) != move) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Method used to verify if a list of target players can move to their specified position in a number
-     * of moves that is less than maxMove
-     *
-     * @param targetsID  the IDs of the targets to verify their movement
-     * @param targetsPos the positions in which each target should move
-     * @param maxMove    integer representing the maximum distance between a target player and his moving position
-     * @return true if every target player can move to the position, otherwise false
-     */
-    private static boolean canMaxMove(List<Integer> targetsID, List<PlayerPosition> targetsPos, int maxMove) {
-        if (targetsID.size() != targetsPos.size()) {
-            return false;
-        }
-
-        List<Player> targets = CommandUtility.getPlayersByIDs(targetsID);
-
-        for (int i = 0; i < targetsPos.size(); ++i) {
-            if (targets.get(i).getPosition().distanceOf(targetsPos.get(i)) > maxMove) {
+            int distance = targets.get(i).getPosition().distanceOf(targetsPos.get(i));
+            if ((exactMove && distance != move) ||
+                    (!exactMove && distance > move)) {
                 return false;
             }
         }
@@ -237,23 +230,18 @@ public class PropertiesValidator {
     private static boolean isDistantEnough(PlayerPosition shooterPosition, List<PlayerPosition> targetPositions, TargetType targetType, int distance, boolean exactDistance) {
         int tempDist;
 
-        if (targetType == null) throw new NullPointerException();
+        if (targetType == null) return false;
 
-        if (targetType == TargetType.PLAYER || targetType == TargetType.ROOM) {
-            for (PlayerPosition position : targetPositions) {
-                tempDist = shooterPosition.distanceOf(position);
+        for (PlayerPosition position : targetPositions) {
+            tempDist = shooterPosition.distanceOf(position);
 
+            if (targetType == TargetType.PLAYER || targetType == TargetType.ROOM) {
                 if ((exactDistance && tempDist != distance) ||
                         (!exactDistance && tempDist < distance)) {
                     return false;
                 }
-            }
-        } else {
-            for (PlayerPosition position : targetPositions) {
-                tempDist = shooterPosition.distanceOf(position);
-
-                if ((tempDist < distance) ||
-                        (Game.getInstance().getGameMap().getSquare(shooterPosition).getColor() == Game.getInstance().getGameMap().getSquare(position).getColor())) {
+            } else {
+                if ((Game.getInstance().getGameMap().getSquare(shooterPosition).getColor() == Game.getInstance().getGameMap().getSquare(position).getColor())) {
                     return false;
                 }
             }
@@ -309,20 +297,26 @@ public class PropertiesValidator {
         }
 
         // Target move validation
-        if (properties.containsKey(Properties.MOVE_TARGET.getJKey())) {
-            List<Integer> targetsID = CommandUtility.getAttributesID(command.split(" "), "-t");
-            List<PlayerPosition> movingPos = CommandUtility.getPositions(command.split(" "), "-u");
-            int moveDistance = Integer.parseInt(properties.get(Properties.MOVE_TARGET.getJKey()));
+        List<Integer> targetsID = CommandUtility.getAttributesID(command.split(" "), "-t");
+        List<PlayerPosition> movingPos = CommandUtility.getPositions(command.split(" "), "-u");
+        int moveDistance;
 
-            if (movingPos.isEmpty() || !PropertiesValidator.canMove(targetsID, movingPos, moveDistance)) {
+        if (movingPos.isEmpty()) {
+            return false;
+        }
+
+        if (properties.containsKey(Properties.MOVE_TARGET.getJKey())) {
+            moveDistance = Integer.parseInt(properties.get(Properties.MOVE_TARGET.getJKey()));
+
+            if (!PropertiesValidator.canMove(targetsID, movingPos, moveDistance, true)) {
                 return false;
             }
-        } else if (properties.containsKey(Properties.MAX_MOVE_TARGET.getJKey())) {
-            List<Integer> targetsID = CommandUtility.getAttributesID(command.split(" "), "-t");
-            List<PlayerPosition> movingPos = CommandUtility.getPositions(command.split(" "), "-u");
-            int moveDistance = Integer.parseInt(properties.get(Properties.MAX_MOVE_TARGET.getJKey()));
+        }
 
-            if (movingPos.isEmpty() || !PropertiesValidator.canMaxMove(targetsID, movingPos, moveDistance)) {
+        if (properties.containsKey(Properties.MAX_MOVE_TARGET.getJKey())) {
+            moveDistance = Integer.parseInt(properties.get(Properties.MAX_MOVE_TARGET.getJKey()));
+
+            if (!PropertiesValidator.canMove(targetsID, movingPos, moveDistance, false)) {
                 return false;
             }
         }
@@ -386,19 +380,11 @@ public class PropertiesValidator {
      * @return true if the visibility is verified for each target position, otherwise false
      */
     public static boolean isVisibilityValid(Map<String, String> properties, PlayerPosition shooterPosition, List<PlayerPosition> targetPositions) {
-        // Targets Same Position
-        if (properties.containsKey(Properties.SAME_POSITION.getJKey()) && !areInSamePosition(targetPositions)) {
-            return false;
-        }
+        return !((properties.containsKey(Properties.SAME_POSITION.getJKey()) && !areInSamePosition(targetPositions)) || // Targets Same Position
+                (properties.containsKey(Properties.VISIBLE.getJKey()) &&
+                        (!Boolean.parseBoolean(properties.get(Properties.VISIBLE.getJKey())) && !areAllInvisible(shooterPosition, targetPositions) || // Visible property == false and at least one target is visible
+                                (Boolean.parseBoolean(properties.get(Properties.VISIBLE.getJKey())) && !areAllVisible(shooterPosition, targetPositions)))) || // Visible property == true and at least one target is invisible
+                (properties.containsKey(Properties.CONCATENATED_VISIBLE.getJKey()) && !areConcatenatedVisible(shooterPosition, targetPositions))); // Concatenated visibility
 
-        if (properties.containsKey(Properties.VISIBLE.getJKey()) && (!Boolean.parseBoolean(properties.get(Properties.VISIBLE.getJKey())) && areVisible(shooterPosition, targetPositions) ||
-                (Boolean.parseBoolean(properties.get(Properties.VISIBLE.getJKey())) && !areVisible(shooterPosition, targetPositions)))) {
-            return false;
-        } else if (properties.containsKey(Properties.CONCATENATED_VISIBLE.getJKey()) && !Boolean.parseBoolean(properties.get(Properties.CONCATENATED_VISIBLE.getJKey())) && // target positions can never be NOT concatenatedVisible
-                areConcatenatedVisible(shooterPosition, targetPositions)) {
-            return false;
-        } else {
-            return true;
-        }
     }
 }

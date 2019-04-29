@@ -26,22 +26,22 @@ public class CommandValidator {
      * @throws InvalidCommandException if the command is invalid
      */
     private static boolean isTargetTypeValid(String command, TargetType targetType) {
-        if (targetType == null) throw new NullPointerException();
+        if (targetType == null) return false;
 
         switch (targetType) {
             case PLAYER:
                 if (!command.contains("-t")) {
-                    throw new InvalidCommandException();
+                    return false;
                 }
                 break;
             case SQUARE:
                 if (!command.contains("-v")) {
-                    throw new InvalidCommandException();
+                    return false;
                 }
                 break;
             default:
                 if (!command.contains("-x")) {
-                    throw new InvalidCommandException();
+                    return false;
                 }
         }
 
@@ -113,5 +113,21 @@ public class CommandValidator {
         }
 
         return isTargetNumValid(command, targetType, targetNumber, exactNumber);
+    }
+
+    /**
+     * Checks if target moves before is congruent with the command
+     *
+     * @param command    String of command
+     * @param properties Map of effect properties
+     * @return {@code true} if target move before is valid {@code false} otherwise
+     */
+    public static boolean isMoveBeforeValid(String command, Map<String, String> properties) {
+        return !(properties.containsKey(Properties.MOVE_TARGET_BEFORE.getJKey()) &&
+                (!command.contains("-z") || (command.contains("-z") &&
+                        (Boolean.parseBoolean(properties.get(Properties.MOVE_TARGET_BEFORE.getJKey())) &&
+                                !CommandUtility.getBoolParam(command.split(" "), "-z")) ||
+                        (!Boolean.parseBoolean(properties.get(Properties.MOVE_TARGET_BEFORE.getJKey())) &&
+                                CommandUtility.getBoolParam(command.split(" "), "-z")))));
     }
 }
