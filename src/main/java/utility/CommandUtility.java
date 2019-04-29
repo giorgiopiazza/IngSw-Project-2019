@@ -210,7 +210,28 @@ public class CommandUtility {
      */
     public static boolean getBoolParam(String[] splitCommand, String param) {
         int pos = getCommandParamPosition(splitCommand, param);
+
+        if(pos == -1) {
+            throw new InvalidCommandException();
+        }
+
         return Boolean.parseBoolean(splitCommand[pos + 1]);
+    }
+
+    /**
+     * Method used to return the index of the powerup the using player wants to use
+     *
+     * @param splitCommand Array pf String containing the command
+     * @return an integer representing the index of the powerup held by the using player
+     */
+    public static int getPowerupIndex(String[] splitCommand) {
+        int pos = getCommandParamPosition(splitCommand, "-ip");
+
+        if(pos == -1) {
+            throw new InvalidCommandException();
+        }
+
+        return Integer.parseInt(splitCommand[pos + 1]);
     }
 
     /**

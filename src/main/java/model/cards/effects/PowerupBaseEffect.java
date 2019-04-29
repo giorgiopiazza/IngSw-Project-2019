@@ -1,7 +1,14 @@
 package model.cards.effects;
 
 import enumerations.TargetType;
+import exceptions.utility.InvalidPropertiesException;
+import model.Game;
+import model.player.PlayerPosition;
+import utility.CommandUtility;
+import utility.CommandValidator;
+import utility.PropertiesValidator;
 
+import java.util.List;
 import java.util.Map;
 
 public class PowerupBaseEffect extends Effect {
@@ -30,6 +37,34 @@ public class PowerupBaseEffect extends Effect {
 
     @Override
     public boolean validate(String command) {
+        if(getTargets().length > 1) {   // as normal weapon effects powerup effects do not have subEffects and then their target[] dimension must always be 1
+            throw new InvalidPropertiesException();
+        }
+
+        String[] commandSplit = command.split(" ");
+        PlayerPosition powerupUserPos = Game.getInstance().getPlayerByID(CommandUtility.getCommandUserID(commandSplit)).getPosition();
+        List<PlayerPosition> targetPos = CommandUtility.getTargetPositions(commandSplit, getTargets()[0]);
+
+        // command targets validation
+        if(!CommandValidator.isTargetValid(command, getProperties(), getTargets()[0])) {
+            return false;
+        }
+
+        // powerup index validation
+        if(!CommandValidator.isPowerupIndexValid(command)) {
+            return false;
+        }
+
+        // moves validation
+        if(!PropertiesValidator.isMoveValid(command, getProperties())) {
+            return false;
+        }
+
+        // visibility validation
+        if(!PropertiesValidator.isVisibilityValid(getProperties(), powerupUserPos, targetPos)) {
+            return false;
+        }
+
         return true;
     }
 }

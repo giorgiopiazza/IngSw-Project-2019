@@ -20,7 +20,6 @@
       "quantity": 2,
       "cost" : 1,
       "properties" : {
-        "visible" : false,
         "target" : ["PLAYER"],
         "targetNum" : 1,
         "damageDistribution" : [1]

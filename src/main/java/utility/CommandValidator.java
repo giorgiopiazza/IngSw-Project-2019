@@ -4,7 +4,9 @@ import enumerations.Properties;
 import enumerations.TargetType;
 import exceptions.command.InvalidCommandException;
 import exceptions.utility.InvalidPropertiesException;
+import model.Game;
 import model.player.PlayerPosition;
+import model.player.UserPlayer;
 
 import java.util.List;
 import java.util.Map;
@@ -25,7 +27,7 @@ public class CommandValidator {
      * @throws NullPointerException    if target is null
      * @throws InvalidCommandException if the command is invalid
      */
-    private static boolean  isTargetTypeValid(String command, TargetType targetType) {
+    private static boolean isTargetTypeValid(String command, TargetType targetType) {
         if (targetType == null) return false;
 
         switch (targetType) {
@@ -102,12 +104,14 @@ public class CommandValidator {
         // Target number validation
         int targetNumber;
         boolean exactNumber;
-        if (properties.containsKey(enumerations.Properties.TARGET_NUM.getJKey())) { // Exact target number
+        if (properties.containsKey(Properties.TARGET_NUM.getJKey())) { // Exact target number
             targetNumber = Integer.parseInt(properties.get(enumerations.Properties.TARGET_NUM.getJKey()));
             exactNumber = true;
-        } else if (properties.containsKey(enumerations.Properties.MAX_TARGET_NUM.getJKey())) { // Maximum target number
+        } else if (properties.containsKey(Properties.MAX_TARGET_NUM.getJKey())) { // Maximum target number
             targetNumber = Integer.parseInt(properties.get(Properties.MAX_TARGET_NUM.getJKey()));
             exactNumber = false;
+        } else if (properties.containsKey(Properties.TP.getJKey())) {
+            return true;
         } else {
             throw new InvalidPropertiesException();
         }
@@ -129,5 +133,26 @@ public class CommandValidator {
                                 !CommandUtility.getBoolParam(command.split(" "), "-z")) ||
                         (!Boolean.parseBoolean(properties.get(Properties.MOVE_TARGET_BEFORE.getJKey())) &&
                                 CommandUtility.getBoolParam(command.split(" "), "-z")))));
+    }
+
+    /**
+     * Checks if the index of the powerup in the command is congruent with the player who
+     * is using the powerup
+     *
+     * @param command String containing the command
+     * @return {@code true} if the index is valid, otherwise {@code false}
+     */
+    public static boolean isPowerupIndexValid(String command) {
+        String[] splitCommand = command.split(" ");
+        UserPlayer powerupUser = (UserPlayer) Game.getInstance().getPlayerByID(CommandUtility.getCommandUserID(splitCommand));
+        int powerupIndex = CommandUtility.getPowerupIndex(splitCommand);
+
+        if(powerupIndex < 1 || powerupIndex > 3) {
+            throw new InvalidCommandException();
+        } else if (powerupUser.getPowerups().length < powerupIndex){
+            return false;
+        } else {
+            return true;
+        }
     }
 }
