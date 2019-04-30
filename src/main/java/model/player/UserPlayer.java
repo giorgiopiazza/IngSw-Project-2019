@@ -141,4 +141,16 @@ public class UserPlayer extends Player {
     public PowerupCard[] getPowerups() {
         return powerups.toArray(new PowerupCard[0]);
     }
+
+    @Override
+    public String toString() {
+        return "UserPlayer{" +
+                "weapons=" + weapons +
+                ", playerBoard=" + getPlayerBoard() +
+                ", powerups=" + powerups +
+                ", firstPlayer=" + firstPlayer +
+                ", terminator=" + terminator +
+                ", color=" + color +
+                '}';
+    }
 }

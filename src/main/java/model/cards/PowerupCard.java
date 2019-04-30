@@ -90,7 +90,6 @@ public class PowerupCard extends UsableCard {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
         PowerupCard that = (PowerupCard) o;
         if (!this.getName().equals(that.getName())) return false;
         if (!Objects.equals(this.getImage(), that.getImage())) return false;

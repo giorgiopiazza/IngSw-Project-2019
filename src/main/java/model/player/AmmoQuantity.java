@@ -114,4 +114,13 @@ public class AmmoQuantity {
 
         return new AmmoQuantity(sumRed, sumBlue, sumYellow);
     }
+
+    @Override
+    public String toString() {
+        return "AmmoQt{" +
+                "redAmmo=" + redAmmo +
+                ", blueAmmo=" + blueAmmo +
+                ", yellowAmmo=" + yellowAmmo +
+                '}';
+    }
 }
