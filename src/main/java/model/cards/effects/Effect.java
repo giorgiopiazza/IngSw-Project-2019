@@ -2,6 +2,7 @@ package model.cards.effects;
 
 import enumerations.TargetType;
 import exceptions.AdrenalinaException;
+import network.message.EffectRequest;
 
 import java.util.Map;
 
@@ -28,15 +29,15 @@ public abstract class Effect {
     /**
      * Method that executes the effect of a Weapon dealing, marking or moving TargetPlayers
      *
-     * @param command that will be executed
+     * @param request that will be executed
      */
-    public abstract void execute(String command);
+    public abstract void execute(EffectRequest request);
 
     /**
      * Executes the target validation of the command
      *
-     * @param command sent
+     * @param request of effect
      * @return {@code true} if the command is valid, {@code false} otherwise
      */
-    public abstract boolean validate(String command) throws AdrenalinaException;
+    public abstract boolean validate(EffectRequest request) throws AdrenalinaException;
 }

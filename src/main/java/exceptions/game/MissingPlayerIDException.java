@@ -2,8 +2,8 @@ package exceptions.game;
 
 import exceptions.AdrenalinaRuntimeException;
 
-public class MissingIDException extends AdrenalinaRuntimeException {
-    public MissingIDException(int id) {
+public class MissingPlayerIDException extends AdrenalinaRuntimeException {
+    public MissingPlayerIDException(int id) {
         super("There exists no player with ID: " + id);
     }
 }

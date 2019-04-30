@@ -1,6 +1,7 @@
 package model.cards;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 public class Deck {
@@ -97,5 +98,14 @@ public class Deck {
     public int numOfDiscards() {
         if (!garbage) throw new NullPointerException("deck of discarded cards is null");
         return discard.size();
+    }
+
+    @Override
+    public String toString() {
+        return "Deck{\n" +
+                "cardsDeck=" + Arrays.toString(cardsDeck.toArray()) +
+                ",\ngarbage=" + garbage +
+                ",\ndiscard=" + (discard != null ? Arrays.toString(discard.toArray()) : "null" ) +
+                "\n}";
     }
 }

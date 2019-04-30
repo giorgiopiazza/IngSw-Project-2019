@@ -2,6 +2,7 @@ package model.cards.weaponstates;
 
 import model.cards.WeaponCard;
 import model.cards.effects.Effect;
+import network.message.EffectRequest;
 
 public class ChargedWeapon implements WeaponState {
 
@@ -21,7 +22,7 @@ public class ChargedWeapon implements WeaponState {
     }
 
     @Override
-    public void use(Effect effect, String command) {
-        effect.execute(command);
+    public void use(Effect effect, EffectRequest request) {
+        effect.execute(request);
     }
 }

@@ -42,7 +42,8 @@ public class PowerupParser {
         }
 
         JsonParser parser = new JsonParser();
-        JsonObject json = parser.parse(new InputStreamReader(is)).getAsJsonObject();
+        JsonObject json;
+        json = parser.parse(new InputStreamReader(is)).getAsJsonObject();
         JsonArray powerups = json.getAsJsonArray("powerups");
 
         for (JsonElement je : powerups) {

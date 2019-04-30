@@ -92,12 +92,11 @@ public class Game {
      * @throws GameAlreadyStartedException if the game has already started
      * @throws MaxPlayerException          if the maximum number of players has been reached
      */
-    public void addPlayer(Player player) throws GameAlreadyStartedException, MaxPlayerException {
-        if (started)
-            throw new GameAlreadyStartedException("it is not possible to add a player when the game has already started");
+    public void addPlayer(UserPlayer player) throws GameAlreadyStartedException, MaxPlayerException {
+        if (started) throw new GameAlreadyStartedException("it is not possible to add a player when the game has already started");
         if (player == null) throw new NullPointerException("Player cannot be null");
         if (players.size() >= 5 || (players.size() >= 4 && terminatorPresent)) throw new MaxPlayerException();
-        players.add((UserPlayer) player);
+        players.add(player);
     }
 
     /**
@@ -145,18 +144,21 @@ public class Game {
     }
 
     /**
-     * @throws GameAlreadyStartedException
-     * @throws MaxPlayerException
+     * @throws GameAlreadyStartedException if game already started
      */
-    public void flush() throws GameAlreadyStartedException, MaxPlayerException {
+    public void flush() throws GameAlreadyStartedException {
         if (started) throw new GameAlreadyStartedException("cannot flush with game started");
 
         players.clear();
-        powerupCardsDeck.flush();
-        ammoCardsDeck.flush();
-        weaponsCardsDeck.flush();
+        initializeDecks();
 
-        setTerminator(false);
+        gameMap = null;
+        terminator = null;
+
+        killShotNum = 8;
+
+        terminatorPresent = false;
+
         clearKillshots();
     }
 
@@ -224,9 +226,8 @@ public class Game {
      * @throws MaxPlayerException          if the game is full
      */
     public Player setTerminator(boolean terminatorPresent) throws GameAlreadyStartedException, MaxPlayerException {
-        if (started)
-            throw new GameAlreadyStartedException("it is not possible to set the setTerminator player when the game has already started.");
-        if (players.size() >= 5) throw new MaxPlayerException("Can not add Terminator with 5 players");
+        if (started) throw new GameAlreadyStartedException("it is not possible to set the setTerminator player when the game has already started.");
+        if (players.size() >= 5 && terminatorPresent) throw new MaxPlayerException("Can not add Terminator with 5 players");
         this.terminatorPresent = terminatorPresent;
 
         if (terminatorPresent) terminator = new Terminator(firstColorUnused(), new PlayerBoard());
@@ -243,7 +244,7 @@ public class Game {
     private Color firstColorUnused() {
         ArrayList<Color> ar = new ArrayList<>();
 
-        for (Player player : players) {
+        for (UserPlayer player : players) {
             ar.add(player.getColor());
         }
 
@@ -261,12 +262,26 @@ public class Game {
      * @param playerPosition the player's spawn position
      * @throws GameAlreadyStartedException if the game has not started
      */
-    public void spawnPlayer(Player player, PlayerPosition playerPosition) throws GameAlreadyStartedException {
-        if (player == null || playerPosition == null)
-            throw new NullPointerException("player or playerPosition cannot be null");
+    public void spawnPlayer(UserPlayer player, PlayerPosition playerPosition) throws GameAlreadyStartedException {
+        // TODO: controllo sulla map che sia effettivamente uno square non nullo
+        if (player == null || playerPosition == null) throw new NullPointerException("player or playerPosition cannot be null");
         if (!players.contains(player)) throw new UnknownPlayerException();
         if (!started) throw new GameAlreadyStartedException("Game not started yet");
         player.setPosition(playerPosition);
+    }
+
+    /**
+     * Spawn the terminator player to a spawn point on the map
+     *
+     * @param playerPosition the player's spawn position
+     * @throws GameAlreadyStartedException if the game has not started
+     */
+    public void spawnTerminator(PlayerPosition playerPosition) throws GameAlreadyStartedException {
+        if (playerPosition == null) throw new NullPointerException("playerPosition cannot be null");
+        if (!started) throw new GameAlreadyStartedException("Game not started yet");
+        if (!terminatorPresent) throw new TerminatorNotSetException();
+
+        terminator.setPosition(playerPosition);
     }
 
     /**
@@ -316,13 +331,12 @@ public class Game {
      * @param id you want to obtain the related UserPlayer
      * @return the UserPlayer with the ID passed
      */
-    public Player getPlayerByID(int id) {
-        for (Player p : players) {
+    public UserPlayer getPlayerByID(int id) {
+        for (UserPlayer p : players) {
             if (p.getId() == id) return p;
         }
-        throw new MissingIDException(id);
+        throw new MissingPlayerIDException(id);
     }
-
 
     /**
      * Method to obtain the positions of the players passed

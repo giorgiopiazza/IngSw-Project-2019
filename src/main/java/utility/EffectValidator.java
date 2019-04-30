@@ -3,17 +3,23 @@ package utility;
 import enumerations.Direction;
 import enumerations.Properties;
 import enumerations.TargetType;
+import exceptions.command.InvalidCommandException;
 import exceptions.player.NoDirectionException;
 import exceptions.player.SamePositionException;
+import exceptions.utility.InvalidPropertiesException;
 import model.Game;
 import model.player.Player;
 import model.player.PlayerPosition;
+import model.player.UserPlayer;
+import network.message.EffectRequest;
+import network.message.FireRequest;
+import network.message.PowerupRequest;
 
 import java.util.*;
 
-public class PropertiesValidator {
+public class EffectValidator {
 
-    private PropertiesValidator() {
+    private EffectValidator() {
         throw new IllegalStateException("Utility class");
     }
 
@@ -164,7 +170,7 @@ public class PropertiesValidator {
             return false;
         }
 
-        List<Player> targets = CommandUtility.getPlayersByIDs(targetsID);
+        List<Player> targets = getPlayersByIDs(targetsID);
 
         for (int i = 0; i < targetsPos.size(); ++i) {
             int distance = targets.get(i).getPosition().distanceOf(targetsPos.get(i));
@@ -192,12 +198,12 @@ public class PropertiesValidator {
     /**
      * Method that verifies if each movement of each target is done directionally from the shooter
      *
-     * @param command String containing the command
+     * @param request containing the effect request
      * @return true if each targetPosition identifies a direction from the shooter's one
      */
-    private static boolean isMovingDirectionally(String command) {
-        Player shooter = Game.getInstance().getPlayerByID(CommandUtility.getCommandUserID(command.split(" ")));
-        List<PlayerPosition> positions = CommandUtility.getPositions(command.split(" "), "-u");
+    private static boolean isMovingDirectionally(EffectRequest request) {
+        Player shooter = Game.getInstance().getPlayerByID(request.senderID);
+        List<PlayerPosition> positions = request.targetPlayersMovePositions;
 
         for (PlayerPosition position : positions) {
             try {
@@ -280,25 +286,25 @@ public class PropertiesValidator {
     /**
      * Checks if target moves are valid based on effect properties
      *
-     * @param command    String of command
+     * @param request    containing the effect request
      * @param properties Map of effect properties
      * @return {@code true} if target moves are valid {@code false} otherwise
      */
-    public static boolean isMoveValid(String command, Map<String, String> properties) {
+    public static boolean isMoveValid(EffectRequest request, Map<String, String> properties) {
         // Player move validation
         if (properties.containsKey(Properties.MOVE.getJKey())) {
-            List<PlayerPosition> movingPos = CommandUtility.getPositions(command.split(" "), "-m");
-            int playerID = CommandUtility.getCommandUserID(command.split(" "));
+            List<PlayerPosition> movingPos = request.targetPlayersMovePositions;
+            int playerID = request.senderID;
             int moveDistance = Integer.parseInt(properties.get(Properties.MOVE.getJKey()));
 
-            if (movingPos.isEmpty() || !PropertiesValidator.canMove(playerID, movingPos.get(0), moveDistance)) {
+            if (movingPos.isEmpty() || !EffectValidator.canMove(playerID, movingPos.get(0), moveDistance)) {
                 return false;
             }
         }
 
         // Target move validation
-        List<Integer> targetsID = CommandUtility.getAttributesID(command.split(" "), "-t");
-        List<PlayerPosition> movingPos = CommandUtility.getPositions(command.split(" "), "-u");
+        List<Integer> targetsID = request.targetPlayersID;
+        List<PlayerPosition> movingPos = request.targetPlayersMovePositions;
         int moveDistance;
 
         if (movingPos.isEmpty()) {
@@ -308,7 +314,7 @@ public class PropertiesValidator {
         if (properties.containsKey(Properties.MOVE_TARGET.getJKey())) {
             moveDistance = Integer.parseInt(properties.get(Properties.MOVE_TARGET.getJKey()));
 
-            if (!PropertiesValidator.canMove(targetsID, movingPos, moveDistance, true)) {
+            if (!EffectValidator.canMove(targetsID, movingPos, moveDistance, true)) {
                 return false;
             }
         }
@@ -316,15 +322,14 @@ public class PropertiesValidator {
         if (properties.containsKey(Properties.MAX_MOVE_TARGET.getJKey())) {
             moveDistance = Integer.parseInt(properties.get(Properties.MAX_MOVE_TARGET.getJKey()));
 
-            if (!PropertiesValidator.canMove(targetsID, movingPos, moveDistance, false)) {
+            if (!EffectValidator.canMove(targetsID, movingPos, moveDistance, false)) {
                 return false;
             }
         }
 
         // Target MoveInLine validation
-        return !(properties.containsKey(Properties.MOVE_INLINE.getJKey()) && !PropertiesValidator.isMovingDirectionally(command));
+        return !(properties.containsKey(Properties.MOVE_INLINE.getJKey()) && !EffectValidator.isMovingDirectionally(request));
     }
-
 
     /**
      * Method that verifies if the distance between the shooter and the target positions are valid due to
@@ -354,7 +359,6 @@ public class PropertiesValidator {
         return isDistantEnough(shooterPosition, targetPositions, targetType, distance, exactDistance);
     }
 
-
     /**
      * Method that verifies the poritioning properties of the effect: inLine and moveToLastTarget
      *
@@ -367,7 +371,6 @@ public class PropertiesValidator {
         return !((properties.containsKey(Properties.INLINE.getJKey()) && !areInLine(shooterPosition, targetPositions)) || // InLine targets validation
                 (properties.containsKey(Properties.MOVE_TO_LAST_TARGET.getJKey()) && !lastTargetPos(shooterPosition, targetPositions))); // Move to last target validation
     }
-
 
     /**
      * Method that verifies the visibility from the shooter position to the targets' ones
@@ -386,5 +389,188 @@ public class PropertiesValidator {
                                 (Boolean.parseBoolean(properties.get(Properties.VISIBLE.getJKey())) && !areAllVisible(shooterPosition, targetPositions)))) || // Visible property == true and at least one target is invisible
                 (properties.containsKey(Properties.CONCATENATED_VISIBLE.getJKey()) && !areConcatenatedVisible(shooterPosition, targetPositions))); // Concatenated visibility
 
+    }
+
+    /**
+     * Returns an ArrayList of the players whose ID is contained in the List passed
+     *
+     * @param playersIDs the List of IDs you need the related players' reference
+     * @return an ArrayList of players
+     */
+    public static List<Player> getPlayersByIDs(List<Integer> playersIDs) {
+        if (playersIDs == null) throw new NullPointerException("Can not take any player from null");
+
+        List<Player> players = new ArrayList<>();
+        for (int playerID : playersIDs) {
+            players.add(Game.getInstance().getPlayerByID(playerID));
+        }
+
+        return players;
+    }
+
+    /**
+     * Return a list of PlayerPosition from the effect request and the target type
+     *
+     * @param request containing the effect request
+     * @param targetType desired
+     * @return an ArrayList of PlayerPositions
+     */
+    public static List<PlayerPosition> getTargetPositions(EffectRequest request, TargetType targetType) {
+        List<PlayerPosition> squares;
+        List<Player> targets;
+
+        switch (targetType) {
+            case PLAYER:
+                targets = getPlayersByIDs(request.targetPlayersID);
+                squares = new ArrayList<>();
+
+                for (Player targetPlayer : targets) {
+                    squares.add(targetPlayer.getPosition());
+                }
+
+                break;
+            case SQUARE:
+                squares = request.targetPositions;
+                break;
+            default:
+                targets = Game.getInstance().getGameMap().getPlayersInRoom(request.targetRoomColor);
+                squares = new ArrayList<>();
+
+                for (Player targetPlayer : targets) {
+                    squares.add(targetPlayer.getPosition());
+                }
+        }
+
+        return squares;
+    }
+
+    /**
+     * Method that verifies the conformity of the command with the target.
+     * For example an effect whose target is a Player can not have a command that specifies a room as target
+     *
+     * @param request    containing the effect request
+     * @param targetType the target to verify
+     * @return true if the command contains the right parameters for the target
+     * @throws NullPointerException    if target is null
+     * @throws InvalidCommandException if the command is invalid
+     */
+    private static boolean isTargetTypeValid(EffectRequest request, TargetType targetType) {
+        if (targetType == null) return false;
+
+        switch (targetType) {
+            case PLAYER:
+                if (request.targetPlayersID == null) {
+                    return false;
+                }
+                break;
+            case SQUARE:
+                if (request.targetPositions == null) {
+                    return false;
+                }
+                break;
+            default:
+                if (request.targetRoomColor == null) {
+                    return false;
+                }
+        }
+
+        return true;
+    }
+
+    /**
+     * Method that verifies if the effect can shoot to the number of targets
+     * in the command
+     *
+     * @param request     containing the effect request
+     * @param targetType  array of TargetType specifying the type of target the effects can shoot
+     * @param number      int that states the number of targets that the effect can have
+     * @param exactNumber boolean, if true the number of target is exactly number, if false number is the maximum
+     * @return true if the number of targets is compatible with number
+     * @throws NullPointerException if target is null
+     */
+    private static boolean isTargetNumValid(EffectRequest request, TargetType targetType, int number, boolean exactNumber) {
+        int targetNum;
+
+        if (targetType == null) throw new NullPointerException();
+
+        switch (targetType) {
+            case PLAYER:
+                List<Integer> targetsID = request.targetPlayersID;
+
+                targetNum = targetsID.size();
+                break;
+            case SQUARE:
+                List<PlayerPosition> squares = request.targetPositions;
+
+                targetNum = squares.size();
+                break;
+            default:
+                // ROOM: Already checked in isTargetTypeValid
+                return true;
+        }
+
+        return ((exactNumber && targetNum == number) ||
+                (!exactNumber && targetNum <= number));
+    }
+
+    /**
+     * Checks if command targets are valid based on effect properties
+     *
+     * @param request    containing the effect request
+     * @param properties Map of effect properties
+     * @param targetType TargetType of the effect target
+     * @return {@code true} if command targets are valid {@code false} otherwise
+     */
+    public static boolean isTargetValid(EffectRequest request, Map<String, String> properties, TargetType targetType) {
+        // TargetType validation
+        if (!isTargetTypeValid(request, targetType)) {
+            return false;
+        }
+
+        // Target number validation
+        int targetNumber;
+        boolean exactNumber;
+        if (properties.containsKey(Properties.TARGET_NUM.getJKey())) { // Exact target number
+            targetNumber = Integer.parseInt(properties.get(enumerations.Properties.TARGET_NUM.getJKey()));
+            exactNumber = true;
+        } else if (properties.containsKey(Properties.MAX_TARGET_NUM.getJKey())) { // Maximum target number
+            targetNumber = Integer.parseInt(properties.get(Properties.MAX_TARGET_NUM.getJKey()));
+            exactNumber = false;
+        } else if (properties.containsKey(Properties.TP.getJKey())) {
+            return true;
+        } else {
+            throw new InvalidPropertiesException();
+        }
+
+        return isTargetNumValid(request, targetType, targetNumber, exactNumber);
+    }
+
+    /**
+     * Checks if target moves before is congruent with the command
+     *
+     * @param request    containing the fire request
+     * @param properties Map of effect properties
+     * @return {@code true} if target move before is valid {@code false} otherwise
+     */
+    public static boolean isMoveBeforeValid(FireRequest request, Map<String, String> properties) {
+        return !(properties.containsKey(Properties.MOVE_TARGET_BEFORE.getJKey()) &&
+                (Boolean.parseBoolean(properties.get(Properties.MOVE_TARGET_BEFORE.getJKey()))
+                        != request.moveTargetsFirst));
+    }
+
+    /**
+     * Checks if the index of the powerup in the command is congruent with the player who
+     * is using the powerup
+     *
+     * @param request containing the powerup request
+     * @return {@code true} if the index is valid, otherwise {@code false}
+     */
+    public static boolean isPowerupIndexValid(PowerupRequest request) {
+        UserPlayer powerupUser = Game.getInstance().getPlayerByID(request.senderID);
+        int powerupIndex = request.powerupID;
+
+        if (powerupIndex < 1 || powerupIndex > 3) {
+            throw new InvalidCommandException();
+        } else return powerupUser.getPowerups().length >= powerupIndex;
     }
 }

@@ -15,7 +15,8 @@ import model.cards.weaponstates.UnchargedWeapon;
 import model.cards.weaponstates.WeaponState;
 import model.player.AmmoQuantity;
 import model.player.UserPlayer;
-import utility.CommandUtility;
+import network.message.EffectRequest;
+import network.message.FireRequest;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -107,24 +108,25 @@ public class WeaponCard extends UsableCard {
      * what he needs to verify first things of a shooting session: which is the effect used, if it can
      * be payed and if the player uses powerups to pay it
      *
-     * @param command is the String that comes from the controller to execute the FIRE action
+     * @param request is the request that comes from the controller to execute the FIRE action
      * @throws WeaponNotChargedException in case the weapon can not be used because not charged
      * @throws NotEnoughAmmoException    in case the weapon even with powerups can not be payed
      */
     @Override
-    public void use(String command) throws AdrenalinaException {
+    public void use(EffectRequest request) throws AdrenalinaException {
+        FireRequest fireRequest = (FireRequest) request;
+
         if (isCharged()) {
             Effect effect;
 
-            String[] splitCommand = command.split(" ");
-            int pId = CommandUtility.getCommandUserID(splitCommand);
-            int eId = CommandUtility.getEffectID(splitCommand);
+            int pId = fireRequest.senderID;
+            int eId = fireRequest.effectID;
 
             if (pId >= Game.getInstance().playersNumber()) {
                 throw new InvalidCommandException();
             }
 
-            UserPlayer shootingPlayer = (UserPlayer) Game.getInstance().getPlayerByID(pId);
+            UserPlayer shootingPlayer = Game.getInstance().getPlayerByID(pId);
 
             if (eId == 0) {
                 effect = getBaseEffect();
@@ -134,10 +136,10 @@ public class WeaponCard extends UsableCard {
                 throw new InvalidCommandException();
             }
 
-            if (effect.validate(command)) {
-                payEffectCost(command, shootingPlayer, ((WeaponBaseEffect) effect).getCost());
+            if (effect.validate(request)) {
+                payEffectCost(fireRequest, shootingPlayer, ((WeaponBaseEffect) effect).getCost());
 
-                weaponState.use(effect, command);
+                weaponState.use(effect, fireRequest);
                 setStatus(new UnchargedWeapon());
             } else {
                 throw new InvalidCommandException();
@@ -147,19 +149,17 @@ public class WeaponCard extends UsableCard {
         }
     }
 
-    private void payEffectCost(String command, UserPlayer shootingPlayer, AmmoQuantity cost) throws NotEnoughAmmoException {
-        String[] splitCommand = command.split(" ");
-
+    private void payEffectCost(FireRequest request, UserPlayer shootingPlayer, AmmoQuantity cost) throws NotEnoughAmmoException {
         PowerupCard[] powerupCards = shootingPlayer.getPowerups();
 
-        List<Integer> powerupsID = CommandUtility.getAttributesID(splitCommand, "-a");
+        List<Integer> powerupsID = request.powerupsID;
         List<Integer> usedPowerupsID = new ArrayList<>();
 
         AmmoQuantity costWithoutPowerups = getCostWithoutPowerup(cost, powerupsID, usedPowerupsID, powerupCards);
         shootingPlayer.getPlayerBoard().useAmmo(costWithoutPowerups);
 
         if (!usedPowerupsID.isEmpty()) {
-            Collections.sort(usedPowerupsID, Collections.reverseOrder());
+            usedPowerupsID.sort(Collections.reverseOrder());
 
             try {
                 for (Integer id : usedPowerupsID) {

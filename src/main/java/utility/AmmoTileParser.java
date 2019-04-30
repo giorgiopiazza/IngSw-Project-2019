@@ -28,12 +28,9 @@ public class AmmoTileParser {
 
         InputStream is = AmmoTileParser.class.getClassLoader().getResourceAsStream(path);
 
-        if (is == null) {
-            throw new JsonFileNotFoundException("File " + path + " not found");
-        }
+        if (is == null) throw new JsonFileNotFoundException("File " + path + " not found");
 
         JsonParser parser = new JsonParser();
-
         JsonObject json = parser.parse(new InputStreamReader(is)).getAsJsonObject();
         JsonArray ammoTiles = json.getAsJsonArray("ammoTiles");
 

@@ -202,4 +202,16 @@ public class PlayerBoard {
         damages.clear();
         skulls++;
     }
+
+    @Override
+    public String toString() {
+        return "PlayerBoard{" +
+                "damages=" + Arrays.toString(damages.toArray()) +
+                ", marks=" + Arrays.toString(marks.toArray()) +
+                ", skulls=" + skulls +
+                ", ammo=" + ammo +
+                ", boardPoints=" + Arrays.toString(boardPoints.toArray()) +
+                ", boardFlipped=" + boardFlipped +
+                '}';
+    }
 }
