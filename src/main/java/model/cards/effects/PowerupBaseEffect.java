@@ -4,9 +4,9 @@ import enumerations.TargetType;
 import exceptions.utility.InvalidPropertiesException;
 import model.Game;
 import model.player.PlayerPosition;
-import utility.CommandUtility;
-import utility.CommandValidator;
-import utility.PropertiesValidator;
+import network.message.EffectRequest;
+import network.message.PowerupRequest;
+import utility.EffectValidator;
 
 import java.util.List;
 import java.util.Map;
@@ -31,36 +31,37 @@ public class PowerupBaseEffect extends Effect {
     }
 
     @Override
-    public void execute(String command) {
+    public void execute(EffectRequest request) {
         // basic effect does nothing
     }
 
     @Override
-    public boolean validate(String command) {
+    public boolean validate(EffectRequest request) {
         if(getTargets().length > 1) {   // as normal weapon effects powerup effects do not have subEffects and then their target[] dimension must always be 1
             throw new InvalidPropertiesException();
         }
 
-        String[] commandSplit = command.split(" ");
-        PlayerPosition powerupUserPos = Game.getInstance().getPlayerByID(CommandUtility.getCommandUserID(commandSplit)).getPosition();
-        List<PlayerPosition> targetPos = CommandUtility.getTargetPositions(commandSplit, getTargets()[0]);
+        PowerupRequest powerupRequest = (PowerupRequest) request;
+
+        PlayerPosition powerupUserPos = Game.getInstance().getPlayerByID(powerupRequest.senderID).getPosition();
+        List<PlayerPosition> targetPos = EffectValidator.getTargetPositions(powerupRequest, getTargets()[0]);
 
         // command targets validation
-        if(!CommandValidator.isTargetValid(command, getProperties(), getTargets()[0])) {
+        if(!EffectValidator.isTargetValid(powerupRequest, getProperties(), getTargets()[0])) {
             return false;
         }
 
         // powerup index validation
-        if(!CommandValidator.isPowerupIndexValid(command)) {
+        if(!EffectValidator.isPowerupIndexValid(powerupRequest)) {
             return false;
         }
 
         // moves validation
-        if(!PropertiesValidator.isMoveValid(command, getProperties())) {
+        if(!EffectValidator.isMoveValid(powerupRequest, getProperties())) {
             return false;
         }
 
         // visibility validation
-        return PropertiesValidator.isVisibilityValid(getProperties(), powerupUserPos, targetPos);
+        return EffectValidator.isVisibilityValid(getProperties(), powerupUserPos, targetPos);
     }
 }

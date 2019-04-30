@@ -3,6 +3,8 @@ package model.cards.weaponstates;
 import exceptions.cards.WeaponNotChargedException;
 import model.cards.WeaponCard;
 import model.cards.effects.Effect;
+import network.message.EffectRequest;
+import network.message.Message;
 
 /**
  * Interface used to manage the state of a Weapon
@@ -36,8 +38,8 @@ public interface WeaponState {
      * Method that executes the effect of the WeaponState
      *
      * @param effect
-     * @param command
+     * @param request
      * @throws WeaponNotChargedException exception thrown in case the Weapon is not charged
      */
-    void use(Effect effect, String command) throws WeaponNotChargedException;
+    void use(Effect effect, EffectRequest request) throws WeaponNotChargedException;
 }

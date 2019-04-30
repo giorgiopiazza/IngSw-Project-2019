@@ -10,11 +10,10 @@ import model.cards.effects.Effect;
 import model.cards.effects.PowerupBaseEffect;
 import model.player.AmmoQuantity;
 import model.player.UserPlayer;
-import utility.CommandUtility;
+import network.message.EffectRequest;
+import network.message.PowerupRequest;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -31,9 +30,10 @@ public class PowerupCard extends UsableCard {
     }
 
     @Override
-    public void use(String command) throws AdrenalinaException {
-        String[] splitCommand = command.split(" ");
-        int pId = CommandUtility.getCommandUserID(splitCommand);
+    public void use(EffectRequest request) throws AdrenalinaException {
+        PowerupRequest powerupRequest = (PowerupRequest) request;
+
+        int pId = powerupRequest.senderID;
 
         if (pId >= Game.getInstance().playersNumber()) {
             throw new InvalidCommandException();
@@ -41,23 +41,21 @@ public class PowerupCard extends UsableCard {
 
         UserPlayer shootingPlayer = (UserPlayer) Game.getInstance().getPlayerByID(pId);
 
-        if (getBaseEffect().validate(command)) {
-            payEffectCost(command, shootingPlayer, ((PowerupBaseEffect) getBaseEffect()).hasCost());
-            getBaseEffect().execute(command);
+        if (getBaseEffect().validate(powerupRequest)) {
+            payEffectCost(powerupRequest, shootingPlayer, ((PowerupBaseEffect) getBaseEffect()).hasCost());
+            getBaseEffect().execute(powerupRequest);
         } else {
             throw new InvalidCommandException();
         }
     }
 
-    private void payEffectCost(String command, UserPlayer shootingPlayer, boolean cost) throws NotEnoughAmmoException {
+    private void payEffectCost(PowerupRequest request, UserPlayer shootingPlayer, boolean cost) throws NotEnoughAmmoException {
         if (cost) {
-            String[] splitCommand = command.split(" ");
-
             PowerupCard[] powerupCards = shootingPlayer.getPowerups();
 
-            List<Integer> powerupsID = CommandUtility.getAttributesID(splitCommand, "-a");
+            List<Integer> powerupsID = request.powerupsID;
 
-            Ammo colorCost = CommandUtility.getPowerupPaymentAmmo(splitCommand);
+            Ammo colorCost = request.ammoColor;
 
             boolean paid = false;
 

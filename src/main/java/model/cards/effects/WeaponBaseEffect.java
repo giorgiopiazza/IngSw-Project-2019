@@ -4,9 +4,9 @@ import enumerations.TargetType;
 import model.Game;
 import model.player.AmmoQuantity;
 import model.player.PlayerPosition;
-import utility.CommandUtility;
-import utility.CommandValidator;
-import utility.PropertiesValidator;
+import network.message.EffectRequest;
+import network.message.FireRequest;
+import utility.EffectValidator;
 
 import java.util.List;
 import java.util.Map;
@@ -37,73 +37,73 @@ public class WeaponBaseEffect extends Effect {
     }
 
     @Override
-    public void execute(String command) {
+    public void execute(EffectRequest request) {
         // Basic Effect does nothing
     }
 
     @Override
-    public boolean validate(String command) {
+    public boolean validate(EffectRequest request) {
+        FireRequest fireRequest = (FireRequest) request;
+
         if (getTargets().length > 1) { // This effect has subEffects
             for (TargetType targetType : getTargets()) { // Checks that every subEffect is valid
-                if (!subValidate(CommandUtility.getSubCommand(command, targetType), PropertiesValidator.getSubMap(getProperties(), targetType), targetType)) {
+                if (!subValidate(fireRequest, EffectValidator.getSubMap(getProperties(), targetType), targetType)) {
                     return false;
                 }
             }
             return true;
         } else { // Checks the effect normally
-            return subValidate(command, getProperties(), getTargets()[0]);
+            return subValidate(fireRequest, getProperties(), getTargets()[0]);
         }
     }
 
-    private boolean subValidate(String command, Map<String, String> properties, TargetType targetType) {
-        String[] commandSplit = command.split(" ");
-        PlayerPosition shooterPosition = Game.getInstance().getPlayerByID(CommandUtility.getCommandUserID(commandSplit)).getPosition();
-        List<PlayerPosition> targetPositions = CommandUtility.getTargetPositions(commandSplit, targetType);
+    private boolean subValidate(FireRequest request, Map<String, String> properties, TargetType targetType) {
+        PlayerPosition shooterPosition = Game.getInstance().getPlayerByID(request.senderID).getPosition();
+        List<PlayerPosition> targetPositions = EffectValidator.getTargetPositions(request, targetType);
 
         // Command targets validation
-        if (!CommandValidator.isTargetValid(command, properties, targetType))
+        if (!EffectValidator.isTargetValid(request, properties, targetType))
             return false;
 
         // Player moves validation
-        if (!PropertiesValidator.isMoveValid(command, properties))
+        if (!EffectValidator.isMoveValid(request, properties))
             return false;
 
         // Simulates player movement before shooting
-        if (command.contains("-y") && CommandUtility.getBoolParam(command.split(" "), "-y")) {
-            shooterPosition = CommandUtility.getPositions(command.split(" "), "-m").get(0);
+        if (request.moveSenderFirst) {
+            shooterPosition = request.senderMovePosition;
         }
 
         // Move before validation
-        if (!CommandValidator.isMoveBeforeValid(command, properties)) {
-            return false;
-        }
-
-        // Simulates targets movements before shooting
-        if (targetType == TargetType.PLAYER && command.contains("-z") && CommandUtility.getBoolParam(command.split(" "), "-z")) {
-            targetPositions = CommandUtility.getPositions(command.split(" "), "-u");
+        if (targetType == TargetType.PLAYER) {
+            if (!EffectValidator.isMoveBeforeValid(request, properties)) {
+                return false;
+            } else if (request.moveTargetsFirst){ // Simulates targets movements before shooting
+                targetPositions = List.copyOf(request.targetPlayersMovePositions);
+            }
         }
 
         // Target distance validation
-        if (!PropertiesValidator.isDistanceValid(properties, shooterPosition, targetPositions, targetType)) {
+        if (!EffectValidator.isDistanceValid(properties, shooterPosition, targetPositions, targetType)) {
             return false;
         }
 
         // Target visibility validation
-        if (!PropertiesValidator.isVisibilityValid(properties, shooterPosition, targetPositions)) {
+        if (!EffectValidator.isVisibilityValid(properties, shooterPosition, targetPositions)) {
             return false;
         }
 
         // Simulates player movement after shooting
-        if (command.contains("-y") && !CommandUtility.getBoolParam(command.split(" "), "-y")) {
-            shooterPosition = CommandUtility.getPositions(command.split(" "), "-m").get(0);
+        if (!request.moveSenderFirst) {
+            shooterPosition = request.senderMovePosition;
         }
 
         // Simulates targets movements after shooting
-        if (targetType == TargetType.PLAYER && command.contains("-z") && !CommandUtility.getBoolParam(command.split(" "), "-z")) {
-            targetPositions = CommandUtility.getPositions(command.split(" "), "-u");
+        if (targetType == TargetType.PLAYER && request.moveTargetsFirst) {
+            targetPositions = request.targetPlayersMovePositions;
         }
 
         // After move positioning validation
-        return !(targetType == TargetType.PLAYER && !PropertiesValidator.isPositioningValid(properties, shooterPosition, targetPositions));
+        return !(targetType == TargetType.PLAYER && !EffectValidator.isPositioningValid(properties, shooterPosition, targetPositions));
     }
 }

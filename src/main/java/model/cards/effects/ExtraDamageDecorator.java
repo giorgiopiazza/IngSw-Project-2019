@@ -4,7 +4,7 @@ import enumerations.TargetType;
 import model.Game;
 import model.player.Player;
 import model.player.PlayerPosition;
-import utility.CommandUtility;
+import network.message.EffectRequest;
 
 import java.util.List;
 
@@ -23,26 +23,24 @@ public class ExtraDamageDecorator extends ExtraEffectDecorator {
      * A target can be {@code PLAYER}, {@code SQUARE} or {@code ROOM} and the damage
      * distribution depends on this.
      *
-     * @param command the command that will be used to damage players
+     * @param request of the effect
      */
     @Override
-    public void execute(String command) {
-        effect.execute(command);
+    public void execute(EffectRequest request) {
+        effect.execute(request);
 
         List<Integer> targetsID;
-        String[] splitCommand;
-        splitCommand = command.split(" ");
-        Player shooter = Game.getInstance().getPlayerByID(CommandUtility.getCommandUserID(splitCommand));
+        Player shooter = Game.getInstance().getPlayerByID(request.senderID);
 
         switch (targetType) {
             case PLAYER:
-                targetsID = CommandUtility.getAttributesID(splitCommand, "-t");
+                targetsID = request.targetPlayersID;
                 for (int i = 0; i < targetsID.size(); ++i) {
                     Game.getInstance().getPlayerByID(targetsID.get(i)).getPlayerBoard().addDamage(shooter, damageDistribution[i]);
                 }
                 break;
             case SQUARE:
-                List<PlayerPosition> squares = CommandUtility.getPositions(splitCommand, "-v");
+                List<PlayerPosition> squares = request.targetPositions;
                 for (int i = 0; i < squares.size(); ++i) {
                     Player[] targetSquare = Game.getInstance().getGameMap().getPlayersInSquare(squares.get(i));
                     for (Player damaged : targetSquare) {
@@ -51,7 +49,7 @@ public class ExtraDamageDecorator extends ExtraEffectDecorator {
                 }
                 break;
             default:
-                List<Player> targetRoom = Game.getInstance().getGameMap().getPlayersInRoom(CommandUtility.getRoomColor(splitCommand));
+                List<Player> targetRoom = Game.getInstance().getGameMap().getPlayersInRoom(request.targetRoomColor);
                 for (Player damaged : targetRoom) {
                     damaged.getPlayerBoard().addDamage(shooter, damageDistribution[0]);
                 }
