@@ -21,6 +21,7 @@ public class AmmoTileTest {
     private AmmoQuantity redBlueAndPowerup;
 
     private AmmoTile onlyAmmoTile;
+    private AmmoTile onlyAmmoTile2;
     private AmmoTile ammoPowerupTile;
 
     private UserPlayer playerTestA;
@@ -44,6 +45,7 @@ public class AmmoTileTest {
         playerTestA = new UserPlayer("playerTestA", Color.YELLOW, true, boardA, false);
         playerTestB = new UserPlayer("playerTestB", Color.RED, false, boardB, false);
         onlyAmmoTile = new AmmoTile(null, defaultAllDifferent, false);
+        onlyAmmoTile2 = new AmmoTile(null, defaultAllDifferent, false);
         ammoPowerupTile = new AmmoTile(null, redBlueAndPowerup, true);
     }
 
@@ -61,9 +63,26 @@ public class AmmoTileTest {
     }
 
     @Test
-    void resourceGrant() {
+    void giveResources() {
         assertThrows(NullPointerException.class, () -> onlyAmmoTile.giveResources(null));
 
-        // TODO when implemented the method to instance a powerupDeck as a powerup can be picked in the method giveResources
+        onlyAmmoTile.giveResources(playerTestA);
+        assertEquals(new AmmoQuantity(2,2,2), playerTestA.getPlayerBoard().getAmmo());
+        onlyAmmoTile.giveResources(playerTestA);
+        assertEquals(new AmmoQuantity(3,3,3), playerTestA.getPlayerBoard().getAmmo());
+        onlyAmmoTile.giveResources(playerTestA);
+        assertEquals(new AmmoQuantity(3,3,3), playerTestA.getPlayerBoard().getAmmo());
+
+        ammoPowerupTile.giveResources(playerTestB);
+        assertEquals(new AmmoQuantity(2,2,1), playerTestB.getPlayerBoard().getAmmo());
+        ammoPowerupTile.giveResources(playerTestB);
+        assertEquals(new AmmoQuantity(3,3,1), playerTestB.getPlayerBoard().getAmmo());
+        ammoPowerupTile.giveResources(playerTestB);
+        assertEquals(new AmmoQuantity(3,3,1), playerTestB.getPlayerBoard().getAmmo());
+
+        assertNotEquals(onlyAmmoTile, ammoPowerupTile);
+        assertEquals(onlyAmmoTile, onlyAmmoTile);
+        assertEquals(onlyAmmoTile, onlyAmmoTile2);
+        assertNotEquals(onlyAmmoTile, playerTestA);
     }
 }

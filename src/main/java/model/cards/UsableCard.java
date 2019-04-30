@@ -6,7 +6,6 @@ import network.message.EffectRequest;
 import network.message.Message;
 
 import java.io.File;
-import java.util.Objects;
 
 public abstract class UsableCard extends Card {
     private final String name;
@@ -41,5 +40,5 @@ public abstract class UsableCard extends Card {
         return Objects.hash(super.hashCode(), name, baseEffect);
     }
 
-    public abstract void use(EffectRequest command) throws AdrenalinaException;
+    public abstract void use(String command) throws AdrenalinaException;
 }

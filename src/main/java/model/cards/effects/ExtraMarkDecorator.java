@@ -42,7 +42,7 @@ public class ExtraMarkDecorator extends ExtraEffectDecorator {
             case SQUARE:
                 List<PlayerPosition> squares = request.targetPositions;
                 for (int i = 0; i < squares.size(); ++i) {
-                    Player[] targetSquare = Game.getInstance().getGameMap().getPlayersInSquare(squares.get(i));
+                    List<Player> targetSquare = Game.getInstance().getGameMap().getPlayersInSquare(squares.get(i));
                     for (Player marked : targetSquare) {
                         marked.getPlayerBoard().addMark(shooter, markDistribution[i]);
                     }

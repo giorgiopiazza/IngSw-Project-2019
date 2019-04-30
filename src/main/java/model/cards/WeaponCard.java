@@ -126,7 +126,7 @@ public class WeaponCard extends UsableCard {
                 throw new InvalidCommandException();
             }
 
-            UserPlayer shootingPlayer = (UserPlayer) Game.getInstance().getPlayerByID(pId);
+            UserPlayer shootingPlayer = Game.getInstance().getPlayerByID(pId);
 
             if (eId == 0) {
                 effect = getBaseEffect();
@@ -159,7 +159,7 @@ public class WeaponCard extends UsableCard {
         shootingPlayer.getPlayerBoard().useAmmo(costWithoutPowerups);
 
         if (!usedPowerupsID.isEmpty()) {
-            Collections.sort(usedPowerupsID, Collections.reverseOrder());
+            usedPowerupsID.sort(Collections.reverseOrder());
 
             try {
                 for (Integer id : usedPowerupsID) {

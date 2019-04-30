@@ -39,7 +39,7 @@ public class PowerupCard extends UsableCard {
             throw new InvalidCommandException();
         }
 
-        UserPlayer shootingPlayer = (UserPlayer) Game.getInstance().getPlayerByID(pId);
+        UserPlayer shootingPlayer = Game.getInstance().getPlayerByID(pId);
 
         if (getBaseEffect().validate(powerupRequest)) {
             payEffectCost(powerupRequest, shootingPlayer, ((PowerupBaseEffect) getBaseEffect()).hasCost());
@@ -90,13 +90,22 @@ public class PowerupCard extends UsableCard {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
         PowerupCard that = (PowerupCard) o;
+        if (!this.getName().equals(that.getName())) return false;
+        if (!Objects.equals(this.getImage(), that.getImage())) return false;
         return value == that.value;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), value);
+    }
+
+    @Override
+    public String toString() {
+        return "PowerUp{" +
+                "name=" + getName() +
+                ", value=" + value +
+                '}';
     }
 }

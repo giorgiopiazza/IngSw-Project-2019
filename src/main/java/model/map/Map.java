@@ -36,7 +36,7 @@ public class Map {
      * Map of type:
      * B B B G
      * R R Y Y
-     * W Y Y
+     *   W Y Y
      */
     public static final int MAP_2 = 2;
     /**
@@ -65,7 +65,7 @@ public class Map {
         JsonParser parser = new JsonParser();
         JsonArray array = parser.parse(new InputStreamReader(is)).getAsJsonArray();
 
-        JsonObject mapObject = null;
+        JsonObject mapObject;
 
         Square[][] map;
         map = new Square[MAX_ROWS][MAX_COLUMNS];
@@ -91,8 +91,6 @@ public class Map {
                 throw new MapUnknowException();
         }
 
-        if (mapObject == null) throw new MapUnknowException();
-
         JsonArray matrix = mapObject.get("map").getAsJsonArray();
 
         fillMap(matrix, map);
@@ -100,7 +98,7 @@ public class Map {
         this.rooms = map;
     }
 
-    private void fillMap(JsonArray matrix, Square[][] map) {
+    private static void fillMap(JsonArray matrix, Square[][] map) {
         for (int i = 0; i < matrix.size(); i++) {
             JsonArray row = matrix.get(i).getAsJsonArray();
             for (int j = 0; j < row.size(); j++) {
@@ -130,14 +128,15 @@ public class Map {
         }
     }
 
-    private JsonObject getMapObject(JsonArray array, int mapType) {
+    private static JsonObject getMapObject(JsonArray array, int mapType) {
         JsonObject mapObject = null;
         for (int i = 0; i < array.size(); i++) {
             if (!array.get(i).isJsonNull() && array.get(i).getAsJsonObject().get("id").getAsInt() == mapType) {
                 mapObject = array.get(i).getAsJsonObject();
             }
         }
-        return mapObject;
+        if (mapObject != null) return mapObject;
+        throw new NullPointerException("Something went wrong... mapType: " + mapType + " JsonArray: " + array);
     }
 
     /**
@@ -167,12 +166,12 @@ public class Map {
      * @param pos the position in which there are the Players returned
      * @return the players who are in the position pos
      */
-    public Player[] getPlayersInSquare(PlayerPosition pos) {
+    public List<Player> getPlayersInSquare(PlayerPosition pos) {
         Game game = Game.getInstance();
         List<Player> players = new ArrayList<>();
 
         for (Player p : game.getPlayers()) {
-            if (p.getPosition().equals(pos)) {
+            if (p.getPosition() != null && p.getPosition().equals(pos)) {
                 players.add(p);
             }
         }
@@ -184,7 +183,7 @@ public class Map {
             }
         }
 
-        return players.toArray(new Player[0]);
+        return players;
     }
 
     /**
