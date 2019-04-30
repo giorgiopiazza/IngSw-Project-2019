@@ -152,7 +152,7 @@ public class WeaponCard extends UsableCard {
     private void payEffectCost(FireRequest request, UserPlayer shootingPlayer, AmmoQuantity cost) throws NotEnoughAmmoException {
         PowerupCard[] powerupCards = shootingPlayer.getPowerups();
 
-        List<Integer> powerupsID = List.copyOf(request.powerupsID);
+        List<Integer> powerupsID = request.powerupsID;
         List<Integer> usedPowerupsID = new ArrayList<>();
 
         AmmoQuantity costWithoutPowerups = getCostWithoutPowerup(cost, powerupsID, usedPowerupsID, powerupCards);

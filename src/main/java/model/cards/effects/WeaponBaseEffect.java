@@ -79,7 +79,7 @@ public class WeaponBaseEffect extends Effect {
             if (!EffectValidator.isMoveBeforeValid(request, properties)) {
                 return false;
             } else if (request.moveTargetsFirst){ // Simulates targets movements before shooting
-                targetPositions = List.copyOf(request.targetPlayersMovePositions);
+                targetPositions = request.targetPlayersMovePositions;
             }
         }
 

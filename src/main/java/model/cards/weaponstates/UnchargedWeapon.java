@@ -4,7 +4,6 @@ import exceptions.cards.WeaponNotChargedException;
 import model.cards.WeaponCard;
 import model.cards.effects.Effect;
 import network.message.EffectRequest;
-import network.message.Message;
 
 public class UnchargedWeapon implements WeaponState {
 

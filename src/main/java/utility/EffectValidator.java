@@ -203,7 +203,7 @@ public class EffectValidator {
      */
     private static boolean isMovingDirectionally(EffectRequest request) {
         Player shooter = Game.getInstance().getPlayerByID(request.senderID);
-        List<PlayerPosition> positions = List.copyOf(request.targetPlayersMovePositions);
+        List<PlayerPosition> positions = request.targetPlayersMovePositions;
 
         for (PlayerPosition position : positions) {
             try {
@@ -293,7 +293,7 @@ public class EffectValidator {
     public static boolean isMoveValid(EffectRequest request, Map<String, String> properties) {
         // Player move validation
         if (properties.containsKey(Properties.MOVE.getJKey())) {
-            List<PlayerPosition> movingPos = List.copyOf(request.targetPlayersMovePositions);
+            List<PlayerPosition> movingPos = request.targetPlayersMovePositions;
             int playerID = request.senderID;
             int moveDistance = Integer.parseInt(properties.get(Properties.MOVE.getJKey()));
 
@@ -303,8 +303,8 @@ public class EffectValidator {
         }
 
         // Target move validation
-        List<Integer> targetsID = List.copyOf(request.targetPlayersID);
-        List<PlayerPosition> movingPos = List.copyOf(request.targetPlayersMovePositions);
+        List<Integer> targetsID = request.targetPlayersID;
+        List<PlayerPosition> movingPos = request.targetPlayersMovePositions;
         int moveDistance;
 
         if (movingPos.isEmpty()) {
@@ -421,7 +421,7 @@ public class EffectValidator {
 
         switch (targetType) {
             case PLAYER:
-                targets = getPlayersByIDs(List.copyOf(request.targetPlayersID));
+                targets = getPlayersByIDs(request.targetPlayersID);
                 squares = new ArrayList<>();
 
                 for (Player targetPlayer : targets) {
@@ -430,7 +430,7 @@ public class EffectValidator {
 
                 break;
             case SQUARE:
-                squares = List.copyOf(request.targetPositions);
+                squares = request.targetPositions;
                 break;
             default:
                 targets = Game.getInstance().getGameMap().getPlayersInRoom(request.targetRoomColor);
@@ -566,7 +566,7 @@ public class EffectValidator {
      * @return {@code true} if the index is valid, otherwise {@code false}
      */
     public static boolean isPowerupIndexValid(PowerupRequest request) {
-        UserPlayer powerupUser = (UserPlayer) Game.getInstance().getPlayerByID(request.senderID);
+        UserPlayer powerupUser = Game.getInstance().getPlayerByID(request.senderID);
         int powerupIndex = request.powerupID;
 
         if (powerupIndex < 1 || powerupIndex > 3) {
