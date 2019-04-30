@@ -1,6 +1,7 @@
 package model;
 
 import enumerations.Color;
+import enumerations.GameState;
 import exceptions.game.*;
 import model.cards.Deck;
 import model.map.Map;
@@ -22,6 +23,7 @@ public class Game {
      */
     private static Game instance;
     private boolean started;
+    private GameState currentState;
     private int killShotNum;
     private boolean terminatorPresent;
     private Player terminator;
@@ -37,6 +39,7 @@ public class Game {
      */
     private Game() {
         players = new ArrayList<>();
+        this.currentState = GameState.NORMAL;
         killShotsTrack = new KillShot[MAX_KILLSHOT];
         killShotNum = 8;
         terminatorPresent = false;
@@ -57,6 +60,22 @@ public class Game {
         if (instance == null)
             instance = new Game();
         return instance;
+    }
+
+    /**
+     * @return the current state Game
+     */
+    public GameState getState() {
+        return this.currentState;
+    }
+
+    /**
+     * Method that sets the current state of the game
+     *
+     * @param currentState GameState to be changed
+     */
+    public void setState(GameState currentState) {
+        this.currentState = currentState;
     }
 
     /**
@@ -319,5 +338,43 @@ public class Game {
         }
 
         return positions;
+    }
+
+    public UserPlayer getFirstPlayer() {
+        for(UserPlayer player : players ) {
+            if(player.isFirstPlayer()) {
+                return player;
+            }
+        }
+
+        throw new NoFirstPlayerException();
+    }
+
+    public List<UserPlayer> getBeforeFirstFrenzyPlayers(int frenzyActivator) {
+        List<UserPlayer> frenzyPlayers = new ArrayList<>();
+        int firstPlayerID = getFirstPlayer().getId();
+
+        for (int i = 0; i < players.size(); ++i) {
+            if(!players.get(i).equals(terminator) && players.get(i).getId() < firstPlayerID && players.get(i).getId() > frenzyActivator) {
+                frenzyPlayers.add(players.get(i));
+            }
+        }
+
+        return frenzyPlayers;
+
+
+    }
+
+    public List<UserPlayer> getAfterFirstFrenzyPlayers(int frenzyActivator) {
+        List<UserPlayer> frenzyPlayers = new ArrayList<>();
+        int firstPlayerID = getFirstPlayer().getId();
+
+        for (int i = 0; i < players.size(); ++i) {
+            if(!players.get(i).equals(terminator) && players.get(i).getId() >= firstPlayerID && players.get(i).getId() <= frenzyActivator) {
+                frenzyPlayers.add(players.get(i));
+            }
+        }
+
+        return frenzyPlayers;
     }
 }

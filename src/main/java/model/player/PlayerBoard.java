@@ -1,6 +1,7 @@
 package model.player;
 
 import enumerations.Ammo;
+import enumerations.PlayerBoardState;
 import exceptions.playerboard.BoardAlreadyFlippedException;
 import exceptions.playerboard.BoardFlipDamagedException;
 import exceptions.playerboard.NotEnoughAmmoException;
@@ -16,6 +17,7 @@ public class PlayerBoard {
 
     private int skulls;
     private AmmoQuantity ammo;
+    private PlayerBoardState boardState;
 
     private List<Integer> boardPoints;
     /**
@@ -34,6 +36,7 @@ public class PlayerBoard {
         skulls = 0;
         ammo = new AmmoQuantity(1, 1, 1);
 
+        boardState = PlayerBoardState.NORMAL;
         boardFlipped = false;
         boardPoints = new ArrayList<>(Arrays.asList(8, 6, 4, 2, 1, 1));
     }
@@ -50,6 +53,20 @@ public class PlayerBoard {
      */
     public boolean isBoardFlipped() {
         return boardFlipped;
+    }
+
+    /**
+     * @return the state of the playerboard
+     */
+    public PlayerBoardState getBoardState() {
+        return this.boardState;
+    }
+
+    /**
+     * @param state PlayerBoardState to be set to the playerboard
+     */
+    public void setBoardState(PlayerBoardState state) {
+        this.boardState = state;
     }
 
     /**

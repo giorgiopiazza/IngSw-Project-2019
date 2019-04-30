@@ -1,15 +1,22 @@
 package model.player;
 
-import enumerations.Color;
+import enumerations.*;
+import model.Game;
+
+import java.util.EnumSet;
+import java.util.Set;
 
 public abstract class Player {
     private final String nickname;
     private static int uniqueID = 0;
     private final int id;
     protected Color color;
+    private EnumSet<PossibleAction> possibleActions;
+    private PlayerState playerState;
     private final PlayerBoard playerBoard;
     private PlayerPosition position;
     private int points;
+    private boolean winner;
 
     public Player(String nickname, Color color, PlayerBoard playerBoard) {
         this.nickname = nickname;
@@ -17,6 +24,8 @@ public abstract class Player {
         this.color = color;
         this.position = null;
         this.playerBoard = playerBoard;
+        this.winner = false;
+        this.playerState = new PlayerState(PossibleState.FIRST_SPAWN);
 
         points = 0;
         ++uniqueID;
@@ -36,6 +45,26 @@ public abstract class Player {
 
     public PlayerPosition getPosition() {
         return this.position;
+    }
+
+    public boolean isWinner() {
+        return winner;
+    }
+
+    public void setWinner(boolean winner) {
+        this.winner = winner;
+    }
+
+    public PlayerState getPlayerState() {
+        return this.playerState;
+    }
+
+    public void setPlayerState(PlayerState playerState) {
+        if(playerState == null) {
+            throw new NullPointerException("A player must always have a state!");
+        }
+
+        this.playerState = playerState;
     }
 
     /**
@@ -111,5 +140,30 @@ public abstract class Player {
         return p1.canSee(p2);
     }
 
+    public Set<PossibleAction> getPossibleActions() {
+        return this.possibleActions;
+    }
 
+    public void setPossibleActions() {
+        PlayerBoardState currentPlayerBoardState = getPlayerBoard().getBoardState();
+
+        switch (currentPlayerBoardState) {
+            case NORMAL:
+                possibleActions = EnumSet.of(PossibleAction.MOVE, PossibleAction.MOVE_AND_PICK, PossibleAction.SHOOT);
+                break;
+            case FIRST_ADRENALINE:
+                possibleActions = EnumSet.of(PossibleAction.MOVE, PossibleAction.ADRENALINE_PICK, PossibleAction.SHOOT);
+                break;
+            default:    // second adrenaline
+                possibleActions = EnumSet.of(PossibleAction.MOVE, PossibleAction.ADRENALINE_PICK, PossibleAction.ADRENALINE_SHOOT);
+        }
+    }
+
+    public void setFrenzyPossibleActions(int frenzyActivator) {
+        if(Game.getInstance().getBeforeFirstFrenzyPlayers(frenzyActivator).contains(this)) {
+            possibleActions = EnumSet.of(PossibleAction.FRENZY_MOVE, PossibleAction.FRENZY_PICK, PossibleAction.FRENZY_SHOOT);
+        } else {
+            possibleActions = EnumSet.of(PossibleAction.LIGHT_FRENZY_MOVE, PossibleAction.LIGHT_FRENZY_PICK);
+        }
+    }
 }
