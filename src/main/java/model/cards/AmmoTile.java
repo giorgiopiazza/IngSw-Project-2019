@@ -79,6 +79,7 @@ public class AmmoTile extends Card {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         AmmoTile ammoTile = (AmmoTile) o;
+        if (!Objects.equals(this.getImage(), ammoTile.getImage())) return false;
         return pickPowerup == ammoTile.pickPowerup &&
                 Objects.equals(ammoOnTile, ammoTile.ammoOnTile);
     }

@@ -1,10 +1,15 @@
 package model.map;
 
 import enumerations.Color;
-import enumerations.SquareAdjacency;
-import exceptions.map.MaxSquareWeaponsException;
-import model.cards.WeaponCard;
-import org.junit.jupiter.api.BeforeEach;
+import exceptions.game.GameAlreadyStartedException;
+import exceptions.game.MaxPlayerException;
+import exceptions.game.NotEnoughPlayersException;
+import exceptions.map.MapUnknowException;
+import model.Game;
+import model.player.Player;
+import model.player.PlayerBoard;
+import model.player.PlayerPosition;
+import model.player.UserPlayer;
 import org.junit.jupiter.api.Test;
 
 import java.util.logging.Level;
@@ -14,50 +19,93 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 class MapTest {
-/*    private Map map;
-    private Square[][] rooms;
-    private SpawnSquare spawnSquare;
-
-    @BeforeEach
-    void before() {
-        this.map = new Map(Map.MAP_1);
-        rooms = new Square[Map.MAX_ROWS][Map.MAX_COLUMNS];
-        for(int i=0;i<Map.MAX_ROWS;i++) {
-            for(int j=0;j<Map.MAX_COLUMNS;j++) {
-                if (i % 2 == 0) rooms[i][j] = mock(SpawnSquare.class);
-                else rooms[i][j] = mock(CardSquare.class);
-            }
-        }
-
-        spawnSquare = new SpawnSquare(Color.YELLOW, SquareAdjacency.WALL, SquareAdjacency.WALL, SquareAdjacency.DOOR, SquareAdjacency.WALL);
-    }
-
     @Test
-    void fillMap() {
-        map = new Map(Map.MAP_1);
-        Logger.getGlobal().log(Level.INFO, map.toString());
+    void mapInstances() {
+        Map map = new Map(Map.MAP_1);
+        assertNull(map.getSquare(0, 3));
+        assertEquals(Color.RED, map.getSquare(1, 2).getColor());
+        assertEquals(Color.GREY, map.getSquare(2, 1).getColor());
+
         map = new Map(Map.MAP_2);
-        Logger.getGlobal().log(Level.INFO, map.toString());
+        assertEquals(Color.BLUE, map.getSquare(0, 1).getColor());
+        assertEquals(Color.YELLOW, map.getSquare(1, 2).getColor());
+        assertNull(map.getSquare(2, 0));
+
         map = new Map(Map.MAP_3);
-        Logger.getGlobal().log(Level.INFO, map.toString());
+        assertEquals(Color.RED, map.getSquare(0, 0).getColor());
+        assertEquals(Color.PURPLE, map.getSquare(1, 1).getColor());
+        assertEquals(Color.YELLOW, map.getSquare(2, 2).getColor());
+
         map = new Map(Map.MAP_4);
-        Logger.getGlobal().log(Level.INFO, map.toString());
+        assertEquals(Color.BLUE, map.getSquare(0, 1).getColor());
+        assertEquals(Color.BLUE, map.getSquare(0, 2).getColor());
+        assertNull(map.getSquare(new PlayerPosition(0, 3)));
+
+        assertThrows(MapUnknowException.class, () -> { new Map(0); });
+        assertThrows(MapUnknowException.class, () -> { new Map(5); });
     }
 
     @Test
-    void spawnSquare() throws MaxSquareWeaponsException {
-        assertEquals(0, spawnSquare.addWeapon(mock(WeaponCard.class)));
-        assertEquals(1, spawnSquare.addWeapon(mock(WeaponCard.class)));
-        assertEquals(2, spawnSquare.addWeapon(mock(WeaponCard.class)));
+    void playersOnMap() throws MaxPlayerException, GameAlreadyStartedException, NotEnoughPlayersException {
+        Game instance = Game.getInstance();
 
-        assertThrows(MaxSquareWeaponsException.class, () -> spawnSquare.addWeapon(mock(WeaponCard.class)));
+        instance.flush();
+        instance.setGameMap(Map.MAP_2);
 
-        assertTrue(spawnSquare.removeWeapon(2));
-        assertTrue(spawnSquare.removeWeapon(1));
-        assertTrue(spawnSquare.removeWeapon(0));
+        Map map = instance.getGameMap();
 
-        assertFalse(spawnSquare.removeWeapon(2));
-        assertFalse(spawnSquare.removeWeapon(1));
-        assertFalse(spawnSquare.removeWeapon(0));
-    }*/
+        assertEquals(0, map.getPlayersInRoom(Color.RED).size());
+        assertEquals(0, map.getPlayersInSquare(new PlayerPosition(0, 0)).size());
+
+        UserPlayer p1 = new UserPlayer("tose", Color.YELLOW, true, mock(PlayerBoard.class), false);
+        UserPlayer p2 = new UserPlayer("gio", Color.RED, true, mock(PlayerBoard.class), false);
+        UserPlayer p3 = new UserPlayer("piro", Color.BLUE, true, mock(PlayerBoard.class), false);
+
+        PlayerPosition myPos = new PlayerPosition(0, 1);
+
+        instance.addPlayer(p1);
+        instance.addPlayer(p2);
+        instance.addPlayer(p3);
+
+        instance.startGame();
+
+        instance.spawnPlayer(p1, myPos);
+        instance.spawnPlayer(p2, new PlayerPosition(2, 2));
+        instance.spawnPlayer(p3, new PlayerPosition(2, 3));
+
+        Logger.getGlobal().log(Level.INFO, map.toString());
+
+        assertEquals(p1, map.getPlayersInSquare(myPos).get(0));
+        assertEquals(p1, map.getPlayersInRoom(Color.BLUE).get(0));
+
+        instance.stopGame();
+        instance.flush();
+
+        instance.addPlayer(p1);
+        instance.addPlayer(p2);
+        instance.addPlayer(p3);
+        instance.setTerminator(true);
+        instance.setGameMap(Map.MAP_2);
+        instance.startGame();
+
+        instance.spawnPlayer(p1, myPos);
+        instance.spawnPlayer(p2, new PlayerPosition(2, 2));
+        instance.spawnPlayer(p3, new PlayerPosition(2, 3));
+        instance.spawnTerminator(new PlayerPosition(1, 0));
+
+        assertEquals(p1, map.getPlayersInRoom(Color.BLUE).get(0));
+        assertEquals(p1, map.getPlayersInSquare(myPos).get(0));
+        assertEquals(instance.getTerminator(), map.getPlayersInSquare(new PlayerPosition(1, 0)).get(0));
+        assertEquals(instance.getTerminator(), map.getPlayersInRoom(Color.RED).get(0));
+    }
+
+    @Test
+    void squares() {
+        Map map = new Map(Map.MAP_3);
+
+        assertEquals(1, map.getRoom(Color.GREEN).size());
+        assertEquals( 4, map.getRoom(Color.YELLOW).size());
+        assertEquals( 2, map.getRoom(Color.GREY).size());
+        assertEquals( 1, map.getRoom(Color.PURPLE).size());
+    }
 }

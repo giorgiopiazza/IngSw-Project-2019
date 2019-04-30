@@ -44,7 +44,7 @@ public class ExtraDamageDecorator extends ExtraEffectDecorator {
             case SQUARE:
                 List<PlayerPosition> squares = CommandUtility.getPositions(splitCommand, "-v");
                 for (int i = 0; i < squares.size(); ++i) {
-                    Player[] targetSquare = Game.getInstance().getGameMap().getPlayersInSquare(squares.get(i));
+                    List<Player> targetSquare = Game.getInstance().getGameMap().getPlayersInSquare(squares.get(i));
                     for (Player damaged : targetSquare) {
                         damaged.getPlayerBoard().addDamage(shooter, damageDistribution[i]);
                     }
