@@ -354,6 +354,11 @@ public class Game {
         return positions;
     }
 
+    /**
+     * Method to obtain the player that started to play the game
+     *
+     * @return the UserPLayer who started the game
+     */
     public UserPlayer getFirstPlayer() {
         for(UserPlayer player : players ) {
             if(player.isFirstPlayer()) {
@@ -364,6 +369,15 @@ public class Game {
         throw new NoFirstPlayerException();
     }
 
+    /**
+     * Method that returns the players who, in the final frenzy mode,
+     * have to obtain the greater effects, these players are:
+     * all the players next to the one who activated the frenzy mode
+     * and before the first one who started the game
+     *
+     * @param frenzyActivator playerID of the player who activated the final frenzy mode
+     * @return the List of UserPlayers whose IDs respect the rule of the final frenzy mode
+     */
     public List<UserPlayer> getBeforeFirstFrenzyPlayers(int frenzyActivator) {
         List<UserPlayer> frenzyPlayers = new ArrayList<>();
         int firstPlayerID = getFirstPlayer().getId();
@@ -379,6 +393,12 @@ public class Game {
 
     }
 
+    /**
+     * Complementary method to getBeforeFirstFrenzyPlayers
+     *
+     * @param frenzyActivator playerID of the player who activated the final frenzy mode
+     * @return the List of UserPlayers whose IDs respect the rule of the final frenzy mode
+     */
     public List<UserPlayer> getAfterFirstFrenzyPlayers(int frenzyActivator) {
         List<UserPlayer> frenzyPlayers = new ArrayList<>();
         int firstPlayerID = getFirstPlayer().getId();
