@@ -58,7 +58,7 @@ public class WeaponBaseEffect extends Effect {
     }
 
     private boolean subValidate(FireRequest request, Map<String, String> properties, TargetType targetType) {
-        PlayerPosition shooterPosition = Game.getInstance().getPlayerByID(request.senderID).getPosition();
+        PlayerPosition shooterPosition = Game.getInstance().getPlayerByID(request.getSenderID()).getPosition();
         List<PlayerPosition> targetPositions = EffectValidator.getTargetPositions(request, targetType);
 
         // Command targets validation
@@ -70,16 +70,16 @@ public class WeaponBaseEffect extends Effect {
             return false;
 
         // Simulates player movement before shooting
-        if (request.moveSenderFirst) {
-            shooterPosition = request.senderMovePosition;
+        if (request.isMoveSenderFirst()) {
+            shooterPosition = request.getSenderMovePosition();
         }
 
         // Move before validation
         if (targetType == TargetType.PLAYER) {
             if (!EffectValidator.isMoveBeforeValid(request, properties)) {
                 return false;
-            } else if (request.moveTargetsFirst){ // Simulates targets movements before shooting
-                targetPositions = request.targetPlayersMovePositions;
+            } else if (request.isMoveTargetsFirst()){ // Simulates targets movements before shooting
+                targetPositions = request.getTargetPlayersMovePositions();
             }
         }
 
@@ -94,13 +94,13 @@ public class WeaponBaseEffect extends Effect {
         }
 
         // Simulates player movement after shooting
-        if (!request.moveSenderFirst) {
-            shooterPosition = request.senderMovePosition;
+        if (!request.isMoveSenderFirst() && request.getSenderMovePosition() != null) {
+            shooterPosition = request.getSenderMovePosition();
         }
 
         // Simulates targets movements after shooting
-        if (targetType == TargetType.PLAYER && request.moveTargetsFirst) {
-            targetPositions = request.targetPlayersMovePositions;
+        if (targetType == TargetType.PLAYER && request.isMoveTargetsFirst() && request.getTargetPlayersMovePositions() != null) {
+            targetPositions = request.getTargetPlayersMovePositions();
         }
 
         // After move positioning validation

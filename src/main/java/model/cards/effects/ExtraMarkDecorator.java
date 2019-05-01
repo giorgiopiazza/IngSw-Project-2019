@@ -30,17 +30,17 @@ public class ExtraMarkDecorator extends ExtraEffectDecorator {
         effect.execute(request);
 
         List<Integer> targetsID;
-        Player shooter = Game.getInstance().getPlayerByID(request.senderID);
+        Player shooter = Game.getInstance().getPlayerByID(request.getSenderID());
 
         switch (targetType) {
             case PLAYER:
-                targetsID = request.targetPlayersID;
+                targetsID = request.getTargetPlayersID();
                 for (int i = 0; i < targetsID.size(); ++i) {
                     Game.getInstance().getPlayerByID(targetsID.get(i)).getPlayerBoard().addMark(shooter, markDistribution[i]);
                 }
                 break;
             case SQUARE:
-                List<PlayerPosition> squares = request.targetPositions;
+                List<PlayerPosition> squares = request.getTargetPositions();
                 for (int i = 0; i < squares.size(); ++i) {
                     List<Player> targetSquare = Game.getInstance().getGameMap().getPlayersInSquare(squares.get(i));
                     for (Player marked : targetSquare) {
@@ -49,7 +49,7 @@ public class ExtraMarkDecorator extends ExtraEffectDecorator {
                 }
                 break;
             default:
-                List<Player> targetRoom = Game.getInstance().getGameMap().getPlayersInRoom(request.targetRoomColor);
+                List<Player> targetRoom = Game.getInstance().getGameMap().getPlayersInRoom(request.getTargetRoomColor());
                 for (Player marked : targetRoom) {
                     marked.getPlayerBoard().addMark(shooter, markDistribution[0]);
                 }
