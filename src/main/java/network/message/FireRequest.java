@@ -3,7 +3,7 @@ package network.message;
 import enumerations.Color;
 import model.player.PlayerPosition;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public class FireRequest extends EffectRequest {
     public final int weaponID;
@@ -27,17 +27,17 @@ public class FireRequest extends EffectRequest {
         private int weaponID;
         private int effectID;
 
-        private List<Integer> targetPlayersID;
-        private List<PlayerPosition> targetPositions;
+        private ArrayList<Integer> targetPlayersID;
+        private ArrayList<PlayerPosition> targetPositions;
         private Color targetRoomColor;
 
         private PlayerPosition senderMovePosition;
-        private List<PlayerPosition> targetPlayersMovePositions;
+        private ArrayList<PlayerPosition> targetPlayersMovePositions;
 
         private boolean moveSenderFirst;
         private boolean moveTargetsFirst;
 
-        private List<Integer> powerupsID;
+        private ArrayList<Integer> powerupsID;
 
         public FireRequestBuilder(int senderID, int weaponID, int effectID) {
             this.senderID = senderID;
@@ -45,12 +45,12 @@ public class FireRequest extends EffectRequest {
             this.effectID = effectID;
         }
 
-        public FireRequestBuilder targetPlayersID(List<Integer> targetPlayersID) {
+        public FireRequestBuilder targetPlayersID(ArrayList<Integer> targetPlayersID) {
             this.targetPlayersID = targetPlayersID;
             return this;
         }
 
-        public FireRequestBuilder targetPositions(List<PlayerPosition> targetPositions) {
+        public FireRequestBuilder targetPositions(ArrayList<PlayerPosition> targetPositions) {
             this.targetPositions = targetPositions;
             return this;
         }
@@ -65,7 +65,7 @@ public class FireRequest extends EffectRequest {
             return this;
         }
 
-        public FireRequestBuilder targetPlayersMovePositions(List<PlayerPosition> targetPlayersMovePositions) {
+        public FireRequestBuilder targetPlayersMovePositions(ArrayList<PlayerPosition> targetPlayersMovePositions) {
             this.targetPlayersMovePositions = targetPlayersMovePositions;
             return this;
         }
@@ -80,7 +80,7 @@ public class FireRequest extends EffectRequest {
             return this;
         }
 
-        public FireRequestBuilder powerupsID(List<Integer> powerupsID) {
+        public FireRequestBuilder powerupsID(ArrayList<Integer> powerupsID) {
             this.powerupsID = powerupsID;
             return this;
         }

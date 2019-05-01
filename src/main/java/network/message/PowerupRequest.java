@@ -4,7 +4,7 @@ import enumerations.Ammo;
 import enumerations.Color;
 import model.player.PlayerPosition;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public class PowerupRequest extends EffectRequest {
     public final int powerupID;
@@ -23,26 +23,26 @@ public class PowerupRequest extends EffectRequest {
         private int powerupID;
         private Ammo ammoColor;
 
-        private List<Integer> targetPlayersID;
-        private List<PlayerPosition> targetPositions;
+        private ArrayList<Integer> targetPlayersID;
+        private ArrayList<PlayerPosition> targetPositions;
         private Color targetRoomColor;
 
         private PlayerPosition senderMovePosition;
-        private List<PlayerPosition> targetPlayersMovePositions;
+        private ArrayList<PlayerPosition> targetPlayersMovePositions;
 
-        private List<Integer> powerupsID;
+        private ArrayList<Integer> powerupsID;
 
         public PowerupRequestBuilder(int senderID, int powerupID) {
             this.senderID = senderID;
             this.powerupID = powerupID;
         }
 
-        public PowerupRequestBuilder targetPlayersID(List<Integer> targetPlayersID) {
+        public PowerupRequestBuilder targetPlayersID(ArrayList<Integer> targetPlayersID) {
             this.targetPlayersID = targetPlayersID;
             return this;
         }
 
-        public PowerupRequestBuilder targetPositions(List<PlayerPosition> targetPositions) {
+        public PowerupRequestBuilder targetPositions(ArrayList<PlayerPosition> targetPositions) {
             this.targetPositions = targetPositions;
             return this;
         }
@@ -57,12 +57,12 @@ public class PowerupRequest extends EffectRequest {
             return this;
         }
 
-        public PowerupRequestBuilder targetPlayersMovePositions(List<PlayerPosition> targetPlayersMovePositions) {
+        public PowerupRequestBuilder targetPlayersMovePositions(ArrayList<PlayerPosition> targetPlayersMovePositions) {
             this.targetPlayersMovePositions = targetPlayersMovePositions;
             return this;
         }
 
-        public PowerupRequestBuilder powerupsID(List<Integer> powerupsID) {
+        public PowerupRequestBuilder powerupsID(ArrayList<Integer> powerupsID) {
             this.powerupsID = powerupsID;
             return this;
         }

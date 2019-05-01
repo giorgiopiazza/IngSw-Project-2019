@@ -8,11 +8,12 @@ import model.Game;
 import model.map.Map;
 import model.map.Square;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class PlayerPosition {
+public class PlayerPosition implements Serializable {
 
     private int coordX;
     private int coordY;
