@@ -6,14 +6,14 @@ import model.player.PlayerPosition;
 import java.util.ArrayList;
 
 public abstract class EffectRequest extends Message {
-    public final ArrayList<Integer> targetPlayersID;
-    public final ArrayList<PlayerPosition> targetPositions;
-    public final Color targetRoomColor;
+    private final ArrayList<Integer> targetPlayersID;
+    private final ArrayList<PlayerPosition> targetPositions;
+    private final Color targetRoomColor;
 
-    public final PlayerPosition senderMovePosition;
-    public final ArrayList<PlayerPosition> targetPlayersMovePositions;
+    private final PlayerPosition senderMovePosition;
+    private final ArrayList<PlayerPosition> targetPlayersMovePositions;
 
-    public final ArrayList<Integer> powerupsID;
+    private final ArrayList<Integer> powerupsID;
 
     public EffectRequest(int senderID, ArrayList<Integer> targetPlayersID, ArrayList<PlayerPosition> targetPositions,
                          Color targetRoomColor, PlayerPosition senderMovePosition,
@@ -26,5 +26,29 @@ public abstract class EffectRequest extends Message {
         this.senderMovePosition = senderMovePosition;
         this.targetPlayersMovePositions = targetPlayersMovePositions;
         this.powerupsID = powerupsID;
+    }
+
+    public ArrayList<Integer> getTargetPlayersID() {
+        return targetPlayersID;
+    }
+
+    public ArrayList<PlayerPosition> getTargetPositions() {
+        return targetPositions;
+    }
+
+    public Color getTargetRoomColor() {
+        return targetRoomColor;
+    }
+
+    public PlayerPosition getSenderMovePosition() {
+        return senderMovePosition;
+    }
+
+    public ArrayList<PlayerPosition> getTargetPlayersMovePositions() {
+        return targetPlayersMovePositions;
+    }
+
+    public ArrayList<Integer> getPowerupsID() {
+        return powerupsID;
     }
 }

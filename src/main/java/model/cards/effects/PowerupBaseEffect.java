@@ -43,7 +43,7 @@ public class PowerupBaseEffect extends Effect {
 
         PowerupRequest powerupRequest = (PowerupRequest) request;
 
-        PlayerPosition powerupUserPos = Game.getInstance().getPlayerByID(powerupRequest.senderID).getPosition();
+        PlayerPosition powerupUserPos = Game.getInstance().getPlayerByID(powerupRequest.getSenderID()).getPosition();
         List<PlayerPosition> targetPos = EffectValidator.getTargetPositions(powerupRequest, getTargets()[0]);
 
         // command targets validation

@@ -6,11 +6,11 @@ import model.player.PlayerPosition;
 import java.util.ArrayList;
 
 public class FireRequest extends EffectRequest {
-    public final int weaponID;
-    public final int effectID;
+    private final int weaponID;
+    private final int effectID;
 
-    public final boolean moveSenderFirst;
-    public final boolean moveTargetsFirst;
+    private final boolean moveSenderFirst;
+    private final boolean moveTargetsFirst;
 
     public FireRequest(FireRequestBuilder builder) {
         super(builder.senderID, builder.targetPlayersID, builder.targetPositions,
@@ -20,6 +20,22 @@ public class FireRequest extends EffectRequest {
         this.effectID = builder.effectID;
         this.moveSenderFirst = builder.moveSenderFirst;
         this.moveTargetsFirst = builder.moveTargetsFirst;
+    }
+
+    public int getWeaponID() {
+        return weaponID;
+    }
+
+    public int getEffectID() {
+        return effectID;
+    }
+
+    public boolean isMoveSenderFirst() {
+        return moveSenderFirst;
+    }
+
+    public boolean isMoveTargetsFirst() {
+        return moveTargetsFirst;
     }
 
     public static class FireRequestBuilder {
