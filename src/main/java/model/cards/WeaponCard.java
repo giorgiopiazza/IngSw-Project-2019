@@ -156,8 +156,19 @@ public class WeaponCard extends UsableCard {
         }
     }
 
-    public void payRechargeCost(UserPlayer payingPlayer, List<Integer> payingPowerups) {
-        // TODO GIORGIO
+    public void payRechargeCost(UserPlayer payingPlayer, EffectRequest request) {
+        /* TODO GIORGIO
+         * Io uso il metodo sia nella PickAction che nella ShootAction:
+         *
+         * PickAction: mi serve per pagare il costo di un arma quando è posizionata sulla board, nella request che
+         *             arriva dalla action in cui è istanziata sono presenti i possibili powerup con cui pagare
+         *
+         * ShootAction: mi serve per ricaricare le armi prima di sparare quando uso un'azione in frenzy mode, in questo
+         *              caso l'arma è completamente scarica e la voglio ricaricare per usarla sempre con i possibili
+         *              powerup contenuti nel messaggio passato dalla action in cui è istanziato
+         *
+         * Lancia eccezioni così io domani faccio tutti i catch per non fare eseguire la action
+         */
     }
 
     private void payEffectCost(FireRequest request, AmmoQuantity cost) throws NotEnoughAmmoException {

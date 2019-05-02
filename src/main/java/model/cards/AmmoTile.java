@@ -1,6 +1,7 @@
 package model.cards;
 
 import enumerations.Ammo;
+import exceptions.player.MaxCardsInHandException;
 import exceptions.player.NegativeQuantityException;
 import model.Game;
 import model.player.AmmoQuantity;
@@ -35,8 +36,12 @@ public class AmmoTile extends Card {
         addRedAmmo(pickingPlayer);
         addYellowAmmo(pickingPlayer);
 
-        if (pickPowerup && (pickingPlayer.getPowerups().length < 3)) {
-            pickingPlayer.addPowerup((PowerupCard) Game.getInstance().getPowerupCardsDeck().draw());
+        if (pickPowerup) {
+            try {
+                pickingPlayer.addPowerup((PowerupCard) Game.getInstance().getPowerupCardsDeck().draw());
+            } catch (MaxCardsInHandException e) {
+                // if a player has already 3 powerups in his hand if his pick action goes on a CardSquare he ignores the powerup
+            }
         }
     }
 

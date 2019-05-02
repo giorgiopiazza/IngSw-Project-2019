@@ -81,18 +81,19 @@ public class UserPlayer extends Player {
     }
 
     /**
-     * Returns true if you can add the powerup to your hand, false instead
+     * Method to add a powerup to add a powerup to a player's jhand
      *
      * @param powerup the powerup to be added
-     * @return true if the powerup can be added to your hand, false if not (your hand already has 3 powerups)
+     * @throws MaxCardsInHandException in case the player already has 3 powerups on his hand
      */
-    public boolean addPowerup(PowerupCard powerup) {
+    public void addPowerup(PowerupCard powerup) throws MaxCardsInHandException {
         if (powerups.size() == 3) {
-            return false;
+            throw new MaxCardsInHandException(powerup.toString());
         }
         powerups.add(powerup);
-        return true;
     }
+
+
 
     /**
      * Discards the specified powerup from your hand
