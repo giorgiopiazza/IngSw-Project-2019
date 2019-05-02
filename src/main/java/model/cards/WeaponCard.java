@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class WeaponCard extends UsableCard {
+    private final int ID;
     private final Ammo[] cost;
     private final List<Effect> secondaryEffects;
     private WeaponState weaponState;
@@ -32,13 +33,21 @@ public class WeaponCard extends UsableCard {
     public static final int UNCHARGED = 1;
     public static final int SEMI_CHARGED = 2;
 
-    public WeaponCard(String name, File image, Effect baseEffect, Ammo[] cost,
+    public WeaponCard(String name, File image, Effect baseEffect,int ID, Ammo[] cost,
                       List<Effect> secondaryEffects, WeaponState weaponState) {
         super(name, image, baseEffect);
+        this.ID = ID;
         this.cost = cost;
         this.secondaryEffects = secondaryEffects;
         this.weaponState = weaponState;
 
+    }
+
+    /**
+     * @return the ID of the weapon
+     */
+    public int getID() {
+        return this.ID;
     }
 
     /**

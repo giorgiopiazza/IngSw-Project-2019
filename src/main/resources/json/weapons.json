@@ -4,8 +4,6 @@
       "id": 0,
 	  "cost": ["BLUE","BLUE"],
       "name": "Lock Rifle",
-	  "exclusive": false,
-	  "orderedEffects": false,
       "effects": [
         {
           "id": 0,
@@ -34,8 +32,6 @@
       "id": 1,
 	  "cost": ["BLUE","RED"],
       "name": "Machine Gun",
-	  "exclusive": false,
-	  "orderedEffects": false,
       "effects": [
         {
           "id": 0,
@@ -82,8 +78,6 @@
       "id": 2,
 	  "cost": ["BLUE","RED"],
       "name": "T.H.O.R.",
-	  "exclusive": false,
-	  "orderedEffects": true,
       "effects": [
         {
           "id": 0,
@@ -120,8 +114,6 @@
       "id": 3,
 	  "cost": ["BLUE","YELLOW"],
       "name": "Plasma Gun",
-	  "exclusive": false,
-	  "orderedEffects": false,
       "effects": [
         {
           "id": 0,
@@ -169,8 +161,6 @@
       "id": 4,
 	  "cost": ["BLUE","BLUE","YELLOW"],
       "name": "Whisper",
-	  "exclusive": false,
-	  "orderedEffects": false,
       "effects": [
         {
           "id": 0,
@@ -189,8 +179,6 @@
       "id": 5,
 	  "cost": ["BLUE"],
       "name": "Electroscythe",
-	  "exclusive": true,
-	  "orderedEffects": false,
       "effects": [
         {
           "id": 0,
@@ -219,8 +207,6 @@
       "id": 6,
 	  "cost": ["BLUE"],
       "name": "Tractor Beam",
-	  "exclusive": true,
-	  "orderedEffects": false,
       "effects": [
         {
           "id": 0,
@@ -252,8 +238,6 @@
       "id": 7,
 	  "cost": ["RED", "BLUE"],
       "name": "Vortex Cannon",
-	  "exclusive": false,
-	  "orderedEffects": false,
       "effects": [
         {
           "id": 0,
@@ -286,8 +270,6 @@
       "id": 8,
 	  "cost": ["RED", "BLUE"],
       "name": "Furnace",
-	  "exclusive": true,
-	  "orderedEffects": false,
       "effects": [
         {
           "id": 0,
@@ -316,8 +298,6 @@
       "id": 9,
 	  "cost": ["RED", "RED", "BLUE"],
       "name": "Heatseeker",
-	  "exclusive": false,
-	  "orderedEffects": false,
       "effects": [
         {
           "id": 0,
@@ -334,8 +314,6 @@
       "id": 10,
 	  "cost": ["RED", "YELLOW"],
       "name": "Hellion",
-	  "exclusive": true,
-	  "orderedEffects": false,
       "effects": [
         {
           "id": 0,
@@ -378,8 +356,6 @@
       "id": 11,
       "cost": ["RED"],
       "name": "Flamethrower",
-      "exclusive": true,
-      "orderedEffects": false,
       "effects": [
         {
           "id": 0,
@@ -410,8 +386,6 @@
       "id": 12,
       "cost": ["RED"],
       "name": "Grenade Launcher",
-      "exclusive": false,
-      "orderedEffects": false,
       "effects": [
         {
           "id": 0,
@@ -447,8 +421,6 @@
       "id": 13,
       "cost": ["RED", "RED"],
       "name": "Rocket Launcher",
-      "exclusive": false,
-      "orderedEffects": false,
       "effects": [
         {
           "id": 0,
@@ -523,8 +495,6 @@
       "id": 14,
       "cost": ["YELLOW", "YELLOW", "BLUE"],
       "name": "Railgun",
-      "exclusive": true,
-      "orderedEffects": false,
       "effects": [
         {
           "id": 0,
@@ -550,8 +520,6 @@
       "id": 15,
       "cost": ["YELLOW", "RED"],
       "name": "Cyberblade",
-      "exclusive": false,
-      "orderedEffects": false,
       "effects": [
         {
           "id": 0,
@@ -603,8 +571,6 @@
       "id": 16,
       "cost": ["YELLOW", "RED"],
       "name": "ZX-2",
-      "exclusive": true,
-      "orderedEffects": false,
       "effects": [
         {
           "id": 0,
@@ -631,8 +597,6 @@
       "id": 17,
       "cost": ["YELLOW", "YELLOW"],
       "name": "Shotgun",
-      "exclusive": true,
-      "orderedEffects": false,
       "effects": [
         {
           "id": 0,
@@ -662,8 +626,6 @@
       "id": 18,
       "cost": ["YELLOW", "BLUE"],
       "name": "Power Glove",
-      "exclusive": true,
-      "orderedEffects": false,
       "effects": [
         {
           "id": 0,
@@ -695,8 +657,6 @@
       "id": 19,
       "cost": ["YELLOW"],
       "name": "Shockwave",
-      "exclusive": true,
-      "orderedEffects": false,
       "effects": [
         {
           "id": 0,
@@ -725,8 +685,6 @@
       "id": 20,
       "cost": ["YELLOW"],
       "name": "Sledgehammer",
-      "exclusive": true,
-      "orderedEffects": false,
       "effects": [
         {
           "id": 0,
