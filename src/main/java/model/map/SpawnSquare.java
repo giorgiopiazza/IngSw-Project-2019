@@ -2,7 +2,9 @@ package model.map;
 
 import enumerations.Color;
 import enumerations.SquareAdjacency;
+import enumerations.SquareType;
 import exceptions.map.MaxSquareWeaponsException;
+import exceptions.map.MissingWeaponOnSquareException;
 import model.cards.WeaponCard;
 
 public class SpawnSquare extends Square {
@@ -25,7 +27,7 @@ public class SpawnSquare extends Square {
             SquareAdjacency east,
             SquareAdjacency south,
             SquareAdjacency west) {
-        super(color, north, east, south, west);
+        super(color, north, east, south, west, SquareType.SPAWN);
         weapons = new WeaponCard[MAX_WEAPONS];
     }
 
@@ -48,33 +50,54 @@ public class SpawnSquare extends Square {
     }
 
     /**
-     * Removes the <code>weapon</code> card from the <code>weapons</code> card array
+     * Method that swaps two weapons on a spawn square
      *
-     * @param weapon weapon to be removed
-     * @return true if the weapon is removed, otherwise false
+     * @param toSwap the weapon to be added on the spawn square
+     * @param toPick the weapon to picked
      */
-    public boolean removeWeapon(WeaponCard weapon) {
-        if (weapon == null) throw new NullPointerException("weapon cannot be null");
-        for (int i = 0; i < MAX_WEAPONS; i++) {
-            if (weapons[i] != null && weapons[i].equals(weapon)) {
-                weapons[i] = null;
+    public void swapWeapons(WeaponCard toSwap, WeaponCard toPick) {
+        if(toSwap == null || toPick == null) {
+            throw new NullPointerException("You can not swap a null weapon");
+        }
+        int removedIndex = removeWeapon(toPick);
+        weapons[removedIndex] = toSwap;
+    }
+
+    /**
+     * Method to verify if the spawn square has the specified weapon
+     *
+     * @param weaponCard the weapon to verify if present
+     * @return true if the spawn square contains the weapon, otherwise false
+     */
+    public boolean hasWeapon(WeaponCard weaponCard) {
+        for(int i = 0; i < MAX_WEAPONS; ++i) {
+            if(weaponCard.equals(weapons[i])) {
                 return true;
             }
         }
+
         return false;
     }
 
     /**
-     * Remove the weapon card to the chosen <code>index</code>
+     * Method that removes a weapon from the spawn square returning her index
      *
-     * @param index the index of the card to be removed
-     * @return true if removed, false if already empty
+     * @param weapon the WeaponCard to be removed from the spawn square
+     * @return the index of the weapon removed
      */
-    public boolean removeWeapon(int index) {
-        boolean removed = weapons[index] != null;
-        weapons[index] = null;
+    public int removeWeapon(WeaponCard weapon) {
+        if (weapon == null) throw new NullPointerException("weapon cannot be null");
 
-        return removed;
+        if(hasWeapon(weapon)) {
+            for (int i = 0; i < MAX_WEAPONS; i++) {
+                if (weapons[i] != null && weapons[i].equals(weapon)) {
+                    weapons[i] = null;
+                    return i;
+                }
+            }
+        }
+
+        throw new MissingWeaponOnSquareException(weapon);
     }
 
     public WeaponCard[] getWeapons() {

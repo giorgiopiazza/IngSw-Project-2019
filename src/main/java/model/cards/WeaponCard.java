@@ -135,8 +135,6 @@ public class WeaponCard extends UsableCard {
                 throw new InvalidCommandException();
             }
 
-            UserPlayer shootingPlayer = Game.getInstance().getPlayerByID(pId);
-
             if (eId == 0) {
                 effect = getBaseEffect();
             } else if (eId <= secondaryEffects.size()) {
@@ -146,7 +144,7 @@ public class WeaponCard extends UsableCard {
             }
 
             if (effect.validate(request)) {
-                payEffectCost(fireRequest, shootingPlayer, ((WeaponBaseEffect) effect).getCost());
+                payEffectCost(fireRequest, ((WeaponBaseEffect) effect).getCost());
 
                 weaponState.use(effect, fireRequest);
                 setStatus(new UnchargedWeapon());
@@ -158,7 +156,12 @@ public class WeaponCard extends UsableCard {
         }
     }
 
-    private void payEffectCost(FireRequest request, UserPlayer shootingPlayer, AmmoQuantity cost) throws NotEnoughAmmoException {
+    public void payRechargeCost(UserPlayer payingPlayer, List<Integer> payingPowerups) {
+        // TODO GIORGIO
+    }
+
+    private void payEffectCost(FireRequest request, AmmoQuantity cost) throws NotEnoughAmmoException {
+        UserPlayer shootingPlayer = Game.getInstance().getPlayerByID(request.getSenderID());
         PowerupCard[] powerupCards = shootingPlayer.getPowerups();
 
         List<Integer> powerupsID = request.getPowerupsID();

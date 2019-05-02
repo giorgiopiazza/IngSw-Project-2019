@@ -39,14 +39,8 @@ public class CardSquareTest {
 
     @Test
     void spawnSquare() {
-        SpawnSquare sq = new SpawnSquare(Color.GREEN, SquareAdjacency.WALL, SquareAdjacency.WALL, SquareAdjacency.DOOR, SquareAdjacency.SQUARE);
+        SpawnSquare sq = new SpawnSquare(Color.RED, SquareAdjacency.DOOR, SquareAdjacency.WALL, SquareAdjacency.WALL, SquareAdjacency.SQUARE);
         WeaponCard[] weaponCards = new WeaponCard[SpawnSquare.MAX_WEAPONS];
-
-        sq.setColor(Color.RED);
-        sq.setNorth(SquareAdjacency.DOOR);
-        sq.setEast(SquareAdjacency.WALL);
-        sq.setSouth(SquareAdjacency.WALL);
-        sq.setWest(SquareAdjacency.SQUARE);
 
         assertEquals(Color.RED, sq.getColor());
         assertEquals(SquareAdjacency.DOOR, sq.getNorth());
@@ -62,9 +56,10 @@ public class CardSquareTest {
         sq.addWeapon(weaponCards[1]);
         sq.addWeapon(weaponCards[2]);
 
+        assertTrue(sq.hasWeapon(weaponCards[2]));
         assertArrayEquals(weaponCards, sq.getWeapons());
-        assertTrue(sq.removeWeapon(weaponCards[2]));
-        assertFalse(sq.removeWeapon(weaponCards[2]));
+        sq.removeWeapon(weaponCards[2]);
+        assertFalse(sq.hasWeapon(weaponCards[2]));
         assertThrows(NullPointerException.class, () -> sq.removeWeapon(null));
     }
 }
