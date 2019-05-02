@@ -25,13 +25,16 @@ public class CardSquareTest {
 
     @Test
     void defaultMethods() {
-        assertNull(noTileSquare.getAmmoTile());
-        assertNotNull(tileSquare.getAmmoTile());
+        assertNull(noTileSquare.pickAmmoTile());
+        assertNotNull(tileSquare.pickAmmoTile());
+        assertFalse(noTileSquare.isAmmoTilePresent());
 
         AmmoTile ammoTile = mock(AmmoTile.class);
 
         tileSquare.setAmmoTile(ammoTile);
-        assertEquals(ammoTile, tileSquare.getAmmoTile());
+        assertTrue(tileSquare.isAmmoTilePresent());
+        assertEquals(ammoTile, tileSquare.pickAmmoTile());
+        assertFalse(tileSquare.isAmmoTilePresent());
     }
 
     @Test
