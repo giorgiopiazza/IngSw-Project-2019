@@ -15,6 +15,7 @@ import model.cards.weaponstates.UnchargedWeapon;
 import model.cards.weaponstates.WeaponState;
 import model.player.AmmoQuantity;
 import model.player.UserPlayer;
+import network.message.ActionRequest;
 import network.message.EffectRequest;
 import network.message.FireRequest;
 
@@ -25,7 +26,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class WeaponCard extends UsableCard {
-    private final int ID;
+    private final int id;
     private final Ammo[] cost;
     private final List<Effect> secondaryEffects;
     private WeaponState weaponState;
@@ -33,10 +34,10 @@ public class WeaponCard extends UsableCard {
     public static final int UNCHARGED = 1;
     public static final int SEMI_CHARGED = 2;
 
-    public WeaponCard(String name, File image, Effect baseEffect,int ID, Ammo[] cost,
+    public WeaponCard(String name, File image, Effect baseEffect, int id, Ammo[] cost,
                       List<Effect> secondaryEffects, WeaponState weaponState) {
         super(name, image, baseEffect);
-        this.ID = ID;
+        this.id = id;
         this.cost = cost;
         this.secondaryEffects = secondaryEffects;
         this.weaponState = weaponState;
@@ -44,10 +45,10 @@ public class WeaponCard extends UsableCard {
     }
 
     /**
-     * @return the ID of the weapon
+     * @return the id of the weapon
      */
-    public int getID() {
-        return this.ID;
+    public int getId() {
+        return this.id;
     }
 
     /**
@@ -55,7 +56,7 @@ public class WeaponCard extends UsableCard {
      *
      * @return an array of Ammo which is the recharging Cost of the Weapon
      */
-    public AmmoQuantity getRechargeCost() {
+    private AmmoQuantity getRechargeCost() {
         switch (this.weaponState.status()) {
             case UNCHARGED:
                 return new AmmoQuantity(cost);
@@ -80,10 +81,9 @@ public class WeaponCard extends UsableCard {
     /**
      * @return true if the Weapon is charged, otherwise false
      */
-    public boolean isCharged() {
+    private boolean isCharged() {
         return weaponState.charged(this);
     }
-
 
     /**
      * @return the State of the Weapon: CHARGED = 0, UNCHARGED = 1, SEMI_CHARGED = 2
@@ -93,10 +93,10 @@ public class WeaponCard extends UsableCard {
     }
 
     /**
-     * @return true if the Weapon is rechargeable, otherwise false
+     * @return true if the Weapon is isRechargeable, otherwise false
      */
-    public boolean rechargeable() {
-        return weaponState.rechargeable(this);
+    private boolean isRechargeable() {
+        return weaponState.isRechargeable(this);
     }
 
     /**
@@ -104,8 +104,8 @@ public class WeaponCard extends UsableCard {
      *
      * @throws WeaponAlreadyChargedException exception thrown in case the weapon is already charged
      */
-    public void recharge() throws WeaponAlreadyChargedException {
-        if (this.rechargeable()) {
+    private void recharge() throws WeaponAlreadyChargedException {
+        if (this.isRechargeable()) {
             setStatus(new ChargedWeapon());
         } else {
             throw new WeaponAlreadyChargedException(this.getName());
@@ -122,7 +122,7 @@ public class WeaponCard extends UsableCard {
      * @throws NotEnoughAmmoException    in case the weapon even with powerups can not be payed
      */
     @Override
-    public void use(EffectRequest request) throws AdrenalinaException {
+    public void use(EffectRequest request) throws NotEnoughAmmoException, WeaponNotChargedException {
         FireRequest fireRequest = (FireRequest) request;
 
         if (isCharged()) {
@@ -144,7 +144,7 @@ public class WeaponCard extends UsableCard {
             }
 
             if (effect.validate(request)) {
-                payEffectCost(fireRequest, ((WeaponBaseEffect) effect).getCost());
+                payCost(fireRequest, ((WeaponBaseEffect) effect).getCost());
 
                 weaponState.use(effect, fireRequest);
                 setStatus(new UnchargedWeapon());
@@ -156,22 +156,18 @@ public class WeaponCard extends UsableCard {
         }
     }
 
-    public void payRechargeCost(UserPlayer payingPlayer, EffectRequest request) {
-        /* TODO GIORGIO
-         * Io uso il metodo sia nella PickAction che nella ShootAction:
-         *
-         * PickAction: mi serve per pagare il costo di un arma quando è posizionata sulla board, nella request che
-         *             arriva dalla action in cui è istanziata sono presenti i possibili powerup con cui pagare
-         *
-         * ShootAction: mi serve per ricaricare le armi prima di sparare quando uso un'azione in frenzy mode, in questo
-         *              caso l'arma è completamente scarica e la voglio ricaricare per usarla sempre con i possibili
-         *              powerup contenuti nel messaggio passato dalla action in cui è istanziato
-         *
-         * Lancia eccezioni così io domani faccio tutti i catch per non fare eseguire la action
-         */
+    public void payRechargeCost(ActionRequest request) throws WeaponAlreadyChargedException, NotEnoughAmmoException {
+        if (!isRechargeable()) {
+            throw new WeaponAlreadyChargedException();
+        }
+
+        AmmoQuantity cost = getRechargeCost();
+        payCost(request, cost);
+
+        recharge();
     }
 
-    private void payEffectCost(FireRequest request, AmmoQuantity cost) throws NotEnoughAmmoException {
+    private void payCost(ActionRequest request, AmmoQuantity cost) throws NotEnoughAmmoException {
         UserPlayer shootingPlayer = Game.getInstance().getPlayerByID(request.getSenderID());
         PowerupCard[] powerupCards = shootingPlayer.getPowerups();
 
@@ -185,8 +181,8 @@ public class WeaponCard extends UsableCard {
             usedPowerupsID.sort(Collections.reverseOrder());
 
             try {
-                for (Integer id : usedPowerupsID) {
-                    shootingPlayer.discardPowerupByIndex(id);
+                for (Integer powID : usedPowerupsID) {
+                    shootingPlayer.discardPowerupByIndex(powID);
                 }
             } catch (EmptyHandException e) {
                 throw new InvalidCommandException();

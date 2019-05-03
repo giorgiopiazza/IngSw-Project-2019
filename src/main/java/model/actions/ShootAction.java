@@ -4,6 +4,8 @@ import enumerations.PossibleAction;
 import exceptions.AdrenalinaException;
 import exceptions.actions.IncompatibleActionException;
 import exceptions.actions.InvalidActionException;
+import exceptions.cards.WeaponAlreadyChargedException;
+import exceptions.playerboard.NotEnoughAmmoException;
 import model.cards.WeaponCard;
 import model.player.PlayerPosition;
 import model.player.UserPlayer;
@@ -85,7 +87,14 @@ public class ShootAction implements Action {
         if (rechargingWeapons != null && rechargeAction != null &&
                 (actionChosen == PossibleAction.FRENZY_SHOOT || actionChosen == PossibleAction.LIGHT_FRENZY_SHOOT)) {
             if(rechargeAction.validate()) {
-                rechargeAction.execute();
+                try {
+                    rechargeAction.execute();
+                } catch (WeaponAlreadyChargedException e) {
+                    // TODO Should we do something?
+                } catch (NotEnoughAmmoException e) {
+                    // TODO Should we do something?
+                }
+
             } else {
                 throw new InvalidActionException();
             }

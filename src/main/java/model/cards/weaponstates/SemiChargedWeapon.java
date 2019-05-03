@@ -13,7 +13,7 @@ public class SemiChargedWeapon implements WeaponState {
     }
 
     @Override
-    public boolean rechargeable(WeaponCard weapon) {
+    public boolean isRechargeable(WeaponCard weapon) {
         return true;
     }
 

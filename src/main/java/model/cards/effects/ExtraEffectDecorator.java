@@ -13,7 +13,7 @@ public abstract class ExtraEffectDecorator extends Effect {
     public abstract void execute(EffectRequest request);
 
     @Override
-    public boolean validate(EffectRequest request) throws AdrenalinaException {
+    public boolean validate(EffectRequest request) {
         return effect.validate(request);
     }
 }

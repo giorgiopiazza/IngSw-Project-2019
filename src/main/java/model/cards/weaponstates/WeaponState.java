@@ -21,10 +21,10 @@ public interface WeaponState {
     /**
      * Returns if the WeaponState can be charged or not
      *
-     * @param weapon the Weapon you want to know if is rechargeable
-     * @return true if the WeaponState is rechargeable, otherwise false
+     * @param weapon the Weapon you want to know if is isRechargeable
+     * @return true if the WeaponState is isRechargeable, otherwise false
      */
-    boolean rechargeable(WeaponCard weapon);
+    boolean isRechargeable(WeaponCard weapon);
 
     /**
      * Returns the state of a Weapon

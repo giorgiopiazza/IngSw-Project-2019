@@ -59,7 +59,7 @@ class WeaponCardTest {
 
     @Test
     void recharge() throws WeaponAlreadyChargedException {
-        assertTrue(weaponTest.rechargeable());
+        assertTrue(weaponTest.isRechargeable());
 
         weaponTest.recharge();
 

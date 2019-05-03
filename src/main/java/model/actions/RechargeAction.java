@@ -1,5 +1,7 @@
 package model.actions;
 
+import exceptions.cards.WeaponAlreadyChargedException;
+import exceptions.playerboard.NotEnoughAmmoException;
 import model.cards.WeaponCard;
 import model.player.UserPlayer;
 import network.message.EffectRequest;
@@ -29,9 +31,9 @@ public class RechargeAction implements Action {
     }
 
     @Override
-    public void execute() {
+    public void execute() throws WeaponAlreadyChargedException, NotEnoughAmmoException {
         for(WeaponCard weaponCard : rechargingWeapons) {
-            weaponCard.payRechargeCost(actingPlayer, rechargeRequest);
+            weaponCard.payRechargeCost(rechargeRequest);
         }
     }
 }

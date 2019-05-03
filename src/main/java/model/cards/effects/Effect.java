@@ -39,5 +39,5 @@ public abstract class Effect {
      * @param request of effect
      * @return {@code true} if the command is valid, {@code false} otherwise
      */
-    public abstract boolean validate(EffectRequest request) throws AdrenalinaException;
+    public abstract boolean validate(EffectRequest request);
 }

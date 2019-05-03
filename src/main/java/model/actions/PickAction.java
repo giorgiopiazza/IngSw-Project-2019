@@ -3,7 +3,9 @@ package model.actions;
 import enumerations.PossibleAction;
 import enumerations.SquareType;
 import exceptions.actions.IncompatibleActionException;
+import exceptions.cards.WeaponAlreadyChargedException;
 import exceptions.player.MaxCardsInHandException;
+import exceptions.playerboard.NotEnoughAmmoException;
 import model.Game;
 import model.cards.WeaponCard;
 import model.cards.weaponstates.SemiChargedWeapon;
@@ -12,7 +14,7 @@ import model.map.SpawnSquare;
 import model.map.Square;
 import model.player.PlayerPosition;
 import model.player.UserPlayer;
-import network.message.EffectRequest;
+import network.message.ActionRequest;
 
 public class PickAction implements Action {
     private static final int MAX_NORMAL_MOVE = 1;
@@ -26,12 +28,12 @@ public class PickAction implements Action {
     private PossibleAction actionChosen;
     private WeaponCard pickingWeapon;
     private WeaponCard discardingWeapon;
-    private EffectRequest pickRequest;
+    private ActionRequest pickRequest;
 
     private SquareType squareType;
     private Square pickingSquare;
 
-    public PickAction(UserPlayer actingPlayer, PlayerPosition movingPos, PossibleAction actionChosen, WeaponCard pickingWeapon, WeaponCard descardingWeapon, EffectRequest pickRequest) {
+    public PickAction(UserPlayer actingPlayer, PlayerPosition movingPos, PossibleAction actionChosen, WeaponCard pickingWeapon, WeaponCard descardingWeapon, ActionRequest pickRequest) {
         this.actingPlayer = actingPlayer;
         this.actionChosen = actionChosen;
         this.pickingWeapon = pickingWeapon;
@@ -98,16 +100,20 @@ public class PickAction implements Action {
         if (squareType == SquareType.TILE) {
             ((CardSquare) pickingSquare).pickAmmoTile().giveResources(actingPlayer);
         } else if (squareType == SquareType.SPAWN) {
-            // first I have to pay the weapon to take it
-            pickingWeapon.payRechargeCost(actingPlayer, pickRequest);
-
-            // then I add the weapon to my hand
             try {
+                // first I have to pay the weapon to take it
+                pickingWeapon.payRechargeCost(pickRequest);
+
+                // then I add the weapon to my hand
                 actingPlayer.addWeapon(pickingWeapon);
             } catch (MaxCardsInHandException e) {
                 actingPlayer.addWeapon(pickingWeapon, discardingWeapon);
                 discardingWeapon.setStatus(new SemiChargedWeapon());
                 ((SpawnSquare) pickingSquare).swapWeapons(discardingWeapon, pickingWeapon);
+            } catch (WeaponAlreadyChargedException e) {
+                // TODO Should we do something?
+            } catch (NotEnoughAmmoException e) {
+                // TODO Should we do something?
             }
         } else {
             throw new NullPointerException("A square must have a type!");

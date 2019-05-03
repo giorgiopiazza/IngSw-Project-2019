@@ -1,5 +1,7 @@
 package model.actions;
 
+import exceptions.AdrenalinaException;
+
 public interface Action {
     /**
      * Method used to verify that the user player can do the action with the parameter
@@ -12,5 +14,5 @@ public interface Action {
     /**
      * Method that makes a player do the action he choosed
      */
-    void execute();
+    void execute() throws AdrenalinaException;
 }
