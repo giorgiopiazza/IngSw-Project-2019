@@ -13,14 +13,13 @@ import java.util.List;
 public class UserPlayer extends Player {
     private List<WeaponCard> weapons;
     private List<PowerupCard> powerups;
-    private final boolean firstPlayer;
+    private boolean firstPlayer;
     private boolean terminator;
 
-    public UserPlayer(String nickname, Color color, boolean firstPlayer,
+    public UserPlayer(String nickname, Color color,
                       PlayerBoard playerBoard, boolean terminator) {
 
         super(nickname, color, playerBoard);
-        this.firstPlayer = firstPlayer;
         weapons = new ArrayList<>();
         powerups = new ArrayList<>();
         this.terminator = terminator;
@@ -32,6 +31,10 @@ public class UserPlayer extends Player {
 
     public boolean hasTerminator() {
         return this.terminator;
+    }
+
+    public void setFirstPlayer() {
+        this.firstPlayer = true;
     }
 
     public boolean isFirstPlayer() {

@@ -3,8 +3,10 @@ package model;
 import enumerations.Color;
 import enumerations.GameState;
 import exceptions.game.*;
+import exceptions.map.InvalidPlayerPositionException;
 import model.cards.Deck;
 import model.map.Map;
+import model.map.Square;
 import model.player.*;
 import utility.AmmoTileParser;
 import utility.PowerupParser;
@@ -12,6 +14,7 @@ import utility.WeaponParser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class Game {
     /**
@@ -41,10 +44,8 @@ public class Game {
         players = new ArrayList<>();
         this.currentState = GameState.NORMAL;
         killShotsTrack = new KillShot[MAX_KILLSHOT];
-        killShotNum = 8;
         terminatorPresent = false;
         started = false;
-        initializeDecks();
     }
 
     public void setGameMap(int mapType) {
@@ -93,7 +94,8 @@ public class Game {
      * @throws MaxPlayerException          if the maximum number of players has been reached
      */
     public void addPlayer(UserPlayer player) throws GameAlreadyStartedException, MaxPlayerException {
-        if (started) throw new GameAlreadyStartedException("it is not possible to add a player when the game has already started");
+        if (started)
+            throw new GameAlreadyStartedException("It is not possible to add a player when the game has already started");
         if (player == null) throw new NullPointerException("Player cannot be null");
         if (players.size() >= 5 || (players.size() >= 4 && terminatorPresent)) throw new MaxPlayerException();
         players.add(player);
@@ -114,18 +116,35 @@ public class Game {
      * @throws GameAlreadyStartedException when game is already started
      * @throws NotEnoughPlayersException   when there aren't enough players for start the game
      */
-    public void startGame() throws GameAlreadyStartedException, NotEnoughPlayersException {
-        if (started) throw new GameAlreadyStartedException("the game is already in progress");
+    public void startGame(int killShotNum) throws GameAlreadyStartedException, NotEnoughPlayersException {
+        if (started) throw new GameAlreadyStartedException("The game is already in progress");
         if (players.size() < 3) throw new NotEnoughPlayersException();
-        started = true;
 
-        weaponsCardsDeck.flush();
-        ammoCardsDeck.flush();
-        powerupCardsDeck.flush();
+        started = true;
+        this.killShotNum = killShotNum;
 
         initializeDecks();
+        pickFirstPlayer();
+    }
 
-        // TODO: implementation of startGame()
+    /**
+     * Picks the first player and reorders the players list
+     */
+    private void pickFirstPlayer() {
+        int first = (new Random()).nextInt(players.size());
+        players.get(first).setFirstPlayer();
+
+        List<UserPlayer> newPlayerList = new ArrayList<>();
+
+        for (int i = first; i < players.size(); ++i) {
+            newPlayerList.add(players.get(i));
+        }
+
+        for (int i = 0; i < first; ++i) {
+            newPlayerList.add(players.get(i));
+        }
+
+        players = newPlayerList;
     }
 
     /**
@@ -138,7 +157,7 @@ public class Game {
     }
 
     public void stopGame() throws GameAlreadyStartedException {
-        if (!started) throw new GameAlreadyStartedException("the game is not in progress");
+        if (!started) throw new GameAlreadyStartedException("The game is not in progress");
         started = false;
         // TODO: implementation of stopGame()
     }
@@ -147,15 +166,13 @@ public class Game {
      * @throws GameAlreadyStartedException if game already started
      */
     public void flush() throws GameAlreadyStartedException {
-        if (started) throw new GameAlreadyStartedException("cannot flush with game started");
+        if (started) throw new GameAlreadyStartedException("Cannot flush with game started");
 
         players.clear();
         initializeDecks();
 
         gameMap = null;
         terminator = null;
-
-        killShotNum = 8;
 
         terminatorPresent = false;
 
@@ -183,7 +200,7 @@ public class Game {
      * @param killShot killshot to add
      */
     public void addKillShot(KillShot killShot) {
-        if (killShot == null) throw new NullPointerException("killshot cannot be null");
+        if (killShot == null) throw new NullPointerException("Killshot cannot be null");
 
         for (int i = 0; i < killShotNum; i++) {
             if (killShotsTrack[i] == null) {
@@ -226,8 +243,10 @@ public class Game {
      * @throws MaxPlayerException          if the game is full
      */
     public Player setTerminator(boolean terminatorPresent) throws GameAlreadyStartedException, MaxPlayerException {
-        if (started) throw new GameAlreadyStartedException("it is not possible to set the setTerminator player when the game has already started.");
-        if (players.size() >= 5 && terminatorPresent) throw new MaxPlayerException("Can not add Terminator with 5 players");
+        if (started)
+            throw new GameAlreadyStartedException("It is not possible to set the setTerminator player when the game has already started.");
+        if (players.size() >= 5 && terminatorPresent)
+            throw new MaxPlayerException("Can not add Terminator with 5 players");
         this.terminatorPresent = terminatorPresent;
 
         if (terminatorPresent) terminator = new Terminator(firstColorUnused(), new PlayerBoard());
@@ -237,7 +256,7 @@ public class Game {
     }
 
     /**
-     * Find the first color that no player uses, otherwise <code>null</code>
+     * Find the first color that no player uses, otherwise {@code null}
      *
      * @return the first color not used by any player
      */
@@ -263,10 +282,21 @@ public class Game {
      * @throws GameAlreadyStartedException if the game has not started
      */
     public void spawnPlayer(UserPlayer player, PlayerPosition playerPosition) throws GameAlreadyStartedException {
-        // TODO: controllo sulla map che sia effettivamente uno square non nullo
-        if (player == null || playerPosition == null) throw new NullPointerException("player or playerPosition cannot be null");
+        if (player == null || playerPosition == null)
+            throw new NullPointerException("Player or playerPosition cannot be null");
         if (!players.contains(player)) throw new UnknownPlayerException();
         if (!started) throw new GameAlreadyStartedException("Game not started yet");
+
+        try {
+            Square temp = gameMap.getSquare(playerPosition);
+
+            if (temp == null) {
+                throw new InvalidPlayerPositionException();
+            }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw new InvalidPlayerPositionException();
+        }
+
         player.setPosition(playerPosition);
     }
 
@@ -303,7 +333,7 @@ public class Game {
     }
 
     /**
-     * Return the instance of terminator <code>player</code> for this game
+     * Return the instance of terminator {@code player} for this game
      *
      * @return the terminator instance
      */
@@ -355,8 +385,8 @@ public class Game {
     }
 
     public UserPlayer getFirstPlayer() {
-        for(UserPlayer player : players ) {
-            if(player.isFirstPlayer()) {
+        for (UserPlayer player : players) {
+            if (player.isFirstPlayer()) {
                 return player;
             }
         }
@@ -368,9 +398,9 @@ public class Game {
         List<UserPlayer> frenzyPlayers = new ArrayList<>();
         int firstPlayerID = getFirstPlayer().getId();
 
-        for (int i = 0; i < players.size(); ++i) {
-            if(!players.get(i).equals(terminator) && players.get(i).getId() < firstPlayerID && players.get(i).getId() > frenzyActivator) {
-                frenzyPlayers.add(players.get(i));
+        for (UserPlayer player : players) {
+            if (player.getId() < firstPlayerID && player.getId() > frenzyActivator) {
+                frenzyPlayers.add(player);
             }
         }
 
@@ -383,9 +413,9 @@ public class Game {
         List<UserPlayer> frenzyPlayers = new ArrayList<>();
         int firstPlayerID = getFirstPlayer().getId();
 
-        for (int i = 0; i < players.size(); ++i) {
-            if(!players.get(i).equals(terminator) && players.get(i).getId() >= firstPlayerID && players.get(i).getId() <= frenzyActivator) {
-                frenzyPlayers.add(players.get(i));
+        for (UserPlayer player : players) {
+            if (player.getId() >= firstPlayerID && player.getId() <= frenzyActivator) {
+                frenzyPlayers.add(player);
             }
         }
 
