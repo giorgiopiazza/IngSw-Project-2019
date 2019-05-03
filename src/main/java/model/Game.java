@@ -52,7 +52,7 @@ public class Game {
     /**
      * Game initialization
      */
-    private void init() {
+    public void init() {
         players = new ArrayList<>();
         terminator = null;
         this.currentState = GameState.NORMAL;
@@ -194,25 +194,35 @@ public class Game {
             for (int j = 0; j < Map.MAX_COLUMNS; ++j) {
                 Square square = gameMap.getSquare(i, j);
 
-                if (square.getSquareType() == SquareType.SPAWN) {
-                    SpawnSquare spawnSquare = (SpawnSquare) square;
-
-                    for (int k = 0; k < 3; ++k) {
-                        spawnSquare.addWeapon((WeaponCard) weaponsCardsDeck.draw());
-                    }
-                } else {
-                    CardSquare cardSquare = (CardSquare) square;
-
-                    cardSquare.setAmmoTile((AmmoTile) ammoTileDeck.draw());
+                if (square != null) {
+                    placeCardOnSquare(square);
                 }
             }
         }
     }
 
     /**
+     * Places card(s) of right type on a square
+     * @param square where card(s) must be placed
+     */
+    private void placeCardOnSquare(Square square) {
+        if (square.getSquareType() == SquareType.SPAWN) {
+            SpawnSquare spawnSquare = (SpawnSquare) square;
+
+            for (int k = 0; k < 3; ++k) {
+                spawnSquare.addWeapon((WeaponCard) weaponsCardsDeck.draw());
+            }
+        } else {
+            CardSquare cardSquare = (CardSquare) square;
+
+            cardSquare.setAmmoTile((AmmoTile) ammoTileDeck.draw());
+        }
+    }
+
+    /**
      * Initializes the three decks: {@code weaponsCardDeck}, {@code ammoTileDeck} and {@code powerupCardsDeck}
      */
-    private void initializeDecks() {
+    public void initializeDecks() {
         this.weaponsCardsDeck = WeaponParser.parseCards();
         this.ammoTileDeck = AmmoTileParser.parseCards();
         this.powerupCardsDeck = PowerupParser.parseCards();
@@ -272,19 +282,6 @@ public class Game {
         }
 
         throw new KillShotsTerminatedException();
-    }
-
-    /**
-     * Set the number of skulls in the game
-     *
-     * @param killShotNum number of killshots
-     * @throws GameAlreadyStartedException if the game has already started
-     */
-    public void setKillShotNum(int killShotNum) throws GameAlreadyStartedException {
-        if (killShotNum > MAX_KILLSHOT) throw new MaximumKillshotExceededException();
-        if (started)
-            throw new GameAlreadyStartedException("It is not possible to set the number of killshot when the game is in progress");
-        this.killShotNum = killShotNum;
     }
 
     public void clearKillshots() throws GameAlreadyStartedException {

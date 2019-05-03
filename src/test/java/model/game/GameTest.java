@@ -17,6 +17,7 @@ class GameTest {
     @BeforeEach
     void before() {
         this.instance = Game.getInstance();
+        Game.getInstance().init();
         Game.getInstance().setGameMap(1);
     }
 
@@ -97,24 +98,23 @@ class GameTest {
         instance.addPlayer(mock(UserPlayer.class));
         instance.addPlayer(mock(UserPlayer.class));
 
-        assertThrows(MaximumKillshotExceededException.class, () -> instance.setKillShotNum(9));
-        instance.setKillShotNum(3);
-        assertEquals(3, instance.getKillShotNum());
+        assertThrows(InvalidKillshotNumber.class, () -> instance.startGame(9));
 
-        instance.startGame(8);
+        instance.startGame(5);
 
         assertThrows(GameAlreadyStartedException.class, instance::flush);
         assertThrows(GameAlreadyStartedException.class, instance::clearKillshots);
 
         instance.addKillShot(mock(KillShot.class));
-        assertEquals(2, instance.remainingSkulls());
+        assertEquals(4, instance.remainingSkulls());
 
+        instance.addKillShot(mock(KillShot.class));
+        instance.addKillShot(mock(KillShot.class));
         instance.addKillShot(mock(KillShot.class));
         instance.addKillShot(mock(KillShot.class));
 
         assertThrows(NullPointerException.class, () -> instance.addKillShot(null));
         assertThrows(KillShotsTerminatedException.class, () -> instance.addKillShot(mock(KillShot.class)));
-        assertThrows(GameAlreadyStartedException.class, () -> instance.setKillShotNum(4));
 
         instance.stopGame();
         instance.flush();

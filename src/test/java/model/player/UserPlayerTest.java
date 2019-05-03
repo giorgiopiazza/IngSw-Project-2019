@@ -23,13 +23,18 @@ class UserPlayerTest {
 
         players = new UserPlayer[5];
 
-        for (int i = 0; i < 5; ++i) {
+        for (int i = 0; i < 3; ++i) {
             if (i == 2) terminator = true;
             players[i] = new UserPlayer("player", Color.values()[i],
                     board, terminator);
             terminator = false;
             players[i].setPosition(new PlayerPosition(0, 0));
         }
+
+        players[3] = new UserPlayer("player", Color.values()[3],
+                board, false);
+        players[3].setFirstPlayer();
+        players[3].setPosition(new PlayerPosition(0, 0));
     }
 
     @Test
@@ -88,12 +93,11 @@ class UserPlayerTest {
 
     @Test
     void firstPlaying() {
-        assertTrue(players[4].isFirstPlayer());
-        for (int i = 0; i < 3; ++i) {
+        assertTrue(players[3].isFirstPlayer());
+        for (int i = 0; i < 2; ++i) {
             assertFalse(players[i].isFirstPlayer());
         }
-        assertEquals("player", players[4].getNickname());
-        assertEquals(board, players[4].getPlayerBoard());
+        assertEquals("player", players[3].getNickname());
     }
 
     @Test
@@ -107,7 +111,6 @@ class UserPlayerTest {
 
         assertEquals(0, players[0].getPoints());
         assertEquals(0, players[2].getPoints());
-        assertEquals(0, players[4].getPoints());
     }
 
     @Test
@@ -115,7 +118,6 @@ class UserPlayerTest {
         players[1].changePosition(1, 1);
         players[2].changePosition(2, 3);
         players[3].changePosition(2, 3);
-        players[4].changePosition(1, 2);
 
         assertEquals(0, players[0].getPosition().getCoordX());
         assertEquals(0, players[0].getPosition().getCoordY());
@@ -125,8 +127,6 @@ class UserPlayerTest {
         assertEquals(3, players[2].getPosition().getCoordY());
         assertEquals(2, players[3].getPosition().getCoordX());
         assertEquals(3, players[3].getPosition().getCoordY());
-        assertEquals(1, players[4].getPosition().getCoordX());
-        assertEquals(2, players[4].getPosition().getCoordY());
 
         assertThrows(IndexOutOfBoundsException.class, () -> players[1].changePosition(-1, 1));
         assertThrows(IndexOutOfBoundsException.class, () -> players[1].changePosition(5, 1));
