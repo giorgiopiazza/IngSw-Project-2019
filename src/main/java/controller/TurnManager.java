@@ -2,6 +2,7 @@ package controller;
 
 import model.player.UserPlayer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TurnManager {
@@ -14,6 +15,7 @@ public class TurnManager {
 
     public TurnManager(List<UserPlayer> players) {
         this.players = players;
+        deathPlayers = new ArrayList<>();
     }
 
     public UserPlayer getTurnOwner() {
