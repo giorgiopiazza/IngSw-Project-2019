@@ -9,9 +9,6 @@ import model.map.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
@@ -140,8 +137,8 @@ class UserPlayerTest {
 
     @Test
     void addWeapon() throws MaxCardsInHandException {
-        WeaponCard railGun = new WeaponCard("Railgun", null, null, null, null, null);
-        WeaponCard shotGun = new WeaponCard("Shotgun", null, null, null, null, null);
+        WeaponCard railGun = new WeaponCard("Railgun", null, null, 0, null, null, null);
+        WeaponCard shotGun = new WeaponCard("Shotgun", null, null, 1, null, null, null);
 
         players[0].addWeapon(mock(WeaponCard.class));
         players[0].addWeapon(mock(WeaponCard.class));

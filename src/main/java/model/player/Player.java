@@ -163,7 +163,7 @@ public abstract class Player {
         if(Game.getInstance().getBeforeFirstFrenzyPlayers(frenzyActivator).contains(this)) {
             possibleActions = EnumSet.of(PossibleAction.FRENZY_MOVE, PossibleAction.FRENZY_PICK, PossibleAction.FRENZY_SHOOT);
         } else {
-            possibleActions = EnumSet.of(PossibleAction.LIGHT_FRENZY_MOVE, PossibleAction.LIGHT_FRENZY_PICK);
+            possibleActions = EnumSet.of(PossibleAction.LIGHT_FRENZY_SHOOT, PossibleAction.LIGHT_FRENZY_PICK);
         }
     }
 }

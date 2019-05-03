@@ -53,6 +53,7 @@ public class WeaponParser {
 
             String name = weapon.get("name").getAsString();
             File image = null;
+            int id = weapon.get("id").getAsInt();
             Ammo[] cost = parseAmmoJsonArray(weapon.getAsJsonArray(COST));
 
             // Effects Parse
@@ -68,7 +69,7 @@ public class WeaponParser {
             }
 
             // Card creation
-            deck.addCard((new WeaponCard(name, image, baseEffect, cost, secondaryEffects, new SemiChargedWeapon())));
+            deck.addCard((new WeaponCard(name, image, baseEffect, id, cost, secondaryEffects, new SemiChargedWeapon())));
         }
 
         deck.shuffle();
@@ -91,13 +92,13 @@ public class WeaponParser {
 
         JsonObject properties = jsonEffect.getAsJsonObject("properties");
 
-        if(properties.has(TARGET)) {
+        if (properties.has(TARGET)) {
             JsonArray targets = properties.getAsJsonArray(TARGET);
             target = parseTargetTypeJsonArray(targets);
         }
 
         Map<String, String> weaponProperties;
-        if(properties.has(SUB_EFFECTS)) {
+        if (properties.has(SUB_EFFECTS)) {
             weaponProperties = getPropertiesWithSubEffects(properties);
         } else {
             weaponProperties = getProperties(properties);
@@ -287,7 +288,7 @@ public class WeaponParser {
 
         Map<String, String> effectProperties = new LinkedHashMap<>(getProperties(justVisibilityProperties));
         TargetType[] separators = parseTargetTypeJsonArray(targets);
-        for(int i = 0; i < separators.length; ++i) {
+        for (int i = 0; i < separators.length; ++i) {
             keys = subEffects.get(i).getAsJsonObject().keySet();
             effectProperties.put(separators[i].toString(), "stop");
             for (String tempKey : keys) {

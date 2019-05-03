@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class WeaponCard extends UsableCard {
+    private final int ID;
     private final Ammo[] cost;
     private final List<Effect> secondaryEffects;
     private WeaponState weaponState;
@@ -32,13 +33,21 @@ public class WeaponCard extends UsableCard {
     public static final int UNCHARGED = 1;
     public static final int SEMI_CHARGED = 2;
 
-    public WeaponCard(String name, File image, Effect baseEffect, Ammo[] cost,
+    public WeaponCard(String name, File image, Effect baseEffect,int ID, Ammo[] cost,
                       List<Effect> secondaryEffects, WeaponState weaponState) {
         super(name, image, baseEffect);
+        this.ID = ID;
         this.cost = cost;
         this.secondaryEffects = secondaryEffects;
         this.weaponState = weaponState;
 
+    }
+
+    /**
+     * @return the ID of the weapon
+     */
+    public int getID() {
+        return this.ID;
     }
 
     /**
@@ -126,8 +135,6 @@ public class WeaponCard extends UsableCard {
                 throw new InvalidCommandException();
             }
 
-            UserPlayer shootingPlayer = Game.getInstance().getPlayerByID(pId);
-
             if (eId == 0) {
                 effect = getBaseEffect();
             } else if (eId <= secondaryEffects.size()) {
@@ -137,7 +144,7 @@ public class WeaponCard extends UsableCard {
             }
 
             if (effect.validate(request)) {
-                payEffectCost(fireRequest, shootingPlayer, ((WeaponBaseEffect) effect).getCost());
+                payEffectCost(fireRequest, ((WeaponBaseEffect) effect).getCost());
 
                 weaponState.use(effect, fireRequest);
                 setStatus(new UnchargedWeapon());
@@ -149,7 +156,23 @@ public class WeaponCard extends UsableCard {
         }
     }
 
-    private void payEffectCost(FireRequest request, UserPlayer shootingPlayer, AmmoQuantity cost) throws NotEnoughAmmoException {
+    public void payRechargeCost(UserPlayer payingPlayer, EffectRequest request) {
+        /* TODO GIORGIO
+         * Io uso il metodo sia nella PickAction che nella ShootAction:
+         *
+         * PickAction: mi serve per pagare il costo di un arma quando è posizionata sulla board, nella request che
+         *             arriva dalla action in cui è istanziata sono presenti i possibili powerup con cui pagare
+         *
+         * ShootAction: mi serve per ricaricare le armi prima di sparare quando uso un'azione in frenzy mode, in questo
+         *              caso l'arma è completamente scarica e la voglio ricaricare per usarla sempre con i possibili
+         *              powerup contenuti nel messaggio passato dalla action in cui è istanziato
+         *
+         * Lancia eccezioni così io domani faccio tutti i catch per non fare eseguire la action
+         */
+    }
+
+    private void payEffectCost(FireRequest request, AmmoQuantity cost) throws NotEnoughAmmoException {
+        UserPlayer shootingPlayer = Game.getInstance().getPlayerByID(request.getSenderID());
         PowerupCard[] powerupCards = shootingPlayer.getPowerups();
 
         List<Integer> powerupsID = request.getPowerupsID();

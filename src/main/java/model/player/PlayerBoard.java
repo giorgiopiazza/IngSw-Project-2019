@@ -4,6 +4,7 @@ import enumerations.Ammo;
 import enumerations.PlayerBoardState;
 import exceptions.playerboard.BoardAlreadyFlippedException;
 import exceptions.playerboard.BoardFlipDamagedException;
+import exceptions.playerboard.InvalidDamageException;
 import exceptions.playerboard.NotEnoughAmmoException;
 
 import java.util.ArrayList;
@@ -63,10 +64,20 @@ public class PlayerBoard {
     }
 
     /**
-     * @param state PlayerBoardState to be set to the playerboard
+     * Method that sets the state of the playerBoard related to how many damages he has received
      */
-    public void setBoardState(PlayerBoardState state) {
-        this.boardState = state;
+    public void setBoardState() {
+        int currentDamages = getDamageCount();
+        if(currentDamages < 3) {
+            this.boardState = PlayerBoardState.NORMAL;
+        } else if(currentDamages < 6) {
+            this.boardState = PlayerBoardState.FIRST_ADRENALINE;
+        } else if(currentDamages < 13) {
+            this.boardState = PlayerBoardState.SECOND_ADRENALINE;
+        } else {
+            throw new InvalidDamageException();
+        }
+
     }
 
     /**
@@ -192,6 +203,8 @@ public class PlayerBoard {
                 damages.add(damageDealer);
             }
         }
+
+        setBoardState();
     }
 
     /**
