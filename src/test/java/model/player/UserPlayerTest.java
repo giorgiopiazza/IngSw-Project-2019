@@ -24,9 +24,8 @@ class UserPlayerTest {
         players = new UserPlayer[5];
 
         for (int i = 0; i < 5; ++i) {
-            if (i == 4) first = true;
             if (i == 2) terminator = true;
-            players[i] = new UserPlayer("player", Color.values()[i], first,
+            players[i] = new UserPlayer("player", Color.values()[i],
                     board, terminator);
             terminator = false;
             players[i].setPosition(new PlayerPosition(0, 0));
@@ -46,8 +45,8 @@ class UserPlayerTest {
 
     @Test
     void distanceOf() {
-        Player p1 = new UserPlayer("p1", Color.YELLOW, true, new PlayerBoard(), false);
-        Player p2 = new UserPlayer("p2", Color.GREEN, true, new PlayerBoard(), false);
+        Player p1 = new UserPlayer("p1", Color.YELLOW, new PlayerBoard(), false);
+        Player p2 = new UserPlayer("p2", Color.GREEN, new PlayerBoard(), false);
 
         Game.getInstance().setGameMap(Map.MAP_3);
 

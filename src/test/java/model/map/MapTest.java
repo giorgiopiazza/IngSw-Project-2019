@@ -2,6 +2,7 @@ package model.map;
 
 import enumerations.Color;
 import exceptions.game.GameAlreadyStartedException;
+import exceptions.game.GameNotReadyException;
 import exceptions.game.MaxPlayerException;
 import exceptions.game.NotEnoughPlayersException;
 import exceptions.map.MapUnknowException;
@@ -46,7 +47,7 @@ class MapTest {
     }
 
     @Test
-    void playersOnMap() throws MaxPlayerException, GameAlreadyStartedException, NotEnoughPlayersException {
+    void playersOnMap() throws MaxPlayerException, GameAlreadyStartedException, NotEnoughPlayersException, GameNotReadyException {
         Game instance = Game.getInstance();
 
         instance.flush();
@@ -57,9 +58,9 @@ class MapTest {
         assertEquals(0, map.getPlayersInRoom(Color.RED).size());
         assertEquals(0, map.getPlayersInSquare(new PlayerPosition(0, 0)).size());
 
-        UserPlayer p1 = new UserPlayer("tose", Color.YELLOW, true, mock(PlayerBoard.class), false);
-        UserPlayer p2 = new UserPlayer("gio", Color.RED, true, mock(PlayerBoard.class), false);
-        UserPlayer p3 = new UserPlayer("piro", Color.BLUE, true, mock(PlayerBoard.class), false);
+        UserPlayer p1 = new UserPlayer("tose", Color.YELLOW, mock(PlayerBoard.class), false);
+        UserPlayer p2 = new UserPlayer("gio", Color.RED, mock(PlayerBoard.class), false);
+        UserPlayer p3 = new UserPlayer("piro", Color.BLUE, mock(PlayerBoard.class), false);
 
         PlayerPosition myPos = new PlayerPosition(0, 1);
 
@@ -67,7 +68,7 @@ class MapTest {
         instance.addPlayer(p2);
         instance.addPlayer(p3);
 
-        instance.startGame();
+        instance.startGame(8);
 
         instance.spawnPlayer(p1, myPos);
         instance.spawnPlayer(p2, new PlayerPosition(2, 2));
@@ -86,7 +87,7 @@ class MapTest {
         instance.addPlayer(p3);
         instance.setTerminator(true);
         instance.setGameMap(Map.MAP_2);
-        instance.startGame();
+        instance.startGame(8);
 
         instance.spawnPlayer(p1, myPos);
         instance.spawnPlayer(p2, new PlayerPosition(2, 2));

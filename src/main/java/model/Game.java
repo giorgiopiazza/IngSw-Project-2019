@@ -2,10 +2,15 @@ package model;
 
 import enumerations.Color;
 import enumerations.GameState;
+import enumerations.SquareType;
 import exceptions.game.*;
 import exceptions.map.InvalidPlayerPositionException;
+import model.cards.AmmoTile;
 import model.cards.Deck;
+import model.cards.WeaponCard;
+import model.map.CardSquare;
 import model.map.Map;
+import model.map.SpawnSquare;
 import model.map.Square;
 import model.player.*;
 import utility.AmmoTileParser;
@@ -34,18 +39,32 @@ public class Game {
     private KillShot[] killShotsTrack;
     private Deck weaponsCardsDeck;
     private Deck powerupCardsDeck;
-    private Deck ammoCardsDeck;
+    private Deck ammoTileDeck;
     private Map gameMap;
 
     /**
      * Initialize singleton Game instance
      */
     private Game() {
+        init();
+    }
+
+    /**
+     * Game initialization
+     */
+    private void init() {
         players = new ArrayList<>();
+        terminator = null;
         this.currentState = GameState.NORMAL;
         killShotsTrack = new KillShot[MAX_KILLSHOT];
         terminatorPresent = false;
         started = false;
+        killShotNum = 0;
+
+        weaponsCardsDeck = null;
+        powerupCardsDeck = null;
+        ammoTileDeck = null;
+        gameMap = null;
     }
 
     public void setGameMap(int mapType) {
@@ -111,20 +130,40 @@ public class Game {
     }
 
     /**
+     * Checks if game is ready to start
+     *
+     * @return {@code true} if the game is ready {@code false} otherwise
+     */
+    private boolean isGameReadyToStart() throws NotEnoughPlayersException {
+        if (players.size() < 3) throw new NotEnoughPlayersException();
+
+        return gameMap != null;
+    }
+
+    /**
      * Starts the game
      *
      * @throws GameAlreadyStartedException when game is already started
      * @throws NotEnoughPlayersException   when there aren't enough players for start the game
      */
-    public void startGame(int killShotNum) throws GameAlreadyStartedException, NotEnoughPlayersException {
+    public void startGame(int killShotNum) throws GameAlreadyStartedException, NotEnoughPlayersException, GameNotReadyException {
         if (started) throw new GameAlreadyStartedException("The game is already in progress");
-        if (players.size() < 3) throw new NotEnoughPlayersException();
+
+        if (!isGameReadyToStart()) {
+            throw new GameNotReadyException();
+        }
+
+        if (killShotNum < 5 || killShotNum > 8) {
+            throw new InvalidKillshotNumber();
+        }
 
         started = true;
         this.killShotNum = killShotNum;
 
         initializeDecks();
         pickFirstPlayer();
+
+        distributeCards();
     }
 
     /**
@@ -148,18 +187,41 @@ public class Game {
     }
 
     /**
-     * Initializes the three decks: {@code weaponsCardDeck}, {@code ammoCardsDeck} and {@code powerupCardsDeck}
+     * Distributes cards on every Square
+     */
+    private void distributeCards() {
+        for (int i = 0; i < Map.MAX_ROWS; ++i) {
+            for (int j = 0; j < Map.MAX_COLUMNS; ++j) {
+                Square square = gameMap.getSquare(i, j);
+
+                if (square.getSquareType() == SquareType.SPAWN) {
+                    SpawnSquare spawnSquare = (SpawnSquare) square;
+
+                    for (int k = 0; k < 3; ++k) {
+                        spawnSquare.addWeapon((WeaponCard) weaponsCardsDeck.draw());
+                    }
+                } else {
+                    CardSquare cardSquare = (CardSquare) square;
+
+                    cardSquare.setAmmoTile((AmmoTile) ammoTileDeck.draw());
+                }
+            }
+        }
+    }
+
+    /**
+     * Initializes the three decks: {@code weaponsCardDeck}, {@code ammoTileDeck} and {@code powerupCardsDeck}
      */
     private void initializeDecks() {
         this.weaponsCardsDeck = WeaponParser.parseCards();
-        this.ammoCardsDeck = AmmoTileParser.parseCards();
+        this.ammoTileDeck = AmmoTileParser.parseCards();
         this.powerupCardsDeck = PowerupParser.parseCards();
     }
 
     public void stopGame() throws GameAlreadyStartedException {
         if (!started) throw new GameAlreadyStartedException("The game is not in progress");
-        started = false;
-        // TODO: implementation of stopGame()
+
+        init();
     }
 
     /**
