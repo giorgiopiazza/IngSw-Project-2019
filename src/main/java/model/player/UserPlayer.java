@@ -30,27 +30,8 @@ public class UserPlayer extends Player {
         super(nickname, color, playerBoard);
         weapons = new ArrayList<>();
         powerups = new ArrayList<>();
-
+        this.terminator = false;
         this.playerState = new PlayerState(PossibleState.FIRST_SPAWN);
-
-        if (Game.getInstance().isTerminatorPresent()) {
-            // the first turn, the second player is the first one who starts using the terminator
-            if (this.getId() == 1) {
-                this.terminator = true;
-            } else {
-                this.terminator = false;
-            }
-
-            if (this.getId() == 0) {
-                this.possibleActions = EnumSet.of(PossibleAction.SPAWN_TERMINATOR, PossibleAction.CHOOSE_SPAWN);
-            } else {
-                this.possibleActions = EnumSet.of(PossibleAction.CHOOSE_SPAWN);
-            }
-        } else {
-            this.terminator = false;
-            this.possibleActions = EnumSet.of(PossibleAction.CHOOSE_SPAWN);
-        }
-
     }
 
     public PlayerState getPlayerState() {
@@ -189,6 +170,24 @@ public class UserPlayer extends Player {
 
     public Set<PossibleAction> getPossibleActions() {
         return this.possibleActions;
+    }
+
+    /**
+     * Method that sets the possible actions for a player whose state is FIRST_SPAWN
+     *
+     * @param player UserPlayer who needs a set of PossibleActions
+     * @param isTerminatorPresent boolean that specifies if the terminator is present in the game
+     */
+    public void setStartingPossibleActions(UserPlayer player, boolean isTerminatorPresent) {
+        if(isTerminatorPresent) {
+            if(player.isFirstPlayer()) {
+                possibleActions = EnumSet.of(PossibleAction.SPAWN_TERMINATOR, PossibleAction.CHOOSE_SPAWN);
+            } else {
+                possibleActions = EnumSet.of(PossibleAction.CHOOSE_SPAWN);
+            }
+        } else {
+            possibleActions = EnumSet.of(PossibleAction.CHOOSE_SPAWN);
+        }
     }
 
     /**

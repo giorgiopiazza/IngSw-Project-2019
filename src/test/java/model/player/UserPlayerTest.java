@@ -1,7 +1,6 @@
 package model.player;
 
 import enumerations.Color;
-import exceptions.AdrenalinaException;
 import exceptions.player.CardAlreadyInHandException;
 import exceptions.player.MaxCardsInHandException;
 import model.Game;
@@ -18,35 +17,27 @@ class UserPlayerTest {
     private PlayerBoard board = mock(PlayerBoard.class);
 
     @BeforeEach
-    void before() throws AdrenalinaException {
-        Game instance = Game.getInstance();
-        instance.init();
-        instance.setGameMap(1);
+    void before() {
         players = new UserPlayer[5];
 
         for (int i = 0; i < 3; ++i) {
             players[i] = new UserPlayer("player", Color.values()[i], board);
+            if (i == 2) players[i].setTerminator(true);
             players[i].setPosition(new PlayerPosition(0, 0));
-            instance.addPlayer(players[i]);
         }
 
         players[3] = new UserPlayer("player", Color.values()[3], board);
+        players[3].setFirstPlayer();
         players[3].setPosition(new PlayerPosition(0, 0));
-        instance.addPlayer(players[3]);
-
-        instance.setTerminator(true);
-        instance.startGame(5);
     }
 
     @Test
     void terminator() {
+        assertTrue(players[2].hasTerminator());
         assertFalse(players[0].hasTerminator());
-        assertTrue(players[1].hasTerminator());
-        assertFalse(players[2].hasTerminator());
-        assertFalse(players[3].hasTerminator());
 
-        players[1].setTerminator(false);
-        assertFalse(players[1].hasTerminator());
+        players[2].setTerminator(false);
+        assertFalse(players[2].hasTerminator());
         players[0].setTerminator(true);
         assertTrue(players[0].hasTerminator());
     }
@@ -96,17 +87,9 @@ class UserPlayerTest {
 
     @Test
     void firstPlaying() {
-        int firsPlayerIndex = -1;
-        for(int i = 0; i < 3; ++i) {
-            if(players[i].isFirstPlayer()) {
-                firsPlayerIndex = i;
-            }
-        }
-
-        for (int i = 0; i < 3; ++i) {
-            if(i != firsPlayerIndex) {
-                assertFalse(players[i].isFirstPlayer());
-            }
+        assertTrue(players[3].isFirstPlayer());
+        for (int i = 0; i < 2; ++i) {
+            assertFalse(players[i].isFirstPlayer());
         }
         assertEquals("player", players[3].getNickname());
     }
