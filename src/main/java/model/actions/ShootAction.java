@@ -75,7 +75,7 @@ public class ShootAction implements Action {
 
         // shooting validation
         return actingPlayer.hasWeapon(shootingWeapon);
-}
+    }
 
     @Override
     public void execute() {
@@ -86,7 +86,7 @@ public class ShootAction implements Action {
         // if the shooting action is a frenzy one I can also recharge my weapons before shooting
         if (rechargingWeapons != null && rechargeAction != null &&
                 (actionChosen == PossibleAction.FRENZY_SHOOT || actionChosen == PossibleAction.LIGHT_FRENZY_SHOOT)) {
-            if(rechargeAction.validate()) {
+            if (rechargeAction.validate()) {
                 try {
                     rechargeAction.execute();
                 } catch (WeaponAlreadyChargedException e) {

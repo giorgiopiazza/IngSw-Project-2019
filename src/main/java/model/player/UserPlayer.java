@@ -1,28 +1,68 @@
 package model.player;
 
 import enumerations.Color;
+import enumerations.PlayerBoardState;
+import enumerations.PossibleAction;
+import enumerations.PossibleState;
 import exceptions.player.CardAlreadyInHandException;
 import exceptions.player.EmptyHandException;
 import exceptions.player.MaxCardsInHandException;
+import model.Game;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 public class UserPlayer extends Player {
+    private EnumSet<PossibleAction> possibleActions;
+    private PlayerState playerState;
     private List<WeaponCard> weapons;
     private List<PowerupCard> powerups;
     private boolean firstPlayer;
     private boolean terminator;
 
     public UserPlayer(String nickname, Color color,
-                      PlayerBoard playerBoard, boolean terminator) {
+                      PlayerBoard playerBoard) {
 
         super(nickname, color, playerBoard);
         weapons = new ArrayList<>();
         powerups = new ArrayList<>();
-        this.terminator = terminator;
+
+        this.playerState = new PlayerState(PossibleState.FIRST_SPAWN);
+
+        if (Game.getInstance().isTerminatorPresent()) {
+            // the first turn, the second player is the first one who starts using the terminator
+            if (this.getId() == 1) {
+                this.terminator = true;
+            } else {
+                this.terminator = false;
+            }
+
+            if (this.getId() == 0) {
+                this.possibleActions = EnumSet.of(PossibleAction.SPAWN_TERMINATOR, PossibleAction.CHOOSE_SPAWN);
+            } else {
+                this.possibleActions = EnumSet.of(PossibleAction.CHOOSE_SPAWN);
+            }
+        } else {
+            this.terminator = false;
+            this.possibleActions = EnumSet.of(PossibleAction.CHOOSE_SPAWN);
+        }
+
+    }
+
+    public PlayerState getPlayerState() {
+        return this.playerState;
+    }
+
+    public void setPlayerState(PlayerState playerState) {
+        if (playerState == null) {
+            throw new NullPointerException("A player must always have a state!");
+        }
+
+        this.playerState = playerState;
     }
 
     public void setTerminator(boolean terminator) {
@@ -97,7 +137,6 @@ public class UserPlayer extends Player {
     }
 
 
-
     /**
      * Discards the specified powerup from your hand
      *
@@ -114,13 +153,16 @@ public class UserPlayer extends Player {
     }
 
     /**
-     * Discards the powerup of the specified index from your hand
+     * Method that discards the powerup in the specified index from the current player
      *
-     * @param i the index of the powerup you want to discard
-     * @return true if the powerup has been discarded
-     * @throws EmptyHandException if your hand has no powerups
+     * @param i the index of the powerup to discard
+     * @throws EmptyHandException in case the current player has no powerups in his hand
      */
-    public boolean discardPowerupByIndex(int i) throws EmptyHandException {
+    public void discardPowerupByIndex(int i) throws EmptyHandException {
+        if (i < 0) {
+            throw new IllegalArgumentException("An index can never be negative!");
+        }
+
         if (i > powerups.size()) {
             throw new IllegalArgumentException("The index of the powerup you are trying to discard is too high!");
         }
@@ -130,7 +172,6 @@ public class UserPlayer extends Player {
         }
 
         powerups.remove(i);
-        return true;
     }
 
     public boolean hasPowerup(PowerupCard powerup) {
@@ -144,6 +185,55 @@ public class UserPlayer extends Player {
      */
     public PowerupCard[] getPowerups() {
         return powerups.toArray(new PowerupCard[0]);
+    }
+
+    public Set<PossibleAction> getPossibleActions() {
+        return this.possibleActions;
+    }
+
+    /**
+     * Method that sets the possible actions a player has due to his state, when the game is in NORMAL state
+     * If the game has the terminator, every player in his turn must always do also the terminator action
+     */
+    public void setPossibleActions() {
+        PlayerBoardState currentPlayerBoardState = getPlayerBoard().getBoardState();
+
+        switch (currentPlayerBoardState) {
+            case NORMAL:
+                possibleActions = EnumSet.of(PossibleAction.MOVE, PossibleAction.MOVE_AND_PICK, PossibleAction.SHOOT);
+                break;
+            case FIRST_ADRENALINE:
+                possibleActions = EnumSet.of(PossibleAction.MOVE, PossibleAction.ADRENALINE_PICK, PossibleAction.SHOOT);
+                break;
+            default:    // second adrenaline
+                possibleActions = EnumSet.of(PossibleAction.MOVE, PossibleAction.ADRENALINE_PICK, PossibleAction.ADRENALINE_SHOOT);
+        }
+
+        // in each state the player is he can always recharge his weapons (AT THE END OF THE TURN!)
+        possibleActions.add(PossibleAction.RELOAD);
+
+        if (Game.getInstance().isTerminatorPresent()) {
+            possibleActions.add(PossibleAction.TERMINATOR_ACTION);
+        }
+    }
+
+    /**
+     * Method that sets the possible actions a player has due to his position in the round turn,
+     * when the game is in FRENZY state
+     * If the game has the terminator, every player in his turn must always do also the terminator action
+     *
+     * @param frenzyActivator the id of the player who activated the final frenzy mode
+     */
+    public void setFrenzyPossibleActions(int frenzyActivator) {
+        if (Game.getInstance().getBeforeFirstFrenzyPlayers(frenzyActivator).contains(this)) {
+            possibleActions = EnumSet.of(PossibleAction.FRENZY_MOVE, PossibleAction.FRENZY_PICK, PossibleAction.FRENZY_SHOOT);
+        } else {
+            possibleActions = EnumSet.of(PossibleAction.LIGHT_FRENZY_SHOOT, PossibleAction.LIGHT_FRENZY_PICK);
+        }
+
+        if (Game.getInstance().isTerminatorPresent()) {
+            possibleActions.add(PossibleAction.TERMINATOR_ACTION);
+        }
     }
 
     @Override

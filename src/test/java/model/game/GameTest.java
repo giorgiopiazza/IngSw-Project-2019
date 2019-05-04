@@ -137,7 +137,7 @@ class GameTest {
         instance.stopGame();
         instance.flush();
 
-        UserPlayer player = new UserPlayer("tose", Color.YELLOW, new PlayerBoard(), false);
+        UserPlayer player = new UserPlayer("tose", Color.YELLOW, new PlayerBoard());
         instance.addPlayer(player);
         instance.addPlayer(mock(UserPlayer.class));
         instance.addPlayer(mock(UserPlayer.class));
@@ -153,8 +153,8 @@ class GameTest {
 
     @Test
     void spawnPlayer() throws AdrenalinaException {
-        UserPlayer player = new UserPlayer("tose", Color.YELLOW, new PlayerBoard(), false);
-        UserPlayer notContained = new UserPlayer("gio", Color.YELLOW, new PlayerBoard(), false);
+        UserPlayer player = new UserPlayer("tose", Color.YELLOW, new PlayerBoard()  );
+        UserPlayer notContained = new UserPlayer("gio", Color.YELLOW, new PlayerBoard());
 
         instance.addPlayer(player);
         instance.addPlayer(mock(UserPlayer.class));

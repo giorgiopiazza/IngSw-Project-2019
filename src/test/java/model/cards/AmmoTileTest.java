@@ -45,8 +45,8 @@ public class AmmoTileTest {
 
         boardA = new PlayerBoard();
         boardB = new PlayerBoard();
-        playerTestA = new UserPlayer("playerTestA", Color.YELLOW, boardA, false);
-        playerTestB = new UserPlayer("playerTestB", Color.RED, boardB, false);
+        playerTestA = new UserPlayer("playerTestA", Color.YELLOW, boardA);
+        playerTestB = new UserPlayer("playerTestB", Color.RED, boardB);
         onlyAmmoTile = new AmmoTile(null, defaultAllDifferent, false);
         onlyAmmoTile2 = new AmmoTile(null, defaultAllDifferent, false);
         ammoPowerupTile = new AmmoTile(null, redBlueAndPowerup, true);

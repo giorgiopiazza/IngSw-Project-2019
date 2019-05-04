@@ -203,6 +203,7 @@ public class Game {
 
     /**
      * Places card(s) of right type on a square
+     *
      * @param square where card(s) must be placed
      */
     private void placeCardOnSquare(Square square) {
@@ -290,7 +291,7 @@ public class Game {
     }
 
     public boolean isTerminatorPresent() {
-        return terminatorPresent;
+        return this.terminatorPresent;
     }
 
     /**

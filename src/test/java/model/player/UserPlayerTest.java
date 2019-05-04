@@ -1,6 +1,7 @@
 package model.player;
 
 import enumerations.Color;
+import exceptions.AdrenalinaException;
 import exceptions.player.CardAlreadyInHandException;
 import exceptions.player.MaxCardsInHandException;
 import model.Game;
@@ -17,41 +18,43 @@ class UserPlayerTest {
     private PlayerBoard board = mock(PlayerBoard.class);
 
     @BeforeEach
-    void before() {
-        boolean first = false;
-        boolean terminator = false;
-
+    void before() throws AdrenalinaException {
+        Game instance = Game.getInstance();
+        instance.init();
+        instance.setGameMap(1);
         players = new UserPlayer[5];
 
         for (int i = 0; i < 3; ++i) {
-            if (i == 2) terminator = true;
-            players[i] = new UserPlayer("player", Color.values()[i],
-                    board, terminator);
-            terminator = false;
+            players[i] = new UserPlayer("player", Color.values()[i], board);
             players[i].setPosition(new PlayerPosition(0, 0));
+            instance.addPlayer(players[i]);
         }
 
-        players[3] = new UserPlayer("player", Color.values()[3],
-                board, false);
-        players[3].setFirstPlayer();
+        players[3] = new UserPlayer("player", Color.values()[3], board);
         players[3].setPosition(new PlayerPosition(0, 0));
+        instance.addPlayer(players[3]);
+
+        instance.setTerminator(true);
+        instance.startGame(5);
     }
 
     @Test
     void terminator() {
-        assertTrue(players[2].hasTerminator());
         assertFalse(players[0].hasTerminator());
-
-        players[2].setTerminator(false);
+        assertTrue(players[1].hasTerminator());
         assertFalse(players[2].hasTerminator());
+        assertFalse(players[3].hasTerminator());
+
+        players[1].setTerminator(false);
+        assertFalse(players[1].hasTerminator());
         players[0].setTerminator(true);
         assertTrue(players[0].hasTerminator());
     }
 
     @Test
     void distanceOf() {
-        Player p1 = new UserPlayer("p1", Color.YELLOW, new PlayerBoard(), false);
-        Player p2 = new UserPlayer("p2", Color.GREEN, new PlayerBoard(), false);
+        Player p1 = new UserPlayer("p1", Color.YELLOW, new PlayerBoard());
+        Player p2 = new UserPlayer("p2", Color.GREEN, new PlayerBoard());
 
         Game.getInstance().setGameMap(Map.MAP_3);
 
@@ -93,9 +96,17 @@ class UserPlayerTest {
 
     @Test
     void firstPlaying() {
-        assertTrue(players[3].isFirstPlayer());
-        for (int i = 0; i < 2; ++i) {
-            assertFalse(players[i].isFirstPlayer());
+        int firsPlayerIndex = -1;
+        for(int i = 0; i < 3; ++i) {
+            if(players[i].isFirstPlayer()) {
+                firsPlayerIndex = i;
+            }
+        }
+
+        for (int i = 0; i < 3; ++i) {
+            if(i != firsPlayerIndex) {
+                assertFalse(players[i].isFirstPlayer());
+            }
         }
         assertEquals("player", players[3].getNickname());
     }

@@ -30,11 +30,7 @@ public class MoveAction implements Action {
                 return false;
             }
         } else if (actionChosen == PossibleAction.FRENZY_MOVE) {
-            if (movingDistance >= MIN_MOVE && movingDistance <= MAX_FRENZY_MOVE) {
-                return true;
-            } else {
-                return false;
-            }
+            return (movingDistance >= MIN_MOVE && movingDistance <= MAX_FRENZY_MOVE);
         } else {
             throw new NullPointerException("To move a player must always have a moving action!");
         }

@@ -58,9 +58,9 @@ class MapTest {
         assertEquals(0, map.getPlayersInRoom(Color.RED).size());
         assertEquals(0, map.getPlayersInSquare(new PlayerPosition(0, 0)).size());
 
-        UserPlayer p1 = new UserPlayer("tose", Color.YELLOW, mock(PlayerBoard.class), false);
-        UserPlayer p2 = new UserPlayer("gio", Color.RED, mock(PlayerBoard.class), false);
-        UserPlayer p3 = new UserPlayer("piro", Color.BLUE, mock(PlayerBoard.class), false);
+        UserPlayer p1 = new UserPlayer("tose", Color.YELLOW, mock(PlayerBoard.class));
+        UserPlayer p2 = new UserPlayer("gio", Color.RED, mock(PlayerBoard.class));
+        UserPlayer p3 = new UserPlayer("piro", Color.BLUE, mock(PlayerBoard.class));
 
         PlayerPosition myPos = new PlayerPosition(0, 1);
 
