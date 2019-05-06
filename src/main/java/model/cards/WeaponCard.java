@@ -1,7 +1,6 @@
 package model.cards;
 
 import enumerations.Ammo;
-import exceptions.AdrenalinaException;
 import exceptions.cards.WeaponAlreadyChargedException;
 import exceptions.cards.WeaponNotChargedException;
 import exceptions.command.InvalidCommandException;
@@ -17,7 +16,7 @@ import model.player.AmmoQuantity;
 import model.player.UserPlayer;
 import network.message.ActionRequest;
 import network.message.EffectRequest;
-import network.message.FireRequest;
+import network.message.ShootRequest;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -123,13 +122,13 @@ public class WeaponCard extends UsableCard {
      */
     @Override
     public void use(EffectRequest request) throws NotEnoughAmmoException, WeaponNotChargedException {
-        FireRequest fireRequest = (FireRequest) request;
+        ShootRequest shootRequest = (ShootRequest) request;
 
         if (isCharged()) {
             Effect effect;
 
-            int pId = fireRequest.getSenderID();
-            int eId = fireRequest.getEffectID();
+            int pId = shootRequest.getSenderID();
+            int eId = shootRequest.getEffectID();
 
             if (pId >= Game.getInstance().playersNumber()) {
                 throw new InvalidCommandException();
@@ -144,9 +143,9 @@ public class WeaponCard extends UsableCard {
             }
 
             if (effect.validate(request)) {
-                payCost(fireRequest, ((WeaponBaseEffect) effect).getCost());
+                payCost(shootRequest, ((WeaponBaseEffect) effect).getCost());
 
-                weaponState.use(effect, fireRequest);
+                weaponState.use(effect, shootRequest);
                 setStatus(new UnchargedWeapon());
             } else {
                 throw new InvalidCommandException();
@@ -171,7 +170,7 @@ public class WeaponCard extends UsableCard {
         UserPlayer shootingPlayer = Game.getInstance().getPlayerByID(request.getSenderID());
         PowerupCard[] powerupCards = shootingPlayer.getPowerups();
 
-        List<Integer> powerupsID = request.getPowerupsID();
+        List<Integer> powerupsID = request.getPaymentPowerupsID();
         List<Integer> usedPowerupsID = new ArrayList<>();
 
         AmmoQuantity costWithoutPowerups = getCostWithoutPowerup(cost, powerupsID, usedPowerupsID, powerupCards);

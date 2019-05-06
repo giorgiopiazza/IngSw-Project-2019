@@ -15,6 +15,8 @@ public class TurnManager {
 
     public TurnManager(List<UserPlayer> players) {
         this.players = players;
+        turnOwner = players.get(count);
+
         deathPlayers = new ArrayList<>();
     }
 

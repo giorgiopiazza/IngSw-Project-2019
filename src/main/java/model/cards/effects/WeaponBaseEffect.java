@@ -5,7 +5,7 @@ import model.Game;
 import model.player.AmmoQuantity;
 import model.player.PlayerPosition;
 import network.message.EffectRequest;
-import network.message.FireRequest;
+import network.message.ShootRequest;
 import utility.EffectValidator;
 
 import java.util.List;
@@ -43,21 +43,21 @@ public class WeaponBaseEffect extends Effect {
 
     @Override
     public boolean validate(EffectRequest request) {
-        FireRequest fireRequest = (FireRequest) request;
+        ShootRequest shootRequest = (ShootRequest) request;
 
         if (getTargets().length > 1) { // This effect has subEffects
             for (TargetType targetType : getTargets()) { // Checks that every subEffect is valid
-                if (!subValidate(fireRequest, EffectValidator.getSubMap(getProperties(), targetType), targetType)) {
+                if (!subValidate(shootRequest, EffectValidator.getSubMap(getProperties(), targetType), targetType)) {
                     return false;
                 }
             }
             return true;
         } else { // Checks the effect normally
-            return subValidate(fireRequest, getProperties(), getTargets()[0]);
+            return subValidate(shootRequest, getProperties(), getTargets()[0]);
         }
     }
 
-    private boolean subValidate(FireRequest request, Map<String, String> properties, TargetType targetType) {
+    private boolean subValidate(ShootRequest request, Map<String, String> properties, TargetType targetType) {
         PlayerPosition shooterPosition = Game.getInstance().getPlayerByID(request.getSenderID()).getPosition();
         List<PlayerPosition> targetPositions = EffectValidator.getTargetPositions(request, targetType);
 

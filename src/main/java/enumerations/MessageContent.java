@@ -1,0 +1,6 @@
+package enumerations;
+
+public enum MessageContent {
+    CONNECTION, READY, TERMINATOR_SPAWN, DISCARD_POWERUP,
+    MOVE, MOVE_PICK, SHOOT, RELOAD, POWERUP, PASS_TURN
+}

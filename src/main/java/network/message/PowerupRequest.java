@@ -2,6 +2,7 @@ package network.message;
 
 import enumerations.Ammo;
 import enumerations.Color;
+import enumerations.MessageContent;
 import model.player.PlayerPosition;
 
 import java.util.ArrayList;
@@ -11,8 +12,15 @@ public class PowerupRequest extends EffectRequest {
     private final Ammo ammoColor;
 
     public PowerupRequest(PowerupRequestBuilder builder) {
-        super(builder.senderID, builder.targetPlayersID, builder.targetPositions,
-                builder.targetRoomColor, builder.senderMovePosition, builder.targetPlayersMovePositions, builder.powerupsID);
+        super(
+                new EffectRequestBuilder(builder.senderID, MessageContent.POWERUP)
+                        .targetPlayersID(builder.targetPlayersID)
+                        .targetPositions(builder.targetPositions)
+                        .targetRoomColor(builder.targetRoomColor)
+                        .senderMovePosition(builder.senderMovePosition)
+                        .targetPlayersMovePositions(builder.targetPlayersMovePositions)
+                        .paymentPowerupsID(builder.paymentPowerupsID)
+        );
 
         this.powerupID = builder.powerupID;
         this.ammoColor = builder.ammoColor;
@@ -38,7 +46,7 @@ public class PowerupRequest extends EffectRequest {
         private PlayerPosition senderMovePosition;
         private ArrayList<PlayerPosition> targetPlayersMovePositions;
 
-        private ArrayList<Integer> powerupsID;
+        private ArrayList<Integer> paymentPowerupsID;
 
         public PowerupRequestBuilder(int senderID, int powerupID) {
             this.senderID = senderID;
@@ -70,8 +78,8 @@ public class PowerupRequest extends EffectRequest {
             return this;
         }
 
-        public PowerupRequestBuilder powerupsID(ArrayList<Integer> powerupsID) {
-            this.powerupsID = powerupsID;
+        public PowerupRequestBuilder paymentPowerupsID(ArrayList<Integer> paymentPowerupsID) {
+            this.paymentPowerupsID = paymentPowerupsID;
             return this;
         }
 

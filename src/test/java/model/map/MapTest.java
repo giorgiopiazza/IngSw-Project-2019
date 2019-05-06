@@ -50,7 +50,7 @@ class MapTest {
     void playersOnMap() throws MaxPlayerException, GameAlreadyStartedException, NotEnoughPlayersException, GameNotReadyException {
         Game instance = Game.getInstance();
 
-        instance.flush();
+        instance.init();
         instance.setGameMap(Map.MAP_2);
 
         Map map = instance.getGameMap();

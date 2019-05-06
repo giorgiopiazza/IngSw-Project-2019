@@ -1,20 +1,28 @@
 package network.message;
 
 import enumerations.Color;
+import enumerations.MessageContent;
 import model.player.PlayerPosition;
 
 import java.util.ArrayList;
 
-public class FireRequest extends EffectRequest {
+public class ShootRequest extends EffectRequest {
     private final int weaponID;
     private final int effectID;
 
     private final boolean moveSenderFirst;
     private final boolean moveTargetsFirst;
 
-    public FireRequest(FireRequestBuilder builder) {
-        super(builder.senderID, builder.targetPlayersID, builder.targetPositions,
-                builder.targetRoomColor, builder.senderMovePosition, builder.targetPlayersMovePositions, builder.powerupsID);
+    public ShootRequest(FireRequestBuilder builder) {
+        super(
+                new EffectRequestBuilder(builder.senderID, MessageContent.SHOOT)
+                        .targetPlayersID(builder.targetPlayersID)
+                        .targetPositions(builder.targetPositions)
+                        .targetRoomColor(builder.targetRoomColor)
+                        .senderMovePosition(builder.senderMovePosition)
+                        .targetPlayersMovePositions(builder.targetPlayersMovePositions)
+                        .paymentPowerupsID(builder.paymentPowerupsID)
+        );
 
         this.weaponID = builder.weaponID;
         this.effectID = builder.effectID;
@@ -53,7 +61,7 @@ public class FireRequest extends EffectRequest {
         private boolean moveSenderFirst;
         private boolean moveTargetsFirst;
 
-        private ArrayList<Integer> powerupsID;
+        private ArrayList<Integer> paymentPowerupsID;
 
         public FireRequestBuilder(int senderID, int weaponID, int effectID) {
             this.senderID = senderID;
@@ -96,13 +104,13 @@ public class FireRequest extends EffectRequest {
             return this;
         }
 
-        public FireRequestBuilder powerupsID(ArrayList<Integer> powerupsID) {
-            this.powerupsID = powerupsID;
+        public FireRequestBuilder paymentPowerupsID(ArrayList<Integer> paymentPowerupsID) {
+            this.paymentPowerupsID = paymentPowerupsID;
             return this;
         }
 
-        public FireRequest build() {
-            return new FireRequest(this);
+        public ShootRequest build() {
+            return new ShootRequest(this);
         }
     }
 }

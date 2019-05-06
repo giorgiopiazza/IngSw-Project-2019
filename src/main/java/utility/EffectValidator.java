@@ -12,7 +12,7 @@ import model.player.Player;
 import model.player.PlayerPosition;
 import model.player.UserPlayer;
 import network.message.EffectRequest;
-import network.message.FireRequest;
+import network.message.ShootRequest;
 import network.message.PowerupRequest;
 
 import java.util.*;
@@ -552,7 +552,7 @@ public class EffectValidator {
      * @param properties Map of effect properties
      * @return {@code true} if target move before is valid {@code false} otherwise
      */
-    public static boolean isMoveBeforeValid(FireRequest request, Map<String, String> properties) {
+    public static boolean isMoveBeforeValid(ShootRequest request, Map<String, String> properties) {
         return !(properties.containsKey(Properties.MOVE_TARGET_BEFORE.getJKey()) &&
                 (Boolean.parseBoolean(properties.get(Properties.MOVE_TARGET_BEFORE.getJKey()))
                         != request.isMoveTargetsFirst()));

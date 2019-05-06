@@ -53,7 +53,7 @@ public class PowerupCard extends UsableCard {
         if (cost) {
             PowerupCard[] powerupCards = shootingPlayer.getPowerups();
 
-            List<Integer> powerupsID = request.getPowerupsID();
+            List<Integer> powerupsID = request.getPaymentPowerupsID();
 
             Ammo colorCost = request.getAmmoColor();
 

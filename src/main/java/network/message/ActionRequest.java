@@ -1,24 +1,26 @@
 package network.message;
 
+import enumerations.MessageContent;
 import model.player.PlayerPosition;
 
 import java.util.ArrayList;
 
 public abstract class ActionRequest extends Message {
     private final PlayerPosition senderMovePosition;
-    private final ArrayList<Integer> powerupsID;
+    private final ArrayList<Integer> paymentPowerupsID;
 
-    public ActionRequest(int senderID, PlayerPosition senderMovePosition, ArrayList<Integer> powerupsID) {
-        super(senderID);
+
+    ActionRequest(int senderID, MessageContent content, PlayerPosition senderMovePosition, ArrayList<Integer> paymentPowerupsID) {
+        super(senderID, content);
         this.senderMovePosition = senderMovePosition;
-        this.powerupsID = powerupsID;
+        this.paymentPowerupsID = paymentPowerupsID;
     }
 
     public PlayerPosition getSenderMovePosition() {
         return senderMovePosition;
     }
 
-    public ArrayList<Integer> getPowerupsID() {
-        return powerupsID;
+    public ArrayList<Integer> getPaymentPowerupsID() {
+        return paymentPowerupsID;
     }
 }
