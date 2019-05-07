@@ -44,7 +44,9 @@ public class ExtraMarkDecorator extends ExtraEffectDecorator {
                 for (int i = 0; i < squares.size(); ++i) {
                     List<Player> targetSquare = Game.getInstance().getGameMap().getPlayersInSquare(squares.get(i));
                     for (Player marked : targetSquare) {
-                        marked.getPlayerBoard().addMark(shooter, markDistribution[i]);
+                        if (shooter != marked) {
+                            marked.getPlayerBoard().addMark(shooter, markDistribution[i]);
+                        }
                     }
                 }
                 break;

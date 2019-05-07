@@ -54,31 +54,28 @@ public class PickAction implements Action {
     @Override
     public boolean validate() {
         int movingDistance = actingPlayer.getPosition().distanceOf(movingPos);
+        int maxMove;
 
-        // moving validation
+        // Moving validation
         switch (actionChosen) {
             case MOVE_AND_PICK:
-                if (!(movingDistance >= MIN_MOVE && movingDistance <= MAX_NORMAL_MOVE)) {
-                    return false;
-                }
+                maxMove = MAX_NORMAL_MOVE;
                 break;
             case ADRENALINE_PICK:
-                if (!(movingDistance >= MIN_MOVE && movingDistance <= MAX_ADRENALINE_MOVE)) {
-                    return false;
-                }
+                maxMove = MAX_ADRENALINE_MOVE;
                 break;
             case FRENZY_PICK:
-                if (!(movingDistance >= MIN_MOVE && movingDistance <= MAX_FRENZY_MOVE)) {
-                    return false;
-                }
+                maxMove = MAX_FRENZY_MOVE;
                 break;
             case LIGHT_FRENZY_PICK:
-                if (!(movingDistance >= MIN_MOVE && movingDistance <= MAX_LIGHT_FRENZY_MOVE)) {
-                    return false;
-                }
+                maxMove = MAX_LIGHT_FRENZY_MOVE;
                 break;
             default:
                 throw new IncompatibleActionException(actionChosen);
+        }
+
+        if (!(movingDistance >= MIN_MOVE && movingDistance <= maxMove)) {
+            return false;
         }
 
         // pick validation
