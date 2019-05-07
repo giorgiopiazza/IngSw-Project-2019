@@ -1,6 +1,8 @@
 package enumerations;
 
 public enum PossibleState {
+    GAME_ROOM,
+
     SPAWN_TERMINATOR, FIRST_SPAWN, RESPAWN, WAITING_TO_PLAY, YOUR_TURN,
     USE_POWERUP_FIRST, CHOOSE_ACTION, USE_POWERUP,
     SECOND_ACTION

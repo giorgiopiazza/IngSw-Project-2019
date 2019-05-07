@@ -1,11 +1,10 @@
 package exceptions.game;
 
-import exceptions.AdrenalinaException;
+import exceptions.AdrenalinaRuntimeException;
 
-public class NotEnoughPlayersException extends AdrenalinaException {
+public class NotEnoughPlayersException extends AdrenalinaRuntimeException {
 
     public NotEnoughPlayersException() {
         super("the minimum number of players is 3");
     }
-
 }

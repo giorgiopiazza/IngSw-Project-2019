@@ -17,7 +17,6 @@ import java.util.Set;
 
 public class UserPlayer extends Player {
     private EnumSet<PossibleAction> possibleActions;
-    private PlayerState playerState;
     private List<WeaponCard> weapons;
     private List<PowerupCard> powerups;
     private boolean firstPlayer;
@@ -28,18 +27,6 @@ public class UserPlayer extends Player {
         super(nickname, color, playerBoard);
         weapons = new ArrayList<>();
         powerups = new ArrayList<>();
-    }
-
-    public PlayerState getPlayerState() {
-        return this.playerState;
-    }
-
-    public void setPlayerState(PlayerState playerState) {
-        if (playerState == null) {
-            throw new NullPointerException("A player must always have a state!");
-        }
-
-        this.playerState = playerState;
     }
 
     public void setFirstPlayer() {

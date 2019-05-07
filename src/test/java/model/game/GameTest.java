@@ -15,7 +15,7 @@ class GameTest {
     private Game instance;
 
     @BeforeEach
-    void before() {
+    void before() throws InvalidMapNumberException {
         this.instance = Game.getInstance();
         Game.getInstance().init();
         Game.getInstance().setGameMap(1);
@@ -49,7 +49,8 @@ class GameTest {
         assertThrows(NullPointerException.class, () -> instance.addPlayer(null));
         assertThrows(MaxPlayerException.class, () -> instance.addPlayer(mock(UserPlayer.class)));
 
-        instance.startGame(8);
+        instance.setKillShotNum(8);
+        instance.startGame();
 
         assertThrows(GameAlreadyStartedException.class, () -> instance.addPlayer(null));
 
@@ -58,15 +59,16 @@ class GameTest {
 
     @Test
     void startGame() throws AdrenalinaException {
-        assertThrows(NotEnoughPlayersException.class, () -> instance.startGame(8));
+        assertThrows(NotEnoughPlayersException.class, () -> instance.startGame());
 
         instance.addPlayer(mock(UserPlayer.class));
         instance.addPlayer(mock(UserPlayer.class));
         instance.addPlayer(mock(UserPlayer.class));
-        instance.startGame(8);
+        instance.setKillShotNum(8);
+        instance.startGame();
 
         assertTrue(instance.isGameStarted());
-        assertThrows(GameAlreadyStartedException.class, () -> instance.startGame(8));
+        assertThrows(GameAlreadyStartedException.class, () -> instance.startGame());
 
         instance.stopGame();
     }
@@ -79,7 +81,8 @@ class GameTest {
         instance.addPlayer(mock(UserPlayer.class));
         instance.addPlayer(mock(UserPlayer.class));
 
-        instance.startGame(8);
+        instance.setKillShotNum(8);
+        instance.startGame();
         assertTrue(instance.isGameStarted());
 
         instance.stopGame();
@@ -92,9 +95,11 @@ class GameTest {
         instance.addPlayer(mock(UserPlayer.class));
         instance.addPlayer(mock(UserPlayer.class));
 
-        assertThrows(InvalidKillshotNumber.class, () -> instance.startGame(9));
+        assertThrows(InvalidKillshotNumberException.class, () -> instance.setKillShotNum(9));
+        assertThrows(InvalidMapNumberException.class, () -> instance.setGameMap(6));
 
-        instance.startGame(5);
+        instance.setKillShotNum(5);
+        instance.startGame();
 
         instance.addKillShot(mock(KillShot.class));
         assertEquals(4, instance.remainingSkulls());
@@ -120,7 +125,8 @@ class GameTest {
 
         assertThrows(MaxPlayerException.class, () -> instance.setTerminator(true));
 
-        instance.startGame(8);
+        instance.setKillShotNum(8);
+        instance.startGame();
 
         assertThrows(GameAlreadyStartedException.class, () -> instance.setTerminator(true));
 
@@ -150,7 +156,8 @@ class GameTest {
 
         assertThrows(GameAlreadyStartedException.class, () -> instance.spawnPlayer(player, mock(PlayerPosition.class)));
 
-        instance.startGame(8);
+        instance.setKillShotNum(8);
+        instance.startGame();
 
         assertThrows(NullPointerException.class, () -> instance.spawnPlayer(null, mock(PlayerPosition.class)));
         assertThrows(NullPointerException.class, () -> instance.spawnPlayer(player, null));

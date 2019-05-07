@@ -1,10 +1,7 @@
 package model.map;
 
 import enumerations.Color;
-import exceptions.game.GameAlreadyStartedException;
-import exceptions.game.GameNotReadyException;
-import exceptions.game.MaxPlayerException;
-import exceptions.game.NotEnoughPlayersException;
+import exceptions.game.*;
 import exceptions.map.MapUnknowException;
 import model.Game;
 import model.player.Player;
@@ -47,7 +44,7 @@ class MapTest {
     }
 
     @Test
-    void playersOnMap() throws MaxPlayerException, GameAlreadyStartedException, NotEnoughPlayersException, GameNotReadyException {
+    void playersOnMap() throws MaxPlayerException, GameAlreadyStartedException, NotEnoughPlayersException, GameNotReadyException, InvalidMapNumberException {
         Game instance = Game.getInstance();
 
         instance.init();
@@ -68,7 +65,7 @@ class MapTest {
         instance.addPlayer(p2);
         instance.addPlayer(p3);
 
-        instance.startGame(8);
+        instance.startGame();
 
         instance.spawnPlayer(p1, myPos);
         instance.spawnPlayer(p2, new PlayerPosition(2, 2));
@@ -87,7 +84,7 @@ class MapTest {
         instance.addPlayer(p3);
         instance.setTerminator(true);
         instance.setGameMap(Map.MAP_2);
-        instance.startGame(8);
+        instance.startGame();
 
         instance.spawnPlayer(p1, myPos);
         instance.spawnPlayer(p2, new PlayerPosition(2, 2));

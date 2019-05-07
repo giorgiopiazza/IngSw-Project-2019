@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Random;
 
 public class Game {
-    public static final int MAX_KILLSHOT = 8;
+    private static final int MAX_KILLSHOT = 8;
 
     private static Game instance;
 
@@ -67,10 +67,6 @@ public class Game {
         gameMap = null;
     }
 
-    public void setGameMap(int mapType) {
-        this.gameMap = new Map(mapType);
-    }
-
     /**
      * The singleton instance of the game returns, if it has not been created it allocates it as well
      *
@@ -96,6 +92,21 @@ public class Game {
      */
     public void setState(GameState currentState) {
         this.currentState = currentState;
+    }
+
+    public void setGameMap(int mapType) throws InvalidMapNumberException {
+        if(mapType < 0 || mapType > 3) {
+            throw new InvalidMapNumberException();
+        }
+        this.gameMap = new Map(mapType);
+    }
+
+    public void setKillShotNum(int killShotNum) throws InvalidKillshotNumberException {
+        if (killShotNum < 5 || killShotNum > 8) {
+            throw new InvalidKillshotNumberException();
+        }
+
+        this.killShotNum = killShotNum;
     }
 
     /**
@@ -134,31 +145,27 @@ public class Game {
      *
      * @return {@code true} if the game is ready {@code false} otherwise
      */
-    private boolean isGameReadyToStart() throws NotEnoughPlayersException {
-        if (players.size() < 3) throw new NotEnoughPlayersException();
+    public boolean isGameReadyToStart(boolean ready) {
 
-        return gameMap != null;
+        if (players.size() < 3) return false;
+        if (killShotNum == 0) return false;
+
+        if(ready) {
+            if(isTerminatorPresent() && players.size() < 5) {
+                return true;
+            } else return (!isTerminatorPresent() && players.size() < 6);
+        }
+        return false;
     }
 
     /**
      * Starts the game
      *
-     * @throws GameAlreadyStartedException when game is already gameStarted
-     * @throws NotEnoughPlayersException   when there aren't enough players for start the game
      */
-    public void startGame(int killShotNum) throws GameAlreadyStartedException, NotEnoughPlayersException, GameNotReadyException {
+    public void startGame() {
         if (gameStarted) throw new GameAlreadyStartedException("The game is already in progress");
 
-        if (!isGameReadyToStart()) {
-            throw new GameNotReadyException();
-        }
-
-        if (killShotNum < 5 || killShotNum > 8) {
-            throw new InvalidKillshotNumber();
-        }
-
         gameStarted = true;
-        this.killShotNum = killShotNum;
 
         initializeDecks();
         pickFirstPlayer();
@@ -284,7 +291,7 @@ public class Game {
      * @throws GameAlreadyStartedException if the game has already gameStarted
      * @throws MaxPlayerException          if the game is full
      */
-    public Player setTerminator(boolean terminatorPresent) throws GameAlreadyStartedException, MaxPlayerException {
+    public Player setTerminator(boolean terminatorPresent) throws MaxPlayerException {
         if (gameStarted)
             throw new GameAlreadyStartedException("It is not possible to set the setTerminator player when the game has already gameStarted.");
         if (players.size() >= 5 && terminatorPresent)
@@ -317,6 +324,28 @@ public class Game {
         }
 
         return null;
+    }
+
+    /**
+     * Method that verifies if the color passed is already used in the game
+     *
+     * @param color
+     * @return
+     */
+    public boolean isColorUsed(Color color) {
+        ArrayList<Color> ar = new ArrayList<>();
+
+        for (UserPlayer player : players) {
+            ar.add(player.getColor());
+        }
+
+        for(int i = 0; i < Color.values().length; ++i) {
+            if(ar.contains(color)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

@@ -1,6 +1,7 @@
 package model.player;
 
 import enumerations.Color;
+import exceptions.game.InvalidMapNumberException;
 import exceptions.player.CardAlreadyInHandException;
 import exceptions.player.MaxCardsInHandException;
 import model.Game;
@@ -31,7 +32,7 @@ class UserPlayerTest {
     }
 
     @Test
-    void distanceOf() {
+    void distanceOf() throws InvalidMapNumberException {
         Player p1 = new UserPlayer("p1", Color.YELLOW, new PlayerBoard());
         Player p2 = new UserPlayer("p2", Color.GREEN, new PlayerBoard());
 
