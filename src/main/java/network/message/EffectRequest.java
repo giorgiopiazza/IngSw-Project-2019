@@ -7,22 +7,22 @@ import model.player.PlayerPosition;
 import java.util.ArrayList;
 
 public abstract class EffectRequest extends ActionRequest {
-    private final ArrayList<Integer> targetPlayersID;
+    private final ArrayList<String> targetPlayersUsernames;
     private final ArrayList<PlayerPosition> targetPositions;
     private final Color targetRoomColor;
     private final ArrayList<PlayerPosition> targetPlayersMovePositions;
 
     public EffectRequest(EffectRequestBuilder builder) {
-        super(builder.senderID, builder.content, builder.senderMovePosition, builder.paymentPowerupsID);
+        super(builder.username, builder.content, builder.senderMovePosition, builder.paymentPowerups);
 
-        this.targetPlayersID = builder.targetPlayersID;
+        this.targetPlayersUsernames = builder.targetPlayersUsernames;
         this.targetPositions = builder.targetPositions;
         this.targetRoomColor = builder.targetRoomColor;
         this.targetPlayersMovePositions = builder.targetPlayersMovePositions;
     }
 
-    public ArrayList<Integer> getTargetPlayersID() {
-        return targetPlayersID;
+    public ArrayList<String> getTargetPlayersUsernames() {
+        return targetPlayersUsernames;
     }
 
     public ArrayList<PlayerPosition> getTargetPositions() {
@@ -38,25 +38,25 @@ public abstract class EffectRequest extends ActionRequest {
     }
 
     public static class EffectRequestBuilder {
-        private int senderID;
+        private String username;
         private MessageContent content;
 
-        private ArrayList<Integer> targetPlayersID;
+        private ArrayList<String> targetPlayersUsernames;
         private ArrayList<PlayerPosition> targetPositions;
         private Color targetRoomColor;
 
         private PlayerPosition senderMovePosition;
         private ArrayList<PlayerPosition> targetPlayersMovePositions;
 
-        private ArrayList<Integer> paymentPowerupsID;
+        private ArrayList<Integer> paymentPowerups;
 
-        public EffectRequestBuilder(int senderID, MessageContent content) {
-            this.senderID = senderID;
+        public EffectRequestBuilder(String username, MessageContent content) {
+            this.username = username;
             this.content = content;
         }
 
-        public EffectRequestBuilder targetPlayersID(ArrayList<Integer> targetPlayersID) {
-            this.targetPlayersID = targetPlayersID;
+        public EffectRequestBuilder targetPlayersUsernames(ArrayList<String> targetPlayersUsernames) {
+            this.targetPlayersUsernames = targetPlayersUsernames;
             return this;
         }
 
@@ -80,8 +80,8 @@ public abstract class EffectRequest extends ActionRequest {
             return this;
         }
 
-        public EffectRequestBuilder paymentPowerupsID(ArrayList<Integer> paymentPowerupsID) {
-            this.paymentPowerupsID = paymentPowerupsID;
+        public EffectRequestBuilder paymentPowerups(ArrayList<Integer> paymentPowerups) {
+            this.paymentPowerups = paymentPowerups;
             return this;
         }
     }

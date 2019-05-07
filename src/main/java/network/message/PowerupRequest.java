@@ -13,13 +13,13 @@ public class PowerupRequest extends EffectRequest {
 
     public PowerupRequest(PowerupRequestBuilder builder) {
         super(
-                new EffectRequestBuilder(builder.senderID, MessageContent.POWERUP)
-                        .targetPlayersID(builder.targetPlayersID)
+                new EffectRequestBuilder(builder.username, MessageContent.POWERUP)
+                        .targetPlayersUsernames(builder.targetPlayersUsernames)
                         .targetPositions(builder.targetPositions)
                         .targetRoomColor(builder.targetRoomColor)
                         .senderMovePosition(builder.senderMovePosition)
                         .targetPlayersMovePositions(builder.targetPlayersMovePositions)
-                        .paymentPowerupsID(builder.paymentPowerupsID)
+                        .paymentPowerups(builder.paymentPowerups)
         );
 
         this.powerupID = builder.powerupID;
@@ -35,26 +35,26 @@ public class PowerupRequest extends EffectRequest {
     }
 
     public static class PowerupRequestBuilder {
-        private int senderID;
+        private String username;
         private int powerupID;
         private Ammo ammoColor;
 
-        private ArrayList<Integer> targetPlayersID;
+        private ArrayList<String> targetPlayersUsernames;
         private ArrayList<PlayerPosition> targetPositions;
         private Color targetRoomColor;
 
         private PlayerPosition senderMovePosition;
         private ArrayList<PlayerPosition> targetPlayersMovePositions;
 
-        private ArrayList<Integer> paymentPowerupsID;
+        private ArrayList<Integer> paymentPowerups;
 
-        public PowerupRequestBuilder(int senderID, int powerupID) {
-            this.senderID = senderID;
+        public PowerupRequestBuilder(String username, int powerupID) {
+            this.username = username;
             this.powerupID = powerupID;
         }
 
-        public PowerupRequestBuilder targetPlayersID(ArrayList<Integer> targetPlayersID) {
-            this.targetPlayersID = targetPlayersID;
+        public PowerupRequestBuilder targetPlayersID(ArrayList<String> targetPlayersUsernames) {
+            this.targetPlayersUsernames = targetPlayersUsernames;
             return this;
         }
 
@@ -78,8 +78,8 @@ public class PowerupRequest extends EffectRequest {
             return this;
         }
 
-        public PowerupRequestBuilder paymentPowerupsID(ArrayList<Integer> paymentPowerupsID) {
-            this.paymentPowerupsID = paymentPowerupsID;
+        public PowerupRequestBuilder paymentPowerups(ArrayList<Integer> paymentPowerups) {
+            this.paymentPowerups = paymentPowerups;
             return this;
         }
 

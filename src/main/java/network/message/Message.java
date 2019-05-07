@@ -5,16 +5,16 @@ import enumerations.MessageContent;
 import java.io.Serializable;
 
 public abstract class Message implements Serializable {
-    private final int senderID;
+    private final String senderUsername;
     private final MessageContent content;
 
-    Message(int senderID, MessageContent content) {
-        this.senderID = senderID;
+    Message(String senderUsername, MessageContent content) {
+        this.senderUsername = senderUsername;
         this.content = content;
     }
 
-    public int getSenderID() {
-        return senderID;
+    public String getSenderUsername() {
+        return senderUsername;
     }
 
     public MessageContent getContent() {

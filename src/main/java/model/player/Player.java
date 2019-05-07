@@ -3,33 +3,25 @@ package model.player;
 import enumerations.*;
 
 public abstract class Player {
-    private final String nickname;
-    private static int uniqueID = 0;
-    private final int id;
+    private final String username;
     protected Color color;
     private final PlayerBoard playerBoard;
     private PlayerPosition position;
     private int points;
     private boolean winner;
 
-    public Player(String nickname, Color color, PlayerBoard playerBoard) {
-        this.nickname = nickname;
-        this.id = uniqueID;
+    public Player(String username, Color color, PlayerBoard playerBoard) {
+        this.username = username;
         this.color = color;
         this.position = null;
         this.playerBoard = playerBoard;
         this.winner = false;
 
         points = 0;
-        ++uniqueID;
     }
 
-    public String getNickname() {
-        return this.nickname;
-    }
-
-    public int getId() {
-        return this.id;
+    public String getUsername() {
+        return this.username;
     }
 
     public Color getColor() {

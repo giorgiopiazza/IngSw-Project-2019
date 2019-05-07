@@ -6,12 +6,20 @@ import java.util.ArrayList;
 
 public class ReloadRequest extends Message {
     private final int weaponID;
-    private final ArrayList<Integer> paymentPowerupsID;
+    private final ArrayList<Integer> paymentPowerups;
 
-    public ReloadRequest(int senderID, int weaponID, ArrayList<Integer> paymentPowerupsID) {
-        super(senderID, MessageContent.RELOAD);
+    public ReloadRequest(String username, int weaponID, ArrayList<Integer> paymentPowerups) {
+        super(username, MessageContent.RELOAD);
 
         this.weaponID = weaponID;
-        this.paymentPowerupsID = paymentPowerupsID;
+        this.paymentPowerups = paymentPowerups;
+    }
+
+    public int getWeaponID() {
+        return weaponID;
+    }
+
+    public ArrayList<Integer> getPaymentPowerups() {
+        return paymentPowerups;
     }
 }

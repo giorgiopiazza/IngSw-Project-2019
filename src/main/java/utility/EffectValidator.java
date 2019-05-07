@@ -144,13 +144,13 @@ public class EffectValidator {
     /**
      * Method used to verify if a player can, in a number of moves move, reach the position specified
      *
-     * @param playerID the ID of the moving player
-     * @param position the position to verify her distance
-     * @param move     integer representing the exact distance between the player and his moving position
+     * @param senderUsername of the moving player
+     * @param position       the position to verify her distance
+     * @param move           integer representing the exact distance between the player and his moving position
      * @return true if the player can move to the position, otherwise false
      */
-    private static boolean canMove(int playerID, PlayerPosition position, int move) {
-        Player movingPlayer = Game.getInstance().getPlayerByID(playerID);
+    private static boolean canMove(String senderUsername, PlayerPosition position, int move) {
+        Player movingPlayer = Game.getInstance().getUserPlayerByUsername(senderUsername);
 
         return (movingPlayer.getPosition().distanceOf(position) == move);
     }
@@ -159,18 +159,18 @@ public class EffectValidator {
      * Method used to verify if a list of target players can move to their specified positions in a number
      * of moves move
      *
-     * @param targetsID  the IDs of the targets to verify their movement
-     * @param targetsPos the positions in which each target should move
-     * @param move       integer representing the distance between a target player and his moving position
-     * @param exactMove  boolean to verify the exact or maximum move distance (true -> exact)
+     * @param targetsUsername the usernames of the targets to verify their movement
+     * @param targetsPos      the positions in which each target should move
+     * @param move            integer representing the distance between a target player and his moving position
+     * @param exactMove       boolean to verify the exact or maximum move distance (true -> exact)
      * @return true if every target player can move to the position, otherwise false
      */
-    private static boolean canMove(List<Integer> targetsID, List<PlayerPosition> targetsPos, int move, boolean exactMove) {
-        if (targetsID.isEmpty() || targetsPos.isEmpty() || (targetsID.size() != targetsPos.size())) {
+    private static boolean canMove(List<String> targetsUsername, List<PlayerPosition> targetsPos, int move, boolean exactMove) {
+        if (targetsUsername.isEmpty() || targetsPos.isEmpty() || (targetsUsername.size() != targetsPos.size())) {
             return false;
         }
 
-        List<Player> targets = getPlayersByIDs(targetsID);
+        List<Player> targets = getPlayersByUsername(targetsUsername);
 
         for (int i = 0; i < targetsPos.size(); ++i) {
             int distance = targets.get(i).getPosition().distanceOf(targetsPos.get(i));
@@ -202,7 +202,7 @@ public class EffectValidator {
      * @return true if each targetPosition identifies a direction from the shooter's one
      */
     private static boolean isMovingDirectionally(EffectRequest request) {
-        Player shooter = Game.getInstance().getPlayerByID(request.getSenderID());
+        Player shooter = Game.getInstance().getUserPlayerByUsername(request.getSenderUsername());
         List<PlayerPosition> positions = request.getTargetPlayersMovePositions();
 
         for (PlayerPosition position : positions) {
@@ -294,16 +294,16 @@ public class EffectValidator {
         // Player move validation
         if (properties.containsKey(Properties.MOVE.getJKey())) {
             List<PlayerPosition> movingPos = request.getTargetPlayersMovePositions();
-            int playerID = request.getSenderID();
+            String senderUsername = request.getSenderUsername();
             int moveDistance = Integer.parseInt(properties.get(Properties.MOVE.getJKey()));
 
-            if (movingPos.isEmpty() || !EffectValidator.canMove(playerID, movingPos.get(0), moveDistance)) {
+            if (movingPos.isEmpty() || !EffectValidator.canMove(senderUsername, movingPos.get(0), moveDistance)) {
                 return false;
             }
         }
 
         // Target move validation
-        List<Integer> targetsID = request.getTargetPlayersID();
+        List<String> targetsUsername = request.getTargetPlayersUsernames();
         List<PlayerPosition> movingPos = request.getTargetPlayersMovePositions();
         int moveDistance;
 
@@ -314,7 +314,7 @@ public class EffectValidator {
         if (properties.containsKey(Properties.MOVE_TARGET.getJKey())) {
             moveDistance = Integer.parseInt(properties.get(Properties.MOVE_TARGET.getJKey()));
 
-            if (!EffectValidator.canMove(targetsID, movingPos, moveDistance, true)) {
+            if (!EffectValidator.canMove(targetsUsername, movingPos, moveDistance, true)) {
                 return false;
             }
         }
@@ -322,7 +322,7 @@ public class EffectValidator {
         if (properties.containsKey(Properties.MAX_MOVE_TARGET.getJKey())) {
             moveDistance = Integer.parseInt(properties.get(Properties.MAX_MOVE_TARGET.getJKey()));
 
-            if (!EffectValidator.canMove(targetsID, movingPos, moveDistance, false)) {
+            if (!EffectValidator.canMove(targetsUsername, movingPos, moveDistance, false)) {
                 return false;
             }
         }
@@ -392,17 +392,17 @@ public class EffectValidator {
     }
 
     /**
-     * Returns an ArrayList of the players whose ID is contained in the List passed
+     * Returns an ArrayList of the players whose username is contained in the List passed
      *
-     * @param playersIDs the List of IDs you need the related players' reference
+     * @param playersUsername the List of usernames you need the related players' reference
      * @return an ArrayList of players
      */
-    public static List<Player> getPlayersByIDs(List<Integer> playersIDs) {
-        if (playersIDs == null) throw new NullPointerException("Can not take any player from null");
+    public static List<Player> getPlayersByUsername(List<String> playersUsername) {
+        if (playersUsername == null) throw new NullPointerException("Can not take any player from null");
 
         List<Player> players = new ArrayList<>();
-        for (int playerID : playersIDs) {
-            players.add(Game.getInstance().getPlayerByID(playerID));
+        for (String playerUsername : playersUsername) {
+            players.add(Game.getInstance().getUserPlayerByUsername(playerUsername));
         }
 
         return players;
@@ -411,7 +411,7 @@ public class EffectValidator {
     /**
      * Return a list of PlayerPosition from the effect request and the target type
      *
-     * @param request containing the effect request
+     * @param request    containing the effect request
      * @param targetType desired
      * @return an ArrayList of PlayerPositions
      */
@@ -421,7 +421,7 @@ public class EffectValidator {
 
         switch (targetType) {
             case PLAYER:
-                targets = getPlayersByIDs(request.getTargetPlayersID());
+                targets = getPlayersByUsername(request.getTargetPlayersUsernames());
                 squares = new ArrayList<>();
 
                 for (Player targetPlayer : targets) {
@@ -459,7 +459,7 @@ public class EffectValidator {
 
         switch (targetType) {
             case PLAYER:
-                if (request.getTargetPlayersID() == null) {
+                if (request.getTargetPlayersUsernames() == null) {
                     return false;
                 }
                 break;
@@ -495,9 +495,9 @@ public class EffectValidator {
 
         switch (targetType) {
             case PLAYER:
-                List<Integer> targetsID = request.getTargetPlayersID();
+                List<String> targetUsernames = request.getTargetPlayersUsernames();
 
-                targetNum = targetsID.size();
+                targetNum = targetUsernames.size();
                 break;
             case SQUARE:
                 List<PlayerPosition> squares = request.getTargetPositions();
@@ -566,7 +566,7 @@ public class EffectValidator {
      * @return {@code true} if the index is valid, otherwise {@code false}
      */
     public static boolean isPowerupIndexValid(PowerupRequest request) {
-        UserPlayer powerupUser = Game.getInstance().getPlayerByID(request.getSenderID());
+        UserPlayer powerupUser = Game.getInstance().getUserPlayerByUsername(request.getSenderUsername());
         int powerupIndex = request.getPowerupID();
 
         if (powerupIndex < 1 || powerupIndex > 3) {

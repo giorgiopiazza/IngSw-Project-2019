@@ -15,13 +15,13 @@ public class ShootRequest extends EffectRequest {
 
     public ShootRequest(FireRequestBuilder builder) {
         super(
-                new EffectRequestBuilder(builder.senderID, MessageContent.SHOOT)
-                        .targetPlayersID(builder.targetPlayersID)
+                new EffectRequestBuilder(builder.username, MessageContent.SHOOT)
+                        .targetPlayersUsernames(builder.targetPlayersUsernames)
                         .targetPositions(builder.targetPositions)
                         .targetRoomColor(builder.targetRoomColor)
                         .senderMovePosition(builder.senderMovePosition)
                         .targetPlayersMovePositions(builder.targetPlayersMovePositions)
-                        .paymentPowerupsID(builder.paymentPowerupsID)
+                        .paymentPowerups(builder.paymentPowerups)
         );
 
         this.weaponID = builder.weaponID;
@@ -47,11 +47,11 @@ public class ShootRequest extends EffectRequest {
     }
 
     public static class FireRequestBuilder {
-        private int senderID;
+        private String username;
         private int weaponID;
         private int effectID;
 
-        private ArrayList<Integer> targetPlayersID;
+        private ArrayList<String> targetPlayersUsernames;
         private ArrayList<PlayerPosition> targetPositions;
         private Color targetRoomColor;
 
@@ -61,16 +61,16 @@ public class ShootRequest extends EffectRequest {
         private boolean moveSenderFirst;
         private boolean moveTargetsFirst;
 
-        private ArrayList<Integer> paymentPowerupsID;
+        private ArrayList<Integer> paymentPowerups;
 
-        public FireRequestBuilder(int senderID, int weaponID, int effectID) {
-            this.senderID = senderID;
+        public FireRequestBuilder(String username, int weaponID, int effectID) {
+            this.username = username;
             this.weaponID = weaponID;
             this.effectID = effectID;
         }
 
-        public FireRequestBuilder targetPlayersID(ArrayList<Integer> targetPlayersID) {
-            this.targetPlayersID = targetPlayersID;
+        public FireRequestBuilder targetPlayersUsernames(ArrayList<String> targetPlayersUsernames) {
+            this.targetPlayersUsernames = targetPlayersUsernames;
             return this;
         }
 
@@ -104,8 +104,8 @@ public class ShootRequest extends EffectRequest {
             return this;
         }
 
-        public FireRequestBuilder paymentPowerupsID(ArrayList<Integer> paymentPowerupsID) {
-            this.paymentPowerupsID = paymentPowerupsID;
+        public FireRequestBuilder paymentPowerups(ArrayList<Integer> paymentPowerups) {
+            this.paymentPowerups = paymentPowerups;
             return this;
         }
 

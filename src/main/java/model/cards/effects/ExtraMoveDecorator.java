@@ -28,15 +28,15 @@ public class ExtraMoveDecorator extends ExtraEffectDecorator {
         effect.execute(request);
 
         if (moveTarget == MoveTarget.PLAYER) {
-            Player shooter = Game.getInstance().getPlayerByID(request.getSenderID());
+            Player shooter = Game.getInstance().getUserPlayerByUsername(request.getSenderUsername());
             PlayerPosition shooterMovement = request.getSenderMovePosition();
             shooter.changePosition(shooterMovement.getCoordX(), shooterMovement.getCoordY());
         } else { // MoveTarget.TARGET
-            List<Integer> targetsID = request.getTargetPlayersID();
+            List<String> targetsUsername = request.getTargetPlayersUsernames();
             List<PlayerPosition> movingPositions = request.getTargetPlayersMovePositions();
 
             for (int i = 0; i < movingPositions.size(); ++i) {
-                Game.getInstance().getPlayerByID(targetsID.get(i)).changePosition(
+                Game.getInstance().getUserPlayerByUsername(targetsUsername.get(i)).changePosition(
                         movingPositions.get(i).getCoordX(), movingPositions.get(i).getCoordY());
             }
         }

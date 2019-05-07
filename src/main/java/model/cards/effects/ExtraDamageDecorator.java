@@ -29,14 +29,14 @@ public class ExtraDamageDecorator extends ExtraEffectDecorator {
     public void execute(EffectRequest request) {
         effect.execute(request);
 
-        List<Integer> targetsID;
-        Player shooter = Game.getInstance().getPlayerByID(request.getSenderID());
+        List<String> targetsUsername;
+        Player shooter = Game.getInstance().getUserPlayerByUsername(request.getSenderUsername());
 
         switch (targetType) {
             case PLAYER:
-                targetsID = request.getTargetPlayersID();
-                for (int i = 0; i < targetsID.size(); ++i) {
-                    Game.getInstance().getPlayerByID(targetsID.get(i)).getPlayerBoard().addDamage(shooter, damageDistribution[i]);
+                targetsUsername = request.getTargetPlayersUsernames();
+                for (int i = 0; i < targetsUsername.size(); ++i) {
+                    Game.getInstance().getUserPlayerByUsername(targetsUsername.get(i)).getPlayerBoard().addDamage(shooter, damageDistribution[i]);
                 }
                 break;
             case SQUARE:

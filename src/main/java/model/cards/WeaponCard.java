@@ -127,10 +127,10 @@ public class WeaponCard extends UsableCard {
         if (isCharged()) {
             Effect effect;
 
-            int pId = shootRequest.getSenderID();
+            String username = shootRequest.getSenderUsername();
             int eId = shootRequest.getEffectID();
 
-            if (pId >= Game.getInstance().playersNumber()) {
+            if (!Game.getInstance().doesPlayerExists(username)) {
                 throw new InvalidCommandException();
             }
 
@@ -167,10 +167,10 @@ public class WeaponCard extends UsableCard {
     }
 
     private void payCost(ActionRequest request, AmmoQuantity cost) throws NotEnoughAmmoException {
-        UserPlayer shootingPlayer = Game.getInstance().getPlayerByID(request.getSenderID());
+        UserPlayer shootingPlayer = Game.getInstance().getUserPlayerByUsername(request.getSenderUsername());
         PowerupCard[] powerupCards = shootingPlayer.getPowerups();
 
-        List<Integer> powerupsID = request.getPaymentPowerupsID();
+        List<Integer> powerupsID = request.getPaymentPowerups();
         List<Integer> usedPowerupsID = new ArrayList<>();
 
         AmmoQuantity costWithoutPowerups = getCostWithoutPowerup(cost, powerupsID, usedPowerupsID, powerupCards);

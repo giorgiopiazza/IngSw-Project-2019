@@ -37,27 +37,27 @@ public class PowerupBaseEffect extends Effect {
 
     @Override
     public boolean validate(EffectRequest request) {
-        if(getTargets().length > 1) {   // as normal weapon effects powerup effects do not have subEffects and then their target[] dimension must always be 1
+        if (getTargets().length > 1) {   // as normal weapon effects powerup effects do not have subEffects and then their target[] dimension must always be 1
             throw new InvalidPropertiesException();
         }
 
         PowerupRequest powerupRequest = (PowerupRequest) request;
 
-        PlayerPosition powerupUserPos = Game.getInstance().getPlayerByID(powerupRequest.getSenderID()).getPosition();
+        PlayerPosition powerupUserPos = Game.getInstance().getUserPlayerByUsername(powerupRequest.getSenderUsername()).getPosition();
         List<PlayerPosition> targetPos = EffectValidator.getTargetPositions(powerupRequest, getTargets()[0]);
 
         // command targets validation
-        if(!EffectValidator.isTargetValid(powerupRequest, getProperties(), getTargets()[0])) {
+        if (!EffectValidator.isTargetValid(powerupRequest, getProperties(), getTargets()[0])) {
             return false;
         }
 
         // powerup index validation
-        if(!EffectValidator.isPowerupIndexValid(powerupRequest)) {
+        if (!EffectValidator.isPowerupIndexValid(powerupRequest)) {
             return false;
         }
 
         // moves validation
-        if(!EffectValidator.isMoveValid(powerupRequest, getProperties())) {
+        if (!EffectValidator.isMoveValid(powerupRequest, getProperties())) {
             return false;
         }
 

@@ -33,13 +33,13 @@ public class PowerupCard extends UsableCard {
     public void use(EffectRequest request) throws AdrenalinaException {
         PowerupRequest powerupRequest = (PowerupRequest) request;
 
-        int pId = powerupRequest.getSenderID();
+        String username = powerupRequest.getSenderUsername();
 
-        if (pId >= Game.getInstance().playersNumber()) {
+        if (!Game.getInstance().doesPlayerExists(username)) {
             throw new InvalidCommandException();
         }
 
-        UserPlayer shootingPlayer = Game.getInstance().getPlayerByID(pId);
+        UserPlayer shootingPlayer = Game.getInstance().getUserPlayerByUsername(username);
 
         if (getBaseEffect().validate(powerupRequest)) {
             payEffectCost(powerupRequest, shootingPlayer, ((PowerupBaseEffect) getBaseEffect()).hasCost());
@@ -53,7 +53,7 @@ public class PowerupCard extends UsableCard {
         if (cost) {
             PowerupCard[] powerupCards = shootingPlayer.getPowerups();
 
-            List<Integer> powerupsID = request.getPaymentPowerupsID();
+            List<Integer> powerupsID = request.getPaymentPowerups();
 
             Ammo colorCost = request.getAmmoColor();
 

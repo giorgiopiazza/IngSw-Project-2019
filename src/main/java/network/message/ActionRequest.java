@@ -7,20 +7,20 @@ import java.util.ArrayList;
 
 public abstract class ActionRequest extends Message {
     private final PlayerPosition senderMovePosition;
-    private final ArrayList<Integer> paymentPowerupsID;
+    private final ArrayList<Integer> paymentPowerups;
 
 
-    ActionRequest(int senderID, MessageContent content, PlayerPosition senderMovePosition, ArrayList<Integer> paymentPowerupsID) {
-        super(senderID, content);
+    ActionRequest(String username, MessageContent content, PlayerPosition senderMovePosition, ArrayList<Integer> paymentPowerupsID) {
+        super(username, content);
         this.senderMovePosition = senderMovePosition;
-        this.paymentPowerupsID = paymentPowerupsID;
+        this.paymentPowerups = paymentPowerupsID;
     }
 
     public PlayerPosition getSenderMovePosition() {
         return senderMovePosition;
     }
 
-    public ArrayList<Integer> getPaymentPowerupsID() {
-        return paymentPowerupsID;
+    public ArrayList<Integer> getPaymentPowerups() {
+        return paymentPowerups;
     }
 }

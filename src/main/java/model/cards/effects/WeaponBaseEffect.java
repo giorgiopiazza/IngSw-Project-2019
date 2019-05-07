@@ -58,7 +58,7 @@ public class WeaponBaseEffect extends Effect {
     }
 
     private boolean subValidate(ShootRequest request, Map<String, String> properties, TargetType targetType) {
-        PlayerPosition shooterPosition = Game.getInstance().getPlayerByID(request.getSenderID()).getPosition();
+        PlayerPosition shooterPosition = Game.getInstance().getUserPlayerByUsername(request.getSenderUsername()).getPosition();
         List<PlayerPosition> targetPositions = EffectValidator.getTargetPositions(request, targetType);
 
         // Command targets validation
@@ -78,7 +78,7 @@ public class WeaponBaseEffect extends Effect {
         if (targetType == TargetType.PLAYER) {
             if (!EffectValidator.isMoveBeforeValid(request, properties)) {
                 return false;
-            } else if (request.isMoveTargetsFirst()){ // Simulates targets movements before shooting
+            } else if (request.isMoveTargetsFirst()) { // Simulates targets movements before shooting
                 targetPositions = request.getTargetPlayersMovePositions();
             }
         }

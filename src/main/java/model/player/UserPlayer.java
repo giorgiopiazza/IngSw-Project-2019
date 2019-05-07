@@ -203,10 +203,10 @@ public class UserPlayer extends Player {
      * when the game is in FRENZY state
      * If the game has the terminator, every player in his turn must always do also the terminator action
      *
-     * @param frenzyActivator the id of the player who activated the final frenzy mode
+     * @param frenzyActivator the player who activated the final frenzy mode
      */
-    public void setFrenzyPossibleActions(int frenzyActivator) {
-        if (Game.getInstance().getBeforeFirstFrenzyPlayers(frenzyActivator).contains(this)) {
+    public void setFrenzyPossibleActions(UserPlayer frenzyActivator) {
+        if (Game.getInstance().getDoubleActionFrenzyPlayers(frenzyActivator).contains(this)) {
             possibleActions = EnumSet.of(PossibleAction.FRENZY_MOVE, PossibleAction.FRENZY_PICK, PossibleAction.FRENZY_SHOOT);
         } else {
             possibleActions = EnumSet.of(PossibleAction.LIGHT_FRENZY_SHOOT, PossibleAction.LIGHT_FRENZY_PICK);

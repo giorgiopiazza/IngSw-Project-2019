@@ -79,7 +79,7 @@ class UserPlayerTest {
         for (int i = 0; i < 2; ++i) {
             assertFalse(players[i].isFirstPlayer());
         }
-        assertEquals("player", players[3].getNickname());
+        assertEquals("player", players[3].getUsername());
     }
 
     @Test

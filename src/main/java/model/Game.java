@@ -403,14 +403,14 @@ public class Game {
     /**
      * Method to obtain the UserPlayer with the specified ID
      *
-     * @param id you want to obtain the related UserPlayer
+     * @param username of the desired player
      * @return the UserPlayer with the ID passed
      */
-    public UserPlayer getPlayerByID(int id) {
+    public UserPlayer getUserPlayerByUsername(String username) {
         for (UserPlayer p : players) {
-            if (p.getId() == id) return p;
+            if (p.getUsername().equals(username)) return p;
         }
-        throw new MissingPlayerIDException(id);
+        throw new MissingPlayerUsernameException(username);
     }
 
     /**
@@ -427,6 +427,13 @@ public class Game {
         }
 
         return positions;
+    }
+
+    public boolean doesPlayerExists(String username) {
+        for (UserPlayer p : players) {
+            if (p.getUsername().equals(username)) return true;
+        }
+        return false;
     }
 
     /**
@@ -446,20 +453,19 @@ public class Game {
 
     /**
      * Method that returns the players who, in the final frenzy mode,
-     * have to obtain the greater effects, these players are:
-     * all the players next to the one who activated the frenzy mode
-     * and before the first one who gameStarted the game
+     * have to obtain the greater effects, these players are all the player
+     * after the activator but before the first player
      *
-     * @param frenzyActivator playerID of the player who activated the final frenzy mode
+     * @param frenzyActivator player who activated the final frenzy mode
      * @return the List of UserPlayers whose IDs respect the rule of the final frenzy mode
      */
-    public List<UserPlayer> getBeforeFirstFrenzyPlayers(int frenzyActivator) {
+    public List<UserPlayer> getDoubleActionFrenzyPlayers(UserPlayer frenzyActivator) {
         List<UserPlayer> frenzyPlayers = new ArrayList<>();
-        int firstPlayerID = getFirstPlayer().getId();
+        int frenzyActivatorIndex = players.indexOf(frenzyActivator);
 
-        for (UserPlayer player : players) {
-            if (player.getId() < firstPlayerID && player.getId() > frenzyActivator) {
-                frenzyPlayers.add(player);
+        for (int i = 0; i < players.size(); ++i) {
+            if (i > frenzyActivatorIndex) {
+                frenzyPlayers.add(players.get(i));
             }
         }
 
@@ -469,18 +475,18 @@ public class Game {
     }
 
     /**
-     * Complementary method to getBeforeFirstFrenzyPlayers
+     * Complementary method to getDoubleActionFrenzyPlayers
      *
      * @param frenzyActivator playerID of the player who activated the final frenzy mode
      * @return the List of UserPlayers whose IDs respect the rule of the final frenzy mode
      */
-    public List<UserPlayer> getAfterFirstFrenzyPlayers(int frenzyActivator) {
+    public List<UserPlayer> getSingleActionFrenzyPlayers(UserPlayer frenzyActivator) {
         List<UserPlayer> frenzyPlayers = new ArrayList<>();
-        int firstPlayerID = getFirstPlayer().getId();
+        int frenzyActivatorIndex = players.indexOf(frenzyActivator);
 
-        for (UserPlayer player : players) {
-            if (player.getId() >= firstPlayerID && player.getId() <= frenzyActivator) {
-                frenzyPlayers.add(player);
+        for (int i = 0; i < players.size(); ++i) {
+            if (i <= frenzyActivatorIndex) {
+                frenzyPlayers.add(players.get(i));
             }
         }
 
