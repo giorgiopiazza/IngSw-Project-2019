@@ -8,7 +8,7 @@ import model.player.PlayerPosition;
 import java.util.ArrayList;
 
 public class PowerupRequest extends EffectRequest {
-    private final int powerupID;
+    private final int powerup;
     private final Ammo ammoColor;
 
     public PowerupRequest(PowerupRequestBuilder builder) {
@@ -22,12 +22,12 @@ public class PowerupRequest extends EffectRequest {
                         .paymentPowerups(builder.paymentPowerups)
         );
 
-        this.powerupID = builder.powerupID;
+        this.powerup = builder.powerup;
         this.ammoColor = builder.ammoColor;
     }
 
-    public int getPowerupID() {
-        return powerupID;
+    public int getPowerup() {
+        return powerup;
     }
 
     public Ammo getAmmoColor() {
@@ -36,7 +36,7 @@ public class PowerupRequest extends EffectRequest {
 
     public static class PowerupRequestBuilder {
         private String username;
-        private int powerupID;
+        private int powerup;
         private Ammo ammoColor;
 
         private ArrayList<String> targetPlayersUsernames;
@@ -48,9 +48,9 @@ public class PowerupRequest extends EffectRequest {
 
         private ArrayList<Integer> paymentPowerups;
 
-        public PowerupRequestBuilder(String username, int powerupID) {
+        public PowerupRequestBuilder(String username, int powerup) {
             this.username = username;
-            this.powerupID = powerupID;
+            this.powerup = powerup;
         }
 
         public PowerupRequestBuilder targetPlayersID(ArrayList<String> targetPlayersUsernames) {

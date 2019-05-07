@@ -3,6 +3,7 @@ package network.message;
 import enumerations.MessageContent;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class ReloadRequest extends Message {
     private final int weaponID;
@@ -12,7 +13,7 @@ public class ReloadRequest extends Message {
         super(username, MessageContent.RELOAD);
 
         this.weaponID = weaponID;
-        this.paymentPowerups = paymentPowerups;
+        this.paymentPowerups = Objects.requireNonNullElse(paymentPowerups, new ArrayList<>());
     }
 
     public int getWeaponID() {

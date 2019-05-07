@@ -459,12 +459,16 @@ public class EffectValidator {
 
         switch (targetType) {
             case PLAYER:
-                if (request.getTargetPlayersUsernames() == null) {
+                if (request.getTargetPlayersUsernames().isEmpty()) {
                     return false;
+                } else {
+                    if (hasAutoShoot(request)) {
+                        return false;
+                    }
                 }
                 break;
             case SQUARE:
-                if (request.getTargetPositions() == null) {
+                if (request.getTargetPositions().isEmpty()) {
                     return false;
                 }
                 break;
@@ -475,6 +479,16 @@ public class EffectValidator {
         }
 
         return true;
+    }
+
+    private static boolean hasAutoShoot(EffectRequest request) {
+        for (String username : request.getTargetPlayersUsernames()) {
+            if (username.equals(request.getSenderUsername())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -567,7 +581,7 @@ public class EffectValidator {
      */
     public static boolean isPowerupIndexValid(PowerupRequest request) {
         UserPlayer powerupUser = Game.getInstance().getUserPlayerByUsername(request.getSenderUsername());
-        int powerupIndex = request.getPowerupID();
+        int powerupIndex = request.getPowerup();
 
         if (powerupIndex < 1 || powerupIndex > 3) {
             throw new InvalidCommandException();

@@ -128,7 +128,7 @@ public class WeaponCard extends UsableCard {
             Effect effect;
 
             String username = shootRequest.getSenderUsername();
-            int eId = shootRequest.getEffectID();
+            int eId = shootRequest.getEffect();
 
             if (!Game.getInstance().doesPlayerExists(username)) {
                 throw new InvalidCommandException();
@@ -160,8 +160,8 @@ public class WeaponCard extends UsableCard {
             throw new WeaponAlreadyChargedException();
         }
 
-        AmmoQuantity cost = getRechargeCost();
-        payCost(request, cost);
+        AmmoQuantity rechargeCost = getRechargeCost();
+        payCost(request, rechargeCost);
 
         recharge();
     }
@@ -170,17 +170,17 @@ public class WeaponCard extends UsableCard {
         UserPlayer shootingPlayer = Game.getInstance().getUserPlayerByUsername(request.getSenderUsername());
         PowerupCard[] powerupCards = shootingPlayer.getPowerups();
 
-        List<Integer> powerupsID = request.getPaymentPowerups();
-        List<Integer> usedPowerupsID = new ArrayList<>();
+        List<Integer> powerups = request.getPaymentPowerups();
+        List<Integer> usedPowerups = new ArrayList<>();
 
-        AmmoQuantity costWithoutPowerups = getCostWithoutPowerup(cost, powerupsID, usedPowerupsID, powerupCards);
+        AmmoQuantity costWithoutPowerups = getCostWithoutPowerup(cost, powerups, usedPowerups, powerupCards);
         shootingPlayer.getPlayerBoard().useAmmo(costWithoutPowerups);
 
-        if (!usedPowerupsID.isEmpty()) {
-            usedPowerupsID.sort(Collections.reverseOrder());
+        if (!usedPowerups.isEmpty()) {
+            usedPowerups.sort(Collections.reverseOrder());
 
             try {
-                for (Integer powID : usedPowerupsID) {
+                for (Integer powID : usedPowerups) {
                     shootingPlayer.discardPowerupByIndex(powID);
                 }
             } catch (EmptyHandException e) {
@@ -189,35 +189,35 @@ public class WeaponCard extends UsableCard {
         }
     }
 
-    private AmmoQuantity getCostWithoutPowerup(AmmoQuantity cost, List<Integer> powerupsID, List<Integer> usedPowerupsID, PowerupCard[] powerupCards) {
+    private AmmoQuantity getCostWithoutPowerup(AmmoQuantity cost, List<Integer> powerups, List<Integer> usedPowerups, PowerupCard[] powerupCards) {
         int redCost = cost.getRedAmmo();
         int blueCost = cost.getBlueAmmo();
         int yellowCost = cost.getYellowAmmo();
 
-        if (powerupsID.isEmpty()) {
+        if (powerups.isEmpty()) {
             return new AmmoQuantity(redCost, blueCost, yellowCost);
         }
 
-        for (Integer id : powerupsID) {
-            Ammo ammo = powerupCards[id].getValue();
+        for (Integer i : powerups) {
+            Ammo ammo = powerupCards[i].getValue();
 
             switch (ammo) {
                 case RED:
                     if (redCost > 0) {
                         redCost--;
-                        usedPowerupsID.add(id);
+                        usedPowerups.add(i);
                     }
                     break;
                 case BLUE:
                     if (blueCost > 0) {
                         blueCost--;
-                        usedPowerupsID.add(id);
+                        usedPowerups.add(i);
                     }
                     break;
                 default:
                     if (yellowCost > 0) {
                         yellowCost--;
-                        usedPowerupsID.add(id);
+                        usedPowerups.add(i);
                     }
             }
         }

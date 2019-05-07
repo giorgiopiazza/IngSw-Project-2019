@@ -1,7 +1,6 @@
 package model.cards.effects;
 
 import enumerations.TargetType;
-import exceptions.AdrenalinaException;
 import network.message.EffectRequest;
 
 import java.util.Map;

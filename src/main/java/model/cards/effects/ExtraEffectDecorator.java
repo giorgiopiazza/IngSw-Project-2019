@@ -1,6 +1,5 @@
 package model.cards.effects;
 
-import exceptions.AdrenalinaException;
 import network.message.EffectRequest;
 
 public abstract class ExtraEffectDecorator extends Effect {

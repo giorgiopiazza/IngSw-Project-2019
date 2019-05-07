@@ -24,11 +24,7 @@ public class MoveAction implements Action {
         int movingDistance = actingPlayer.getPosition().distanceOf(movingPos);
 
         if (actionChosen == PossibleAction.MOVE) {
-            if (movingDistance >= MIN_MOVE && movingDistance <= MAX_NORMAL_MOVE) {
-                return true;
-            } else {
-                return false;
-            }
+            return (movingDistance >= MIN_MOVE && movingDistance <= MAX_NORMAL_MOVE);
         } else if (actionChosen == PossibleAction.FRENZY_MOVE) {
             return (movingDistance >= MIN_MOVE && movingDistance <= MAX_FRENZY_MOVE);
         } else {
