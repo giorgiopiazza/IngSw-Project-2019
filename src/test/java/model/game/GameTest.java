@@ -59,8 +59,6 @@ class GameTest {
 
     @Test
     void startGame() throws AdrenalinaException {
-        assertThrows(NotEnoughPlayersException.class, () -> instance.startGame());
-
         instance.addPlayer(mock(UserPlayer.class));
         instance.addPlayer(mock(UserPlayer.class));
         instance.addPlayer(mock(UserPlayer.class));

@@ -23,7 +23,7 @@ public class GameManager {
         Scanner in = new Scanner(System.in);
         System.out.println("Provide the game setup informations: \n\n");
 
-        for (;;) {
+        for (; ; ) {
             System.out.println("Insert the map you want to play with (0-3): \n");
 
             try {
@@ -35,7 +35,7 @@ public class GameManager {
             }
         }
 
-        for (;;) {
+        for (; ; ) {
             System.out.println("Decide if you want to play with a terminator (true/false): \n");
 
             try {
@@ -47,7 +47,7 @@ public class GameManager {
             }
         }
 
-        for (;;) {
+        for (; ; ) {
             System.out.println("Insert the number of killshots you want to play with (>= 5 and <= 8): \n");
 
             try {
@@ -63,19 +63,22 @@ public class GameManager {
     public void roomSetup() {
         Scanner in = new Scanner(System.in);
         String userName;
+        boolean ready = false;
 
         System.out.println("Please insert the usernames of the players playing: \n");
-        do {
+
+        while (!gameInstance.isGameReadyToStart(ready)) {
             System.out.println("Username >>> ");
             userName = in.nextLine();
             Color colorChosen;
-            if(!gameInstance.doesPlayerExists(userName)) {
-                for (;;) {
+
+            if (!gameInstance.doesPlayerExists(userName)) {
+                for (; ; ) {
                     System.out.println(userName + " provide the color you have chosen: ");
 
                     try {
                         colorChosen = Color.getColor(in.nextLine());
-                        if(!gameInstance.isColorUsed(colorChosen)) {
+                        if (!gameInstance.isColorUsed(colorChosen)) {
                             break;
                         }
                     } catch (Exception e) {
@@ -88,13 +91,13 @@ public class GameManager {
                     gameInstance.addPlayer(new UserPlayer(userName, colorChosen, new PlayerBoard()));
                     System.out.println("The player: " + userName + " has been added to the game, do you want to start the game ?" +
                             " Type true to start, false to wait for other players: ");
+                    ready = Boolean.parseBoolean(in.nextLine());
                 } catch (MaxPlayerException e) {
                     // the game has reached the maximum number of players
                     break;
                 }
             }
-        } while (!gameInstance.isGameReadyToStart(in.nextBoolean()));
-
+        }
     }
 
     public void run() {

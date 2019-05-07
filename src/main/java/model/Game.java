@@ -95,7 +95,7 @@ public class Game {
     }
 
     public void setGameMap(int mapType) throws InvalidMapNumberException {
-        if(mapType < 0 || mapType > 3) {
+        if (mapType < 0 || mapType > 3) {
             throw new InvalidMapNumberException();
         }
         this.gameMap = new Map(mapType);
@@ -123,7 +123,7 @@ public class Game {
      * @throws GameAlreadyStartedException if the game has already gameStarted
      * @throws MaxPlayerException          if the maximum number of players has been reached
      */
-    public void addPlayer(UserPlayer player) throws GameAlreadyStartedException, MaxPlayerException {
+    public void addPlayer(UserPlayer player) throws MaxPlayerException {
         if (gameStarted)
             throw new GameAlreadyStartedException("It is not possible to add a player when the game has already gameStarted");
         if (player == null) throw new NullPointerException("Player cannot be null");
@@ -150,17 +150,19 @@ public class Game {
         if (players.size() < 3) return false;
         if (killShotNum == 0) return false;
 
-        if(ready) {
-            if(isTerminatorPresent() && players.size() < 5) {
+        if (ready) {
+            if (isTerminatorPresent() && players.size() < 5) {
                 return true;
             } else return (!isTerminatorPresent() && players.size() < 6);
+        } else {
+            if (isTerminatorPresent() && players.size() == 4) {
+                return true;
+            } else return (!isTerminatorPresent() && players.size() == 5);
         }
-        return false;
     }
 
     /**
      * Starts the game
-     *
      */
     public void startGame() {
         if (gameStarted) throw new GameAlreadyStartedException("The game is already in progress");
@@ -339,8 +341,8 @@ public class Game {
             ar.add(player.getColor());
         }
 
-        for(int i = 0; i < Color.values().length; ++i) {
-            if(ar.contains(color)) {
+        for (int i = 0; i < Color.values().length; ++i) {
+            if (ar.contains(color)) {
                 return true;
             }
         }

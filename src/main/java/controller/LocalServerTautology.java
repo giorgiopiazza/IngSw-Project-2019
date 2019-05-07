@@ -6,8 +6,5 @@ public class LocalServerTautology {
         GameManager match = new GameManager();
 
         match.run();
-
-
-
     }
 }
