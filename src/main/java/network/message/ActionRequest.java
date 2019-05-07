@@ -4,16 +4,16 @@ import enumerations.MessageContent;
 import model.player.PlayerPosition;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public abstract class ActionRequest extends Message {
     private final PlayerPosition senderMovePosition;
     private final ArrayList<Integer> paymentPowerups;
 
-
-    ActionRequest(String username, MessageContent content, PlayerPosition senderMovePosition, ArrayList<Integer> paymentPowerupsID) {
+    ActionRequest(String username, MessageContent content, PlayerPosition senderMovePosition, ArrayList<Integer> paymentPowerups) {
         super(username, content);
         this.senderMovePosition = senderMovePosition;
-        this.paymentPowerups = paymentPowerupsID;
+        this.paymentPowerups = Objects.requireNonNullElse(paymentPowerups, new ArrayList<>());
     }
 
     public PlayerPosition getSenderMovePosition() {

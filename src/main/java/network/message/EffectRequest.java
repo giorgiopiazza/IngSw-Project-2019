@@ -5,6 +5,7 @@ import enumerations.MessageContent;
 import model.player.PlayerPosition;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public abstract class EffectRequest extends ActionRequest {
     private final ArrayList<String> targetPlayersUsernames;
@@ -15,10 +16,10 @@ public abstract class EffectRequest extends ActionRequest {
     public EffectRequest(EffectRequestBuilder builder) {
         super(builder.username, builder.content, builder.senderMovePosition, builder.paymentPowerups);
 
-        this.targetPlayersUsernames = builder.targetPlayersUsernames;
-        this.targetPositions = builder.targetPositions;
+        this.targetPlayersUsernames = Objects.requireNonNullElse(builder.targetPlayersUsernames, new ArrayList<>());
+        this.targetPositions = Objects.requireNonNullElse(builder.targetPositions, new ArrayList<>());
         this.targetRoomColor = builder.targetRoomColor;
-        this.targetPlayersMovePositions = builder.targetPlayersMovePositions;
+        this.targetPlayersMovePositions = Objects.requireNonNullElse(builder.targetPlayersMovePositions, new ArrayList<>());
     }
 
     public ArrayList<String> getTargetPlayersUsernames() {

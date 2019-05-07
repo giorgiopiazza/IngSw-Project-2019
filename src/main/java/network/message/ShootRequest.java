@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 public class ShootRequest extends EffectRequest {
     private final int weaponID;
-    private final int effectID;
+    private final int effect;
 
     private final boolean moveSenderFirst;
     private final boolean moveTargetsFirst;
@@ -25,7 +25,7 @@ public class ShootRequest extends EffectRequest {
         );
 
         this.weaponID = builder.weaponID;
-        this.effectID = builder.effectID;
+        this.effect = builder.effect;
         this.moveSenderFirst = builder.moveSenderFirst;
         this.moveTargetsFirst = builder.moveTargetsFirst;
     }
@@ -34,8 +34,8 @@ public class ShootRequest extends EffectRequest {
         return weaponID;
     }
 
-    public int getEffectID() {
-        return effectID;
+    public int getEffect() {
+        return effect;
     }
 
     public boolean isMoveSenderFirst() {
@@ -49,7 +49,7 @@ public class ShootRequest extends EffectRequest {
     public static class FireRequestBuilder {
         private String username;
         private int weaponID;
-        private int effectID;
+        private int effect;
 
         private ArrayList<String> targetPlayersUsernames;
         private ArrayList<PlayerPosition> targetPositions;
@@ -63,10 +63,10 @@ public class ShootRequest extends EffectRequest {
 
         private ArrayList<Integer> paymentPowerups;
 
-        public FireRequestBuilder(String username, int weaponID, int effectID) {
+        public FireRequestBuilder(String username, int weaponID, int effect) {
             this.username = username;
             this.weaponID = weaponID;
-            this.effectID = effectID;
+            this.effect = effect;
         }
 
         public FireRequestBuilder targetPlayersUsernames(ArrayList<String> targetPlayersUsernames) {
