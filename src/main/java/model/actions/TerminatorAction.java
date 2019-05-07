@@ -36,10 +36,6 @@ public class TerminatorAction implements Action {
 
     @Override
     public boolean validate() {
-        if (!actingPlayer.hasTerminator()) {
-            return false;
-        }
-
         int movingDistance = terminator.getPosition().distanceOf(movingPos);
 
         // move and Visibility validation

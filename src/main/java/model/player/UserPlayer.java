@@ -3,7 +3,6 @@ package model.player;
 import enumerations.Color;
 import enumerations.PlayerBoardState;
 import enumerations.PossibleAction;
-import enumerations.PossibleState;
 import exceptions.player.CardAlreadyInHandException;
 import exceptions.player.EmptyHandException;
 import exceptions.player.MaxCardsInHandException;
@@ -22,7 +21,6 @@ public class UserPlayer extends Player {
     private List<WeaponCard> weapons;
     private List<PowerupCard> powerups;
     private boolean firstPlayer;
-    private boolean terminator;
 
     public UserPlayer(String nickname, Color color,
                       PlayerBoard playerBoard) {
@@ -30,8 +28,6 @@ public class UserPlayer extends Player {
         super(nickname, color, playerBoard);
         weapons = new ArrayList<>();
         powerups = new ArrayList<>();
-        this.terminator = false;
-        this.playerState = new PlayerState(PossibleState.FIRST_SPAWN);
     }
 
     public PlayerState getPlayerState() {
@@ -44,14 +40,6 @@ public class UserPlayer extends Player {
         }
 
         this.playerState = playerState;
-    }
-
-    public void setTerminator(boolean terminator) {
-        this.terminator = terminator;
-    }
-
-    public boolean hasTerminator() {
-        return this.terminator;
     }
 
     public void setFirstPlayer() {
@@ -117,7 +105,6 @@ public class UserPlayer extends Player {
         powerups.add(powerup);
     }
 
-
     /**
      * Discards the specified powerup from your hand
      *
@@ -175,16 +162,11 @@ public class UserPlayer extends Player {
     /**
      * Method that sets the possible actions for a player whose state is FIRST_SPAWN
      *
-     * @param player UserPlayer who needs a set of PossibleActions
      * @param isTerminatorPresent boolean that specifies if the terminator is present in the game
      */
-    public void setStartingPossibleActions(UserPlayer player, boolean isTerminatorPresent) {
-        if(isTerminatorPresent) {
-            if(player.isFirstPlayer()) {
-                possibleActions = EnumSet.of(PossibleAction.SPAWN_TERMINATOR, PossibleAction.CHOOSE_SPAWN);
-            } else {
-                possibleActions = EnumSet.of(PossibleAction.CHOOSE_SPAWN);
-            }
+    public void setStartingPossibleActions(boolean isTerminatorPresent) {
+        if (isFirstPlayer() && isTerminatorPresent) {
+            possibleActions = EnumSet.of(PossibleAction.SPAWN_TERMINATOR, PossibleAction.CHOOSE_SPAWN);
         } else {
             possibleActions = EnumSet.of(PossibleAction.CHOOSE_SPAWN);
         }
@@ -242,7 +224,6 @@ public class UserPlayer extends Player {
                 ", playerBoard=" + getPlayerBoard() +
                 ", powerups=" + powerups +
                 ", firstPlayer=" + firstPlayer +
-                ", terminator=" + terminator +
                 ", color=" + color +
                 '}';
     }

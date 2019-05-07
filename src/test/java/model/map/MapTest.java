@@ -80,7 +80,7 @@ class MapTest {
         assertEquals(p1, map.getPlayersInRoom(Color.BLUE).get(0));
 
         instance.stopGame();
-        instance.flush();
+        instance.init();
 
         instance.addPlayer(p1);
         instance.addPlayer(p2);

@@ -22,28 +22,28 @@ import java.util.List;
 import java.util.Random;
 
 public class Game {
-    /**
-     * Maximum number of skulls in a game: 8
-     */
     public static final int MAX_KILLSHOT = 8;
-    /**
-     * Singleton instance of Game
-     */
+
     private static Game instance;
-    private boolean started;
+
     private GameState currentState;
-    private int killShotNum;
+    private boolean gameStarted;
+
+    private List<UserPlayer> players;
     private boolean terminatorPresent;
     private Player terminator;
-    private List<UserPlayer> players;
+
+    private int killShotNum;
     private KillShot[] killShotsTrack;
+
     private Deck weaponsCardsDeck;
     private Deck powerupCardsDeck;
     private Deck ammoTileDeck;
+
     private Map gameMap;
 
     /**
-     * Initialize singleton Game instance
+     * Initializes singleton Game instance
      */
     private Game() {
         init();
@@ -58,7 +58,7 @@ public class Game {
         this.currentState = GameState.NORMAL;
         killShotsTrack = new KillShot[MAX_KILLSHOT];
         terminatorPresent = false;
-        started = false;
+        gameStarted = false;
         killShotNum = 0;
 
         weaponsCardsDeck = null;
@@ -109,12 +109,12 @@ public class Game {
      * Adds a player to the game
      *
      * @param player the player to add to the game
-     * @throws GameAlreadyStartedException if the game has already started
+     * @throws GameAlreadyStartedException if the game has already gameStarted
      * @throws MaxPlayerException          if the maximum number of players has been reached
      */
     public void addPlayer(UserPlayer player) throws GameAlreadyStartedException, MaxPlayerException {
-        if (started)
-            throw new GameAlreadyStartedException("It is not possible to add a player when the game has already started");
+        if (gameStarted)
+            throw new GameAlreadyStartedException("It is not possible to add a player when the game has already gameStarted");
         if (player == null) throw new NullPointerException("Player cannot be null");
         if (players.size() >= 5 || (players.size() >= 4 && terminatorPresent)) throw new MaxPlayerException();
         players.add(player);
@@ -143,11 +143,11 @@ public class Game {
     /**
      * Starts the game
      *
-     * @throws GameAlreadyStartedException when game is already started
+     * @throws GameAlreadyStartedException when game is already gameStarted
      * @throws NotEnoughPlayersException   when there aren't enough players for start the game
      */
     public void startGame(int killShotNum) throws GameAlreadyStartedException, NotEnoughPlayersException, GameNotReadyException {
-        if (started) throw new GameAlreadyStartedException("The game is already in progress");
+        if (gameStarted) throw new GameAlreadyStartedException("The game is already in progress");
 
         if (!isGameReadyToStart()) {
             throw new GameNotReadyException();
@@ -157,11 +157,15 @@ public class Game {
             throw new InvalidKillshotNumber();
         }
 
-        started = true;
+        gameStarted = true;
         this.killShotNum = killShotNum;
 
         initializeDecks();
         pickFirstPlayer();
+
+        for (UserPlayer player : players) {
+            player.setStartingPossibleActions(terminatorPresent);
+        }
 
         distributeCards();
     }
@@ -230,26 +234,9 @@ public class Game {
     }
 
     public void stopGame() throws GameAlreadyStartedException {
-        if (!started) throw new GameAlreadyStartedException("The game is not in progress");
+        if (!gameStarted) throw new GameAlreadyStartedException("The game is not in progress");
 
         init();
-    }
-
-    /**
-     * @throws GameAlreadyStartedException if game already started
-     */
-    public void flush() throws GameAlreadyStartedException {
-        if (started) throw new GameAlreadyStartedException("Cannot flush with game started");
-
-        players.clear();
-        initializeDecks();
-
-        gameMap = null;
-        terminator = null;
-
-        terminatorPresent = false;
-
-        clearKillshots();
     }
 
     /**
@@ -285,11 +272,6 @@ public class Game {
         throw new KillShotsTerminatedException();
     }
 
-    public void clearKillshots() throws GameAlreadyStartedException {
-        if (started) throw new GameAlreadyStartedException("Cannot clear killshots while game is started");
-        killShotsTrack = new KillShot[MAX_KILLSHOT];
-    }
-
     public boolean isTerminatorPresent() {
         return this.terminatorPresent;
     }
@@ -299,18 +281,21 @@ public class Game {
      *
      * @param terminatorPresent true to enable setTerminator mode, otherwise false
      * @return the created instance of terminator
-     * @throws GameAlreadyStartedException if the game has already started
+     * @throws GameAlreadyStartedException if the game has already gameStarted
      * @throws MaxPlayerException          if the game is full
      */
     public Player setTerminator(boolean terminatorPresent) throws GameAlreadyStartedException, MaxPlayerException {
-        if (started)
-            throw new GameAlreadyStartedException("It is not possible to set the setTerminator player when the game has already started.");
+        if (gameStarted)
+            throw new GameAlreadyStartedException("It is not possible to set the setTerminator player when the game has already gameStarted.");
         if (players.size() >= 5 && terminatorPresent)
             throw new MaxPlayerException("Can not add Terminator with 5 players");
         this.terminatorPresent = terminatorPresent;
 
-        if (terminatorPresent) terminator = new Terminator(firstColorUnused(), new PlayerBoard());
-        else terminator = null;
+        if (terminatorPresent) {
+            terminator = new Terminator(firstColorUnused(), new PlayerBoard());
+        } else {
+            terminator = null;
+        }
 
         return terminator;
     }
@@ -339,13 +324,13 @@ public class Game {
      *
      * @param player         the player to spawn
      * @param playerPosition the player's spawn position
-     * @throws GameAlreadyStartedException if the game has not started
+     * @throws GameAlreadyStartedException if the game has not gameStarted
      */
     public void spawnPlayer(UserPlayer player, PlayerPosition playerPosition) throws GameAlreadyStartedException {
         if (player == null || playerPosition == null)
             throw new NullPointerException("Player or playerPosition cannot be null");
         if (!players.contains(player)) throw new UnknownPlayerException();
-        if (!started) throw new GameAlreadyStartedException("Game not started yet");
+        if (!gameStarted) throw new GameAlreadyStartedException("Game not gameStarted yet");
 
         try {
             Square temp = gameMap.getSquare(playerPosition);
@@ -364,23 +349,23 @@ public class Game {
      * Spawn the terminator player to a spawn point on the map
      *
      * @param playerPosition the player's spawn position
-     * @throws GameAlreadyStartedException if the game has not started
+     * @throws GameAlreadyStartedException if the game has not gameStarted
      */
     public void spawnTerminator(PlayerPosition playerPosition) throws GameAlreadyStartedException {
         if (playerPosition == null) throw new NullPointerException("playerPosition cannot be null");
-        if (!started) throw new GameAlreadyStartedException("Game not started yet");
+        if (!gameStarted) throw new GameAlreadyStartedException("Game not gameStarted yet");
         if (!terminatorPresent) throw new TerminatorNotSetException();
 
         terminator.setPosition(playerPosition);
     }
 
     /**
-     * Function that returns true if the game started, otherwise false
+     * Function that returns true if the game gameStarted, otherwise false
      *
-     * @return true if the game started, otherwise false
+     * @return true if the game gameStarted, otherwise false
      */
-    public boolean isStarted() {
-        return started;
+    public boolean isGameStarted() {
+        return gameStarted;
     }
 
     /**
@@ -445,9 +430,9 @@ public class Game {
     }
 
     /**
-     * Method to obtain the player that started to play the game
+     * Method to obtain the player that gameStarted to play the game
      *
-     * @return the UserPLayer who started the game
+     * @return the UserPLayer who gameStarted the game
      */
     public UserPlayer getFirstPlayer() {
         for (UserPlayer player : players) {
@@ -463,7 +448,7 @@ public class Game {
      * Method that returns the players who, in the final frenzy mode,
      * have to obtain the greater effects, these players are:
      * all the players next to the one who activated the frenzy mode
-     * and before the first one who started the game
+     * and before the first one who gameStarted the game
      *
      * @param frenzyActivator playerID of the player who activated the final frenzy mode
      * @return the List of UserPlayers whose IDs respect the rule of the final frenzy mode

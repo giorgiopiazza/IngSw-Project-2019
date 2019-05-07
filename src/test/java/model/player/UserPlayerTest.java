@@ -22,24 +22,12 @@ class UserPlayerTest {
 
         for (int i = 0; i < 3; ++i) {
             players[i] = new UserPlayer("player", Color.values()[i], board);
-            if (i == 2) players[i].setTerminator(true);
             players[i].setPosition(new PlayerPosition(0, 0));
         }
 
         players[3] = new UserPlayer("player", Color.values()[3], board);
         players[3].setFirstPlayer();
         players[3].setPosition(new PlayerPosition(0, 0));
-    }
-
-    @Test
-    void terminator() {
-        assertTrue(players[2].hasTerminator());
-        assertFalse(players[0].hasTerminator());
-
-        players[2].setTerminator(false);
-        assertFalse(players[2].hasTerminator());
-        players[0].setTerminator(true);
-        assertTrue(players[0].hasTerminator());
     }
 
     @Test

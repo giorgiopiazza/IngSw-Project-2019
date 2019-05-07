@@ -49,14 +49,14 @@ public class MultiServer {
         return serverSocket.getInetAddress();
     }
 
-    public boolean closeClient(Socket client) {
-        for (int i = 0; i < clients.size(); i++) {
-            final Socket that = clients.get(i).getClient();
+    public boolean closeClient(Socket clientSocket) {
+        for (ServerThread client : clients) {
+            final Socket currClientSocket = client.getClient();
 
-            synchronized (that) {
-                if (that.equals(client)) {
+            synchronized (currClientSocket) {
+                if (currClientSocket.equals(clientSocket)) {
                     try {
-                        that.close();
+                        currClientSocket.close();
                     } catch (IOException e) {
                         LOGGER.log(Level.SEVERE, e.toString());
                         return false;
@@ -72,6 +72,7 @@ public class MultiServer {
     public void closeAll() {
         for (ServerThread client : clients) {
             Socket socket = client.getClient();
+
             synchronized (socket) {
                 try {
                     socket.close();

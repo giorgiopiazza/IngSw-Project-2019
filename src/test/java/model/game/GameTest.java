@@ -23,7 +23,7 @@ class GameTest {
 
     @Test
     void getInstance() {
-        assertFalse(instance.isStarted());
+        assertFalse(instance.isGameStarted());
         assertFalse(instance.isTerminatorPresent());
 
         assertEquals(instance, Game.getInstance());
@@ -54,8 +54,6 @@ class GameTest {
         assertThrows(GameAlreadyStartedException.class, () -> instance.addPlayer(null));
 
         instance.stopGame();
-
-        instance.flush();
     }
 
     @Test
@@ -67,12 +65,10 @@ class GameTest {
         instance.addPlayer(mock(UserPlayer.class));
         instance.startGame(8);
 
-        assertTrue(instance.isStarted());
+        assertTrue(instance.isGameStarted());
         assertThrows(GameAlreadyStartedException.class, () -> instance.startGame(8));
 
         instance.stopGame();
-
-        instance.flush();
     }
 
     @Test
@@ -84,12 +80,10 @@ class GameTest {
         instance.addPlayer(mock(UserPlayer.class));
 
         instance.startGame(8);
-        assertTrue(instance.isStarted());
+        assertTrue(instance.isGameStarted());
 
         instance.stopGame();
-        assertFalse(instance.isStarted());
-
-        instance.flush();
+        assertFalse(instance.isGameStarted());
     }
 
     @Test
@@ -101,9 +95,6 @@ class GameTest {
         assertThrows(InvalidKillshotNumber.class, () -> instance.startGame(9));
 
         instance.startGame(5);
-
-        assertThrows(GameAlreadyStartedException.class, instance::flush);
-        assertThrows(GameAlreadyStartedException.class, instance::clearKillshots);
 
         instance.addKillShot(mock(KillShot.class));
         assertEquals(4, instance.remainingSkulls());
@@ -117,7 +108,6 @@ class GameTest {
         assertThrows(KillShotsTerminatedException.class, () -> instance.addKillShot(mock(KillShot.class)));
 
         instance.stopGame();
-        instance.flush();
     }
 
     @Test
@@ -135,7 +125,7 @@ class GameTest {
         assertThrows(GameAlreadyStartedException.class, () -> instance.setTerminator(true));
 
         instance.stopGame();
-        instance.flush();
+        instance.init();
 
         UserPlayer player = new UserPlayer("tose", Color.YELLOW, new PlayerBoard());
         instance.addPlayer(player);
@@ -147,8 +137,6 @@ class GameTest {
         Player terminator = instance.setTerminator(true);
         assertNotNull(terminator);
         assertEquals(terminator, instance.getTerminator());
-
-        instance.flush();
     }
 
     @Test
@@ -171,6 +159,5 @@ class GameTest {
         instance.spawnPlayer(player, mock(PlayerPosition.class));
 
         instance.stopGame();
-        instance.flush();
     }
 }
