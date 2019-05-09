@@ -78,7 +78,7 @@ public class ShootAction implements Action {
     }
 
     @Override
-    public void execute() {
+    public void execute() throws InvalidActionException {
         // first I move the shooter saving his position in case after the weapon validate it can not be used
         PlayerPosition startingPos = actingPlayer.getPosition();
         actingPlayer.changePosition(movingPos.getCoordX(), movingPos.getCoordY());

@@ -35,7 +35,11 @@ public class TerminatorAction implements Action {
     }
 
     @Override
-    public boolean validate() {
+    public boolean validate() throws InvalidActionException {
+        if(actingPlayer.equals(targetPlayer)) {
+            throw new InvalidActionException();
+        }
+
         int movingDistance = terminator.getPosition().distanceOf(movingPos);
 
         // move and Visibility validation
@@ -44,7 +48,13 @@ public class TerminatorAction implements Action {
 
             return terminator.canSee(targetPlayer);
         } else if (movingDistance == MAX_TERMINATOR_MOVE) {
-            if (targetPlayer == null) throw new InvalidActionException();
+            if (targetPlayer == null) {
+                if(movingPos.canSeeSomeone()) {
+                    throw new InvalidActionException();
+                } else {
+                    return true;
+                }
+            }
 
             return movingPos.canSee(targetPlayer.getPosition());
         } else {
@@ -56,6 +66,11 @@ public class TerminatorAction implements Action {
     public void execute() {
         // first I move the terminator
         terminator.changePosition(movingPos.getCoordX(), movingPos.getCoordY());
+
+        // if the terminator can not see anyone his action is ended
+        if(targetPlayer == null) {
+            return;
+        }
 
         // then I shoot with the terminator depending on it's state
         switch (terminatorState) {

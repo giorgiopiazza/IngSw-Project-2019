@@ -1,8 +1,8 @@
 package exceptions.actions;
 
-import exceptions.AdrenalinaRuntimeException;
+import exceptions.AdrenalinaException;
 
-public class InvalidActionException extends AdrenalinaRuntimeException {
+public class InvalidActionException extends AdrenalinaException {
     public InvalidActionException() {
         super("This action is not Valid!");
     }

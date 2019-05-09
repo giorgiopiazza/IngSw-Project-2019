@@ -158,6 +158,22 @@ public class PlayerPosition implements Serializable {
     }
 
     /**
+     * Method used to verify if a position can see any target
+     *
+     * @return true if there is at least one player visible, otherwise false
+     */
+    public boolean canSeeSomeone() {
+        List<UserPlayer> players = Game.getInstance().getPlayers();
+        for(UserPlayer target : players) {
+            if(target.getPosition() != null && this.canSee(target.getPosition())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * This method calculates the minimum distance between {@code this} position and {@code other} position
      *
      * @param other another position

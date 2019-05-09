@@ -3,6 +3,7 @@ package model.player;
 import enumerations.Color;
 import enumerations.PlayerBoardState;
 import enumerations.PossibleAction;
+import enumerations.PossiblePlayerState;
 import exceptions.player.CardAlreadyInHandException;
 import exceptions.player.EmptyHandException;
 import exceptions.player.MaxCardsInHandException;
@@ -17,6 +18,7 @@ import java.util.Set;
 
 public class UserPlayer extends Player {
     private EnumSet<PossibleAction> possibleActions;
+    private PossiblePlayerState playerState;
     private List<WeaponCard> weapons;
     private List<PowerupCard> powerups;
     private boolean firstPlayer;
@@ -25,6 +27,7 @@ public class UserPlayer extends Player {
                       PlayerBoard playerBoard) {
 
         super(nickname, color, playerBoard);
+        this.playerState = PossiblePlayerState.FIRST_SPAWN;
         weapons = new ArrayList<>();
         powerups = new ArrayList<>();
     }
@@ -35,6 +38,14 @@ public class UserPlayer extends Player {
 
     public boolean isFirstPlayer() {
         return this.firstPlayer;
+    }
+
+    public PossiblePlayerState getPlayerState() {
+        return this.playerState;
+    }
+
+    public void changePlayerState(PossiblePlayerState playerState) {
+        this.playerState = playerState;
     }
 
     /**
@@ -154,6 +165,8 @@ public class UserPlayer extends Player {
     public void setStartingPossibleActions(boolean isTerminatorPresent) {
         if (isFirstPlayer() && isTerminatorPresent) {
             possibleActions = EnumSet.of(PossibleAction.SPAWN_TERMINATOR, PossibleAction.CHOOSE_SPAWN);
+        } else if (isTerminatorPresent) {
+            possibleActions = EnumSet.of(PossibleAction.CHOOSE_SPAWN, PossibleAction.TERMINATOR_ACTION);
         } else {
             possibleActions = EnumSet.of(PossibleAction.CHOOSE_SPAWN);
         }

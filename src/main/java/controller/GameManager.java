@@ -32,7 +32,7 @@ public class GameManager {
         System.out.println("Provide the game setup informations: \n\n");
 
         for (; ; ) {
-            System.out.println("Insert the map you want to play with (0-3): \n");
+            System.out.println("Insert the map you want to play with (1-4): \n");
 
             try {
                 gameInstance.setGameMap(in.nextInt());

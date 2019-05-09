@@ -9,7 +9,7 @@ public interface Action {
      *
      * @return true if the action can be done, otherwise false
      */
-    boolean validate();
+    boolean validate() throws AdrenalinaException;
 
     /**
      * Method that makes a player do the action he choosed
