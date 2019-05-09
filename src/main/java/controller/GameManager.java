@@ -1,7 +1,8 @@
 package controller;
 
 import enumerations.Color;
-import enumerations.PossibleState;
+import enumerations.PossibleGameState;
+import exceptions.game.InvalidGameStateException;
 import exceptions.game.MaxPlayerException;
 import model.Game;
 import model.player.PlayerBoard;
@@ -10,17 +11,24 @@ import model.player.UserPlayer;
 import java.util.Scanner;
 
 public class GameManager {
-    private PossibleState gameState;
-    private Game gameInstance;
+    private final Game gameInstance;
+    private static PossibleGameState gameState;
+    private RoundManager roundManager;
 
     public GameManager() {
-        this.gameState = PossibleState.GAME_ROOM;
+        gameState = PossibleGameState.GAME_ROOM;
         this.gameInstance = Game.getInstance();
+        this.roundManager = new RoundManager(this.gameInstance);
+    }
+
+    public static void changeState(PossibleGameState changeState) {
+        gameState = changeState;
     }
 
 
     public void gameSetup() {
         Scanner in = new Scanner(System.in);
+
         System.out.println("Provide the game setup informations: \n\n");
 
         for (; ; ) {
@@ -62,6 +70,7 @@ public class GameManager {
 
     public void roomSetup() {
         Scanner in = new Scanner(System.in);
+
         String userName;
         boolean ready = false;
 
@@ -98,15 +107,34 @@ public class GameManager {
                 }
             }
         }
+
+        gameState = PossibleGameState.GAME_READY;
     }
 
     public void run() {
-        System.out.println("Welcome to the very first version of a game: \n\n");
+        System.out.println("Welcome to the very first version of the game: \n\n");
 
         // starting setup
-        gameSetup();
-        roomSetup();
+        if(gameState == PossibleGameState.GAME_ROOM) {
+            gameSetup();
+            roomSetup();
+        } else throw new InvalidGameStateException();
+
+        // game is ready and can be started
+        if(gameState == PossibleGameState.GAME_READY) {
+            gameInstance.startGame();
+            System.out.println("ADRENALINE is ready to start! \n");
+            System.out.println(gameInstance.getPlayers().get(0).getUsername() + " is the first player \n");
+
+            while (gameState == PossibleGameState.GAME_READY) {
+                roundManager.initTurnManager();
+                roundManager.handleFirstRound();
+            }
+        }
+
+        // now game has started
+        if(gameState == PossibleGameState.GAME_STARTED) {
+
+        }
     }
-
-
 }

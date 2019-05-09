@@ -5,7 +5,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import enumerations.Color;
 import enumerations.SquareAdjacency;
+import enumerations.SquareType;
 import exceptions.file.JsonFileNotFoundException;
+import exceptions.map.InvalidSpawnColorException;
 import exceptions.map.MapUnknowException;
 import model.Game;
 import model.player.Player;
@@ -223,7 +225,7 @@ public class Map {
 
         for (int i = 0; i < MAX_ROWS; ++i) {
             for (int j = 0; j < MAX_COLUMNS; ++j) {
-                if (rooms[i][j].getColor().equals(roomColor)) {
+                if (rooms[i][j] != null && rooms[i][j].getColor().equals(roomColor)) {
                     PlayerPosition tempPos = new PlayerPosition(i, j);
                     room.add(tempPos);
                 }
@@ -231,6 +233,23 @@ public class Map {
         }
 
         return room;
+    }
+
+    /**
+     * Method that returns the spawn position of the spawn square of the specified color
+     *
+     * @param spawnColor the color of the square where to spawn
+     * @return the playerposition of the square whre to spawn
+     */
+    public PlayerPosition getSpawnSquare(Color spawnColor) {
+        List<PlayerPosition> room = getRoom(spawnColor);
+        for (PlayerPosition spawnPosition : room) {
+            if (getSquare(spawnPosition).getSquareType().equals(SquareType.SPAWN)) {
+                return  spawnPosition;
+            }
+        }
+
+        throw new InvalidSpawnColorException(spawnColor);
     }
 
     @Override
