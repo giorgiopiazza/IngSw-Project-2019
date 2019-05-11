@@ -63,7 +63,8 @@ public class RoundManager {
 
             try {
                 colorChosen = Color.getColor(in.nextLine());
-                gameInstance.getTerminator().setPosition(gameInstance.getGameMap().getSpawnSquare(colorChosen));
+                gameInstance.buildTerminator();
+                gameInstance.spawnTerminator(gameInstance.getGameMap().getSpawnSquare(colorChosen));
                 break;
             } catch (Exception e) {
                 // wrong color is asked again
@@ -118,7 +119,7 @@ public class RoundManager {
 
         }
 
-        spawningPlayer.setPosition(gameInstance.getGameMap().getSpawnSquare(spawnColor));
+        gameInstance.spawnPlayer(spawningPlayer, gameInstance.getGameMap().getSpawnSquare(spawnColor));
         spawningPlayer.changePlayerState(PossiblePlayerState.WAITING_TO_PLAY);
     }
 
@@ -156,18 +157,16 @@ public class RoundManager {
             if(shootDecision.equals("yes")) {
                 System.out.println("Choose the terminator's target >>> ");
                 String targetUserName = in.nextLine();
-                targetPlayer = gameInstance.getUserPlayerByUsername(targetUserName);
-                if(targetPlayer.getPosition() != null) {
-                    break;
-                } else {
-                    // ask for a new valid target
+                if(gameInstance.isPlayerPresent(targetUserName)) {
+                    targetPlayer = gameInstance.getUserPlayerByUsername(targetUserName);
+                    if(targetPlayer.getPosition() != null) {
+                        break;
+                    }
                 }
             } else if (shootDecision.equals("no")) {
                 targetPlayer = null;
                 break;
-            } else {
-                // typo or not accepted command, will be asked again
-            }
+            } // typo or not accepted command, will be asked again
         }
 
         // terminator action has been decided

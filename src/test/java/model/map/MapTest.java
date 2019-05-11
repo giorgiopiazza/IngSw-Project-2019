@@ -83,6 +83,7 @@ class MapTest {
         instance.addPlayer(p2);
         instance.addPlayer(p3);
         instance.setTerminator(true);
+        instance.buildTerminator();
         instance.setGameMap(Map.MAP_2);
         instance.startGame();
 
