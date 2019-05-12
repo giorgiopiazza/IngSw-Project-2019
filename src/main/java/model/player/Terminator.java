@@ -8,6 +8,10 @@ public class Terminator extends Player {
         super("Terminator", color, playerBoard);
     }
 
+    public Terminator(Terminator other) {
+        super(other);
+    }
+
     public boolean isSpawnTurn() {
         return spawnTurn;
     }
