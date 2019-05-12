@@ -42,6 +42,16 @@ public class PlayerBoard {
         boardPoints = new ArrayList<>(Arrays.asList(8, 6, 4, 2, 1, 1));
     }
 
+    public PlayerBoard(PlayerBoard other) {
+        this.damages = new ArrayList<>(other.damages);
+        this.marks = new ArrayList<>(other.marks);
+        this.skulls = other.skulls;
+        this.ammo = new AmmoQuantity(other.ammo);
+        this.boardState = other.boardState;
+        this.boardPoints = new ArrayList<>(other.boardPoints);
+        this.boardFlipped = other.boardFlipped;
+    }
+
     /**
      * @return number of skull placed on the player board
      */
