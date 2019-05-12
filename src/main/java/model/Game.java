@@ -242,7 +242,7 @@ public class Game {
         this.powerupCardsDeck = PowerupParser.parseCards();
     }
 
-    public void stopGame() throws GameAlreadyStartedException {
+    public void stopGame() {
         if (!gameStarted) throw new GameAlreadyStartedException("The game is not in progress");
 
         init();
@@ -286,27 +286,24 @@ public class Game {
     }
 
     /**
-     * Enable or disable setTerminator mode, true to enable
+     * Only sets true to the boolean attribute that specifies the presence of the terminator
      *
-     * @param terminatorPresent true to enable setTerminator mode, otherwise false
-     * @return the created instance of terminator
-     * @throws GameAlreadyStartedException if the game has already gameStarted
-     * @throws MaxPlayerException          if the game is full
+     * @param terminatorPresent true in case the terminator is present, otherwise false
+     * @throws MaxPlayerException in case the game already has 5 players
      */
-    public Player setTerminator(boolean terminatorPresent) throws MaxPlayerException {
+    public void setTerminator(boolean terminatorPresent) throws MaxPlayerException {
         if (gameStarted)
             throw new GameAlreadyStartedException("It is not possible to set the setTerminator player when the game has already gameStarted.");
         if (players.size() >= 5 && terminatorPresent)
             throw new MaxPlayerException("Can not add Terminator with 5 players");
         this.terminatorPresent = terminatorPresent;
+    }
 
-        if (terminatorPresent) {
-            terminator = new Terminator(firstColorUnused(), new PlayerBoard());
-        } else {
-            terminator = null;
-        }
-
-        return terminator;
+    /**
+     * Method to spawn the terminator, separated as it can be spawned after the spawn of the players
+     */
+    public void buildTerminator() {
+        this.terminator = new Terminator(firstColorUnused(), new PlayerBoard());
     }
 
     /**
@@ -322,7 +319,7 @@ public class Game {
         }
 
         for (int i = 0; i < Color.values().length; i++) {
-            if (ar.contains(Color.values()[i])) return Color.values()[i];
+            if (!ar.contains(Color.values()[i])) return Color.values()[i];
         }
 
         return null;
@@ -355,9 +352,8 @@ public class Game {
      *
      * @param player         the player to spawn
      * @param playerPosition the player's spawn position
-     * @throws GameAlreadyStartedException if the game has not gameStarted
      */
-    public void spawnPlayer(UserPlayer player, PlayerPosition playerPosition) throws GameAlreadyStartedException {
+    public void spawnPlayer(UserPlayer player, PlayerPosition playerPosition) {
         if (player == null || playerPosition == null)
             throw new NullPointerException("Player or playerPosition cannot be null");
         if (!players.contains(player)) throw new UnknownPlayerException();
@@ -382,7 +378,7 @@ public class Game {
      * @param playerPosition the player's spawn position
      * @throws GameAlreadyStartedException if the game has not gameStarted
      */
-    public void spawnTerminator(PlayerPosition playerPosition) throws GameAlreadyStartedException {
+    public void spawnTerminator(PlayerPosition playerPosition) {
         if (playerPosition == null) throw new NullPointerException("playerPosition cannot be null");
         if (!gameStarted) throw new GameAlreadyStartedException("Game not gameStarted yet");
         if (!terminatorPresent) throw new TerminatorNotSetException();
@@ -442,6 +438,20 @@ public class Game {
             if (p.getUsername().equals(username)) return p;
         }
         throw new MissingPlayerUsernameException(username);
+    }
+
+    /**
+     * Method to verify if the nickname is a valid one with the players in the game
+     *
+     * @param username the String containing the nickname
+     * @return true if the nickname is present otherwise false
+     */
+    public boolean isPlayerPresent(String username) {
+        for (UserPlayer p : players) {
+            if(p.getUsername().equals(username)) return true;
+        }
+
+        return false;
     }
 
     /**
