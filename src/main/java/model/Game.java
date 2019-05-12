@@ -331,8 +331,8 @@ public class Game {
     /**
      * Method that verifies if the color passed is already used in the game
      *
-     * @param color
-     * @return
+     * @param color the color to check
+     * @return true if the color is already used, otherwise false
      */
     public boolean isColorUsed(Color color) {
         ArrayList<Color> ar = new ArrayList<>();
@@ -522,5 +522,17 @@ public class Game {
         }
 
         return frenzyPlayers;
+    }
+
+    public Deck getWeaponsCardsDeck() {
+        return weaponsCardsDeck;
+    }
+
+    public Deck getAmmoTileDeck() {
+        return ammoTileDeck;
+    }
+
+    KillShot[] getKillShotsTrack() {
+        return killShotsTrack;
     }
 }
