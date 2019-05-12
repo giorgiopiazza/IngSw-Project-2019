@@ -32,16 +32,16 @@ public class GameSerialized implements Serializable  {
         currentState = instance.getState();
         gameStarted = instance.isGameStarted();
 
-        players = new ArrayList<>(instance.getPlayers());
+        players = instance.getPlayers() != null ? new ArrayList<>(instance.getPlayers()) : null;
         terminatorPresent = instance.isTerminatorPresent();
         terminator = instance.getTerminator();
 
-        killShotsTrack = Arrays.copyOf(instance.getKillShotsTrack(), instance.getKillShotsTrack().length);
+        killShotsTrack = instance.getKillShotsTrack() != null ? Arrays.copyOf(instance.getKillShotsTrack(), instance.getKillShotsTrack().length) : null;
         killShotNum = instance.getKillShotNum();
 
-        weaponsCardsDeck = new Deck(instance.getWeaponsCardsDeck());
-        ammoTileDeck = new Deck(instance.getAmmoTileDeck(), true);
-        powerupCardsDeck = new Deck(instance.getPowerupCardsDeck(), true);
+        weaponsCardsDeck = instance.getWeaponsCardsDeck() != null ? new Deck(instance.getWeaponsCardsDeck()) : null;
+        ammoTileDeck = instance.getAmmoTileDeck() != null ? new Deck(instance.getAmmoTileDeck(), true) : null;
+        powerupCardsDeck = instance.getPowerupCardsDeck() != null ? new Deck(instance.getPowerupCardsDeck(), true) : null;
     }
 
     public GameState getCurrentState() {
@@ -122,5 +122,21 @@ public class GameSerialized implements Serializable  {
 
     public void setKillShotsTrack(KillShot[] killShotsTrack) {
         this.killShotsTrack = killShotsTrack;
+    }
+
+    @Override
+    public String toString() {
+        return "GameSerialized{" +
+                "currentState=" + currentState +
+                ", gameStarted=" + gameStarted +
+                ", players=" + players +
+                ", terminatorPresent=" + terminatorPresent +
+                ", terminator=" + terminator +
+                ", killShotNum=" + killShotNum +
+                ", killShotsTrack=" + Arrays.toString(killShotsTrack) +
+                ", weaponsCardsDeck=" + weaponsCardsDeck +
+                ", powerupCardsDeck=" + powerupCardsDeck +
+                ", ammoTileDeck=" + ammoTileDeck +
+                '}';
     }
 }
