@@ -20,6 +20,15 @@ public abstract class Player {
         points = 0;
     }
 
+    public Player(Player other) {
+        this.username = other.username;
+        this.color = other.color;
+        this.position = new PlayerPosition(other.position);
+        this.playerBoard = new PlayerBoard(other.playerBoard);
+        this.winner = other.winner;
+        this.points = other.points;
+    }
+
     public String getUsername() {
         return this.username;
     }
