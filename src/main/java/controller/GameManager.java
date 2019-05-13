@@ -1,6 +1,6 @@
 package controller;
 
-import enumerations.Color;
+import enumerations.PlayerColor;
 import enumerations.PossibleGameState;
 import exceptions.game.InvalidGameStateException;
 import exceptions.game.MaxPlayerException;
@@ -79,14 +79,14 @@ public class GameManager {
         while (!gameInstance.isGameReadyToStart(ready)) {
             System.out.println("Username >>> ");
             userName = in.nextLine();
-            Color colorChosen;
+            PlayerColor colorChosen;
 
             if (!gameInstance.doesPlayerExists(userName)) {
                 for (; ; ) {
                     System.out.println(userName + " provide the color you have chosen: ");
 
                     try {
-                        colorChosen = Color.getColor(in.nextLine());
+                        colorChosen = PlayerColor.getColor(in.nextLine());
                         if (!gameInstance.isColorUsed(colorChosen)) {
                             break;
                         }
@@ -115,13 +115,13 @@ public class GameManager {
         System.out.println("Welcome to the very first version of the game: \n\n");
 
         // starting setup
-        if(gameState == PossibleGameState.GAME_ROOM) {
+        if (gameState == PossibleGameState.GAME_ROOM) {
             gameSetup();
             roomSetup();
         } else throw new InvalidGameStateException();
 
         // game is ready and can be started
-        if(gameState == PossibleGameState.GAME_READY) {
+        if (gameState == PossibleGameState.GAME_READY) {
             gameInstance.startGame();
             System.out.println("ADRENALINE is ready to start! \n");
             System.out.println(gameInstance.getPlayers().get(0).getUsername() + " is the first player \n");
@@ -133,7 +133,7 @@ public class GameManager {
         }
 
         // now game has started
-        if(gameState == PossibleGameState.GAME_STARTED) {
+        if (gameState == PossibleGameState.GAME_STARTED) {
 
         }
     }

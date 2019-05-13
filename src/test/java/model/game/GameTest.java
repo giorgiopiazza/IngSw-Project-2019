@@ -1,6 +1,6 @@
 package model.game;
 
-import enumerations.Color;
+import enumerations.PlayerColor;
 import exceptions.AdrenalinaException;
 import exceptions.game.*;
 import model.Game;
@@ -131,7 +131,7 @@ class GameTest {
         instance.stopGame();
         instance.init();
 
-        UserPlayer player = new UserPlayer("tose", Color.YELLOW, new PlayerBoard());
+        UserPlayer player = new UserPlayer("tose", PlayerColor.YELLOW, new PlayerBoard());
         instance.addPlayer(player);
         instance.addPlayer(mock(UserPlayer.class));
         instance.addPlayer(mock(UserPlayer.class));
@@ -147,8 +147,8 @@ class GameTest {
 
     @Test
     void spawnPlayer() throws AdrenalinaException {
-        UserPlayer player = new UserPlayer("tose", Color.YELLOW, new PlayerBoard()  );
-        UserPlayer notContained = new UserPlayer("gio", Color.YELLOW, new PlayerBoard());
+        UserPlayer player = new UserPlayer("tose", PlayerColor.YELLOW, new PlayerBoard()  );
+        UserPlayer notContained = new UserPlayer("gio", PlayerColor.GREEN, new PlayerBoard());
 
         instance.addPlayer(player);
         instance.addPlayer(mock(UserPlayer.class));

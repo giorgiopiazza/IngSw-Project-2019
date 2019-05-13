@@ -1,6 +1,6 @@
 package model.map;
 
-import enumerations.Color;
+import enumerations.RoomColor;
 import enumerations.SquareAdjacency;
 import model.cards.AmmoTile;
 import model.cards.WeaponCard;
@@ -17,9 +17,9 @@ public class CardSquareTest {
 
     @BeforeEach
     void before() {
-        noTileSquare = new CardSquare(Color.RED, SquareAdjacency.WALL, SquareAdjacency.SQUARE,
+        noTileSquare = new CardSquare(RoomColor.RED, SquareAdjacency.WALL, SquareAdjacency.SQUARE,
                                             SquareAdjacency.DOOR, SquareAdjacency.SQUARE);
-        tileSquare = new CardSquare(Color.RED, SquareAdjacency.WALL, SquareAdjacency.SQUARE,
+        tileSquare = new CardSquare(RoomColor.RED, SquareAdjacency.WALL, SquareAdjacency.SQUARE,
                 SquareAdjacency.DOOR, SquareAdjacency.SQUARE, mock(AmmoTile.class));
     }
 
@@ -39,10 +39,10 @@ public class CardSquareTest {
 
     @Test
     void spawnSquare() {
-        SpawnSquare sq = new SpawnSquare(Color.RED, SquareAdjacency.DOOR, SquareAdjacency.WALL, SquareAdjacency.WALL, SquareAdjacency.SQUARE);
+        SpawnSquare sq = new SpawnSquare(RoomColor.RED, SquareAdjacency.DOOR, SquareAdjacency.WALL, SquareAdjacency.WALL, SquareAdjacency.SQUARE);
         WeaponCard[] weaponCards = new WeaponCard[SpawnSquare.MAX_WEAPONS];
 
-        assertEquals(Color.RED, sq.getColor());
+        assertEquals(RoomColor.RED, sq.getRoomColor());
         assertEquals(SquareAdjacency.DOOR, sq.getNorth());
         assertEquals(SquareAdjacency.WALL, sq.getEast());
         assertEquals(SquareAdjacency.WALL, sq.getSouth());

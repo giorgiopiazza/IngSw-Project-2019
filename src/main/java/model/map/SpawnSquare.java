@@ -1,6 +1,6 @@
 package model.map;
 
-import enumerations.Color;
+import enumerations.RoomColor;
 import enumerations.SquareAdjacency;
 import enumerations.SquareType;
 import exceptions.map.MaxSquareWeaponsException;
@@ -22,7 +22,7 @@ public class SpawnSquare extends Square {
      * @param west  what's in the west
      */
     public SpawnSquare(
-            Color color,
+            RoomColor color,
             SquareAdjacency north,
             SquareAdjacency east,
             SquareAdjacency south,
