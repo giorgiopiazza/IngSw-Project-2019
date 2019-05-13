@@ -1,10 +1,10 @@
 package model.player;
 
-import enumerations.Color;
+import enumerations.PlayerColor;
 
 public class Terminator extends Player {
     boolean spawnTurn;
-    public Terminator(Color color, PlayerBoard playerBoard) {
+    public Terminator(PlayerColor color, PlayerBoard playerBoard) {
         super("Terminator", color, playerBoard);
     }
 

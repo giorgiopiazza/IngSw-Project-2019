@@ -3,9 +3,10 @@ package model.player;
 import enumerations.Ammo;
 import exceptions.playerboard.NotEnoughAmmoException;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class AmmoQuantity {
+public class AmmoQuantity implements Serializable {
     private int redAmmo;
     private int blueAmmo;
     private int yellowAmmo;

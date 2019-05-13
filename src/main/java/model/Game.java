@@ -1,6 +1,6 @@
 package model;
 
-import enumerations.Color;
+import enumerations.PlayerColor;
 import enumerations.GameState;
 import enumerations.SquareType;
 import exceptions.game.*;
@@ -311,15 +311,15 @@ public class Game {
      *
      * @return the first color not used by any player
      */
-    private Color firstColorUnused() {
-        ArrayList<Color> ar = new ArrayList<>();
+    private PlayerColor firstColorUnused() {
+        ArrayList<PlayerColor> ar = new ArrayList<>();
 
         for (UserPlayer player : players) {
             ar.add(player.getColor());
         }
 
-        for (int i = 0; i < Color.values().length; i++) {
-            if (!ar.contains(Color.values()[i])) return Color.values()[i];
+        for (int i = 0; i < PlayerColor.values().length; i++) {
+            if (!ar.contains(PlayerColor.values()[i])) return PlayerColor.values()[i];
         }
 
         return null;
@@ -331,14 +331,14 @@ public class Game {
      * @param color the color to check
      * @return true if the color is already used, otherwise false
      */
-    public boolean isColorUsed(Color color) {
-        ArrayList<Color> ar = new ArrayList<>();
+    public boolean isColorUsed(PlayerColor color) {
+        ArrayList<PlayerColor> ar = new ArrayList<>();
 
         for (UserPlayer player : players) {
             ar.add(player.getColor());
         }
 
-        for (int i = 0; i < Color.values().length; ++i) {
+        for (int i = 0; i < PlayerColor.values().length; ++i) {
             if (ar.contains(color)) {
                 return true;
             }

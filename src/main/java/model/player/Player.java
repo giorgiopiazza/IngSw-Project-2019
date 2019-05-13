@@ -2,15 +2,17 @@ package model.player;
 
 import enumerations.*;
 
-public abstract class Player {
+import java.io.Serializable;
+
+public abstract class Player implements Serializable {
     private final String username;
-    protected Color color;
+    protected PlayerColor color;
     private final PlayerBoard playerBoard;
     private PlayerPosition position;
     private int points;
     private boolean winner;
 
-    public Player(String username, Color color, PlayerBoard playerBoard) {
+    public Player(String username, PlayerColor color, PlayerBoard playerBoard) {
         this.username = username;
         this.color = color;
         this.position = null;
@@ -33,7 +35,7 @@ public abstract class Player {
         return this.username;
     }
 
-    public Color getColor() {
+    public PlayerColor getColor() {
         return this.color;
     }
 

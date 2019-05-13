@@ -7,14 +7,15 @@ import exceptions.playerboard.BoardFlipDamagedException;
 import exceptions.playerboard.InvalidDamageException;
 import exceptions.playerboard.NotEnoughAmmoException;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class PlayerBoard {
-    private List<Player> damages;
-    private List<Player> marks;
+public class PlayerBoard implements Serializable {
+    private List<String> damages;
+    private List<String> marks;
 
     private int skulls;
     private AmmoQuantity ammo;
@@ -187,7 +188,7 @@ public class PlayerBoard {
         }
 
         for (int i = 0; i < marksCount; i++) {
-            marks.add(markDealer);
+            marks.add(markDealer.getUsername());
         }
     }
 
@@ -202,15 +203,15 @@ public class PlayerBoard {
             throw new NullPointerException("Player cannot be null");
         }
 
-        int marksNum = Collections.frequency(marks, damageDealer);
+        int marksNum = Collections.frequency(marks, damageDealer.getUsername());
 
         if (damageCount > 0) {
             if (marksNum > 0) {
-                marks.removeIf(damageDealer::equals);
+                marks.removeIf(damageDealer.getUsername()::equals);
             }
 
             for (int i = 0; i < damageCount + marksNum && damages.size() < 12; ++i) {
-                damages.add(damageDealer);
+                damages.add(damageDealer.getUsername());
             }
         }
 
