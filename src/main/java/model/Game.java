@@ -501,8 +501,6 @@ public class Game {
         }
 
         return frenzyPlayers;
-
-
     }
 
     /**

@@ -10,6 +10,16 @@ public abstract class Player {
     private int points;
     private boolean winner;
 
+    public Player(String username) {
+        this.username = username;
+        this.color = null;
+        this.position = null;
+        this.playerBoard = new PlayerBoard();
+        this.winner = false;
+
+        points = 0;
+    }
+
     public Player(String username, Color color, PlayerBoard playerBoard) {
         this.username = username;
         this.color = color;
@@ -30,6 +40,10 @@ public abstract class Player {
 
     public PlayerPosition getPosition() {
         return this.position;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
     }
 
     public boolean isWinner() {
