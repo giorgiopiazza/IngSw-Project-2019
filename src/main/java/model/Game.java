@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Random;
 
 public class Game {
+    public static final String TERMINATOR_USERNAME = "bot";
+    public static final String GOD = "god";
     private static final int MAX_KILLSHOT = 8;
 
     private static Game instance;

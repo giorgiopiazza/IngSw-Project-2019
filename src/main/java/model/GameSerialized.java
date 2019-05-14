@@ -3,7 +3,6 @@ package model;
 import enumerations.GameState;
 import model.player.KillShot;
 import model.player.Player;
-import model.player.UserPlayer;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -13,9 +12,8 @@ public class GameSerialized implements Serializable  {
 
     private GameState currentState;
 
-    private ArrayList<UserPlayer> players; // TODO Need to find another way
+    private ArrayList<Player> players;
     private boolean terminatorPresent;
-    private Player terminator;
 
     private int killShotNum;
     private KillShot[] killShotsTrack;
@@ -24,9 +22,10 @@ public class GameSerialized implements Serializable  {
         Game instance = Game.getInstance();
 
         currentState = instance.getState();
-        players = instance.getPlayers() != null ? new ArrayList<>(instance.getPlayers()) : null;
+        players = new ArrayList<>(instance.getPlayers());
+
         terminatorPresent = instance.isTerminatorPresent();
-        terminator = instance.getTerminator();
+        if (terminatorPresent) players.add(instance.getTerminator());
 
         killShotsTrack = instance.getKillShotsTrack() != null ? Arrays.copyOf(instance.getKillShotsTrack(), instance.getKillShotsTrack().length) : null;
         killShotNum = instance.getKillShotNum();
@@ -40,11 +39,11 @@ public class GameSerialized implements Serializable  {
         this.currentState = currentState;
     }
 
-    public ArrayList<UserPlayer> getPlayers() {
+    public ArrayList<Player> getPlayer() {
         return players;
     }
 
-    public void setPlayers(ArrayList<UserPlayer> players) {
+    public void setPlayerBoards(ArrayList<Player> players) {
         this.players = players;
     }
 
@@ -54,14 +53,6 @@ public class GameSerialized implements Serializable  {
 
     public void setTerminatorPresent(boolean terminatorPresent) {
         this.terminatorPresent = terminatorPresent;
-    }
-
-    public Player getTerminator() {
-        return terminator;
-    }
-
-    public void setTerminator(Player terminator) {
-        this.terminator = terminator;
     }
 
     public int getKillShotNum() {
@@ -86,7 +77,6 @@ public class GameSerialized implements Serializable  {
                 "currentState=" + currentState +
                 ", players=" + players +
                 ", terminatorPresent=" + terminatorPresent +
-                ", terminator=" + terminator +
                 ", killShotNum=" + killShotNum +
                 ", killShotsTrack=" + Arrays.toString(killShotsTrack) +
                 '}';
