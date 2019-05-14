@@ -3,9 +3,10 @@ package model.player;
 import enumerations.Ammo;
 import exceptions.playerboard.NotEnoughAmmoException;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class AmmoQuantity {
+public class AmmoQuantity implements Serializable {
     private int redAmmo;
     private int blueAmmo;
     private int yellowAmmo;
@@ -27,6 +28,12 @@ public class AmmoQuantity {
         redAmmo = (Collections.frequency(ammoList, Ammo.RED) < 3) ? Collections.frequency(ammoList, Ammo.RED) : 3;
         blueAmmo = (Collections.frequency(ammoList, Ammo.BLUE) < 3) ? Collections.frequency(ammoList, Ammo.BLUE) : 3;
         yellowAmmo = (Collections.frequency(ammoList, Ammo.YELLOW) < 3) ? Collections.frequency(ammoList, Ammo.YELLOW) : 3;
+    }
+
+    public AmmoQuantity(AmmoQuantity other) {
+        this.redAmmo = other.redAmmo;
+        this.blueAmmo = other.blueAmmo;
+        this.yellowAmmo = other.yellowAmmo;
     }
 
     public void addAmmo(Ammo ammo) {

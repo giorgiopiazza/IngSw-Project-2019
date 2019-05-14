@@ -13,6 +13,7 @@ public class Client {
     private InetAddress address;
 
     private BufferedReader in;
+    private ObjectInputStream objReader;
     private PrintWriter out;
 
     public Client(String serverAddress) {
@@ -41,6 +42,7 @@ public class Client {
         OutputStreamWriter osw = new OutputStreamWriter( socket.getOutputStream());
         BufferedWriter bw = new BufferedWriter(osw);
         out = new PrintWriter(bw, true);
+        objReader = new ObjectInputStream(socket.getInputStream());
     }
 
     public void sendMessage(String message) {
@@ -51,6 +53,15 @@ public class Client {
         try {
             return in.readLine();
         } catch (IOException e) {
+            Logger.getGlobal().log(Level.SEVERE, e.toString());
+            return null;
+        }
+    }
+
+    public Object receiveObject() {
+        try {
+            return objReader.readObject();
+        } catch (IOException | ClassNotFoundException e) {
             Logger.getGlobal().log(Level.SEVERE, e.toString());
             return null;
         }

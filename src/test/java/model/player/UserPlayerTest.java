@@ -1,6 +1,6 @@
 package model.player;
 
-import enumerations.Color;
+import enumerations.PlayerColor;
 import exceptions.game.InvalidMapNumberException;
 import exceptions.player.CardAlreadyInHandException;
 import exceptions.player.MaxCardsInHandException;
@@ -22,19 +22,19 @@ class UserPlayerTest {
         players = new UserPlayer[5];
 
         for (int i = 0; i < 3; ++i) {
-            players[i] = new UserPlayer("player", Color.values()[i], board);
+            players[i] = new UserPlayer("player", PlayerColor.values()[i], board);
             players[i].setPosition(new PlayerPosition(0, 0));
         }
 
-        players[3] = new UserPlayer("player", Color.values()[3], board);
+        players[3] = new UserPlayer("player", PlayerColor.values()[3], board);
         players[3].setFirstPlayer();
         players[3].setPosition(new PlayerPosition(0, 0));
     }
 
     @Test
     void distanceOf() throws InvalidMapNumberException {
-        Player p1 = new UserPlayer("p1", Color.YELLOW, new PlayerBoard());
-        Player p2 = new UserPlayer("p2", Color.GREEN, new PlayerBoard());
+        Player p1 = new UserPlayer("p1", PlayerColor.YELLOW, new PlayerBoard());
+        Player p2 = new UserPlayer("p2", PlayerColor.GREEN, new PlayerBoard());
 
         Game.getInstance().setGameMap(Map.MAP_3);
 

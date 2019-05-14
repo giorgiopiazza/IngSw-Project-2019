@@ -1,7 +1,7 @@
 package network.message;
 
 import enumerations.Ammo;
-import enumerations.Color;
+import enumerations.RoomColor;
 import enumerations.MessageContent;
 import model.player.PlayerPosition;
 
@@ -41,7 +41,7 @@ public class PowerupRequest extends EffectRequest {
 
         private ArrayList<String> targetPlayersUsernames;
         private ArrayList<PlayerPosition> targetPositions;
-        private Color targetRoomColor;
+        private RoomColor targetRoomColor;
 
         private PlayerPosition senderMovePosition;
         private ArrayList<PlayerPosition> targetPlayersMovePositions;
@@ -63,7 +63,7 @@ public class PowerupRequest extends EffectRequest {
             return this;
         }
 
-        public PowerupRequestBuilder targetRoomColor(Color targetRoomColor) {
+        public PowerupRequestBuilder targetRoomColor(RoomColor targetRoomColor) {
             this.targetRoomColor = targetRoomColor;
             return this;
         }

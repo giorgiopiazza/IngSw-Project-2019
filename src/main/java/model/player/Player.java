@@ -4,7 +4,7 @@ import enumerations.*;
 
 public abstract class Player {
     private final String username;
-    protected Color color;
+    protected PlayerColor color;
     private final PlayerBoard playerBoard;
     private PlayerPosition position;
     private int points;
@@ -20,7 +20,7 @@ public abstract class Player {
         points = 0;
     }
 
-    public Player(String username, Color color, PlayerBoard playerBoard) {
+    public Player(String username, PlayerColor color, PlayerBoard playerBoard) {
         this.username = username;
         this.color = color;
         this.position = null;
@@ -30,11 +30,20 @@ public abstract class Player {
         points = 0;
     }
 
+    public Player(Player other) {
+        this.username = other.username;
+        this.color = other.color;
+        this.position = new PlayerPosition(other.position);
+        this.playerBoard = new PlayerBoard(other.playerBoard);
+        this.winner = other.winner;
+        this.points = other.points;
+    }
+
     public String getUsername() {
         return this.username;
     }
 
-    public Color getColor() {
+    public PlayerColor getColor() {
         return this.color;
     }
 
@@ -42,7 +51,7 @@ public abstract class Player {
         return this.position;
     }
 
-    public void setColor(Color color) {
+    public void setColor(PlayerColor color) {
         this.color = color;
     }
 

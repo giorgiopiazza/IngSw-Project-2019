@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class PlayerBoardTest {
     private PlayerBoard playerBoard;
@@ -21,6 +22,7 @@ class PlayerBoardTest {
     void before() {
         playerBoard = new PlayerBoard();
         damageDealer = mock(Player.class);
+        when(damageDealer.getUsername()).thenReturn("Pippo");
     }
 
     @Test

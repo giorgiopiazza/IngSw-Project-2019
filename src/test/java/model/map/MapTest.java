@@ -1,10 +1,10 @@
 package model.map;
 
-import enumerations.Color;
+import enumerations.PlayerColor;
+import enumerations.RoomColor;
 import exceptions.game.*;
 import exceptions.map.MapUnknowException;
 import model.Game;
-import model.player.Player;
 import model.player.PlayerBoard;
 import model.player.PlayerPosition;
 import model.player.UserPlayer;
@@ -21,22 +21,22 @@ class MapTest {
     void mapInstances() {
         Map map = new Map(Map.MAP_1);
         assertNull(map.getSquare(0, 3));
-        assertEquals(Color.RED, map.getSquare(1, 2).getColor());
-        assertEquals(Color.GREY, map.getSquare(2, 1).getColor());
+        assertEquals(RoomColor.RED, map.getSquare(1, 2).getRoomColor());
+        assertEquals(RoomColor.GREY, map.getSquare(2, 1).getRoomColor());
 
         map = new Map(Map.MAP_2);
-        assertEquals(Color.BLUE, map.getSquare(0, 1).getColor());
-        assertEquals(Color.YELLOW, map.getSquare(1, 2).getColor());
+        assertEquals(RoomColor.BLUE, map.getSquare(0, 1).getRoomColor());
+        assertEquals(RoomColor.YELLOW, map.getSquare(1, 2).getRoomColor());
         assertNull(map.getSquare(2, 0));
 
         map = new Map(Map.MAP_3);
-        assertEquals(Color.RED, map.getSquare(0, 0).getColor());
-        assertEquals(Color.PURPLE, map.getSquare(1, 1).getColor());
-        assertEquals(Color.YELLOW, map.getSquare(2, 2).getColor());
+        assertEquals(RoomColor.RED, map.getSquare(0, 0).getRoomColor());
+        assertEquals(RoomColor.PURPLE, map.getSquare(1, 1).getRoomColor());
+        assertEquals(RoomColor.YELLOW, map.getSquare(2, 2).getRoomColor());
 
         map = new Map(Map.MAP_4);
-        assertEquals(Color.BLUE, map.getSquare(0, 1).getColor());
-        assertEquals(Color.BLUE, map.getSquare(0, 2).getColor());
+        assertEquals(RoomColor.BLUE, map.getSquare(0, 1).getRoomColor());
+        assertEquals(RoomColor.BLUE, map.getSquare(0, 2).getRoomColor());
         assertNull(map.getSquare(new PlayerPosition(0, 3)));
 
         assertThrows(MapUnknowException.class, () -> { new Map(0); });
@@ -52,12 +52,12 @@ class MapTest {
 
         Map map = instance.getGameMap();
 
-        assertEquals(0, map.getPlayersInRoom(Color.RED).size());
+        assertEquals(0, map.getPlayersInRoom(RoomColor.RED).size());
         assertEquals(0, map.getPlayersInSquare(new PlayerPosition(0, 0)).size());
 
-        UserPlayer p1 = new UserPlayer("tose", Color.YELLOW, mock(PlayerBoard.class));
-        UserPlayer p2 = new UserPlayer("gio", Color.RED, mock(PlayerBoard.class));
-        UserPlayer p3 = new UserPlayer("piro", Color.BLUE, mock(PlayerBoard.class));
+        UserPlayer p1 = new UserPlayer("tose", PlayerColor.YELLOW, mock(PlayerBoard.class));
+        UserPlayer p2 = new UserPlayer("gio", PlayerColor.GREEN, mock(PlayerBoard.class));
+        UserPlayer p3 = new UserPlayer("piro", PlayerColor.BLUE, mock(PlayerBoard.class));
 
         PlayerPosition myPos = new PlayerPosition(0, 1);
 
@@ -74,7 +74,7 @@ class MapTest {
         Logger.getGlobal().log(Level.INFO, map.toString());
 
         assertEquals(p1, map.getPlayersInSquare(myPos).get(0));
-        assertEquals(p1, map.getPlayersInRoom(Color.BLUE).get(0));
+        assertEquals(p1, map.getPlayersInRoom(RoomColor.BLUE).get(0));
 
         instance.stopGame();
         instance.init();
@@ -83,6 +83,7 @@ class MapTest {
         instance.addPlayer(p2);
         instance.addPlayer(p3);
         instance.setTerminator(true);
+        instance.buildTerminator();
         instance.setGameMap(Map.MAP_2);
         instance.startGame();
 
@@ -91,19 +92,19 @@ class MapTest {
         instance.spawnPlayer(p3, new PlayerPosition(2, 3));
         instance.spawnTerminator(new PlayerPosition(1, 0));
 
-        assertEquals(p1, map.getPlayersInRoom(Color.BLUE).get(0));
+        assertEquals(p1, map.getPlayersInRoom(RoomColor.BLUE).get(0));
         assertEquals(p1, map.getPlayersInSquare(myPos).get(0));
         assertEquals(instance.getTerminator(), map.getPlayersInSquare(new PlayerPosition(1, 0)).get(0));
-        assertEquals(instance.getTerminator(), map.getPlayersInRoom(Color.RED).get(0));
+        assertEquals(instance.getTerminator(), map.getPlayersInRoom(RoomColor.RED).get(0));
     }
 
     @Test
     void squares() {
         Map map = new Map(Map.MAP_3);
 
-        assertEquals(1, map.getRoom(Color.GREEN).size());
-        assertEquals( 4, map.getRoom(Color.YELLOW).size());
-        assertEquals( 2, map.getRoom(Color.GREY).size());
-        assertEquals( 1, map.getRoom(Color.PURPLE).size());
+        assertEquals(1, map.getRoom(RoomColor.GREEN).size());
+        assertEquals( 4, map.getRoom(RoomColor.YELLOW).size());
+        assertEquals( 2, map.getRoom(RoomColor.GREY).size());
+        assertEquals( 1, map.getRoom(RoomColor.PURPLE).size());
     }
 }

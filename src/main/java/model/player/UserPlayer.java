@@ -1,6 +1,6 @@
 package model.player;
 
-import enumerations.Color;
+import enumerations.PlayerColor;
 import enumerations.PlayerBoardState;
 import enumerations.PossibleAction;
 import enumerations.PossiblePlayerState;
@@ -17,13 +17,13 @@ import java.util.List;
 import java.util.Set;
 
 public class UserPlayer extends Player {
-    private EnumSet<PossibleAction> possibleActions;
-    private PossiblePlayerState playerState;
+    private transient EnumSet<PossibleAction> possibleActions;
+    private transient PossiblePlayerState playerState;
     private List<WeaponCard> weapons;
-    private List<PowerupCard> powerups;
+    private transient List<PowerupCard> powerups;
     private boolean firstPlayer;
 
-    public UserPlayer(String nickname, Color color,
+    public UserPlayer(String nickname, PlayerColor color,
                       PlayerBoard playerBoard) {
 
         super(nickname, color, playerBoard);

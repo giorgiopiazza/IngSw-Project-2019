@@ -56,14 +56,15 @@ public class RoundManager {
 
     private void spawnTerminator() {
         Scanner in = new Scanner(System.in);
-        Color colorChosen;
+        RoomColor colorChosen;
         for(;;) {
             System.out.println("Choose the color of the spawning point where to spawn the terminator \n\n");
             System.out.println("Provide the color >>> ");
 
             try {
-                colorChosen = Color.getColor(in.nextLine());
-                gameInstance.getTerminator().setPosition(gameInstance.getGameMap().getSpawnSquare(colorChosen));
+                colorChosen = RoomColor.getColor(in.nextLine());
+                gameInstance.buildTerminator();
+                gameInstance.spawnTerminator(gameInstance.getGameMap().getSpawnSquare(colorChosen));
                 break;
             } catch (Exception e) {
                 // wrong color is asked again
@@ -75,7 +76,7 @@ public class RoundManager {
         Scanner in = new Scanner(System.in);
         List<PowerupCard> twoDrawn = new ArrayList<>();
         String spawningPowerup;
-        Color spawnColor;
+        RoomColor spawnColor;
 
         for(int i = 0; i < 2; ++i) {
             PowerupCard cardDrawn = (PowerupCard) gameInstance.getPowerupCardsDeck().draw();
@@ -118,7 +119,7 @@ public class RoundManager {
 
         }
 
-        spawningPlayer.setPosition(gameInstance.getGameMap().getSpawnSquare(spawnColor));
+        gameInstance.spawnPlayer(spawningPlayer, gameInstance.getGameMap().getSpawnSquare(spawnColor));
         spawningPlayer.changePlayerState(PossiblePlayerState.WAITING_TO_PLAY);
     }
 
@@ -156,18 +157,16 @@ public class RoundManager {
             if(shootDecision.equals("yes")) {
                 System.out.println("Choose the terminator's target >>> ");
                 String targetUserName = in.nextLine();
-                targetPlayer = gameInstance.getUserPlayerByUsername(targetUserName);
-                if(targetPlayer.getPosition() != null) {
-                    break;
-                } else {
-                    // ask for a new valid target
+                if(gameInstance.isPlayerPresent(targetUserName)) {
+                    targetPlayer = gameInstance.getUserPlayerByUsername(targetUserName);
+                    if(targetPlayer.getPosition() != null) {
+                        break;
+                    }
                 }
             } else if (shootDecision.equals("no")) {
                 targetPlayer = null;
                 break;
-            } else {
-                // typo or not accepted command, will be asked again
-            }
+            } // typo or not accepted command, will be asked again
         }
 
         // terminator action has been decided

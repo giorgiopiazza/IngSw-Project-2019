@@ -1,18 +1,18 @@
 package model.map;
 
-import enumerations.Color;
+import enumerations.RoomColor;
 import enumerations.SquareAdjacency;
 import enumerations.SquareType;
 
 public abstract class Square {
-    private final Color color;
+    private final RoomColor color;
     private final SquareType squareType;
     private final SquareAdjacency north;
     private final SquareAdjacency east;
     private final SquareAdjacency south;
     private final SquareAdjacency west;
 
-    public Square(Color color, SquareAdjacency north, SquareAdjacency east, SquareAdjacency south, SquareAdjacency west, SquareType squareType) {
+    public Square(RoomColor color, SquareAdjacency north, SquareAdjacency east, SquareAdjacency south, SquareAdjacency west, SquareType squareType) {
         this.color = color;
         this.squareType = squareType;
         this.north = north;
@@ -21,7 +21,7 @@ public abstract class Square {
         this.west = west;
     }
 
-    public Color getColor() {
+    public RoomColor getRoomColor() {
         return color;
     }
 

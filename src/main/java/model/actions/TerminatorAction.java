@@ -49,7 +49,7 @@ public class TerminatorAction implements Action {
             return terminator.canSee(targetPlayer);
         } else if (movingDistance == MAX_TERMINATOR_MOVE) {
             if (targetPlayer == null) {
-                if(movingPos.canSeeSomeone()) {
+                if(movingPos.canSeeSomeone(actingPlayer)) {
                     throw new InvalidActionException();
                 } else {
                     return true;

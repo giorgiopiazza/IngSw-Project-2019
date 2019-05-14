@@ -1,6 +1,6 @@
 package network.message;
 
-import enumerations.Color;
+import enumerations.RoomColor;
 import enumerations.MessageContent;
 import model.player.PlayerPosition;
 
@@ -10,7 +10,7 @@ import java.util.Objects;
 public abstract class EffectRequest extends ActionRequest {
     private final ArrayList<String> targetPlayersUsernames;
     private final ArrayList<PlayerPosition> targetPositions;
-    private final Color targetRoomColor;
+    private final RoomColor targetRoomColor;
     private final ArrayList<PlayerPosition> targetPlayersMovePositions;
 
     public EffectRequest(EffectRequestBuilder builder) {
@@ -30,7 +30,7 @@ public abstract class EffectRequest extends ActionRequest {
         return targetPositions;
     }
 
-    public Color getTargetRoomColor() {
+    public RoomColor getTargetRoomColor() {
         return targetRoomColor;
     }
 
@@ -44,7 +44,7 @@ public abstract class EffectRequest extends ActionRequest {
 
         private ArrayList<String> targetPlayersUsernames;
         private ArrayList<PlayerPosition> targetPositions;
-        private Color targetRoomColor;
+        private RoomColor targetRoomColor;
 
         private PlayerPosition senderMovePosition;
         private ArrayList<PlayerPosition> targetPlayersMovePositions;
@@ -66,7 +66,7 @@ public abstract class EffectRequest extends ActionRequest {
             return this;
         }
 
-        public EffectRequestBuilder targetRoomColor(Color targetRoomColor) {
+        public EffectRequestBuilder targetRoomColor(RoomColor targetRoomColor) {
             this.targetRoomColor = targetRoomColor;
             return this;
         }

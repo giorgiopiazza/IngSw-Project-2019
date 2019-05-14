@@ -122,7 +122,7 @@ public class PlayerPosition implements Serializable {
         Square targetSquare = Game.getInstance().getGameMap().getSquare(pos.getCoordX(), pos.getCoordY());
         Square playerSquare = Game.getInstance().getGameMap().getSquare(getCoordX(), getCoordY());
 
-        if (targetSquare.getColor() == playerSquare.getColor()) {
+        if (targetSquare.getRoomColor().equals(playerSquare.getRoomColor())) {
             return true;
         }
 
@@ -130,42 +130,44 @@ public class PlayerPosition implements Serializable {
 
         if (playerSquare.getNorth() == SquareAdjacency.DOOR) {
             tempSquare = Game.getInstance().getGameMap().getSquare(pos.getCoordX(), pos.getCoordY() - 1);
-            if (tempSquare.getColor() == playerSquare.getColor()) {
+            if (tempSquare.getRoomColor() == playerSquare.getRoomColor()) {
                 return true;
             }
         }
 
         if (playerSquare.getEast() == SquareAdjacency.DOOR) {
             tempSquare = Game.getInstance().getGameMap().getSquare(pos.getCoordX() + 1, pos.getCoordY());
-            if (tempSquare.getColor() == playerSquare.getColor()) {
+            if (tempSquare.getRoomColor() == playerSquare.getRoomColor()) {
                 return true;
             }
         }
 
         if (playerSquare.getSouth() == SquareAdjacency.DOOR) {
             tempSquare = Game.getInstance().getGameMap().getSquare(pos.getCoordX(), pos.getCoordY() + 1);
-            if (tempSquare.getColor() == playerSquare.getColor()) {
+            if (tempSquare.getRoomColor() == playerSquare.getRoomColor()) {
                 return true;
             }
         }
 
         if (playerSquare.getWest() == SquareAdjacency.DOOR) {
             tempSquare = Game.getInstance().getGameMap().getSquare(pos.getCoordX() - 1, pos.getCoordY());
-            return tempSquare.getColor() == playerSquare.getColor();
+            return tempSquare.getRoomColor() == playerSquare.getRoomColor();
         }
 
         return false;
     }
 
     /**
-     * Method used to verify if a position can see any target
+     * Method that verifies if a position can see any other target verifying that this target is not
+     * the same that is "shooting"
      *
-     * @return true if there is at least one player visible, otherwise false
+     * @param actingPlayer the UserPlayer acting
+     * @return true if the position can see any other target, otherwise false
      */
-    public boolean canSeeSomeone() {
+    public boolean canSeeSomeone(UserPlayer actingPlayer) {
         List<UserPlayer> players = Game.getInstance().getPlayers();
-        for(UserPlayer target : players) {
-            if(target.getPosition() != null && this.canSee(target.getPosition())) {
+        for (UserPlayer target : players) {
+            if (target.getPosition() != null && !target.equals(actingPlayer) && this.canSee(target.getPosition())) {
                 return true;
             }
         }
@@ -189,6 +191,10 @@ public class PlayerPosition implements Serializable {
         // Create two new instances because I'm going to work on it
         PlayerPosition p1 = new PlayerPosition(this);
         PlayerPosition p2 = new PlayerPosition(other);
+
+        if(p1.equals(p2)) {     // same positions have distance 0
+            return 0;
+        }
 
         int steps = 0; // number of steps for this path
 

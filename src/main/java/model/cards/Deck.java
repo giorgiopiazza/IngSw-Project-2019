@@ -27,6 +27,16 @@ public class Deck {
         this.garbage = garbage;
     }
 
+    public Deck(Deck other) {
+        this(other, false);
+    }
+
+    public Deck(Deck other, boolean garbage) {
+        cardsDeck = new ArrayList<>(other.cardsDeck);
+        if (garbage) discard = new ArrayList<>(other.discard);
+        this.garbage = garbage;
+    }
+
     /**
      * Empty the decks
      */

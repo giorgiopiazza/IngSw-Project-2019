@@ -1,8 +1,6 @@
 package model.cards;
 
-import enumerations.Color;
-import exceptions.game.GameAlreadyStartedException;
-import exceptions.game.NotEnoughPlayersException;
+import enumerations.PlayerColor;
 import model.Game;
 import model.player.AmmoQuantity;
 import model.player.PlayerBoard;
@@ -45,8 +43,8 @@ public class AmmoTileTest {
 
         boardA = new PlayerBoard();
         boardB = new PlayerBoard();
-        playerTestA = new UserPlayer("playerTestA", Color.YELLOW, boardA);
-        playerTestB = new UserPlayer("playerTestB", Color.RED, boardB);
+        playerTestA = new UserPlayer("playerTestA", PlayerColor.YELLOW, boardA);
+        playerTestB = new UserPlayer("playerTestB", PlayerColor.GREEN, boardB);
         onlyAmmoTile = new AmmoTile(null, defaultAllDifferent, false);
         onlyAmmoTile2 = new AmmoTile(null, defaultAllDifferent, false);
         ammoPowerupTile = new AmmoTile(null, redBlueAndPowerup, true);

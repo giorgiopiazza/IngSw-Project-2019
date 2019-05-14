@@ -3,7 +3,7 @@ package model.map;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import enumerations.Color;
+import enumerations.RoomColor;
 import enumerations.SquareAdjacency;
 import enumerations.SquareType;
 import exceptions.file.JsonFileNotFoundException;
@@ -110,7 +110,7 @@ public class Map {
                     JsonObject square = row.get(j).getAsJsonObject();
                     if (square.get("isSpawn").getAsBoolean()) {
                         map[i][j] = new SpawnSquare(
-                                Color.valueOf(square.get("color").getAsString()),
+                                RoomColor.valueOf(square.get("color").getAsString()),
                                 SquareAdjacency.valueOf(square.get("north").getAsString()),
                                 SquareAdjacency.valueOf(square.get("east").getAsString()),
                                 SquareAdjacency.valueOf(square.get("south").getAsString()),
@@ -118,7 +118,7 @@ public class Map {
                         );
                     } else {
                         map[i][j] = new CardSquare(
-                                Color.valueOf(square.get("color").getAsString()),
+                                RoomColor.valueOf(square.get("color").getAsString()),
                                 SquareAdjacency.valueOf(square.get("north").getAsString()),
                                 SquareAdjacency.valueOf(square.get("east").getAsString()),
                                 SquareAdjacency.valueOf(square.get("south").getAsString()),
@@ -194,19 +194,19 @@ public class Map {
      * @param roomColor the Color of the room in which there are the players returned
      * @return the ArrayList of players who are in the room of color roomColor
      */
-    public List<Player> getPlayersInRoom(Color roomColor) {
+    public List<Player> getPlayersInRoom(RoomColor roomColor) {
         Game game = Game.getInstance();
         List<Player> players = new ArrayList<>();
 
         for (Player p : game.getPlayers()) {
-            if (getSquare(p.getPosition().getCoordX(), p.getPosition().getCoordY()).getColor().equals(roomColor)) {
+            if (getSquare(p.getPosition().getCoordX(), p.getPosition().getCoordY()).getRoomColor().equals(roomColor)) {
                 players.add(p);
             }
         }
 
         if (game.isTerminatorPresent()) {
             Player term = game.getTerminator();
-            if (getSquare(term.getPosition().getCoordX(), term.getPosition().getCoordY()).getColor().equals(roomColor)) {
+            if (getSquare(term.getPosition().getCoordX(), term.getPosition().getCoordY()).getRoomColor().equals(roomColor)) {
                 players.add(term);
             }
         }
@@ -220,12 +220,12 @@ public class Map {
      * @param roomColor the Color of the room
      * @return an ArrayList of all the squares with the same Color
      */
-    public List<PlayerPosition> getRoom(Color roomColor) {
+    public List<PlayerPosition> getRoom(RoomColor roomColor) {
         List<PlayerPosition> room = new ArrayList<>();
 
         for (int i = 0; i < MAX_ROWS; ++i) {
             for (int j = 0; j < MAX_COLUMNS; ++j) {
-                if (rooms[i][j] != null && rooms[i][j].getColor().equals(roomColor)) {
+                if (rooms[i][j] != null && rooms[i][j].getRoomColor().equals(roomColor)) {
                     PlayerPosition tempPos = new PlayerPosition(i, j);
                     room.add(tempPos);
                 }
@@ -241,7 +241,7 @@ public class Map {
      * @param spawnColor the color of the square where to spawn
      * @return the playerposition of the square whre to spawn
      */
-    public PlayerPosition getSpawnSquare(Color spawnColor) {
+    public PlayerPosition getSpawnSquare(RoomColor spawnColor) {
         List<PlayerPosition> room = getRoom(spawnColor);
         for (PlayerPosition spawnPosition : room) {
             if (getSquare(spawnPosition).getSquareType().equals(SquareType.SPAWN)) {
@@ -249,7 +249,7 @@ public class Map {
             }
         }
 
-        throw new InvalidSpawnColorException(spawnColor);
+        throw new InvalidSpawnColorException(spawnColor.toString());
     }
 
     @Override
@@ -264,7 +264,7 @@ public class Map {
                     buffer.append(" \t");
                 } else {
                     buffer.append(' ');
-                    buffer.append(rooms[i][j].getColor());
+                    buffer.append(rooms[i][j].getRoomColor());
                 }
             }
             buffer.append('\n');

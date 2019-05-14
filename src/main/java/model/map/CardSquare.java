@@ -1,6 +1,6 @@
 package model.map;
 
-import enumerations.Color;
+import enumerations.RoomColor;
 import enumerations.SquareAdjacency;
 import enumerations.SquareType;
 import model.cards.AmmoTile;
@@ -9,13 +9,13 @@ public class CardSquare extends Square {
     private AmmoTile ammoTile;
     private boolean hasAmmoTile;
 
-    public CardSquare(Color color, SquareAdjacency north, SquareAdjacency east, SquareAdjacency south, SquareAdjacency west) {
+    public CardSquare(RoomColor color, SquareAdjacency north, SquareAdjacency east, SquareAdjacency south, SquareAdjacency west) {
         super(color, north, east, south, west, SquareType.TILE);
         this.ammoTile = null;
         this.hasAmmoTile = false;
     }
 
-    public CardSquare(Color color, SquareAdjacency north, SquareAdjacency east, SquareAdjacency south, SquareAdjacency west, AmmoTile ammoTile) {
+    public CardSquare(RoomColor color, SquareAdjacency north, SquareAdjacency east, SquareAdjacency south, SquareAdjacency west, AmmoTile ammoTile) {
         super(color, north, east, south, west, SquareType.TILE);
         this.ammoTile = ammoTile;
         this.hasAmmoTile = true;
