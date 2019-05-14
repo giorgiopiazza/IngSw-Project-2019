@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Cli {
-    Scanner in;
+    private Scanner in;
 
     public Cli() {
         in = new Scanner(System.in);
@@ -66,8 +66,22 @@ public class Cli {
         } else {
             System.out.println("You chose Socket connection");
         }
-
     }
+
+
+    /*
+      _____
+      |---|
+      |---|
+      |---|
+
+
+      |P L|
+      | N |
+      |K G|
+
+
+     */
 
     private void askUsername() {
         boolean validUsername = false;

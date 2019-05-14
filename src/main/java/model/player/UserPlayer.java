@@ -1,9 +1,6 @@
 package model.player;
 
-import enumerations.Color;
-import enumerations.PlayerBoardState;
-import enumerations.PossibleAction;
-import enumerations.PossiblePlayerState;
+import enumerations.*;
 import exceptions.game.InexistentColorException;
 import exceptions.player.CardAlreadyInHandException;
 import exceptions.player.EmptyHandException;
@@ -18,13 +15,13 @@ import java.util.List;
 import java.util.Set;
 
 public class UserPlayer extends Player {
-    private EnumSet<PossibleAction> possibleActions;
-    private PossiblePlayerState playerState;
-    private List<WeaponCard> weapons;
-    private List<PowerupCard> powerups;
+    private transient EnumSet<PossibleAction> possibleActions;
+    private transient PossiblePlayerState playerState;
+    private transient List<WeaponCard> weapons;
+    private transient List<PowerupCard> powerups;
     private boolean firstPlayer;
 
-    public UserPlayer(String nickname, Color color,
+    public UserPlayer(String nickname, PlayerColor color,
                       PlayerBoard playerBoard) {
 
         super(nickname, color, playerBoard);
@@ -158,7 +155,7 @@ public class UserPlayer extends Player {
      * @return the powerup specified in the player's hand
      * @throws InexistentColorException in case the color passed does not exist
      */
-    public int getPowerupByName(String powerupName, Color color) throws InexistentColorException{
+    public int getPowerupByName(String powerupName, RoomColor color) throws InexistentColorException{
         if(powerups.isEmpty()) throw new NullPointerException(this.getUsername() + " has no powerups!");
 
         for(int i = 0; i < powerups.size(); ++i) {
@@ -167,7 +164,7 @@ public class UserPlayer extends Player {
                     return i;
                 }
 
-                if(powerups.get(i).getName().equals(powerupName) && Color.getColor(powerups.get(i).getValue().name()).equals(color)) {
+                if(powerups.get(i).getName().equals(powerupName) && RoomColor.getColor(powerups.get(i).getValue().name()).equals(color)) {
                     return i;
                 }
             } catch (InexistentColorException e){

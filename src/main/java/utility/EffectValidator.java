@@ -247,7 +247,7 @@ public class EffectValidator {
                     return false;
                 }
             } else {
-                if ((Game.getInstance().getGameMap().getSquare(shooterPosition).getColor() == Game.getInstance().getGameMap().getSquare(position).getColor())) {
+                if ((Game.getInstance().getGameMap().getSquare(shooterPosition).getRoomColor() == Game.getInstance().getGameMap().getSquare(position).getRoomColor())) {
                     return false;
                 }
             }

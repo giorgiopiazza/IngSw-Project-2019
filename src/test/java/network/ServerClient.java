@@ -1,38 +1,42 @@
 package network;
 
+import model.player.PlayerPosition;
 import network.client.Client;
+import network.message.GameStateMessage;
+import network.message.Message;
+import network.message.MoveRequest;
 import network.server.MultiServer;
 import org.junit.jupiter.api.Test;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.ServerSocket;
-import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Arrays;
+import java.util.List;
 
 public class ServerClient {
 
     @Test
-    void serverTest() {
+    void serverTest() throws IOException, InterruptedException {
         MultiServer multiServer = new MultiServer();
 
-        while (true) {
-            if (!multiServer.acceptClient()) break;
+        for (;;) {
+            multiServer.acceptSocketClient();
+            multiServer.sendToAll(new GameStateMessage());
+            Thread.sleep(10);
+            multiServer.sendToAll(new GameStateMessage());
+            Thread.sleep(10);
+            multiServer.sendToAll(new GameStateMessage());
         }
-
-        multiServer.closeAll();
     }
 
     @Test
-    void clientTest() throws IOException {
-        Client client = new Client("localhost");
+    void clientTest() throws IOException, InterruptedException {
+        Client client = new Client("tose", "localhost");
 
-        client.sendMessage(new Random().nextInt() % 100 + "");
-        Logger.getGlobal().log(Level.INFO,client.receiveMessage());
-
-        client.close();
+        for (int i=0; i<5; i++) {
+            client.sendMessage(new MoveRequest("tose", new PlayerPosition(0, 0)));
+            List<Message> messages = client.receiveMessages();
+            System.out.println(Arrays.toString(messages.toArray()));
+            Thread.sleep(10);
+        }
     }
-
 }

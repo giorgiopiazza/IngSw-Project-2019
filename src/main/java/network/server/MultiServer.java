@@ -1,74 +1,106 @@
 package network.server;
 
+import exceptions.network.ClassAdrenalinaNotFoundException;
+import network.message.ConnectionRequest;
+import network.message.Message;
+
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class MultiServer {
+public class MultiServer implements CloseConnectionListener {
+    public static final int SOCKET_PORT = 2727;
+    public static final int RMI_PORT = 7272;
 
-    public static final int PORT = 2727;
     private ServerSocket serverSocket;
+    private Registry registry;
     private List<ServerThread> clients;
     static final Logger LOGGER = Logger.getGlobal();
 
-    public MultiServer() {
-        try {
-            serverSocket = new ServerSocket(PORT);
-        } catch (IOException e) { LOGGER.log(Level.SEVERE, e.toString()); }
+    public MultiServer() throws IOException {
+        serverSocket = new ServerSocket(SOCKET_PORT);
+        // registry = LocateRegistry.createRegistry(RMI_PORT);
 
         clients = new ArrayList<>();
     }
 
-    public boolean acceptClient() {
-        if(clients.size() >= 5) return false;
+    /**
+     * accept a client connection, max 5 clients connected
+     *
+     * @return the username if number of clients before call < 5, otherwise {@code null}
+     * @throws IOException if connection abort
+     */
+    public String acceptSocketClient() throws IOException {
+        if(clients.size() >= 5) return null;
 
         Socket client;
+        ConnectionRequest request;
 
+        client = serverSocket.accept();
+        ObjectInputStream in;
         try {
-            client = serverSocket.accept();
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, e.toString());
-            return false;
+            in = new ObjectInputStream(client.getInputStream());
+            request = (ConnectionRequest) in.readObject();
+        } catch (ClassNotFoundException e) {
+            throw new ClassAdrenalinaNotFoundException();
         }
 
-        ServerThread serverThread = new ServerThread(client, clients.size());
+        ServerThread serverThread = new ServerThreadSocket(client, request.getSenderUsername(), in, this);
         clients.add(serverThread);
         serverThread.start();
 
-        LOGGER.log(Level.INFO, "Accepted client: {0}", client);
+        LOGGER.log(Level.INFO, "Accepted client: {0}, request: {1}", new Object[] {client, request});
 
-        return true;
+        return request.getSenderUsername();
     }
 
+    /**
+     * Get the {@code InetAddress} of the server
+     *
+     * @return the address
+     */
     public InetAddress getAddress() {
         return serverSocket.getInetAddress();
     }
 
-    public boolean closeClient(Socket clientSocket) {
-        for (ServerThread client : clients) {
-            final Socket currClientSocket = client.getClient();
+    /**
+     * Close the connection of the {@code username} and remove it from the {@code clients} list
+     *
+     * @param username the username of the client to close
+     * @return true if username is present, otherwise false
+     */
+    public boolean closeClient(String username) {
+        for (int i = 0; i < clients.size(); i++) {
+            String currUser = clients.get(i).getUsername();
+            final Socket currSocket = clients.get(i).getClient();
 
-            synchronized (currClientSocket) {
-                if (currClientSocket.equals(clientSocket)) {
+            if (currUser.equals(username)) {
+                synchronized (currSocket) {
                     try {
-                        currClientSocket.close();
+                        currSocket.close();
                     } catch (IOException e) {
                         LOGGER.log(Level.SEVERE, e.toString());
-                        return false;
                     }
-                    return true;
                 }
+                clients.remove(i);
+                return true;
             }
         }
 
         return false;
     }
 
+    /**
+     * Close all connection and flush the clients list
+     *
+     */
     public void closeAll() {
         for (ServerThread client : clients) {
             Socket socket = client.getClient();
@@ -76,7 +108,32 @@ public class MultiServer {
             synchronized (socket) {
                 try {
                     socket.close();
-                } catch (IOException e) { LOGGER.log(Level.SEVERE, e.toString()); }
+                } catch (IOException e) {
+                    LOGGER.log(Level.SEVERE, e.toString());
+                }
+            }
+        }
+
+        clients.clear();
+    }
+
+    /**
+     * Send a {@code message} to all connected clients
+     *
+     * @param message the message to send
+     */
+    public void sendToAll(Message message) {
+        for (ServerThread serverThread : clients) {
+            serverThread.sendToClient(message);
+        }
+    }
+
+    @Override
+    public void onCloseConnection(String username) {
+        for (int i = 0; i < clients.size(); i++) {
+            if (clients.get(i).getUsername().equals(username)) {
+                clients.remove(i);
+                break;
             }
         }
     }

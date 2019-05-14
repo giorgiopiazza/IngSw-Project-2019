@@ -1,6 +1,6 @@
 package network.message;
 
-import enumerations.Color;
+import enumerations.RoomColor;
 import enumerations.MessageContent;
 import model.player.PlayerPosition;
 
@@ -53,7 +53,7 @@ public class ShootRequest extends EffectRequest {
 
         private ArrayList<String> targetPlayersUsernames;
         private ArrayList<PlayerPosition> targetPositions;
-        private Color targetRoomColor;
+        private RoomColor targetRoomColor;
 
         private PlayerPosition senderMovePosition;
         private ArrayList<PlayerPosition> targetPlayersMovePositions;
@@ -79,7 +79,7 @@ public class ShootRequest extends EffectRequest {
             return this;
         }
 
-        public FireRequestBuilder targetRoomColor(Color targetRoomColor) {
+        public FireRequestBuilder targetRoomColor(RoomColor targetRoomColor) {
             this.targetRoomColor = targetRoomColor;
             return this;
         }

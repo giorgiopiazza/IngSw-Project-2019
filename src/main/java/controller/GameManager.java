@@ -1,7 +1,6 @@
 package controller;
 
-import enumerations.Color;
-import enumerations.GameState;
+import enumerations.PlayerColor;
 import enumerations.PossibleGameState;
 import exceptions.game.InvalidGameStateException;
 import exceptions.game.MaxPlayerException;
@@ -80,14 +79,14 @@ public class GameManager {
         while (!gameInstance.isGameReadyToStart(ready)) {
             System.out.println("Username >>> ");
             userName = in.nextLine();
-            Color colorChosen;
+            PlayerColor colorChosen;
 
             if (!gameInstance.doesPlayerExists(userName)) {
                 for (; ; ) {
                     System.out.println(userName + " provide the color you have chosen: ");
 
                     try {
-                        colorChosen = Color.getColor(in.nextLine());
+                        colorChosen = PlayerColor.getColor(in.nextLine());
                         if (!gameInstance.isColorUsed(colorChosen)) {
                             break;
                         }
@@ -116,13 +115,13 @@ public class GameManager {
         System.out.println("Welcome to the very first version of the game: \n\n");
 
         // starting setup
-        if(gameState == PossibleGameState.GAME_ROOM) {
+        if (gameState == PossibleGameState.GAME_ROOM) {
             gameSetup();
             roomSetup();
         } else throw new InvalidGameStateException();
 
         // game is ready and can be started
-        if(gameState == PossibleGameState.GAME_READY) {
+        if (gameState == PossibleGameState.GAME_READY) {
             gameInstance.startGame();
             System.out.println("ADRENALINE is ready to start! \n");
             System.out.println(gameInstance.getPlayers().get(0).getUsername() + " is the first player \n");
@@ -131,33 +130,11 @@ public class GameManager {
                 roundManager.initTurnManager();
                 roundManager.handleFirstRound();
             }
-        } else throw new InvalidGameStateException();
+        }
 
         // now game has started
-        roundManager.setInitialActions();
-        if(gameState == PossibleGameState.GAME_STARTED) {
-            PossibleGameState changingState = gameState;
-            // this while manages the entire game changing turns between players
-            while(changingState == PossibleGameState.GAME_STARTED || changingState == PossibleGameState.SECOND_ACTION) {
-                changingState = roundManager.handleDecision(changingState);
-                if(changingState == PossibleGameState.FINAL_FRENZY) {
-                    roundManager.setInitialActions();
-                    gameInstance.setState(GameState.FINAL_FRENZY);
-                    // TODO handle frenzy and finish state
-                }
-                if(changingState == PossibleGameState.TERMINATOR_USED) {
-                    roundManager.removeTerminatorAction();
-                }
+        if (gameState == PossibleGameState.GAME_STARTED) {
 
-                while(changingState == PossibleGameState.ACTIONS_DONE) {
-                    roundManager.setReloadAction();
-                    changingState = roundManager.handleDecision(changingState);
-                    if(changingState == PossibleGameState.PASS_TURN) {
-                        roundManager.setInitialActions();
-                        // TODO pass turn handling
-                    }
-                }
-            }
-        } else throw new InvalidGameStateException();
+        }
     }
 }

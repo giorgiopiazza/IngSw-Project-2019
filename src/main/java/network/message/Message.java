@@ -20,4 +20,12 @@ public abstract class Message implements Serializable {
     public MessageContent getContent() {
         return content;
     }
+
+    @Override
+    public String toString() {
+        return "Message{" +
+                "senderUsername='" + senderUsername + '\'' +
+                ", content=" + content +
+                '}';
+    }
 }

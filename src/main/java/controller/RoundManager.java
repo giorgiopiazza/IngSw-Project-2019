@@ -238,7 +238,7 @@ public class RoundManager {
                 System.out.println("Choose the color of the " + powerupChosen +  " you want to use, remember powerups have only the colors BLUE,RED,YELLOW >>> ");
                 colorChosen = in.nextLine();
                 try {
-                    return player.getPowerupByName(powerupChosen, Color.getColor(colorChosen));
+                    return player.getPowerupByName(powerupChosen, Ammo.getColor(colorChosen));
                 } catch (InexistentColorException e) {
                     // color chosen is invalid and will be asked again
                 }
@@ -250,13 +250,13 @@ public class RoundManager {
 
     private void spawnTerminator() {
         Scanner in = new Scanner(System.in);
-        Color colorChosen;
+        RoomColor colorChosen;
         for (; ; ) {
             System.out.println("Choose the color of the spawning point where to spawn the terminator \n\n");
             System.out.println("Provide the color >>> ");
 
             try {
-                colorChosen = Color.getColor(in.nextLine());
+                colorChosen = RoomColor.getColor(in.nextLine());
                 gameInstance.buildTerminator();
                 gameInstance.spawnTerminator(gameInstance.getGameMap().getSpawnSquare(colorChosen));
                 break;
@@ -270,7 +270,7 @@ public class RoundManager {
         Scanner in = new Scanner(System.in);
         List<PowerupCard> twoDrawn = new ArrayList<>();
         String spawningPowerup;
-        Color spawnColor;
+        RoomColor spawnColor;
 
         for (int i = 0; i < 2; ++i) {
             PowerupCard cardDrawn = (PowerupCard) gameInstance.getPowerupCardsDeck().draw();
@@ -360,7 +360,7 @@ public class RoundManager {
                         System.out.println("Choose the color of the granade you want to use, remember powerups have only the colors BLUE,RED,YELLOW >>> ");
                         colorChosen = in.nextLine();
                         try {
-                            return player.getPowerupByName(TAGBACK_GRANADE, Color.getColor(colorChosen));
+                            return player.getPowerupByName(TAGBACK_GRANADE, Ammo.getColor(colorChosen));
                         } catch (InexistentColorException e) {
                             // color chosen is invalid and will be asked again
                         }
