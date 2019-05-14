@@ -1,79 +1,80 @@
 package network.client;
 
+import enumerations.MessageContent;
+import exceptions.network.ClassAdrenalinaNotFoundException;
+import network.message.ConnectionRequest;
+import network.message.Message;
 import network.server.MultiServer;
 
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Client {
     private Socket socket;
     private InetAddress address;
 
-    private BufferedReader in;
-    private ObjectInputStream objReader;
-    private PrintWriter out;
+    private ObjectInputStream in;
+    private ObjectOutputStream out;
 
-    public Client(String serverAddress) {
-        try {
-            address = InetAddress.getByName(serverAddress);
-            socket = new Socket(address, MultiServer.PORT);
+    private String username;
 
-            createStream();
-        } catch (IOException e) { Logger.getGlobal().log(Level.SEVERE, e.toString()); }
+    public Client(String username, String serverAddress) throws IOException {
+        this(username, InetAddress.getByName(serverAddress));
     }
 
-    public Client(InetAddress address) {
-        try {
-            this.address = address;
-            socket = new Socket(this.address, MultiServer.PORT);
+    public Client(String username, InetAddress address) throws IOException {
+        this.address = address;
+        this.username = username;
 
-            createStream();
-        } catch (IOException e) { Logger.getGlobal().log(Level.SEVERE, e.toString()); }
+        socket = new Socket(this.address, MultiServer.SOCKET_PORT);
+        // creazione stream di output su socket
+        out = new ObjectOutputStream(socket.getOutputStream());
+
+        out.writeObject(new ConnectionRequest(this.username));
+        out.reset();
+
+        // creazione stream di input da socket
+        in = new ObjectInputStream(socket.getInputStream());
     }
 
     private void createStream() throws IOException {
-        // creazione stream di input da socket
-        InputStreamReader isr = new InputStreamReader( socket.getInputStream());
-        in = new BufferedReader(isr);
-        // creazione stream di output su socket
-        OutputStreamWriter osw = new OutputStreamWriter( socket.getOutputStream());
-        BufferedWriter bw = new BufferedWriter(osw);
-        out = new PrintWriter(bw, true);
-        objReader = new ObjectInputStream(socket.getInputStream());
     }
 
-    public void sendMessage(String message) {
-        out.println(message);
+    public void sendMessage(Message message) throws IOException {
+        out.writeObject(message);
+        out.reset();
     }
 
-    public String receiveMessage() {
-        try {
-            return in.readLine();
-        } catch (IOException e) {
-            Logger.getGlobal().log(Level.SEVERE, e.toString());
-            return null;
-        }
+    public List<Message> receiveMessages() throws IOException {
+        List<Message> messageList = new ArrayList<>();
+        Message current;
+
+        do {
+            try {
+                current = (Message) in.readObject();
+            } catch (ClassNotFoundException e) {
+                throw new ClassAdrenalinaNotFoundException();
+            }
+            messageList.add(current);
+        } while (current.getContent() != MessageContent.RESPONSE);
+
+        return messageList;
     }
 
-    public Object receiveObject() {
-        try {
-            return objReader.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            Logger.getGlobal().log(Level.SEVERE, e.toString());
-            return null;
-        }
+    public void close() throws IOException {
+        socket.close();
     }
 
-    public boolean close() {
-        try {
-            socket.close();
-        } catch (IOException e) {
-            Logger.getGlobal().log(Level.SEVERE, e.toString());
-            return false;
-        }
-        return true;
+    public String getUsername() {
+        return username;
     }
+
+    public InetAddress getAddress() {
+        return address;
+    }
+
+
 }

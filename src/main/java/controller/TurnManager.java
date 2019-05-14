@@ -10,14 +10,17 @@ public class TurnManager {
 
     private List<UserPlayer> players;
     private List<UserPlayer> deathPlayers;
+    private ArrayList<UserPlayer> damagedPlayers;
+    private UserPlayer frenzyActivator;
 
     private int count;
 
     public TurnManager(List<UserPlayer> players) {
         this.players = players;
-        turnOwner = players.get(count);
+        this.frenzyActivator = null;
+        this.turnOwner = players.get(count);
 
-        deathPlayers = new ArrayList<>();
+        this.deathPlayers = new ArrayList<>();
     }
 
     public UserPlayer getTurnOwner() {
@@ -26,6 +29,22 @@ public class TurnManager {
 
     public void addDeathPlayer(UserPlayer player) {
         deathPlayers.add(player);
+    }
+
+    public void setDamagedPlayers(ArrayList<UserPlayer> damaged) {
+        this.damagedPlayers = damaged;
+    }
+
+    public ArrayList<UserPlayer> getDamagedPlayers() {
+        return this.damagedPlayers;
+    }
+
+    public void setFrenzyActivator(UserPlayer frenzyActivator) {
+        this.frenzyActivator = frenzyActivator;
+    }
+
+    public UserPlayer getFrenzyActivator() {
+        return this.frenzyActivator;
     }
 
     public void nextTurn() {

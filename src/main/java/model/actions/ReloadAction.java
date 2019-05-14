@@ -5,15 +5,16 @@ import exceptions.playerboard.NotEnoughAmmoException;
 import model.cards.WeaponCard;
 import model.player.UserPlayer;
 import network.message.EffectRequest;
+import network.message.ReloadRequest;
 
 import java.util.List;
 
-public class RechargeAction implements Action {
+public class ReloadAction implements Action {
     private UserPlayer actingPlayer;
     private List<WeaponCard> rechargingWeapons;
-    private EffectRequest rechargeRequest;
+    private ReloadRequest rechargeRequest;
 
-    public RechargeAction(UserPlayer actingPlayer, List<WeaponCard> rechargingWeapons, EffectRequest rechargeRequest) {
+    public ReloadAction(UserPlayer actingPlayer, List<WeaponCard> rechargingWeapons, ReloadRequest rechargeRequest) {
         this.actingPlayer = actingPlayer;
         this.rechargingWeapons = rechargingWeapons;
         this.rechargeRequest = rechargeRequest;
@@ -21,6 +22,10 @@ public class RechargeAction implements Action {
 
     @Override
     public boolean validate() {
+        if(rechargingWeapons.isEmpty() || rechargingWeapons == null) {
+            return true;
+        }
+
         for (WeaponCard weaponCard : rechargingWeapons) {
             if (!actingPlayer.hasWeapon(weaponCard)) {
                 return false;
@@ -32,8 +37,14 @@ public class RechargeAction implements Action {
 
     @Override
     public void execute() throws WeaponAlreadyChargedException, NotEnoughAmmoException {
+        if(rechargingWeapons.isEmpty() || rechargingWeapons == null) {
+            return;
+        }
+
         for(WeaponCard weaponCard : rechargingWeapons) {
+            /* TODO fix nella payrecharge cost con tipo giusto delle request
             weaponCard.payRechargeCost(rechargeRequest);
+             */
         }
     }
 }

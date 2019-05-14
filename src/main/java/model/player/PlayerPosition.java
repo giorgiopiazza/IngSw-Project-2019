@@ -192,7 +192,7 @@ public class PlayerPosition implements Serializable {
         PlayerPosition p1 = new PlayerPosition(this);
         PlayerPosition p2 = new PlayerPosition(other);
 
-        if(p1.equals(p2)) {     // same positions have distance 0
+        if (p1.samePosition(p2)) {     // same positions have distance 0
             return 0;
         }
 

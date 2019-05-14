@@ -1,5 +1,7 @@
 package enumerations;
 
+import exceptions.game.InexistentColorException;
+
 public enum Ammo {
     RED, YELLOW, BLUE;
 
@@ -17,5 +19,26 @@ public enum Ammo {
         }
 
         throw new NullPointerException("An ammo has always a color to be returned!");
+    }
+
+    public static RoomColor getColor(String colorChosen) throws InexistentColorException {
+        Ammo[] enumColors = values();
+        for(Ammo color : enumColors) {
+            if(color.toString().equals(colorChosen)) {
+                return RoomColor.RED;
+            }
+
+            if(color.toString().equals(colorChosen)) {
+                return RoomColor.YELLOW;
+            }
+
+            if(color.toString().equals(colorChosen)) {
+                return RoomColor.BLUE;
+            }
+
+            throw new NullPointerException("An ammo has always a color to be returned!");
+        }
+
+        throw new InexistentColorException(colorChosen);
     }
 }

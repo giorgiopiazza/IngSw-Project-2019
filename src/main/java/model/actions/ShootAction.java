@@ -25,7 +25,7 @@ public class ShootAction implements Action {
     private PlayerPosition movingPos;
     private EffectRequest shootRequest;
     private List<WeaponCard> rechargingWeapons;
-    private RechargeAction rechargeAction;
+    private ReloadAction reloadAction;
 
     public ShootAction(UserPlayer actingPlayer, WeaponCard shootingWeapon, PossibleAction actionChosen,
                        PlayerPosition movingPos, EffectRequest shootRequest, List<WeaponCard> rechargingWeapons) {
@@ -34,8 +34,9 @@ public class ShootAction implements Action {
         this.actionChosen = actionChosen;
         this.shootRequest = shootRequest;
         this.rechargingWeapons = rechargingWeapons;
-        this.rechargeAction = new RechargeAction(actingPlayer, rechargingWeapons, shootRequest);
-
+        /* TODO Giorgio storie di tipo request ricordati coglione
+        this.reloadAction = new ReloadAction(actingPlayer, rechargingWeapons, shootRequest);
+         */
         if (actingPlayer.getPosition().equals(movingPos) || movingPos == null) {
             this.movingPos = actingPlayer.getPosition();
         } else {
@@ -84,11 +85,11 @@ public class ShootAction implements Action {
         actingPlayer.changePosition(movingPos.getCoordX(), movingPos.getCoordY());
 
         // if the shooting action is a frenzy one I can also recharge my weapons before shooting
-        if (rechargingWeapons != null && rechargeAction != null &&
+        if (rechargingWeapons != null && reloadAction != null &&
                 (actionChosen == PossibleAction.FRENZY_SHOOT || actionChosen == PossibleAction.LIGHT_FRENZY_SHOOT)) {
-            if (rechargeAction.validate()) {
+            if (reloadAction.validate()) {
                 try {
-                    rechargeAction.execute();
+                    reloadAction.execute();
                 } catch (WeaponAlreadyChargedException e) {
                     // TODO Should we do something?
                 } catch (NotEnoughAmmoException e) {
