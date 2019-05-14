@@ -1,56 +1,42 @@
 package network;
 
-import model.GameSerialized;
+import model.player.PlayerPosition;
 import network.client.Client;
+import network.message.GameStateMessage;
+import network.message.Message;
+import network.message.MoveRequest;
 import network.server.MultiServer;
 import org.junit.jupiter.api.Test;
 
-import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 public class ServerClient {
 
     @Test
-    void serverTest() {
+    void serverTest() throws IOException, InterruptedException {
         MultiServer multiServer = new MultiServer();
 
-        while (true) {
-            if (!multiServer.acceptClient()) break;
+        for (;;) {
+            multiServer.acceptSocketClient();
+            multiServer.sendToAll(new GameStateMessage());
+            Thread.sleep(10);
+            multiServer.sendToAll(new GameStateMessage());
+            Thread.sleep(10);
+            multiServer.sendToAll(new GameStateMessage());
         }
-
-        multiServer.closeAll();
     }
 
     @Test
-    void clientTest() throws InterruptedException {
-        Client client = new Client("localhost");
+    void clientTest() throws IOException, InterruptedException {
+        Client client = new Client("tose", "localhost");
 
-        while (true) {
-            int n = new Random().nextInt() % 100;
-            client.sendMessage("gameState");
-            GameSerialized gameSerialized = (GameSerialized) client.receiveObject();
-            Logger.getGlobal().log(Level.INFO, gameSerialized.toString());
-            if (n % 11 == 0) break;
-            Thread.sleep(5000);
+        for (int i=0; i<5; i++) {
+            client.sendMessage(new MoveRequest("tose", new PlayerPosition(0, 0)));
+            List<Message> messages = client.receiveMessages();
+            System.out.println(Arrays.toString(messages.toArray()));
+            Thread.sleep(10);
         }
-
-        client.close();
     }
-
-    @Test
-    void clientTest2() throws InterruptedException {
-        Client client = new Client("localhost");
-
-        while (true) {
-            int n = new Random().nextInt() % 100;
-            client.sendMessage(n + "");
-            Logger.getGlobal().log(Level.INFO, client.receiveMessage());
-            if (n % 11 == 0) break;
-            Thread.sleep(5000);
-        }
-
-        client.close();
-    }
-
 }
