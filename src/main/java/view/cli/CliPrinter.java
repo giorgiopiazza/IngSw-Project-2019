@@ -17,12 +17,8 @@ class CliPrinter {
     }
 
     static void printPlayerBoards(GameSerialized gameSerialized) {
-        for(UserPlayer player : gameSerialized.getPlayers()) {
+        for(Player player : gameSerialized.getPlayers()) {
             printPlayerBoard(player, gameSerialized);
-        }
-
-        if (gameSerialized.isTerminatorPresent()) {
-            printPlayerBoard(gameSerialized.getTerminator(), gameSerialized);
         }
     }
 
@@ -86,7 +82,7 @@ class CliPrinter {
     private static Map<String, PlayerColor> getPlayerColorMap(GameSerialized gameSerialized) {
         Map<String, PlayerColor> playerColorMap = new HashMap<>();
 
-        for(UserPlayer player : gameSerialized.getPlayers()) {
+        for(Player player : gameSerialized.getPlayers()) {
             playerColorMap.put(player.getUsername(), player.getColor());
         }
 

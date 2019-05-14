@@ -39,8 +39,12 @@ public class GameSerialized implements Serializable  {
         this.currentState = currentState;
     }
 
-    public ArrayList<Player> getPlayer() {
+    public ArrayList<Player> getPlayers() {
         return players;
+    }
+
+    public void setPlayers(ArrayList<Player> players) {
+        this.players = players;
     }
 
     public void setPlayerBoards(ArrayList<Player> players) {

@@ -2,6 +2,7 @@ package view.cli;
 
 import enumerations.PlayerColor;
 import model.GameSerialized;
+import model.player.Player;
 import model.player.PlayerBoard;
 import model.player.UserPlayer;
 
@@ -42,7 +43,7 @@ public class Cli {
         pb.addMark(p2, 2);
         pb.addMark(p4, 1);
 
-        ArrayList<UserPlayer> players = new ArrayList<>();
+        ArrayList<Player> players = new ArrayList<>();
         players.add(p1);
         players.add(p2);
         players.add(p3);
