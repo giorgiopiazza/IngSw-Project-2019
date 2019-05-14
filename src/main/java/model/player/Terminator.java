@@ -1,11 +1,13 @@
 package model.player;
 
 import enumerations.PlayerColor;
+import model.Game;
 
 public class Terminator extends Player {
-    boolean spawnTurn;
+    private boolean spawnTurn;
+    
     public Terminator(PlayerColor color, PlayerBoard playerBoard) {
-        super("Terminator", color, playerBoard);
+        super(Game.TERMINATOR_USERNAME, color, playerBoard);
     }
 
     public Terminator(Terminator other) {

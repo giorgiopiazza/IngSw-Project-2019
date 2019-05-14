@@ -19,7 +19,7 @@ import java.util.Set;
 public class UserPlayer extends Player {
     private transient EnumSet<PossibleAction> possibleActions;
     private transient PossiblePlayerState playerState;
-    private List<WeaponCard> weapons;
+    private transient List<WeaponCard> weapons;
     private transient List<PowerupCard> powerups;
     private boolean firstPlayer;
 
