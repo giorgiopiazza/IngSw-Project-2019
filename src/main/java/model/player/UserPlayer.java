@@ -21,6 +21,13 @@ public class UserPlayer extends Player {
     private transient List<PowerupCard> powerups;
     private boolean firstPlayer;
 
+    public UserPlayer(String nickname) {
+        super(nickname);
+        this.playerState = PossiblePlayerState.FIRST_SPAWN;
+        weapons = new ArrayList<>();
+        powerups = new ArrayList<>();
+    }
+
     public UserPlayer(String nickname, PlayerColor color,
                       PlayerBoard playerBoard) {
 

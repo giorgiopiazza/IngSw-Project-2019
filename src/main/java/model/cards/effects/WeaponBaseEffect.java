@@ -6,7 +6,6 @@ import model.player.AmmoQuantity;
 import model.player.PlayerPosition;
 import network.message.EffectRequest;
 import network.message.ShootRequest;
-import utility.EffectValidator;
 
 import java.util.List;
 import java.util.Map;

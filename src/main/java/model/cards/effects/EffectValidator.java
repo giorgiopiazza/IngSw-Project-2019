@@ -1,4 +1,4 @@
-package utility;
+package model.cards.effects;
 
 import enumerations.Direction;
 import enumerations.Properties;
@@ -17,7 +17,7 @@ import network.message.PowerupRequest;
 
 import java.util.*;
 
-public class EffectValidator {
+class EffectValidator {
 
     private EffectValidator() {
         throw new IllegalStateException("Utility class");
@@ -263,7 +263,7 @@ public class EffectValidator {
      * @param targetType    the starting point of the Map from which we need to remove the properties
      * @return the sub map with the properties of a sub effect
      */
-    public static Map<String, String> getSubMap(Map<String, String> allProperties, TargetType targetType) {
+    static Map<String, String> getSubMap(Map<String, String> allProperties, TargetType targetType) {
         // here a LinkedHashMap is always passed is the iterator working right even if static type is Map?
         boolean foundTarget = false;
 
@@ -290,7 +290,7 @@ public class EffectValidator {
      * @param properties Map of effect properties
      * @return {@code true} if target moves are valid {@code false} otherwise
      */
-    public static boolean isMoveValid(EffectRequest request, Map<String, String> properties) {
+    static boolean isMoveValid(EffectRequest request, Map<String, String> properties) {
         // Player move validation
         if (properties.containsKey(Properties.MOVE.getJKey())) {
             List<PlayerPosition> movingPos = request.getTargetPlayersMovePositions();
@@ -341,7 +341,7 @@ public class EffectValidator {
      * @param targetType      TargetType of the targets
      * @return true if all the target positions are valid with the shooting one, otherwise false
      */
-    public static boolean isDistanceValid(Map<String, String> properties, PlayerPosition shooterPosition, List<PlayerPosition> targetPositions, TargetType targetType) {
+    static boolean isDistanceValid(Map<String, String> properties, PlayerPosition shooterPosition, List<PlayerPosition> targetPositions, TargetType targetType) {
         // Distance validation
         int distance;
         boolean exactDistance;
@@ -367,7 +367,7 @@ public class EffectValidator {
      * @param targetPositions List of PlayerPosition of the targets
      * @return true if both or only one of the two properties are verified, otherwise false
      */
-    public static boolean isPositioningValid(Map<String, String> properties, PlayerPosition shooterPosition, List<PlayerPosition> targetPositions) {
+    static boolean isPositioningValid(Map<String, String> properties, PlayerPosition shooterPosition, List<PlayerPosition> targetPositions) {
         return !((properties.containsKey(Properties.INLINE.getJKey()) && !areInLine(shooterPosition, targetPositions)) || // InLine targets validation
                 (properties.containsKey(Properties.MOVE_TO_LAST_TARGET.getJKey()) && !lastTargetPos(shooterPosition, targetPositions))); // Move to last target validation
     }
@@ -382,7 +382,7 @@ public class EffectValidator {
      * @param targetPositions List of PlayerPosition of the targets
      * @return true if the visibility is verified for each target position, otherwise false
      */
-    public static boolean isVisibilityValid(Map<String, String> properties, PlayerPosition shooterPosition, List<PlayerPosition> targetPositions) {
+    static boolean isVisibilityValid(Map<String, String> properties, PlayerPosition shooterPosition, List<PlayerPosition> targetPositions) {
         return !((properties.containsKey(Properties.SAME_POSITION.getJKey()) && !areInSamePosition(targetPositions)) || // Targets Same Position
                 (properties.containsKey(Properties.VISIBLE.getJKey()) &&
                         (!Boolean.parseBoolean(properties.get(Properties.VISIBLE.getJKey())) && !areAllInvisible(shooterPosition, targetPositions) || // Visible property == false and at least one target is visible
@@ -397,7 +397,7 @@ public class EffectValidator {
      * @param playersUsername the List of usernames you need the related players' reference
      * @return an ArrayList of players
      */
-    public static List<Player> getPlayersByUsername(List<String> playersUsername) {
+    static List<Player> getPlayersByUsername(List<String> playersUsername) {
         if (playersUsername == null) throw new NullPointerException("Can not take any player from null");
 
         List<Player> players = new ArrayList<>();
@@ -415,7 +415,7 @@ public class EffectValidator {
      * @param targetType desired
      * @return an ArrayList of PlayerPositions
      */
-    public static List<PlayerPosition> getTargetPositions(EffectRequest request, TargetType targetType) {
+    static List<PlayerPosition> getTargetPositions(EffectRequest request, TargetType targetType) {
         List<PlayerPosition> squares;
         List<Player> targets;
 
@@ -535,7 +535,7 @@ public class EffectValidator {
      * @param targetType TargetType of the effect target
      * @return {@code true} if command targets are valid {@code false} otherwise
      */
-    public static boolean isTargetValid(EffectRequest request, Map<String, String> properties, TargetType targetType) {
+    static boolean isTargetValid(EffectRequest request, Map<String, String> properties, TargetType targetType) {
         // TargetType validation
         if (!isTargetTypeValid(request, targetType)) {
             return false;
@@ -579,7 +579,7 @@ public class EffectValidator {
      * @param request containing the powerup request
      * @return {@code true} if the index is valid, otherwise {@code false}
      */
-    public static boolean isPowerupIndexValid(PowerupRequest request) {
+    static boolean isPowerupIndexValid(PowerupRequest request) {
         UserPlayer powerupUser = Game.getInstance().getUserPlayerByUsername(request.getSenderUsername());
         int powerupIndex = request.getPowerup();
 

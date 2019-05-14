@@ -6,7 +6,6 @@ import model.Game;
 import model.player.PlayerPosition;
 import network.message.EffectRequest;
 import network.message.PowerupRequest;
-import utility.EffectValidator;
 
 import java.util.List;
 import java.util.Map;
