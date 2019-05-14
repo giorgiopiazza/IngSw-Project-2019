@@ -125,15 +125,15 @@ public class WeaponParser {
     static Effect decorateSingleEffect(Effect effect, JsonObject properties) {
         TargetType targetType = TargetType.valueOf(properties.getAsJsonArray(TARGET).get(0).getAsString());
 
-        if (properties.has(Properties.DAMAGE_DISTRIBUTION.getJKey())) {
-            effect = new ExtraDamageDecorator(effect,
-                    parseIntJsonArray(properties.get(Properties.DAMAGE_DISTRIBUTION.getJKey()).getAsJsonArray()),
-                    targetType);
-        }
-
         if (properties.has(Properties.MARK_DISTRIBUTION.getJKey())) {
             effect = new ExtraMarkDecorator(effect,
                     parseIntJsonArray(properties.get(Properties.MARK_DISTRIBUTION.getJKey()).getAsJsonArray()),
+                    targetType);
+        }
+
+        if (properties.has(Properties.DAMAGE_DISTRIBUTION.getJKey())) {
+            effect = new ExtraDamageDecorator(effect,
+                    parseIntJsonArray(properties.get(Properties.DAMAGE_DISTRIBUTION.getJKey()).getAsJsonArray()),
                     targetType);
         }
 
@@ -162,15 +162,15 @@ public class WeaponParser {
         for (int i = targets.length - 1; i >= 0; --i) {
             JsonObject subEffect = subEffects.get(i).getAsJsonObject();
 
-            if (subEffect.has(Properties.DAMAGE_DISTRIBUTION.getJKey())) {
-                effect = new ExtraDamageDecorator(effect,
-                        parseIntJsonArray(subEffect.get(Properties.DAMAGE_DISTRIBUTION.getJKey()).getAsJsonArray()),
-                        targets[i]);
-            }
-
             if (subEffect.has(Properties.MARK_DISTRIBUTION.getJKey())) {
                 effect = new ExtraMarkDecorator(effect,
                         parseIntJsonArray(subEffect.get(Properties.MARK_DISTRIBUTION.getJKey()).getAsJsonArray()),
+                        targets[i]);
+            }
+
+            if (subEffect.has(Properties.DAMAGE_DISTRIBUTION.getJKey())) {
+                effect = new ExtraDamageDecorator(effect,
+                        parseIntJsonArray(subEffect.get(Properties.DAMAGE_DISTRIBUTION.getJKey()).getAsJsonArray()),
                         targets[i]);
             }
 

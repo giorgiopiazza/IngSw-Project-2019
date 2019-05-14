@@ -1,5 +1,10 @@
 package view.cli;
 
+import enumerations.PlayerColor;
+import model.GameSerialized;
+import model.player.PlayerBoard;
+import model.player.UserPlayer;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -15,10 +20,43 @@ public class Cli {
      * Starts the cli
      */
     public void start() {
+        GameSerialized gs = new GameSerialized();
+        PlayerBoard pb = new PlayerBoard();
+        UserPlayer p1 = new UserPlayer("Pippo", PlayerColor.BLUE, pb);
+        UserPlayer p2 = new UserPlayer("Pluto", PlayerColor.GREEN, new PlayerBoard());
+        UserPlayer p3 = new UserPlayer("Topolino", PlayerColor.PURPLE, new PlayerBoard());
+        UserPlayer p4 = new UserPlayer("Minnie", PlayerColor.GREY, new PlayerBoard());
+
+        p1.getPlayerBoard().addDamage(p2, 3);
+        p1.getPlayerBoard().addDamage(p4, 1);
+        p2.getPlayerBoard().addDamage(p1, 2);
+        p2.getPlayerBoard().addDamage(p4, 3);
+        p3.getPlayerBoard().addDamage(p4, 2);
+        p3.getPlayerBoard().addDamage(p1, 2);
+        p4.getPlayerBoard().addDamage(p2, 1);
+        p4.getPlayerBoard().addDamage(p3, 2);
+
+        pb.addMark(p2, 1);
+        pb.addMark(p3, 3);
+        pb.addMark(p4, 2);
+        pb.addMark(p2, 2);
+        pb.addMark(p4, 1);
+
+        ArrayList<UserPlayer> players = new ArrayList<>();
+        players.add(p1);
+        players.add(p2);
+        players.add(p3);
+        players.add(p4);
+
+        gs.setPlayers(players);
+
+        CliPrinter.printPlayerBoards(gs);
+
+        /*
         printLogo();
         askConnection();
         askUsername();
-        askColor();
+        askColor();*/
     }
 
     private void printLogo() {
@@ -67,21 +105,6 @@ public class Cli {
             System.out.println("You chose Socket connection");
         }
     }
-
-
-    /*
-      _____
-      |---|
-      |---|
-      |---|
-
-
-      |P L|
-      | N |
-      |K G|
-
-
-     */
 
     private void askUsername() {
         boolean validUsername = false;

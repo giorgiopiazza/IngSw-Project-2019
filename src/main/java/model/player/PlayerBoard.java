@@ -176,6 +176,14 @@ public class PlayerBoard implements Serializable {
         return ammo;
     }
 
+    public List<String> getDamages() {
+        return damages;
+    }
+
+    public List<String> getMarks() {
+        return marks;
+    }
+
     /**
      * Adds marks on the player board
      *
