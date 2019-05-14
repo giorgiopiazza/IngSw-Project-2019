@@ -1,10 +1,14 @@
 package controller;
 
+import view.cli.Cli;
+
 public class LocalServerTautology {
 
     public static void main(String[] args) {
-        GameManager match = new GameManager();
+        /*GameManager match = new GameManager();
+        match.run();*/
 
-        match.run();
+        Cli cli = new Cli();
+        cli.start();
     }
 }

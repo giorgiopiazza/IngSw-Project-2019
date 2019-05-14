@@ -5,13 +5,13 @@ import model.Game;
 
 public class Terminator extends Player {
     private boolean spawnTurn;
-    
     public Terminator(PlayerColor color, PlayerBoard playerBoard) {
         super(Game.TERMINATOR_USERNAME, color, playerBoard);
     }
 
     public Terminator(Terminator other) {
         super(other);
+        this.spawnTurn = other.spawnTurn;
     }
 
     public boolean isSpawnTurn() {
