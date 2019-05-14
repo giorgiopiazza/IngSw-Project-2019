@@ -4,10 +4,11 @@ import enumerations.Color;
 import enumerations.PlayerBoardState;
 import enumerations.PossibleAction;
 import enumerations.PossiblePlayerState;
+import exceptions.game.InexistentColorException;
 import exceptions.player.CardAlreadyInHandException;
 import exceptions.player.EmptyHandException;
 import exceptions.player.MaxCardsInHandException;
-import model.Game;
+import exceptions.player.MissingCardException;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
 
@@ -140,10 +141,6 @@ public class UserPlayer extends Player {
         powerups.remove(i);
     }
 
-    public boolean hasPowerup(PowerupCard powerup) {
-        return powerups.contains(powerup);
-    }
-
     /**
      * Gives an array representation of the powerups of a player
      *
@@ -153,67 +150,112 @@ public class UserPlayer extends Player {
         return powerups.toArray(new PowerupCard[0]);
     }
 
+    /**
+     * Method used to receive a powerup given his name and color in case two are possessed
+     *
+     * @param powerupName String containing the powerup name
+     * @param color the color of the powerup to be returned
+     * @return the powerup specified in the player's hand
+     * @throws InexistentColorException in case the color passed does not exist
+     */
+    public int getPowerupByName(String powerupName, Color color) throws InexistentColorException{
+        if(powerups.isEmpty()) throw new NullPointerException(this.getUsername() + " has no powerups!");
+
+        for(int i = 0; i < powerups.size(); ++i) {
+            try {
+                if(powerups.get(i).getName().equals(powerupName) && color == null) {
+                    return i;
+                }
+
+                if(powerups.get(i).getName().equals(powerupName) && Color.getColor(powerups.get(i).getValue().name()).equals(color)) {
+                    return i;
+                }
+            } catch (InexistentColorException e){
+                throw new InexistentColorException(color.name());
+            }
+        }
+
+        throw new MissingCardException(powerupName);
+    }
+
+    /**
+     * Method that returns the number of the specified powerup in the players hand
+     *
+     * @param powerupName String containing the powerup's name
+     * @return an integer containing the number of the occurrences of the powerup in the specified name
+     */
+    public int getPowerupOccurrences(String powerupName) {
+        int occurrences = 0;
+        for(PowerupCard powerup : powerups) {
+            if(powerup.getName().equals(powerupName)) {
+                ++occurrences;
+            }
+        }
+
+        return occurrences;
+    }
+
+    /**
+     * Method that returns the unloaded weapons a player can recharge
+     *
+     * @return an ArrayList containing the rechargeable weapons
+     */
+    public ArrayList<WeaponCard> getUnloadedWeapons() {
+        ArrayList<WeaponCard> unloadedWeapons = new ArrayList<>();
+        for(WeaponCard weapon : weapons) {
+            if(weapon.status() == 1) {  // UNCHARGED
+                unloadedWeapons.add(weapon);
+            }
+        }
+
+        return unloadedWeapons;
+    }
+
     public Set<PossibleAction> getPossibleActions() {
         return this.possibleActions;
     }
 
-    /**
-     * Method that sets the possible actions for a player whose state is FIRST_SPAWN
-     *
-     * @param isTerminatorPresent boolean that specifies if the terminator is present in the game
-     */
-    public void setStartingPossibleActions(boolean isTerminatorPresent) {
-        if (isFirstPlayer() && isTerminatorPresent) {
-            possibleActions = EnumSet.of(PossibleAction.SPAWN_TERMINATOR, PossibleAction.CHOOSE_SPAWN);
-        } else if (isTerminatorPresent) {
-            possibleActions = EnumSet.of(PossibleAction.CHOOSE_SPAWN, PossibleAction.TERMINATOR_ACTION);
-        } else {
-            possibleActions = EnumSet.of(PossibleAction.CHOOSE_SPAWN);
-        }
+    public void setActions(EnumSet<PossibleAction> possibleActions) {
+        this.possibleActions = possibleActions;
+    }
+
+    public void addAction(PossibleAction addingAction) {
+        this.possibleActions.add(addingAction);
+    }
+
+    public void removeAction(PossibleAction removingAction) {
+        this.possibleActions.remove(removingAction);
     }
 
     /**
-     * Method that sets the possible actions a player has due to his state, when the game is in NORMAL state
-     * If the game has the terminator, every player in his turn must always do also the terminator action
-     */
-    public void setPossibleActions() {
-        PlayerBoardState currentPlayerBoardState = getPlayerBoard().getBoardState();
-
-        switch (currentPlayerBoardState) {
-            case NORMAL:
-                possibleActions = EnumSet.of(PossibleAction.MOVE, PossibleAction.MOVE_AND_PICK, PossibleAction.SHOOT);
-                break;
-            case FIRST_ADRENALINE:
-                possibleActions = EnumSet.of(PossibleAction.MOVE, PossibleAction.ADRENALINE_PICK, PossibleAction.SHOOT);
-                break;
-            default:    // second adrenaline
-                possibleActions = EnumSet.of(PossibleAction.MOVE, PossibleAction.ADRENALINE_PICK, PossibleAction.ADRENALINE_SHOOT);
-        }
-
-        // in each state the player is he can always recharge his weapons (AT THE END OF THE TURN!)
-        possibleActions.add(PossibleAction.RELOAD);
-
-        if (Game.getInstance().isTerminatorPresent()) {
-            possibleActions.add(PossibleAction.TERMINATOR_ACTION);
-        }
-    }
-
-    /**
-     * Method that sets the possible actions a player has due to his position in the round turn,
-     * when the game is in FRENZY state
-     * If the game has the terminator, every player in his turn must always do also the terminator action
+     * Method that verifies if the player has the action he chooses to do
      *
-     * @param frenzyActivator the player who activated the final frenzy mode
+     * @param actionChosen String containing the action chosen
+     * @return true if the player's possible actions contain the action specified, otherwise false
      */
-    public void setFrenzyPossibleActions(UserPlayer frenzyActivator) {
-        if (Game.getInstance().getDoubleActionFrenzyPlayers(frenzyActivator).contains(this)) {
-            possibleActions = EnumSet.of(PossibleAction.FRENZY_MOVE, PossibleAction.FRENZY_PICK, PossibleAction.FRENZY_SHOOT);
-        } else {
-            possibleActions = EnumSet.of(PossibleAction.LIGHT_FRENZY_SHOOT, PossibleAction.LIGHT_FRENZY_PICK);
+    public boolean hasAction(String actionChosen) {
+        PossibleAction[] actions = getPossibleActions().toArray(new PossibleAction[0]);
+        for(PossibleAction action : actions) {
+            if(action.name().equalsIgnoreCase(actionChosen)) {
+                return true;
+            }
         }
 
-        if (Game.getInstance().isTerminatorPresent()) {
-            possibleActions.add(PossibleAction.TERMINATOR_ACTION);
+        // remove when add the message protocol
+        if(actionChosen.equalsIgnoreCase("move") && getPossibleActions().contains(PossibleAction.FRENZY_MOVE)) {
+            return true;
+        }
+
+        if(actionChosen.equalsIgnoreCase("pick") && (getPossibleActions().contains(PossibleAction.ADRENALINE_PICK) ||
+                getPossibleActions().contains(PossibleAction.FRENZY_PICK) || getPossibleActions().contains(PossibleAction.LIGHT_FRENZY_PICK))) {
+            return true;
+        }
+
+        if(actionChosen.equalsIgnoreCase("shoot") && (getPossibleActions().contains(PossibleAction.ADRENALINE_SHOOT) ||
+                getPossibleActions().contains(PossibleAction.FRENZY_SHOOT) || getPossibleActions().contains(PossibleAction.LIGHT_FRENZY_SHOOT))) {
+            return true;
+        } else {
+            return false;
         }
     }
 

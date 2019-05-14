@@ -1,6 +1,7 @@
 package controller;
 
 import enumerations.Color;
+import enumerations.GameState;
 import enumerations.PossibleGameState;
 import exceptions.game.InvalidGameStateException;
 import exceptions.game.MaxPlayerException;
@@ -130,11 +131,33 @@ public class GameManager {
                 roundManager.initTurnManager();
                 roundManager.handleFirstRound();
             }
-        }
+        } else throw new InvalidGameStateException();
 
         // now game has started
+        roundManager.setInitialActions();
         if(gameState == PossibleGameState.GAME_STARTED) {
+            PossibleGameState changingState = gameState;
+            // this while manages the entire game changing turns between players
+            while(changingState == PossibleGameState.GAME_STARTED || changingState == PossibleGameState.SECOND_ACTION) {
+                changingState = roundManager.handleDecision(changingState);
+                if(changingState == PossibleGameState.FINAL_FRENZY) {
+                    roundManager.setInitialActions();
+                    gameInstance.setState(GameState.FINAL_FRENZY);
+                    // TODO handle frenzy and finish state
+                }
+                if(changingState == PossibleGameState.TERMINATOR_USED) {
+                    roundManager.removeTerminatorAction();
+                }
 
-        }
+                while(changingState == PossibleGameState.ACTIONS_DONE) {
+                    roundManager.setReloadAction();
+                    changingState = roundManager.handleDecision(changingState);
+                    if(changingState == PossibleGameState.PASS_TURN) {
+                        roundManager.setInitialActions();
+                        // TODO pass turn handling
+                    }
+                }
+            }
+        } else throw new InvalidGameStateException();
     }
 }

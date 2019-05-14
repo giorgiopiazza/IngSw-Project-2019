@@ -3,6 +3,7 @@ package model.actions;
 import enumerations.PossibleAction;
 import enumerations.SquareType;
 import exceptions.actions.IncompatibleActionException;
+import exceptions.actions.InvalidActionException;
 import exceptions.cards.WeaponAlreadyChargedException;
 import exceptions.player.MaxCardsInHandException;
 import exceptions.playerboard.NotEnoughAmmoException;
@@ -52,7 +53,17 @@ public class PickAction implements Action {
 
 
     @Override
-    public boolean validate() {
+    public boolean validate() throws InvalidActionException {
+        // check that the built position has a valid X coordinate
+        if (movingPos.getCoordX() < 0 || movingPos.getCoordY() > 2) {
+            throw new InvalidActionException();
+        }
+
+        // check that the built position has a valid Y coordinate
+        if (movingPos.getCoordY() < 0 || movingPos.getCoordY() > 3) {
+            throw new InvalidActionException();
+        }
+
         int movingDistance = actingPlayer.getPosition().distanceOf(movingPos);
         int maxMove;
 
@@ -103,6 +114,7 @@ public class PickAction implements Action {
 
                 // then I add the weapon to my hand
                 actingPlayer.addWeapon(pickingWeapon);
+                ((SpawnSquare) pickingSquare).removeWeapon(pickingWeapon);
             } catch (MaxCardsInHandException e) {
                 actingPlayer.addWeapon(pickingWeapon, discardingWeapon);
                 discardingWeapon.setStatus(new SemiChargedWeapon());

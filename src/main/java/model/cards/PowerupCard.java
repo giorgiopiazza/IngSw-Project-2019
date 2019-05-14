@@ -30,7 +30,7 @@ public class PowerupCard extends UsableCard {
     }
 
     @Override
-    public void use(EffectRequest request) throws AdrenalinaException {
+    public void use(EffectRequest request) throws NotEnoughAmmoException {
         PowerupRequest powerupRequest = (PowerupRequest) request;
 
         String username = powerupRequest.getSenderUsername();

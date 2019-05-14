@@ -1,5 +1,6 @@
 package model;
 
+import controller.ActionManager;
 import enumerations.Color;
 import enumerations.GameState;
 import enumerations.SquareType;
@@ -173,7 +174,7 @@ public class Game {
         pickFirstPlayer();
 
         for (UserPlayer player : players) {
-            player.setStartingPossibleActions(terminatorPresent);
+            ActionManager.setStartingPossibleActions(player, terminatorPresent);
         }
 
         distributeCards();
@@ -511,8 +512,6 @@ public class Game {
         }
 
         return frenzyPlayers;
-
-
     }
 
     /**

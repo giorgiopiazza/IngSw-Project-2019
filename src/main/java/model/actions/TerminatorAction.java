@@ -36,7 +36,17 @@ public class TerminatorAction implements Action {
 
     @Override
     public boolean validate() throws InvalidActionException {
-        if(actingPlayer.equals(targetPlayer)) {
+        if (actingPlayer.equals(targetPlayer)) {
+            throw new InvalidActionException();
+        }
+
+        // check that the built position has a valid X coordinate
+        if (movingPos.getCoordX() < 0 || movingPos.getCoordY() > 2) {
+            throw new InvalidActionException();
+        }
+
+        // check that the built position has a valid Y coordinate
+        if (movingPos.getCoordY() < 0 || movingPos.getCoordY() > 3) {
             throw new InvalidActionException();
         }
 
@@ -49,7 +59,7 @@ public class TerminatorAction implements Action {
             return terminator.canSee(targetPlayer);
         } else if (movingDistance == MAX_TERMINATOR_MOVE) {
             if (targetPlayer == null) {
-                if(movingPos.canSeeSomeone(actingPlayer)) {
+                if (movingPos.canSeeSomeone(actingPlayer)) {
                     throw new InvalidActionException();
                 } else {
                     return true;
@@ -68,7 +78,7 @@ public class TerminatorAction implements Action {
         terminator.changePosition(movingPos.getCoordX(), movingPos.getCoordY());
 
         // if the terminator can not see anyone his action is ended
-        if(targetPlayer == null) {
+        if (targetPlayer == null) {
             return;
         }
 

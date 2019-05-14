@@ -6,18 +6,18 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class ReloadRequest extends Message {
-    private final int weaponID;
+    private final ArrayList<Integer> weapons;
     private final ArrayList<Integer> paymentPowerups;
 
-    public ReloadRequest(String username, int weaponID, ArrayList<Integer> paymentPowerups) {
+    public ReloadRequest(String username, ArrayList<Integer> weapons, ArrayList<Integer> paymentPowerups) {
         super(username, MessageContent.RELOAD);
 
-        this.weaponID = weaponID;
+        this.weapons = Objects.requireNonNullElse(weapons, new ArrayList<>());
         this.paymentPowerups = Objects.requireNonNullElse(paymentPowerups, new ArrayList<>());
     }
 
-    public int getWeaponID() {
-        return weaponID;
+    public ArrayList<Integer> getWeapons() {
+        return weapons;
     }
 
     public ArrayList<Integer> getPaymentPowerups() {

@@ -1,6 +1,7 @@
 package model.actions;
 
 import enumerations.PossibleAction;
+import exceptions.actions.InvalidActionException;
 import model.player.PlayerPosition;
 import model.player.UserPlayer;
 
@@ -20,7 +21,17 @@ public class MoveAction implements Action {
     }
 
     @Override
-    public boolean validate() {
+    public boolean validate() throws InvalidActionException {
+        // check that the built position has a valid X coordinate
+        if(movingPos.getCoordX() < 0 || movingPos.getCoordY() > 2) {
+            throw new InvalidActionException();
+        }
+
+        // check that the built position has a valid Y coordinate
+        if(movingPos.getCoordY() < 0 || movingPos.getCoordY() > 3) {
+            throw new InvalidActionException();
+        }
+
         int movingDistance = actingPlayer.getPosition().distanceOf(movingPos);
 
         if (actionChosen == PossibleAction.MOVE) {
