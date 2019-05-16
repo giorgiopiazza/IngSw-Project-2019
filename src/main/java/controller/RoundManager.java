@@ -8,10 +8,7 @@ import exceptions.game.InvalidGameStateException;
 import exceptions.player.MaxCardsInHandException;
 import exceptions.playerboard.NotEnoughAmmoException;
 import model.Game;
-import model.actions.MoveAction;
-import model.actions.PickAction;
-import model.actions.ReloadAction;
-import model.actions.TerminatorAction;
+import model.actions.*;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
 import model.map.SpawnSquare;
@@ -65,9 +62,9 @@ public class RoundManager {
                 return handlePowerupAction(changingState);
             } else if (decision.equalsIgnoreCase("action")) {
                 if (changingState == PossibleGameState.GAME_STARTED) {
-                    return handlePlayerAction(false);
+                    return handlePlayerAction(false, changingState);
                 } else if (changingState == PossibleGameState.SECOND_ACTION) {
-                    return handlePlayerAction(true);
+                    return handlePlayerAction(true, changingState);
                 } else if (decision.equalsIgnoreCase("reload")) {
                     handleReloadAction(turnManager.getTurnOwner());
                     return PossibleGameState.MANAGE_DEATHS;
@@ -106,7 +103,7 @@ public class RoundManager {
         GameManager.changeState(PossibleGameState.GAME_STARTED);
     }
 
-    private PossibleGameState handlePlayerAction(boolean secondAction/* ,message */) {
+    private PossibleGameState handlePlayerAction(boolean secondAction, PossibleGameState changingState/* ,message */) {
         Scanner in = new Scanner(System.in);
         UserPlayer turnOwner = turnManager.getTurnOwner();
 
@@ -125,50 +122,49 @@ public class RoundManager {
 
         switch (actionChosen) {
             case ("MOVE"):
-                handleMoveAction(turnOwner);
-                if (!secondAction) {
-                    return PossibleGameState.SECOND_ACTION;
+                if(handleMoveAction(turnOwner)) {
+                    return handleAfterActionState(secondAction);
                 } else {
-                    return PossibleGameState.ACTIONS_DONE;
+                    return changingState;
                 }
             case ("PICK"):
-                handlePickAction(turnOwner);
-                if (!secondAction) {
-                    return PossibleGameState.SECOND_ACTION;
+                if (handlePickAction(turnOwner)) {
+                    return handleAfterActionState(secondAction);
                 } else {
-                    return PossibleGameState.ACTIONS_DONE;
+                    return changingState;
                 }
             case ("SHOOT"):
-                handleShootAction(turnOwner);
-                if (!turnManager.getDamagedPlayers().isEmpty()) {
-                    handleTagBackGranadeUsage(turnManager.getDamagedPlayers(), turnOwner);
-                }
-                if (gameInstance.remainingSkulls() == 0) {
-                    return PossibleGameState.FINAL_FRENZY;
+                if (handleShootAction(turnOwner)) {
+                    return handleAfterShootChangings(secondAction);
                 } else {
-                    if (!secondAction) {
-                        return PossibleGameState.SECOND_ACTION;
-                    } else {
-                        return PossibleGameState.ACTIONS_DONE;
-                    }
+                    return changingState;
                 }
             case ("TERMINATOR"):
                 handleTerminatorAction(turnOwner);
-                if (!turnManager.getDamagedPlayers().isEmpty()) {
-                    handleTagBackGranadeUsage(turnManager.getDamagedPlayers(), turnOwner);
-                }
-                if (gameInstance.remainingSkulls() == 0) {
-                    return PossibleGameState.FINAL_FRENZY;
-                } else {
-                    if (!secondAction) {
-                        return PossibleGameState.SECOND_ACTION;
-                    } else {
-                        return PossibleGameState.ACTIONS_DONE;
-                    }
-                }
+                return handleAfterShootChangings(secondAction);
+
             default:
                 // no action recognised, nothing will be executed
                 return PossibleGameState.GAME_STARTED;
+        }
+    }
+
+    private PossibleGameState handleAfterShootChangings(boolean secondAction) {
+        if (!turnManager.getDamagedPlayers().isEmpty()) {
+            handleTagBackGranadeUsage(turnManager.getDamagedPlayers(), turnManager.getTurnOwner());
+        }
+        if (gameInstance.remainingSkulls() == 0) {
+            return PossibleGameState.FINAL_FRENZY;
+        } else {
+            return handleAfterActionState(secondAction);
+        }
+    }
+
+    private PossibleGameState handleAfterActionState(boolean secondAction) {
+        if (!secondAction) {
+            return PossibleGameState.SECOND_ACTION;
+        } else {
+            return PossibleGameState.ACTIONS_DONE;
         }
     }
 
@@ -434,8 +430,8 @@ public class RoundManager {
         return new TerminatorAction(currentPlayer, targetPlayer, movingPos);
     }
 
+    // TerminatorAction is the only one that has to always done when decided to be used because every player in each turn must do it !
     private void handleTerminatorAction(UserPlayer currentPlayer) {
-        ArrayList<UserPlayer> damagedPlayer;
         for (; ; ) {
             TerminatorAction builtAction = setTerminatorAction(currentPlayer);
 
@@ -475,22 +471,25 @@ public class RoundManager {
         return new MoveAction(turnOwner, new PlayerPosition(coordX, coordY), actionType);
     }
 
-    private void handleMoveAction(UserPlayer turnOwner) {
-        for (; ; ) {
-            MoveAction builtAction = setMoveAction(turnOwner);
+    /**
+     * Method that builds the move action decided by the turnOwner and returns true if the action is
+     * executed, otherwise the action is not executed and the player would do an other one
+     *
+     * @param turnOwner UserPlayer who is currently playing
+     * @return true if the action is executed, otherwise false
+     */
+    private boolean handleMoveAction(UserPlayer turnOwner) {
+        MoveAction builtAction = setMoveAction(turnOwner);
 
-            try {
-                if (builtAction.validate()) {
-                    builtAction.execute();
-                    break;
-                } else {
-                    // move action is invalid and will be asked again!
-                }
-            } catch (InvalidActionException e) {
-                // move action is invalid and will be asked again!
+        try {
+            if (builtAction.validate()) {
+                builtAction.execute();
+                return true;
+            } else {
+                return false;
             }
-
-            System.out.println("\nINVALID MOVING POSITION, CHOOSE A NEW ONE\n");
+        } catch (InvalidActionException e) {
+            return false;
         }
     }
 
@@ -547,22 +546,25 @@ public class RoundManager {
         }
     }
 
-    private void handlePickAction(UserPlayer player) {
-        for (; ; ) {
-            PickAction builtAction = setPickAction(player);
+    /**
+     * Method that builds the pick action decided by the TurnOwner and returns true if the action is
+     * executed, otherwise the action is not executed and the player would do an other one
+     *
+     * @param turnOwner UserPlayer who is currently playing
+     * @return true if the action is executed, otherwise false
+     */
+    private boolean handlePickAction(UserPlayer turnOwner) {
+        PickAction builtAction = setPickAction(turnOwner);
 
-            try {
-                if (builtAction.validate()) {
-                    builtAction.execute();
-                    break;
-                } else {
-                    // pick action is invalid and will be asked again
-                }
-            } catch (InvalidActionException e) {
-                // pick action is invalid and will be asked again
+        try {
+            if (builtAction.validate()) {
+                builtAction.execute();
+                return true;
+            } else {
+                return false;
             }
-
-            System.out.println("\nINVALID PICK ACTION CHOOSE A NEW ONE\n");
+        } catch (InvalidActionException e) {
+            return false;
         }
     }
 
@@ -642,9 +644,31 @@ public class RoundManager {
         return powerups;
     }
 
-    private void handleShootAction(UserPlayer turnOwner) {
+    private ShootAction setShootAction(UserPlayer turnOwner) {
+        Scanner in = new Scanner(System.in);
+        PossibleAction actionType;
+        Set<PossibleAction> ownersActions = turnOwner.getPossibleActions();
+
+        if(ownersActions.contains(PossibleAction.SHOOT)) {
+            actionType = PossibleAction.SHOOT;
+        } else if (ownersActions.contains(PossibleAction.ADRENALINE_SHOOT)) {
+            actionType = PossibleAction.ADRENALINE_SHOOT;
+        } else if(ownersActions.contains(PossibleAction.FRENZY_SHOOT)) {
+            actionType = PossibleAction.FRENZY_SHOOT;
+        } else if(ownersActions.contains(PossibleAction.LIGHT_FRENZY_SHOOT)) {
+            actionType = PossibleAction.LIGHT_FRENZY_SHOOT;
+        } else {
+            throw new MissingActionException();
+        }
+
+        return null;
+
+    }
+
+    private boolean handleShootAction(UserPlayer turnOwner) {
         turnManager.setDamagedPlayers(null);
         // TODO decidere come fare la interazione + request del cazzo
+        return true;
     }
 
     private ReloadAction setReloadAction(UserPlayer turnOwner) {

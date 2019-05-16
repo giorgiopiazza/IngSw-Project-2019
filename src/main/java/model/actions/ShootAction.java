@@ -91,9 +91,9 @@ public class ShootAction implements Action {
                 try {
                     reloadAction.execute();
                 } catch (WeaponAlreadyChargedException e) {
-                    // TODO Should we do something?
+                    // Should we do something? No nothing the action is not executable and a new one will be done
                 } catch (NotEnoughAmmoException e) {
-                    // TODO Should we do something?
+                    // Should we do something? No nothing the action is not executable and a new one will be done
                 }
 
             } else {
