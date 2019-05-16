@@ -51,10 +51,14 @@ public class RoundManager {
         turnManager.getTurnOwner().setActions(EnumSet.of(PossibleAction.RELOAD));
     }
 
+    public void addDoubleKillPoint() {
+        turnManager.getTurnOwner().addPoints(1);
+    }
+
     public PossibleGameState handleDecision(PossibleGameState changingState) {
         Scanner in = new Scanner(System.in);
 
-        System.out.println("Choose what you want to do (POWERUP/ACTION/RELOAD) >>> ");
+        System.out.println("Choose what you want to do (POWERUP/ACTION) >>> ");
 
         for (; ; ) {
             String decision = in.nextLine();
@@ -65,11 +69,27 @@ public class RoundManager {
                     return handlePlayerAction(false, changingState);
                 } else if (changingState == PossibleGameState.SECOND_ACTION) {
                     return handlePlayerAction(true, changingState);
-                } else if (decision.equalsIgnoreCase("reload")) {
-                    handleReloadAction(turnManager.getTurnOwner());
-                    return PossibleGameState.MANAGE_DEATHS;
                 } else {
                     throw new InvalidGameStateException();
+                }
+            }
+        }
+    }
+
+    public PossibleGameState handleReloadDecision(PossibleGameState changingState) {
+        Scanner in = new Scanner(System.in);
+
+        System.out.println("Choose what you want to do (POWERUP/RELOAD/PASS), remember you are not obliged to reload your weapons >>> ");
+
+        for (; ; ) {
+            String decision = in.nextLine();
+            if (decision.equalsIgnoreCase("powerup")) {
+                return handlePowerupAction(changingState);
+            } else if (decision.equalsIgnoreCase("reload")) {
+                if (handleReloadAction(turnManager.getTurnOwner())) {
+                    return PossibleGameState.PASS_TURN;
+                } else {
+                    return changingState;
                 }
             }
         }
@@ -122,7 +142,7 @@ public class RoundManager {
 
         switch (actionChosen) {
             case ("MOVE"):
-                if(handleMoveAction(turnOwner)) {
+                if (handleMoveAction(turnOwner)) {
                     return handleAfterActionState(secondAction);
                 } else {
                     return changingState;
@@ -153,11 +173,8 @@ public class RoundManager {
         if (!turnManager.getDamagedPlayers().isEmpty()) {
             handleTagBackGranadeUsage(turnManager.getDamagedPlayers(), turnManager.getTurnOwner());
         }
-        if (gameInstance.remainingSkulls() == 0) {
-            return PossibleGameState.FINAL_FRENZY;
-        } else {
-            return handleAfterActionState(secondAction);
-        }
+
+        return handleAfterActionState(secondAction);
     }
 
     private PossibleGameState handleAfterActionState(boolean secondAction) {
@@ -177,28 +194,28 @@ public class RoundManager {
         int powerupChosen;
 
 
-        if(turnOwner.getPowerups().length == 0) {
+        if (turnOwner.getPowerups().length == 0) {
             System.out.println("You have no usable powerups! ");
             return changingState;
         }
 
-        for(PowerupCard powerup : turnOwner.getPowerups()) {
-            if(powerup.getName().equalsIgnoreCase(NEWTON) || powerup.getName().equalsIgnoreCase(TELEPORTER)) {
+        for (PowerupCard powerup : turnOwner.getPowerups()) {
+            if (powerup.getName().equalsIgnoreCase(NEWTON) || powerup.getName().equalsIgnoreCase(TELEPORTER)) {
                 System.out.println(powerup.toString());
             }
         }
 
         System.out.println("Choose the powerup you want to use (NEWTON/TELEPORTER) >>> ");
-        for(;;) {
+        for (; ; ) {
             decision = in.nextLine();
-            if(decision.equalsIgnoreCase(NEWTON)) {
+            if (decision.equalsIgnoreCase(NEWTON)) {
                 powerupChosen = getChosenPowerup(turnOwner, NEWTON);
-                if(powerupChosen != -1) {
+                if (powerupChosen != -1) {
                     break;
                 }
-            } else if(decision.equalsIgnoreCase(TELEPORTER)) {
+            } else if (decision.equalsIgnoreCase(TELEPORTER)) {
                 powerupChosen = getChosenPowerup(turnOwner, TELEPORTER);
-                if(powerupChosen != -1) {
+                if (powerupChosen != -1) {
                     break;
                 }
             } else {
@@ -208,7 +225,7 @@ public class RoundManager {
 
         powerupRequest = new PowerupRequest.PowerupRequestBuilder(turnOwner.getUsername(), powerupChosen).build();
         chosenPowerup = turnOwner.getPowerups()[powerupRequest.getPowerup()];
-        if(chosenPowerup.getName().equals(decision)) {
+        if (chosenPowerup.getName().equals(decision)) {
             try {
                 chosenPowerup.use(powerupRequest);
             } catch (NotEnoughAmmoException e) {
@@ -223,7 +240,7 @@ public class RoundManager {
         Scanner in = new Scanner(System.in);
         String colorChosen;
 
-        if(player.getPowerupOccurrences(powerupChosen) == 1) {
+        if (player.getPowerupOccurrences(powerupChosen) == 1) {
             try {
                 return player.getPowerupByName(powerupChosen, null);
             } catch (InexistentColorException e) {
@@ -231,7 +248,7 @@ public class RoundManager {
             }
         } else if (player.getPowerupOccurrences(powerupChosen) > 1) {
             for (; ; ) {
-                System.out.println("Choose the color of the " + powerupChosen +  " you want to use, remember powerups have only the colors BLUE,RED,YELLOW >>> ");
+                System.out.println("Choose the color of the " + powerupChosen + " you want to use, remember powerups have only the colors BLUE,RED,YELLOW >>> ");
                 colorChosen = in.nextLine();
                 try {
                     return player.getPowerupByName(powerupChosen, Ammo.getColor(colorChosen));
@@ -254,6 +271,24 @@ public class RoundManager {
             try {
                 colorChosen = RoomColor.getColor(in.nextLine());
                 gameInstance.buildTerminator();
+                gameInstance.spawnTerminator(gameInstance.getGameMap().getSpawnSquare(colorChosen));
+                break;
+            } catch (Exception e) {
+                // wrong color is asked again
+            }
+        }
+    }
+
+    public void handleTerminatorRespawn() {
+        Scanner in = new Scanner(System.in);
+        RoomColor colorChosen;
+
+        for (; ; ) {
+            System.out.println("Choose the color of the spawning point where to spawn the terminator \n\n");
+            System.out.println("Provide the color >>> ");
+
+            try {
+                colorChosen = RoomColor.getColor(in.nextLine());
                 gameInstance.spawnTerminator(gameInstance.getGameMap().getSpawnSquare(colorChosen));
                 break;
             } catch (Exception e) {
@@ -311,6 +346,10 @@ public class RoundManager {
 
         gameInstance.spawnPlayer(spawningPlayer, gameInstance.getGameMap().getSpawnSquare(spawnColor));
         spawningPlayer.changePlayerState(PossiblePlayerState.WAITING_TO_PLAY);
+    }
+
+    public void handlePlayerRespawn(UserPlayer player) {
+        // TODO care the fourth powerup picked!
     }
 
     private void handleTagBackGranadeUsage(ArrayList<UserPlayer> damaged, UserPlayer turnOwner) {
@@ -649,13 +688,13 @@ public class RoundManager {
         PossibleAction actionType;
         Set<PossibleAction> ownersActions = turnOwner.getPossibleActions();
 
-        if(ownersActions.contains(PossibleAction.SHOOT)) {
+        if (ownersActions.contains(PossibleAction.SHOOT)) {
             actionType = PossibleAction.SHOOT;
         } else if (ownersActions.contains(PossibleAction.ADRENALINE_SHOOT)) {
             actionType = PossibleAction.ADRENALINE_SHOOT;
-        } else if(ownersActions.contains(PossibleAction.FRENZY_SHOOT)) {
+        } else if (ownersActions.contains(PossibleAction.FRENZY_SHOOT)) {
             actionType = PossibleAction.FRENZY_SHOOT;
-        } else if(ownersActions.contains(PossibleAction.LIGHT_FRENZY_SHOOT)) {
+        } else if (ownersActions.contains(PossibleAction.LIGHT_FRENZY_SHOOT)) {
             actionType = PossibleAction.LIGHT_FRENZY_SHOOT;
         } else {
             throw new MissingActionException();
@@ -707,22 +746,26 @@ public class RoundManager {
         return new ReloadAction(turnOwner, reloadingWeapons, reloadRequest);
     }
 
-    private void handleReloadAction(UserPlayer turnOwner) {
-        for (; ; ) {
-            ReloadAction builtAction = setReloadAction(turnOwner);
+    /**
+     * Method that builds the ReloadAction the TurnOwner decided to do and executes it returning
+     * true if the action is valid, otherwise false
+     *
+     * @param turnOwner UserPlayer containing the action
+     * @return true if the action is executed, otherwise false
+     */
+    private boolean handleReloadAction(UserPlayer turnOwner) {
+        ReloadAction builtAction = setReloadAction(turnOwner);
 
-            try {
-                if (builtAction.validate()) {
-                    builtAction.execute();
-                    break;
-                } else {
-                    // reload action is invalid and will be asked again
-                }
-            } catch (Exception e) {
-                // reload action is invalid and will be asked again
+        try {
+            if (builtAction.validate()) {
+                builtAction.execute();
+                return true;
+            } else {
+                return false;
             }
-
-            System.out.println("\nINVALID RELOAD ACTION CHOOSE A NEW ONE\n");
+        } catch (Exception e) {     // here different exceptions are thrown we should even catch each and print different messages
+            return false;
         }
     }
+
 }

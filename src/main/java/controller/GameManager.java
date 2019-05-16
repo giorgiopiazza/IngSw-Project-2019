@@ -6,10 +6,13 @@ import enumerations.PossibleGameState;
 import exceptions.game.InvalidGameStateException;
 import exceptions.game.MaxPlayerException;
 import model.Game;
+import model.player.KillShot;
+import model.player.Player;
 import model.player.PlayerBoard;
 import model.player.UserPlayer;
 
-import java.util.Scanner;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class GameManager {
     private final Game gameInstance;
@@ -27,7 +30,7 @@ public class GameManager {
     }
 
 
-    public void gameSetup() {
+    private void gameSetup() {
         Scanner in = new Scanner(System.in);
 
         System.out.println("Provide the game setup informations: \n\n");
@@ -69,7 +72,7 @@ public class GameManager {
         }
     }
 
-    public void roomSetup() {
+    private void roomSetup() {
         Scanner in = new Scanner(System.in);
 
         String userName;
@@ -135,16 +138,11 @@ public class GameManager {
 
         // now game has started
         roundManager.setInitialActions();
-        if(gameState == PossibleGameState.GAME_STARTED) {
+        if (gameState == PossibleGameState.GAME_STARTED) {
             PossibleGameState changingState = gameState;
             // this while manages the entire game changing turns between players
-            while(changingState == PossibleGameState.GAME_STARTED || changingState == PossibleGameState.SECOND_ACTION) {
+            while (changingState == PossibleGameState.GAME_STARTED || changingState == PossibleGameState.SECOND_ACTION) {
                 changingState = roundManager.handleDecision(changingState);
-                if (changingState == PossibleGameState.FINAL_FRENZY) {
-                    roundManager.setInitialActions();
-                    gameInstance.setState(GameState.FINAL_FRENZY);
-                    // TODO handle frenzy and finish state
-                }
 
                 if (changingState == PossibleGameState.TERMINATOR_USED) {
                     roundManager.removeTerminatorAction();
@@ -152,13 +150,122 @@ public class GameManager {
 
                 while (changingState == PossibleGameState.ACTIONS_DONE) {
                     roundManager.setReloadAction();
-                    changingState = roundManager.handleDecision(changingState);
+                    changingState = roundManager.handleReloadDecision(changingState);
                     if (changingState == PossibleGameState.PASS_TURN) {
-                        roundManager.setInitialActions();
+                        if (gameInstance.getDeathPlayers().size() != 0) {
+                            changingState = handleDeathPlayers();
+                        }
+
+                        // after death players have been respawned if no skulls are left on the track frenzy mode is activated
+                        if (changingState == PossibleGameState.FINAL_FRENZY) {
+                            gameInstance.setState(GameState.FINAL_FRENZY);
+                            finalFrenzySetup();
+                            finalFrenzyRun();
+                            // TODO handle frenzy and finish state
+                        }
+
                         // TODO pass turn handling
+
+                        roundManager.setInitialActions();
                     }
                 }
             }
         } else throw new InvalidGameStateException();
     }
+
+    private PossibleGameState handleDeathPlayers() {
+        boolean terminatorDied = false;
+        List<UserPlayer> deathPlayers = gameInstance.getDeathPlayers();
+
+        // terminator deaths management
+        if (gameInstance.isTerminatorPresent() && gameInstance.getTerminator().getPlayerBoard().getDamageCount() > 10) {
+            terminatorDied = true;
+            distributePoints(gameInstance.getTerminator());
+            roundManager.handleTerminatorRespawn();
+            moveSkull(gameInstance.getTerminator());
+            // then I clear the board and add a skull to its points counter
+            gameInstance.getTerminator().getPlayerBoard().onDeath();
+        }
+
+        // players death management
+        for(UserPlayer player : deathPlayers) {
+            distributePoints(player);
+            roundManager.handlePlayerRespawn(player);
+            moveSkull(player);
+            // then I clear the board and add a skull to its points counter
+        }
+
+        if(deathPlayers.size() > 1 || (deathPlayers.size() == 1 && terminatorDied)) {
+            roundManager.addDoubleKillPoint();
+        }
+
+        if(gameInstance.remainingSkulls() == 0) {
+            return PossibleGameState.FINAL_FRENZY;
+        } else {
+            return PossibleGameState.PASS_TURN;
+        }
+
+
+    }
+
+    private void distributePoints(Player deathPlayer) {
+        PlayerBoard deathsPlayerBoard = deathPlayer.getPlayerBoard();
+        Integer[] boardPoints = deathsPlayerBoard.getBoardPoints();
+        List<String> pointsReceivers = deathsPlayerBoard.getDamages().stream().distinct().collect(Collectors.toList());
+        Map<String, Integer> receivers = new HashMap<>();
+        Player firstBlooder;
+
+        for (String receiver : pointsReceivers) {
+            int frequency = Collections.frequency(deathsPlayerBoard.getDamages(), receiver);
+            receivers.put(receiver, frequency);
+        }
+
+        Map<String, Integer> orderedReceivers = receivers
+                .entrySet()
+                .stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (x1, x2) -> x2, LinkedHashMap::new));
+
+        if (deathsPlayerBoard.isBoardFlipped()) {     // first blood assignment
+            firstBlooder = gameInstance.getUserPlayerByUsername(deathsPlayerBoard.getDamages().get(0));
+            firstBlooder.addPoints(1);
+        }
+
+        int pointsIndex = 0;
+        for (Map.Entry entry : orderedReceivers.entrySet()) {
+            Player tempReceiver = gameInstance.getUserPlayerByUsername((String) entry.getKey());
+            tempReceiver.addPoints(boardPoints[pointsIndex]);
+            ++pointsIndex;
+        }
+    }
+
+    private void moveSkull(Player deathPlayer) {
+        int points;
+        KillShot killShot;
+        String killer = deathPlayer.getPlayerBoard().getDamages().get(10);
+
+        if (deathPlayer.getPlayerBoard().getDamages().size() == 12) {
+            points = 2;
+        } else {
+            points = 1;
+        }
+
+        killShot = new KillShot(killer, points);
+        if (gameInstance.remainingSkulls() == 0) {
+            gameInstance.getFinalFrenzyKillShots().add(killShot);
+        } else {
+            gameInstance.addKillShot(killShot);
+        }
+    }
+
+    private void finalFrenzySetup() {
+
+    }
+
+    private void finalFrenzyRun() {
+
+    }
+
 }
+
+

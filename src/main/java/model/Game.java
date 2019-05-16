@@ -38,6 +38,7 @@ public class Game {
 
     private int killShotNum;
     private KillShot[] killShotsTrack;
+    private List<KillShot> finalFrenzyKillShots;
 
     private Deck weaponsCardsDeck;
     private Deck powerupCardsDeck;
@@ -60,6 +61,7 @@ public class Game {
         terminator = null;
         this.currentState = GameState.NORMAL;
         killShotsTrack = new KillShot[MAX_KILLSHOT];
+        finalFrenzyKillShots = new ArrayList<>();
         terminatorPresent = false;
         gameStarted = false;
         killShotNum = 0;
@@ -79,6 +81,10 @@ public class Game {
         if (instance == null)
             instance = new Game();
         return instance;
+    }
+
+    public List<KillShot> getFinalFrenzyKillShots() {
+        return this.finalFrenzyKillShots;
     }
 
     /**
@@ -533,6 +539,23 @@ public class Game {
         }
 
         return frenzyPlayers;
+    }
+
+    /**
+     * Method that returns the death players in the game at the moment it is called
+     *
+     * @return an ArrayList containing all dead players
+     */
+    public List<UserPlayer> getDeathPlayers() {
+        List<UserPlayer> deathPlayers = new ArrayList<>();
+
+        for(UserPlayer player : players) {
+            if(player.getPlayerBoard().getDamageCount() > 10) {
+                deathPlayers.add(player);
+            }
+        }
+
+        return deathPlayers;
     }
 
     public Deck getWeaponsCardsDeck() {

@@ -39,8 +39,8 @@ public class TurnManager {
         return this.damagedPlayers;
     }
 
-    public void setFrenzyActivator(UserPlayer frenzyActivator) {
-        this.frenzyActivator = frenzyActivator;
+    public void setFrenzyActivator() {
+        this.frenzyActivator = turnOwner;
     }
 
     public UserPlayer getFrenzyActivator() {
