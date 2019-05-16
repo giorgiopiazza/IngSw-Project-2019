@@ -12,15 +12,18 @@ import java.util.Scanner;
 
 public class Cli {
     private Scanner in;
+    private AdrenalinePrintStream out;
 
     public Cli() {
         in = new Scanner(System.in);
+        out = new AdrenalinePrintStream();
     }
 
     /**
      * Starts the cli
      */
     public void start() {
+
         GameSerialized gs = new GameSerialized();
         PlayerBoard pb = new PlayerBoard();
         UserPlayer p1 = new UserPlayer("Pippo", PlayerColor.BLUE, pb);
@@ -51,26 +54,26 @@ public class Cli {
 
         gs.setPlayers(players);
 
-        CliPrinter.printPlayerBoards(gs);
-
-        /*
         printLogo();
         askConnection();
         askUsername();
-        askColor();*/
+        askColor();
+
+        CliPrinter.printPlayerBoards(out, gs);
+
     }
 
     private void printLogo() {
-        System.out.println("             _____   _____   _______ _   _            _       _  _   _  _______");
-        System.out.println("      /\\    |  __ \\ |  __ \\ |  ____/| \\ | |    /\\    | |     | || \\ | ||  ____/");
-        System.out.println("     /  \\   | |  | || |__) || |__   |  \\| |   /  \\   | |     | ||  \\| || |__   ");
-        System.out.println("    / /\\ \\  | |  | ||  _  / |  __|  | . ` |  / /\\ \\  | |     | || . ` ||  __|  ");
-        System.out.println("   / /__\\ \\ | |__| || | \\ \\ | |_____| |\\  | / /__\\ \\ | |____ | || |\\  || |_____");
-        System.out.println("  /_/|_____\\|_____/ |_|  \\_\\|______/|_| \\_|/_/|_____\\|______\\|_||_| \\_||______/");
-        System.out.println();
-        System.out.println("Welcome to Adrenaline Board Game made by Giorgio Piazza, Francesco Piro and Lorenzo Tosetti.");
-        System.out.println("Before starting playing you need to setup some things:");
-        System.out.println();
+        String adrenalineLogo = "             _____   _____   _______ _   _            _       _  _   _  _______\n" +
+                "      /\\    |  __ \\ |  __ \\ |  ____/| \\ | |    /\\    | |     | || \\ | ||  ____/\n" +
+                "     /  \\   | |  | || |__) || |__   |  \\| |   /  \\   | |     | ||  \\| || |__   \n" +
+                "    / /\\ \\  | |  | ||  _  / |  __|  | . ` |  / /\\ \\  | |     | || . ` ||  __|  \n" +
+                "   / /__\\ \\ | |__| || | \\ \\ | |_____| |\\  | / /__\\ \\ | |____ | || |\\  || |_____\n" +
+                "  /_/|_____\\|_____/ |_|  \\_\\|______/|_| \\_|/_/|_____\\|______\\|_||_| \\_||______/\n\n" +
+                "Welcome to Adrenaline Board Game made by Giorgio Piazza, Francesco Piro and Lorenzo Tosetti.\n" +
+                "Before starting playing you need to setup some things:\n";
+
+        out.println(adrenalineLogo);
     }
 
     private void askConnection() {
@@ -78,10 +81,10 @@ public class Cli {
         boolean firstError = true;
         int connection = -1;
 
-        System.out.println("Choose the connection type (0 = RMI or 1 = Sockets):");
+        out.println("Choose the connection type (0 = RMI or 1 = Sockets):");
 
         do {
-            System.out.print(">>> ");
+            out.print(">>> ");
 
             if (in.hasNextInt()) {
                 connection = in.nextInt();
@@ -98,12 +101,12 @@ public class Cli {
             }
         } while (!validConnection);
 
-        System.out.println();
+        out.println();
 
         if (connection == 0) {
-            System.out.println("You chose RMI connection");
+            out.println("You chose RMI connection");
         } else {
-            System.out.println("You chose Socket connection");
+            out.println("You chose Socket connection");
         }
     }
 
@@ -112,11 +115,10 @@ public class Cli {
         boolean firstError = true;
         String username = "";
 
-        System.out.println();
-        System.out.println("Choose your username:");
+        out.println("\nChoose your username:");
 
         do {
-            System.out.print(">>> ");
+            out.print(">>> ");
 
             if (in.hasNextLine()) {
                 username = in.nextLine();
@@ -132,8 +134,7 @@ public class Cli {
             }
         } while (!validUsername);
 
-        System.out.println();
-        System.out.printf("Hi %s, now pick your color.%n", username);
+        out.printf("Hi %s, now pick your color.%n", username);
     }
 
     private void askColor() {
@@ -147,12 +148,10 @@ public class Cli {
         availableColors.add("RED");
 
         String colorString = String.join(", ", availableColors.toArray(new String[0]));
-
-        System.out.println();
-        System.out.printf("Available colors are %s%n", colorString);
+        out.printf("%nAvailable colors are %s%n", colorString );
 
         do {
-            System.out.print(">>> ");
+            out.print(">>> ");
 
             if (in.hasNextLine()) {
                 color = in.nextLine();
@@ -168,17 +167,16 @@ public class Cli {
             }
         } while (!validColor);
 
-        System.out.println();
-        System.out.printf("You picked %s color.%n", color.toUpperCase());
+        out.printf("%nYou picked %s color.%n", color.toUpperCase());
     }
 
     private boolean promptError(boolean firstError, String errorMessage) {
-        System.out.print("\33[1A\33[2K");
+        out.print("\33[1A\33[2K");
         if (!firstError) {
-            System.out.print("\33[1A\33[2K");
+            out.print("\33[1A\33[2K");
         }
 
-        System.out.println(errorMessage);
+        out.println(errorMessage);
         return false;
     }
 }
