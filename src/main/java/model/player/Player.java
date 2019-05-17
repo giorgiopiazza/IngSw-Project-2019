@@ -2,20 +2,20 @@ package model.player;
 
 import enumerations.*;
 
-public abstract class Player {
+import java.util.Objects;
+
+public abstract class Player implements Comparable<Player> {
     private final String username;
     protected PlayerColor color;
     private final PlayerBoard playerBoard;
     private PlayerPosition position;
     private int points;
-    private boolean winner;
 
     public Player(String username) {
         this.username = username;
         this.color = null;
         this.position = null;
         this.playerBoard = new PlayerBoard();
-        this.winner = false;
 
         points = 0;
     }
@@ -25,7 +25,6 @@ public abstract class Player {
         this.color = color;
         this.position = null;
         this.playerBoard = playerBoard;
-        this.winner = false;
 
         points = 0;
     }
@@ -35,7 +34,6 @@ public abstract class Player {
         this.color = other.color;
         this.position = new PlayerPosition(other.position);
         this.playerBoard = new PlayerBoard(other.playerBoard);
-        this.winner = other.winner;
         this.points = other.points;
     }
 
@@ -53,14 +51,6 @@ public abstract class Player {
 
     public void setColor(PlayerColor color) {
         this.color = color;
-    }
-
-    public boolean isWinner() {
-        return winner;
-    }
-
-    public void setWinner(boolean winner) {
-        this.winner = winner;
     }
 
     /**
@@ -134,5 +124,24 @@ public abstract class Player {
         PlayerPosition p2 = new PlayerPosition(other.position);
 
         return p1.canSee(p2);
+    }
+
+    @Override
+    public int compareTo(Player otherPlayer) {
+        int comparePoints = otherPlayer.getPoints();
+        return comparePoints - this.points;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Player player = (Player) o;
+        return username.equals(player.username);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(username);
     }
 }

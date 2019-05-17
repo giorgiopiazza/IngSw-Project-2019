@@ -19,6 +19,7 @@ import utility.PowerupParser;
 import utility.WeaponParser;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -38,7 +39,8 @@ public class Game {
 
     private int killShotNum;
     private KillShot[] killShotsTrack;
-    private List<KillShot> finalFrenzyKillShots;
+    private ArrayList<KillShot> finalFrenzyKillShots;
+    private final List<Integer> trackerPoints = new ArrayList<>(Arrays.asList(8, 6, 4, 2, 1, 1));
 
     private Deck weaponsCardsDeck;
     private Deck powerupCardsDeck;
@@ -83,8 +85,26 @@ public class Game {
         return instance;
     }
 
-    public List<KillShot> getFinalFrenzyKillShots() {
+    public ArrayList<KillShot> getFinalFrenzyKillShots() {
         return this.finalFrenzyKillShots;
+    }
+
+    public Integer[] getTrackerPoints() {
+        return trackerPoints.toArray(new Integer[trackerPoints.size()]);
+    }
+
+    /**
+     * @return an ArrayList representation of the killshotTrack
+     */
+    public ArrayList<KillShot> getKillShotTrack() {
+        ArrayList<KillShot> arrayListTracker = new ArrayList<>();
+        for (KillShot killShot : killShotsTrack) {
+            if (killShot != null) {
+                arrayListTracker.add(killShot);
+            }
+        }
+
+        return arrayListTracker;
     }
 
     /**
@@ -457,7 +477,7 @@ public class Game {
      */
     public boolean isPlayerPresent(String username) {
         for (UserPlayer p : players) {
-            if(p.getUsername().equals(username)) return true;
+            if (p.getUsername().equals(username)) return true;
         }
 
         return false;
@@ -502,46 +522,6 @@ public class Game {
     }
 
     /**
-     * Method that returns the players who, in the final frenzy mode,
-     * have to obtain the greater effects, these players are all the player
-     * after the activator but before the first player
-     *
-     * @param frenzyActivator player who activated the final frenzy mode
-     * @return the List of UserPlayers whose IDs respect the rule of the final frenzy mode
-     */
-    public List<UserPlayer> getDoubleActionFrenzyPlayers(UserPlayer frenzyActivator) {
-        List<UserPlayer> frenzyPlayers = new ArrayList<>();
-        int frenzyActivatorIndex = players.indexOf(frenzyActivator);
-
-        for (int i = 0; i < players.size(); ++i) {
-            if (i > frenzyActivatorIndex) {
-                frenzyPlayers.add(players.get(i));
-            }
-        }
-
-        return frenzyPlayers;
-    }
-
-    /**
-     * Complementary method to getDoubleActionFrenzyPlayers
-     *
-     * @param frenzyActivator playerID of the player who activated the final frenzy mode
-     * @return the List of UserPlayers whose IDs respect the rule of the final frenzy mode
-     */
-    public List<UserPlayer> getSingleActionFrenzyPlayers(UserPlayer frenzyActivator) {
-        List<UserPlayer> frenzyPlayers = new ArrayList<>();
-        int frenzyActivatorIndex = players.indexOf(frenzyActivator);
-
-        for (int i = 0; i < players.size(); ++i) {
-            if (i <= frenzyActivatorIndex) {
-                frenzyPlayers.add(players.get(i));
-            }
-        }
-
-        return frenzyPlayers;
-    }
-
-    /**
      * Method that returns the death players in the game at the moment it is called
      *
      * @return an ArrayList containing all dead players
@@ -549,8 +529,8 @@ public class Game {
     public List<UserPlayer> getDeathPlayers() {
         List<UserPlayer> deathPlayers = new ArrayList<>();
 
-        for(UserPlayer player : players) {
-            if(player.getPlayerBoard().getDamageCount() > 10) {
+        for (UserPlayer player : players) {
+            if (player.getPlayerBoard().getDamageCount() > 10) {
                 deathPlayers.add(player);
             }
         }

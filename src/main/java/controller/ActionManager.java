@@ -47,14 +47,13 @@ public class ActionManager {
     }
 
     /**
-     * Method that sets the possible actions a player has due to his position in the round turn,
-     * when the game is in FRENZY state
-     * If the game has the terminator, every player in his turn must always do also the terminator action
+     * Method that sets the frenzy actions to a player due to his position
      *
-     * @param frenzyActivator the player who activated the final frenzy mode
+     * @param player      the Player whose actions need to be set
+     * @param turnManager TurnManager of the game containing the lists of different frenzyPlayers
      */
-    public static void setFrenzyPossibleActions(UserPlayer player, UserPlayer frenzyActivator) {
-        if (Game.getInstance().getDoubleActionFrenzyPlayers(frenzyActivator).contains(player)) {
+    public static void setFrenzyPossibleActions(UserPlayer player, TurnManager turnManager) {
+        if (turnManager.getAfterFrenzy().contains(player)) {
             player.setActions(EnumSet.of(PossibleAction.FRENZY_MOVE, PossibleAction.FRENZY_PICK, PossibleAction.FRENZY_SHOOT));
         } else {
             player.setActions(EnumSet.of(PossibleAction.LIGHT_FRENZY_SHOOT, PossibleAction.LIGHT_FRENZY_PICK));

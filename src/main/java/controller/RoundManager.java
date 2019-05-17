@@ -1,6 +1,7 @@
 package controller;
 
 import enumerations.*;
+import exceptions.AdrenalinaException;
 import exceptions.actions.InvalidActionException;
 import exceptions.actions.MissingActionException;
 import exceptions.game.InexistentColorException;
@@ -35,11 +36,15 @@ public class RoundManager {
         this.turnManager = new TurnManager(gameInstance.getPlayers());
     }
 
+    public TurnManager getTurnManager() {
+        return this.turnManager;
+    }
+
     public void setInitialActions() {
         if (gameInstance.getState() == GameState.NORMAL) {
             ActionManager.setPossibleActions(turnManager.getTurnOwner());
         } else if (gameInstance.getState() == GameState.FINAL_FRENZY) {
-            ActionManager.setFrenzyPossibleActions(turnManager.getTurnOwner(), turnManager.getFrenzyActivator());
+            ActionManager.setFrenzyPossibleActions(turnManager.getTurnOwner(), turnManager);
         }
     }
 
@@ -49,10 +54,6 @@ public class RoundManager {
 
     public void setReloadAction() {
         turnManager.getTurnOwner().setActions(EnumSet.of(PossibleAction.RELOAD));
-    }
-
-    public void addDoubleKillPoint() {
-        turnManager.getTurnOwner().addPoints(1);
     }
 
     public PossibleGameState handleDecision(PossibleGameState changingState) {
@@ -69,6 +70,14 @@ public class RoundManager {
                     return handlePlayerAction(false, changingState);
                 } else if (changingState == PossibleGameState.SECOND_ACTION) {
                     return handlePlayerAction(true, changingState);
+                } else if (changingState == PossibleGameState.FINAL_FRENZY) {
+                    // players after the one who activated frenzy mode have two possible actions, others just one
+                    if (turnManager.getAfterFrenzy().contains(turnManager.getTurnOwner())) {
+                        return handlePlayerAction(false, changingState);
+                    } else {    // i use the SECOND_ACTION to express that these players can only do one action
+                        return handlePlayerAction(true, changingState);
+                    }
+
                 } else {
                     throw new InvalidGameStateException();
                 }
@@ -128,7 +137,7 @@ public class RoundManager {
         UserPlayer turnOwner = turnManager.getTurnOwner();
 
         // il seguente case sarà fatto dal tipo di messaggio ricevuto
-        System.out.println("> " + turnOwner.getUsername() + " chose the action you want to do >>> ");
+        System.out.println("> " + turnOwner.getUsername() + " choose the action you want to do >>> ");
         String actionChosen;
         for (; ; ) {
             actionChosen = in.nextLine();
@@ -161,7 +170,7 @@ public class RoundManager {
                 }
             case ("TERMINATOR"):
                 handleTerminatorAction(turnOwner);
-                return handleAfterShootChangings(secondAction);
+                return PossibleGameState.TERMINATOR_USED;
 
             default:
                 // no action recognised, nothing will be executed
@@ -181,7 +190,17 @@ public class RoundManager {
         if (!secondAction) {
             return PossibleGameState.SECOND_ACTION;
         } else {
-            return PossibleGameState.ACTIONS_DONE;
+            if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.TERMINATOR_ACTION)) {
+                return PossibleGameState.MISSING_TERMINATOR_ACTION;
+            } else {
+                if (gameInstance.getState().equals(GameState.NORMAL)) {
+                    return PossibleGameState.ACTIONS_DONE;
+                } else if (gameInstance.getState().equals(GameState.FINAL_FRENZY)) {
+                    return PossibleGameState.FRENZY_ACTIONS_DONE;
+                } else {
+                    throw new InvalidGameStateException();
+                }
+            }
         }
     }
 
@@ -261,6 +280,23 @@ public class RoundManager {
         return -1;
     }
 
+    public PossibleGameState handlePowerupDecision(PossibleGameState changingState) {
+        Scanner in = new Scanner(System.in);
+
+        System.out.println("Choose if you want to use a powerup or pass your turn (POWERUP/PASS) >>> ");
+
+        for (; ; ) {
+            String decision = in.nextLine();
+            if (decision.equalsIgnoreCase("powerup")) {
+                return handlePowerupAction(changingState);
+            } else if (decision.equalsIgnoreCase("pass")) {
+                return PossibleGameState.PASS_TURN;
+            } else {
+                // wrong input will be asked again
+            }
+        }
+    }
+
     private void spawnTerminator() {
         Scanner in = new Scanner(System.in);
         RoomColor colorChosen;
@@ -294,6 +330,19 @@ public class RoundManager {
             } catch (Exception e) {
                 // wrong color is asked again
             }
+        }
+    }
+
+    public PossibleGameState handleTerminatorAsLastAction() {
+        UserPlayer turnOwner = turnManager.getTurnOwner();
+        handleTerminatorAction(turnOwner);
+
+        if (gameInstance.getState().equals(GameState.NORMAL)) {
+            return PossibleGameState.ACTIONS_DONE;
+        } else if (gameInstance.getState().equals(GameState.FINAL_FRENZY)) {
+            return PossibleGameState.FRENZY_ACTIONS_DONE;
+        } else {
+            throw new InvalidGameStateException();
         }
     }
 
@@ -345,12 +394,47 @@ public class RoundManager {
         }
 
         gameInstance.spawnPlayer(spawningPlayer, gameInstance.getGameMap().getSpawnSquare(spawnColor));
-        spawningPlayer.changePlayerState(PossiblePlayerState.WAITING_TO_PLAY);
     }
 
     public void handlePlayerRespawn(UserPlayer player) {
-        // TODO care the fourth powerup picked!
+        Scanner in = new Scanner(System.in);
+        PowerupCard drawnCard = (PowerupCard) gameInstance.getPowerupCardsDeck().draw();
+        PowerupCard[] playersCards = player.getPowerups();
+        RoomColor spawnColor;
+
+        System.out.println("Drawn Card is: " + drawnCard.toString());
+        System.out.println("Powerups in you hand are: \n");
+        for (PowerupCard powerup : playersCards) {
+            System.out.println(powerup.toString());
+        }
+
+        System.out.println("Choose if you want to respawn with the drawn card (\"drawn\") or one of the ones in your hand (0,1,2) >>> ");
+        for (; ; ) {
+            String decision = in.nextLine();
+            if (decision.equals("drawn")) {
+                spawnColor = Ammo.toColor(drawnCard.getValue());
+                break;
+            } else if (Integer.parseInt(decision) == 0 || Integer.parseInt(decision) == 1 || Integer.parseInt(decision) == 2) {
+                if (Integer.parseInt(decision) < playersCards.length - 1) {
+                    spawnColor = Ammo.toColor(playersCards[Integer.parseInt(decision)].getValue());
+                    try {
+                        player.discardPowerupByIndex(Integer.parseInt(decision));
+                        player.addPowerup(drawnCard);
+                    } catch (AdrenalinaException e) {
+                        // both thrown exceptions, by discardPowerupByIndex and addPowerup can not be reached here !
+                    }
+                    break;
+                } else {
+                    // wrong index decision will be asked again
+                }
+            } else {
+                // wrong decision will be asked again
+            }
+        }
+
+        gameInstance.spawnPlayer(player, gameInstance.getGameMap().getSpawnSquare(spawnColor));
     }
+
 
     private void handleTagBackGranadeUsage(ArrayList<UserPlayer> damaged, UserPlayer turnOwner) {
         ArrayList<UserPlayer> granadePossessors = new ArrayList<>();
@@ -413,6 +497,20 @@ public class RoundManager {
                 // invalid input will be asked again
                 System.out.println("Invalid decision, choose a new one >>> ");
             }
+        }
+    }
+
+    public PossibleGameState handleNextTurn() {
+        turnManager.nextTurn();
+
+        System.out.println(turnManager.getTurnOwner() + " IT'S YOUR TURN!");
+
+        if (gameInstance.getState().equals(GameState.NORMAL)) {
+            return PossibleGameState.GAME_STARTED;
+        } else if (gameInstance.getState().equals(GameState.FINAL_FRENZY)) {
+            return PossibleGameState.FINAL_FRENZY;
+        } else {
+            throw new InvalidGameStateException();
         }
     }
 
@@ -767,5 +865,4 @@ public class RoundManager {
             return false;
         }
     }
-
 }
