@@ -193,10 +193,11 @@ public class GameManager {
             roundManager.handlePlayerRespawn(player);
             moveSkull(player);
             // then I clear the board and add a skull to its points counter
+            player.getPlayerBoard().onDeath();
         }
 
         if(deathPlayers.size() > 1 || (deathPlayers.size() == 1 && terminatorDied)) {
-            roundManager.addDoubleKillPoint();
+            addDoubleKillPoint();
         }
 
         if(gameInstance.remainingSkulls() == 0) {
@@ -212,19 +213,20 @@ public class GameManager {
         PlayerBoard deathsPlayerBoard = deathPlayer.getPlayerBoard();
         Integer[] boardPoints = deathsPlayerBoard.getBoardPoints();
         List<String> pointsReceivers = deathsPlayerBoard.getDamages().stream().distinct().collect(Collectors.toList());
-        Map<String, Integer> receivers = new HashMap<>();
+        Map<String, DamageCountWrapper> receivers = new HashMap<>();
         Player firstBlooder;
 
-        for (String receiver : pointsReceivers) {
-            int frequency = Collections.frequency(deathsPlayerBoard.getDamages(), receiver);
-            receivers.put(receiver, frequency);
+        for (int i = 0; i < pointsReceivers.size(); ++i) {
+            int frequency = Collections.frequency(deathsPlayerBoard.getDamages(), pointsReceivers.get(i));
+            DamageCountWrapper damageCountWrapper = new DamageCountWrapper(i, frequency);
+            receivers.put(pointsReceivers.get(i), damageCountWrapper);
         }
 
-        Map<String, Integer> orderedReceivers = receivers
+        Map<String, DamageCountWrapper> orderedReceivers = receivers
                 .entrySet()
                 .stream()
-                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (x1, x2) -> x2, LinkedHashMap::new));
+                .sorted(Map.Entry.comparingByValue())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 
         if (deathsPlayerBoard.isBoardFlipped()) {     // first blood assignment
             firstBlooder = gameInstance.getUserPlayerByUsername(deathsPlayerBoard.getDamages().get(0));
@@ -237,6 +239,10 @@ public class GameManager {
             tempReceiver.addPoints(boardPoints[pointsIndex]);
             ++pointsIndex;
         }
+    }
+
+    private void addDoubleKillPoint() {
+        roundManager.getTurnManager().getTurnOwner().addPoints(1);
     }
 
     private void moveSkull(Player deathPlayer) {
@@ -264,6 +270,40 @@ public class GameManager {
 
     private void finalFrenzyRun() {
 
+    }
+
+    class DamageCountWrapper implements Comparable<DamageCountWrapper> {
+        final int position;
+        final int damage;
+
+        DamageCountWrapper(int position, int damage) {
+            this.position = position;
+            this.damage = damage;
+        }
+
+        @Override
+        public int compareTo(DamageCountWrapper otherDamageCountWrapper) {
+            // Reversed compare to get the best damage dealer first
+            if (this.damage == otherDamageCountWrapper.damage) {
+                return this.position - otherDamageCountWrapper.position;
+            } else {
+                return otherDamageCountWrapper.damage - this.damage;
+            }
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            DamageCountWrapper that = (DamageCountWrapper) o;
+            return position == that.position &&
+                    damage == that.damage;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(position, damage);
+        }
     }
 
 }
