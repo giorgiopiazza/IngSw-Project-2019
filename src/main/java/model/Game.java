@@ -10,7 +10,7 @@ import model.cards.AmmoTile;
 import model.cards.Deck;
 import model.cards.WeaponCard;
 import model.map.CardSquare;
-import model.map.Map;
+import model.map.GameMap;
 import model.map.SpawnSquare;
 import model.map.Square;
 import model.player.*;
@@ -46,7 +46,7 @@ public class Game {
     private Deck powerupCardsDeck;
     private Deck ammoTileDeck;
 
-    private Map gameMap;
+    private GameMap gameMap;
 
     /**
      * Initializes singleton Game instance
@@ -127,7 +127,7 @@ public class Game {
         if (mapType < 0 || mapType > 3) {
             throw new InvalidMapNumberException();
         }
-        this.gameMap = new Map(mapType);
+        this.gameMap = new GameMap(mapType);
     }
 
     public void setKillShotNum(int killShotNum) throws InvalidKillshotNumberException {
@@ -232,8 +232,8 @@ public class Game {
      * Distributes cards on every Square
      */
     private void distributeCards() {
-        for (int i = 0; i < Map.MAX_ROWS; ++i) {
-            for (int j = 0; j < Map.MAX_COLUMNS; ++j) {
+        for (int i = 0; i < GameMap.MAX_ROWS; ++i) {
+            for (int j = 0; j < GameMap.MAX_COLUMNS; ++j) {
                 Square square = gameMap.getSquare(i, j);
 
                 if (square != null) {
@@ -445,7 +445,7 @@ public class Game {
     /**
      * @return the GameMap
      */
-    public Map getGameMap() {
+    public GameMap getGameMap() {
         return gameMap;
     }
 

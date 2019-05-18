@@ -4,7 +4,9 @@ import enumerations.RoomColor;
 import enumerations.SquareAdjacency;
 import enumerations.SquareType;
 
-public abstract class Square {
+import java.io.Serializable;
+
+public abstract class Square implements Serializable {
     private final RoomColor color;
     private final SquareType squareType;
     private final SquareAdjacency north;
