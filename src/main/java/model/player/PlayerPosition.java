@@ -5,7 +5,7 @@ import enumerations.SquareAdjacency;
 import exceptions.player.NoDirectionException;
 import exceptions.player.SamePositionException;
 import model.Game;
-import model.map.Map;
+import model.map.GameMap;
 import model.map.Square;
 
 import java.io.Serializable;
@@ -61,7 +61,7 @@ public class PlayerPosition implements Serializable {
         PlayerPosition tempPos = new PlayerPosition(0, 0);
 
         tempPos.setPosition(this);
-        for (int i = 0; i < (Map.MAX_ROWS - this.getCoordX()); ++i) {
+        for (int i = 0; i < (GameMap.MAX_ROWS - this.getCoordX()); ++i) {
             tempPos.setCoordX(this.getCoordX() - i);
             if (tempPos.equals(endingPos)) {
                 return Direction.NORTH;
@@ -69,7 +69,7 @@ public class PlayerPosition implements Serializable {
         }
 
         tempPos.setPosition(this);
-        for (int i = 0; i < (Map.MAX_COLUMNS - this.getCoordY()); ++i) {
+        for (int i = 0; i < (GameMap.MAX_COLUMNS - this.getCoordY()); ++i) {
             tempPos.setCoordY(this.getCoordY() + i);
             if (tempPos.equals(endingPos)) {
                 return Direction.EAST;
@@ -77,7 +77,7 @@ public class PlayerPosition implements Serializable {
         }
 
         tempPos.setPosition(this);
-        for (int i = 0; i < (Map.MAX_ROWS - this.getCoordX()); ++i) {
+        for (int i = 0; i < (GameMap.MAX_ROWS - this.getCoordX()); ++i) {
             tempPos.setCoordX(this.getCoordX() + i);
             if (tempPos.equals(endingPos)) {
                 return Direction.EAST;
@@ -85,7 +85,7 @@ public class PlayerPosition implements Serializable {
         }
 
         tempPos.setPosition(this);
-        for (int i = 0; i < (Map.MAX_COLUMNS - this.getCoordX()); ++i) {
+        for (int i = 0; i < (GameMap.MAX_COLUMNS - this.getCoordX()); ++i) {
             tempPos.setCoordY(this.getCoordY() - i);
             if (tempPos.equals(endingPos)) {
                 return Direction.WEST;

@@ -15,10 +15,11 @@ import model.player.PlayerPosition;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Map {
+public class GameMap implements Serializable {
     /**
      * Maximum number of map lines: 3
      */
@@ -31,7 +32,7 @@ public class Map {
      * Map of type:
      * B B B
      * R R R Y
-     * W W Y
+     *   W W Y
      */
     public static final int MAP_1 = 1;
     /**
@@ -58,9 +59,9 @@ public class Map {
 
     private Square[][] rooms;
 
-    public Map(int mapType) {
+    public GameMap(int mapType) {
         String path = "json/maps.json";
-        InputStream is = Map.class.getClassLoader().getResourceAsStream(path);
+        InputStream is = GameMap.class.getClassLoader().getResourceAsStream(path);
 
         if (is == null) throw new JsonFileNotFoundException("File " + path + " not found");
 
@@ -250,6 +251,10 @@ public class Map {
         }
 
         throw new InvalidSpawnColorException(spawnColor.toString());
+    }
+
+    public Square[][] getRooms() {
+        return rooms;
     }
 
     @Override

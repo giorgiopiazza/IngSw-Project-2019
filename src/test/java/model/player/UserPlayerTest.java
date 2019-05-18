@@ -6,7 +6,7 @@ import exceptions.player.CardAlreadyInHandException;
 import exceptions.player.MaxCardsInHandException;
 import model.Game;
 import model.cards.WeaponCard;
-import model.map.Map;
+import model.map.GameMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -36,7 +36,7 @@ class UserPlayerTest {
         Player p1 = new UserPlayer("p1", PlayerColor.YELLOW, new PlayerBoard());
         Player p2 = new UserPlayer("p2", PlayerColor.GREEN, new PlayerBoard());
 
-        Game.getInstance().setGameMap(Map.MAP_3);
+        Game.getInstance().setGameMap(GameMap.MAP_3);
 
         p1.setPosition(new PlayerPosition(0, 0));
         p2.setPosition(new PlayerPosition(0, 0));

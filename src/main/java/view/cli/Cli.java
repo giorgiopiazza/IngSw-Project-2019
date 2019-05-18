@@ -2,6 +2,7 @@ package view.cli;
 
 import enumerations.PlayerColor;
 import model.GameSerialized;
+import model.map.GameMap;
 import model.player.Player;
 import model.player.PlayerBoard;
 import model.player.UserPlayer;
@@ -53,14 +54,18 @@ public class Cli {
         players.add(p4);
 
         gs.setPlayers(players);
+        gs.setGameMap(new GameMap(GameMap.MAP_1));
 
+        /*
         printLogo();
         askConnection();
         askUsername();
         askColor();
 
         CliPrinter.printPlayerBoards(out, gs);
+        */
 
+        CliPrinter.printMap(out, gs);
     }
 
     private void printLogo() {
