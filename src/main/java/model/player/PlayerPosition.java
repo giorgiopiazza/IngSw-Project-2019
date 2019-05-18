@@ -129,29 +129,29 @@ public class PlayerPosition implements Serializable {
         Square tempSquare;
 
         if (playerSquare.getNorth() == SquareAdjacency.DOOR) {
-            tempSquare = Game.getInstance().getGameMap().getSquare(pos.getCoordX(), pos.getCoordY() - 1);
-            if (tempSquare.getRoomColor() == playerSquare.getRoomColor()) {
+            tempSquare = Game.getInstance().getGameMap().getSquare(getCoordX() - 1, getCoordY());
+            if (tempSquare.getRoomColor() == targetSquare.getRoomColor()) {
                 return true;
             }
         }
 
         if (playerSquare.getEast() == SquareAdjacency.DOOR) {
-            tempSquare = Game.getInstance().getGameMap().getSquare(pos.getCoordX() + 1, pos.getCoordY());
-            if (tempSquare.getRoomColor() == playerSquare.getRoomColor()) {
+            tempSquare = Game.getInstance().getGameMap().getSquare(getCoordX(), getCoordY() + 1);
+            if (tempSquare.getRoomColor() == targetSquare.getRoomColor()) {
                 return true;
             }
         }
 
         if (playerSquare.getSouth() == SquareAdjacency.DOOR) {
-            tempSquare = Game.getInstance().getGameMap().getSquare(pos.getCoordX(), pos.getCoordY() + 1);
-            if (tempSquare.getRoomColor() == playerSquare.getRoomColor()) {
+            tempSquare = Game.getInstance().getGameMap().getSquare(getCoordX() + 1, getCoordY());
+            if (tempSquare.getRoomColor() == targetSquare.getRoomColor()) {
                 return true;
             }
         }
 
         if (playerSquare.getWest() == SquareAdjacency.DOOR) {
-            tempSquare = Game.getInstance().getGameMap().getSquare(pos.getCoordX() - 1, pos.getCoordY());
-            return tempSquare.getRoomColor() == playerSquare.getRoomColor();
+            tempSquare = Game.getInstance().getGameMap().getSquare(getCoordX(), getCoordY() - 1);
+            return tempSquare.getRoomColor() == targetSquare.getRoomColor();
         }
 
         return false;

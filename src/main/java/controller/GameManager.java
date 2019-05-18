@@ -139,6 +139,7 @@ public class GameManager {
         } else throw new InvalidGameStateException();
 
         // now game has started
+        System.out.println(">>> " + roundManager.getTurnManager().getTurnOwner().getUsername() + " IT'S YOUR TURN! ");
         roundManager.setInitialActions();
         if (gameState == PossibleGameState.GAME_STARTED) {
             PossibleGameState changingState = gameState;
