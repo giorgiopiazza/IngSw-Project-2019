@@ -7,28 +7,33 @@ import java.util.List;
 
 public class TurnManager {
     private UserPlayer turnOwner;
+    private UserPlayer lastPlayer;
 
     private List<UserPlayer> players;
-    private List<UserPlayer> deathPlayers;
     private ArrayList<UserPlayer> damagedPlayers;
-    private UserPlayer frenzyActivator;
+    private ArrayList<UserPlayer> afterFrenzy;
+    private ArrayList<UserPlayer> beforeFrenzy;
 
     private int count;
 
     public TurnManager(List<UserPlayer> players) {
         this.players = players;
-        this.frenzyActivator = null;
         this.turnOwner = players.get(count);
+        this.afterFrenzy = new ArrayList<>();
+        this.beforeFrenzy = new ArrayList<>();
 
-        this.deathPlayers = new ArrayList<>();
     }
 
     public UserPlayer getTurnOwner() {
         return turnOwner;
     }
 
-    public void addDeathPlayer(UserPlayer player) {
-        deathPlayers.add(player);
+    public void setLastPlayer() {
+        this.lastPlayer = turnOwner;
+    }
+
+    public UserPlayer getLastPlayer() {
+        return this.lastPlayer;
     }
 
     public void setDamagedPlayers(ArrayList<UserPlayer> damaged) {
@@ -39,21 +44,37 @@ public class TurnManager {
         return this.damagedPlayers;
     }
 
-    public void setFrenzyActivator() {
-        this.frenzyActivator = turnOwner;
+    public ArrayList<UserPlayer> getAfterFrenzy() {
+        return this.afterFrenzy;
     }
 
-    public UserPlayer getFrenzyActivator() {
-        return this.frenzyActivator;
+    public ArrayList<UserPlayer> getBeforeFrenzy() {
+        return this.beforeFrenzy;
     }
-
     public void nextTurn() {
-        if (!deathPlayers.isEmpty()) {
-            turnOwner = deathPlayers.remove(deathPlayers.size() - 1);
-        } else {
-            count++;
-            count = count % players.size();
-            turnOwner = players.get(count);
-        }
+        count++;
+        count = count % players.size();
+        turnOwner = players.get(count);
+    }
+
+    public void setFrenzyPlayers() {
+        UserPlayer frenzyActivator = turnOwner;
+        boolean beforeFirst = true;
+        UserPlayer tempPlayer;
+
+        do {
+            nextTurn();
+
+            if(turnOwner.isFirstPlayer()) {
+                beforeFirst = false;
+            }
+
+            if(beforeFirst) {
+                afterFrenzy.add(turnOwner);
+            } else {
+                beforeFrenzy.add(turnOwner);
+            }
+
+        } while (!turnOwner.equals(frenzyActivator));
     }
 }

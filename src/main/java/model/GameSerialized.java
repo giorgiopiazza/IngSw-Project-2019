@@ -1,6 +1,7 @@
 package model;
 
 import enumerations.GameState;
+import model.map.GameMap;
 import model.player.KillShot;
 import model.player.Player;
 
@@ -11,6 +12,7 @@ import java.util.Arrays;
 public class GameSerialized implements Serializable  {
 
     private GameState currentState;
+    private GameMap gameMap;
 
     private ArrayList<Player> players;
     private boolean terminatorPresent;
@@ -73,6 +75,14 @@ public class GameSerialized implements Serializable  {
 
     public void setKillShotsTrack(KillShot[] killShotsTrack) {
         this.killShotsTrack = killShotsTrack;
+    }
+
+    public GameMap getGameMap() {
+        return gameMap;
+    }
+
+    public void setGameMap(GameMap gameMap) {
+        this.gameMap = gameMap;
     }
 
     @Override

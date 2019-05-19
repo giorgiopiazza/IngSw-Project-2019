@@ -3,12 +3,14 @@ package controller;
 import enumerations.GameState;
 import enumerations.PlayerColor;
 import enumerations.PossibleGameState;
+import exceptions.AdrenalinaException;
 import exceptions.game.InvalidGameStateException;
 import exceptions.game.MaxPlayerException;
 import model.Game;
 import model.player.KillShot;
 import model.player.Player;
 import model.player.PlayerBoard;
+import model.player.Terminator;
 import model.player.UserPlayer;
 
 import java.util.*;
@@ -137,22 +139,28 @@ public class GameManager {
         } else throw new InvalidGameStateException();
 
         // now game has started
+        System.out.println(">>> " + roundManager.getTurnManager().getTurnOwner().getUsername() + " IT'S YOUR TURN! ");
         roundManager.setInitialActions();
         if (gameState == PossibleGameState.GAME_STARTED) {
             PossibleGameState changingState = gameState;
             // this while manages the entire game changing turns between players
-            while (changingState == PossibleGameState.GAME_STARTED || changingState == PossibleGameState.SECOND_ACTION) {
+            while (changingState == PossibleGameState.GAME_STARTED || changingState == PossibleGameState.SECOND_ACTION ||
+                    changingState == PossibleGameState.TERMINATOR_USED || changingState == PossibleGameState.FINAL_FRENZY) {
                 changingState = roundManager.handleDecision(changingState);
 
                 if (changingState == PossibleGameState.TERMINATOR_USED) {
                     roundManager.removeTerminatorAction();
                 }
 
+                if (changingState == PossibleGameState.MISSING_TERMINATOR_ACTION) {
+                    changingState = roundManager.handleTerminatorAsLastAction();
+                }
+
                 while (changingState == PossibleGameState.ACTIONS_DONE) {
                     roundManager.setReloadAction();
                     changingState = roundManager.handleReloadDecision(changingState);
                     if (changingState == PossibleGameState.PASS_TURN) {
-                        if (gameInstance.getDeathPlayers().size() != 0) {
+                        if (!gameInstance.getDeathPlayers().isEmpty()) {
                             changingState = handleDeathPlayers();
                         }
 
@@ -160,17 +168,43 @@ public class GameManager {
                         if (changingState == PossibleGameState.FINAL_FRENZY) {
                             gameInstance.setState(GameState.FINAL_FRENZY);
                             finalFrenzySetup();
-                            finalFrenzyRun();
-                            // TODO handle frenzy and finish state
                         }
 
-                        // TODO pass turn handling
+                        // current player must have only one possible action when passing his turn!
+                        if (roundManager.getTurnManager().getTurnOwner().getPossibleActions().size() == 1) {
+                            changingState = roundManager.handleNextTurn();
+                            roundManager.setInitialActions();
+                        }
+                    }
+                }
 
-                        roundManager.setInitialActions();
+                while (changingState == PossibleGameState.FRENZY_ACTIONS_DONE) {
+                    changingState = roundManager.handlePowerupDecision(changingState);
+                    if (changingState == PossibleGameState.PASS_TURN) {
+                        if (roundManager.getTurnManager().getTurnOwner().equals(roundManager.getTurnManager().getLastPlayer())) {
+                            gameState = PossibleGameState.ENDGAME;
+                            changingState = PossibleGameState.ENDGAME;
+                        }
+
+                        if (!gameInstance.getDeathPlayers().isEmpty() && changingState != PossibleGameState.ENDGAME) {
+                            changingState = handleDeathPlayers();
+                        }
+
+                        if (changingState == PossibleGameState.PASS_TURN) {
+                            changingState = roundManager.handleNextTurn();
+                            roundManager.setInitialActions();
+                        }
                     }
                 }
             }
         } else throw new InvalidGameStateException();
+
+        // end of the game management: last damaged boards points distribution, killShotTracker distribution and winner declaration
+        if (gameState == PossibleGameState.ENDGAME) {
+            handleLastPointsDistribution();
+            handleKillShotTrackDistribution();
+            declareWinner();
+        }
     }
 
     private PossibleGameState handleDeathPlayers() {
@@ -188,18 +222,19 @@ public class GameManager {
         }
 
         // players death management
-        for(UserPlayer player : deathPlayers) {
+        for (UserPlayer player : deathPlayers) {
             distributePoints(player);
             roundManager.handlePlayerRespawn(player);
             moveSkull(player);
             // then I clear the board and add a skull to its points counter
+            player.getPlayerBoard().onDeath();
         }
 
-        if(deathPlayers.size() > 1 || (deathPlayers.size() == 1 && terminatorDied)) {
-            roundManager.addDoubleKillPoint();
+        if (deathPlayers.size() > 1 || (deathPlayers.size() == 1 && terminatorDied)) {
+            addDoubleKillPoint();
         }
 
-        if(gameInstance.remainingSkulls() == 0) {
+        if (gameInstance.remainingSkulls() == 0 && !gameInstance.getState().equals(GameState.FINAL_FRENZY)) {
             return PossibleGameState.FINAL_FRENZY;
         } else {
             return PossibleGameState.PASS_TURN;
@@ -212,19 +247,20 @@ public class GameManager {
         PlayerBoard deathsPlayerBoard = deathPlayer.getPlayerBoard();
         Integer[] boardPoints = deathsPlayerBoard.getBoardPoints();
         List<String> pointsReceivers = deathsPlayerBoard.getDamages().stream().distinct().collect(Collectors.toList());
-        Map<String, Integer> receivers = new HashMap<>();
+        Map<String, DamageCountWrapper> receivers = new HashMap<>();
         Player firstBlooder;
 
-        for (String receiver : pointsReceivers) {
-            int frequency = Collections.frequency(deathsPlayerBoard.getDamages(), receiver);
-            receivers.put(receiver, frequency);
+        for (int i = 0; i < pointsReceivers.size(); ++i) {
+            int frequency = Collections.frequency(deathsPlayerBoard.getDamages(), pointsReceivers.get(i));
+            DamageCountWrapper damageCountWrapper = new DamageCountWrapper(i, frequency);
+            receivers.put(pointsReceivers.get(i), damageCountWrapper);
         }
 
-        Map<String, Integer> orderedReceivers = receivers
+        Map<String, DamageCountWrapper> orderedReceivers = receivers
                 .entrySet()
                 .stream()
-                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (x1, x2) -> x2, LinkedHashMap::new));
+                .sorted(Map.Entry.comparingByValue())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 
         if (deathsPlayerBoard.isBoardFlipped()) {     // first blood assignment
             firstBlooder = gameInstance.getUserPlayerByUsername(deathsPlayerBoard.getDamages().get(0));
@@ -237,6 +273,91 @@ public class GameManager {
             tempReceiver.addPoints(boardPoints[pointsIndex]);
             ++pointsIndex;
         }
+    }
+
+    private void addDoubleKillPoint() {
+        roundManager.getTurnManager().getTurnOwner().addPoints(1);
+    }
+
+    private void handleLastPointsDistribution() {
+        List<UserPlayer> players = gameInstance.getPlayers();
+        Terminator terminator = (Terminator) gameInstance.getTerminator();
+
+        if (gameInstance.isTerminatorPresent()) {
+            if (terminator.getPlayerBoard().getDamageCount() > 0) {
+                // in the last distribution each damaged player counts as a dead one to calculate points
+                distributePoints(terminator);
+            }
+        }
+
+        for (UserPlayer player : players) {
+            if (player.getPlayerBoard().getDamageCount() > 0) {
+                // in the last distribution each damaged player counts as a dead one to calculate points
+                distributePoints(player);
+                if (gameInstance.getDeathPlayers().contains(player)) {
+                    moveSkull(player);
+                }
+            }
+        }
+    }
+
+    private void handleKillShotTrackDistribution() {
+        Integer[] trackerPoints = gameInstance.getTrackerPoints();
+        ArrayList<KillShot> killShotTracker = gameInstance.getKillShotTrack();
+        ArrayList<KillShot> finalFrenzyTracker = gameInstance.getFinalFrenzyKillShots();
+        ArrayList<String> killers = new ArrayList<>();
+        ArrayList<String> distinctKillers;
+        Map<String, DamageCountWrapper> receivers = new HashMap<>();
+
+        // first I add the killers on the tracker
+        for (KillShot killShot : killShotTracker) {
+            killers.add(killShot.getKiller());
+        }
+
+        // then I add the killers of the frenzy mode
+        for (KillShot killShot : finalFrenzyTracker) {
+            killers.add(killShot.getKiller());
+        }
+
+        distinctKillers = killers.stream().distinct().collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+
+        for (int i = 0; i < distinctKillers.size(); ++i) {
+            int frequency = Collections.frequency(killers, distinctKillers.get(i));
+            frequency += getPointsOnKillShots(distinctKillers.get(i), killShotTracker, finalFrenzyTracker);
+            DamageCountWrapper damageCountWrapper = new DamageCountWrapper(i, frequency);
+            receivers.put(distinctKillers.get(i), damageCountWrapper);
+        }
+
+        Map<String, DamageCountWrapper> orderedReceivers = receivers
+                .entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+
+        int pointsIndex = 0;
+        for (Map.Entry entry : orderedReceivers.entrySet()) {
+            Player tempReceiver = gameInstance.getUserPlayerByUsername((String) entry.getKey());
+            tempReceiver.addPoints(trackerPoints[pointsIndex]);
+            ++pointsIndex;
+        }
+    }
+
+    private int getPointsOnKillShots(String killer, ArrayList<KillShot> killShotTracker, ArrayList<KillShot> finalFrenzyTracker) {
+        int pointsOnKillShots = 0;
+
+        for (KillShot killShot : killShotTracker) {
+            if (killShot.getKiller().equals(killer)) {
+                pointsOnKillShots += killShot.getPoints();
+            }
+        }
+
+        for (KillShot killShot : finalFrenzyTracker) {
+            if (killShot.getKiller().equals(killer)) {
+                pointsOnKillShots += killShot.getPoints();
+            }
+        }
+
+        return pointsOnKillShots;
     }
 
     private void moveSkull(Player deathPlayer) {
@@ -259,13 +380,119 @@ public class GameManager {
     }
 
     private void finalFrenzySetup() {
+        roundManager.getTurnManager().setFrenzyPlayers();
 
+        // boards flipping setup
+        if (gameInstance.isTerminatorPresent()) {
+            if (gameInstance.getTerminator().getPlayerBoard().getDamageCount() == 0) {
+                try {
+                    gameInstance.getTerminator().getPlayerBoard().flipBoard();
+                } catch (AdrenalinaException e) {
+                    // exceptions thrown can never be reached thanks to the control done
+                }
+            }
+        }
+
+        for (UserPlayer player : gameInstance.getPlayers()) {
+            if (player.getPlayerBoard().getDamageCount() == 0) {
+                try {
+                    player.getPlayerBoard().flipBoard();
+                } catch (AdrenalinaException e) {
+                    // exceptions thrown can never be reached thanks to the control done
+                }
+            }
+        }
+
+        roundManager.getTurnManager().setLastPlayer();
+        roundManager.handleNextTurn();
     }
 
-    private void finalFrenzyRun() {
+    private void declareWinner() {
+        List<UserPlayer> players = gameInstance.getPlayers();
+        List<Player> tiePlayers = new ArrayList<>();
+        List<Player> winners;
 
+        ArrayList<Player> orderedPlayers = players.stream().sorted().collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+        int maxPoints = orderedPlayers.get(0).getPoints();
+        tiePlayers.add(orderedPlayers.get(0));
+        for (int i = 1; i < orderedPlayers.size(); ++i) {
+            if (orderedPlayers.get(i).getPoints() == maxPoints) {
+                tiePlayers.add(orderedPlayers.get(i));
+            }
+        }
+
+        if (gameInstance.isTerminatorPresent()) {
+            if (gameInstance.getTerminator().getPoints() > maxPoints) {
+                System.out.println("GAME HAS ENDED, THE WINNER IS THE TERMINATOR YOU NOOBS!");
+                return;
+            } else if (gameInstance.getTerminator().getPoints() == maxPoints) {
+                tiePlayers.add(gameInstance.getTerminator());
+            }
+        }
+
+        if (tiePlayers.size() == 1) {
+            System.out.println("GAME HAS ENDED, THE WINNER IS: " + orderedPlayers.get(0).getUsername());
+        } else {
+            winners = handleTiePlayers(tiePlayers);
+            if (winners.size() == 1) {
+                System.out.println("GAME HAS ENDED, THE WINNER IS: " + winners.get(0));
+            } else {
+                System.out.println("GAME HAS ENDED WITH A TIE! WINNERS ARE: ");
+                for (Player player : winners) {
+                    System.out.println(player.getUsername());
+                }
+            }
+        }
+    }
+
+    private List<Player> handleTiePlayers(List<Player> tiePlayers) {
+        ArrayList<KillShot> killShotTracker = gameInstance.getKillShotTrack();
+        List<Player> winner = new ArrayList<>();
+
+        for (KillShot killShot : killShotTracker) {
+            for (Player player : tiePlayers) {
+                if (player.getUsername().equals(killShot.getKiller())) {
+                    winner.add(player);
+                    return winner;
+                }
+            }
+        }
+
+        return tiePlayers;
+    }
+
+    class DamageCountWrapper implements Comparable<DamageCountWrapper> {
+        final int position;
+        final int damage;
+
+        DamageCountWrapper(int position, int damage) {
+            this.position = position;
+            this.damage = damage;
+        }
+
+        @Override
+        public int compareTo(DamageCountWrapper otherDamageCountWrapper) {
+            // Reversed compare to get the best damage dealer first
+            if (this.damage == otherDamageCountWrapper.damage) {
+                return this.position - otherDamageCountWrapper.position;
+            } else {
+                return otherDamageCountWrapper.damage - this.damage;
+            }
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            DamageCountWrapper that = (DamageCountWrapper) o;
+            return position == that.position &&
+                    damage == that.damage;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(position, damage);
+        }
     }
 
 }
-
-
