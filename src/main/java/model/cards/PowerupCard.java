@@ -2,6 +2,7 @@ package model.cards;
 
 import enumerations.Ammo;
 import exceptions.AdrenalinaException;
+import exceptions.cards.InvalidPowerupActionException;
 import exceptions.command.InvalidCommandException;
 import exceptions.player.EmptyHandException;
 import exceptions.playerboard.NotEnoughAmmoException;
@@ -30,7 +31,7 @@ public class PowerupCard extends UsableCard {
     }
 
     @Override
-    public void use(EffectRequest request) throws NotEnoughAmmoException {
+    public void use(EffectRequest request) throws NotEnoughAmmoException, InvalidPowerupActionException {
         PowerupRequest powerupRequest = (PowerupRequest) request;
 
         String username = powerupRequest.getSenderUsername();
@@ -45,7 +46,7 @@ public class PowerupCard extends UsableCard {
             payEffectCost(powerupRequest, shootingPlayer, ((PowerupBaseEffect) getBaseEffect()).hasCost());
             getBaseEffect().execute(powerupRequest);
         } else {
-            throw new InvalidCommandException();
+            throw new InvalidPowerupActionException();
         }
     }
 

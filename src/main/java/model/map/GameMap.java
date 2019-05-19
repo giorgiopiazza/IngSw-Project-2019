@@ -241,8 +241,9 @@ public class GameMap implements Serializable {
      *
      * @param spawnColor the color of the square where to spawn
      * @return the playerposition of the square whre to spawn
+     * @throws InvalidSpawnColorException if color chosen does not correspond to a spawn one
      */
-    public PlayerPosition getSpawnSquare(RoomColor spawnColor) {
+    public PlayerPosition getSpawnSquare(RoomColor spawnColor) throws InvalidSpawnColorException{
         List<PlayerPosition> room = getRoom(spawnColor);
         for (PlayerPosition spawnPosition : room) {
             if (getSquare(spawnPosition).getSquareType().equals(SquareType.SPAWN)) {
@@ -250,7 +251,8 @@ public class GameMap implements Serializable {
             }
         }
 
-        throw new InvalidSpawnColorException(spawnColor.toString());
+        // spawn colors are always RED,BLUE and YELLOW
+        throw new InvalidSpawnColorException();
     }
 
     public Square[][] getRooms() {

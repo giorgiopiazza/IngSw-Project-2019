@@ -1,8 +1,6 @@
 package controller;
 
-import enumerations.GameState;
-import enumerations.PlayerColor;
-import enumerations.PossibleGameState;
+import enumerations.*;
 import exceptions.AdrenalinaException;
 import exceptions.game.InvalidGameStateException;
 import exceptions.game.MaxPlayerException;
@@ -12,6 +10,7 @@ import model.player.Player;
 import model.player.PlayerBoard;
 import model.player.Terminator;
 import model.player.UserPlayer;
+import network.message.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,6 +30,106 @@ public class GameManager {
         gameState = changeState;
     }
 
+    /********************************************** NEW IMPLEMENTATION *************************************************/
+
+    public Response onMessage(Message receivedMessage) {
+        // if the message received comes from a client that is not the turn owner it is never executed!
+        if (!gameInstance.getPlayerByName(receivedMessage.getSenderUsername()).equals(roundManager.getTurnManager().getTurnOwner())) {
+            return new Response("Message from a player that is not his turn!", MessageStatus.ERROR);
+        }
+
+        if (gameState == PossibleGameState.GRANADE_USAGE) {
+            if (roundManager.getTurnManager().getGranadeCount() > roundManager.getTurnManager().getDamagedPlayers().size()) {
+                roundManager.handleNextTurnReset();
+            } else {
+                return onGranadeMessage(receivedMessage);
+            }
+        }
+
+        switch (receivedMessage.getContent()) {
+            case GAME_SETUP:
+                // handle the decisions : CHOOSE THE MAP, TERMINATOR PRESENCE, NUMBER OF SKULLS
+                if (gameState == PossibleGameState.GAME_ROOM) {
+                    // handling, last handle returns gameState = GAME_READY
+                    // first player must be in state: SPAWN_TERMINATOR IF THE GAME HAS THE TERMINATOR
+                    // if the game has no terminator all players must be in FIRST_SPAWN and first player needs a method to pick the two powerups to spawn with
+                }
+                return new Response("Sonarlint del porco", MessageStatus.OK);
+            case TERMINATOR_SPAWN:
+                if (gameState == PossibleGameState.GAME_READY) {
+                    // remember a player must see the powerups he has drawn before spawning the terminator!
+                    return roundManager.handleTerminatorFirstSpawn((TerminatorSpawnRequest) receivedMessage);
+                } else {
+                    return buildInvalidResponse();
+                }
+            case DISCARD_POWERUP:
+                if (gameState == PossibleGameState.GAME_READY) {
+                    return roundManager.handleFirstSpawn((DiscardPowerupRequest) receivedMessage);
+                } else {
+                    return buildInvalidResponse();
+                }
+            case TERMINATOR:
+                if (gameState == PossibleGameState.GAME_READY) {
+                    return roundManager.handleTerminatorAction((UseTerminatorRequest) receivedMessage, gameState);
+                } else if (gameState == PossibleGameState.GAME_STARTED) {
+                    return roundManager.handleTerminatorAction((UseTerminatorRequest) receivedMessage, gameState);
+                } else {
+                    return buildInvalidResponse();
+                }
+            case POWERUP:
+                if (gameState == PossibleGameState.GAME_STARTED) {
+                    return roundManager.handlePowerupAction((PowerupRequest) receivedMessage);
+                } else {
+                    return buildInvalidResponse();
+                }
+            case MOVE:
+                if(gameState == PossibleGameState.GAME_STARTED || gameState == PossibleGameState.SECOND_ACTION) {
+                    return roundManager.handleMoveAction((MoveRequest) receivedMessage, handleSecondAction());
+                } else {
+                    return buildInvalidResponse();
+                }
+            default:
+                throw new InvalidGameStateException();
+        }
+
+    }
+
+    private Response onGranadeMessage(Message receivedMessage) {
+        switch (receivedMessage.getContent()) {
+            case POWERUP:
+                return roundManager.handleGranadeUsage((PowerupRequest) receivedMessage);
+            case PASS_TURN:     // this is a "false" PASS_TURN, turn goes to the next damaged player by the "real" turnOwner
+                // implementation then goes directly here
+                roundManager.getTurnManager().increaseGranadeCount();
+                roundManager.getTurnManager().giveTurn(roundManager.getTurnManager().getDamagedPlayers().get(roundManager.getTurnManager().getGranadeCount()));
+                return new Response("Granade not used", MessageStatus.OK);
+            default:
+                return new Response("Invalid Message while in granade state", MessageStatus.ERROR);
+        }
+    }
+
+    private boolean handleSecondAction() {
+        switch (gameState) {
+            case GAME_STARTED:
+                return false;
+            case SECOND_ACTION:
+                return true;
+            case FINAL_FRENZY:
+                if(roundManager.getTurnManager().getAfterFrenzy().contains(roundManager.getTurnManager().getTurnOwner())) {
+                    return false;
+                } else {
+                    return true;
+                }
+            default:
+                throw new InvalidGameStateException();
+        }
+    }
+
+    private Response buildInvalidResponse() {
+        return new Response("Invalid message", MessageStatus.ERROR);
+    }
+
+    /*******************************************************************************************************************/
 
     private void gameSetup() {
         Scanner in = new Scanner(System.in);
@@ -140,7 +239,7 @@ public class GameManager {
 
         // now game has started
         System.out.println(">>> " + roundManager.getTurnManager().getTurnOwner().getUsername() + " IT'S YOUR TURN! ");
-        roundManager.setInitialActions();
+        // roundManager.setInitialActions();
         if (gameState == PossibleGameState.GAME_STARTED) {
             PossibleGameState changingState = gameState;
             // this while manages the entire game changing turns between players
@@ -173,7 +272,7 @@ public class GameManager {
                         // current player must have only one possible action when passing his turn!
                         if (roundManager.getTurnManager().getTurnOwner().getPossibleActions().size() == 1) {
                             changingState = roundManager.handleNextTurn();
-                            roundManager.setInitialActions();
+                            // roundManager.setInitialActions();
                         }
                     }
                 }
@@ -192,7 +291,7 @@ public class GameManager {
 
                         if (changingState == PossibleGameState.PASS_TURN) {
                             changingState = roundManager.handleNextTurn();
-                            roundManager.setInitialActions();
+                            // roundManager.setInitialActions();
                         }
                     }
                 }
@@ -283,11 +382,9 @@ public class GameManager {
         List<UserPlayer> players = gameInstance.getPlayers();
         Terminator terminator = (Terminator) gameInstance.getTerminator();
 
-        if (gameInstance.isTerminatorPresent()) {
-            if (terminator.getPlayerBoard().getDamageCount() > 0) {
-                // in the last distribution each damaged player counts as a dead one to calculate points
-                distributePoints(terminator);
-            }
+        if (gameInstance.isTerminatorPresent() && terminator.getPlayerBoard().getDamageCount() > 0) {
+            // in the last distribution each damaged player counts as a dead one to calculate points
+            distributePoints(terminator);
         }
 
         for (UserPlayer player : players) {
@@ -383,13 +480,11 @@ public class GameManager {
         roundManager.getTurnManager().setFrenzyPlayers();
 
         // boards flipping setup
-        if (gameInstance.isTerminatorPresent()) {
-            if (gameInstance.getTerminator().getPlayerBoard().getDamageCount() == 0) {
-                try {
-                    gameInstance.getTerminator().getPlayerBoard().flipBoard();
-                } catch (AdrenalinaException e) {
-                    // exceptions thrown can never be reached thanks to the control done
-                }
+        if (gameInstance.isTerminatorPresent() && gameInstance.getTerminator().getPlayerBoard().getDamageCount() == 0) {
+            try {
+                gameInstance.getTerminator().getPlayerBoard().flipBoard();
+            } catch (AdrenalinaException e) {
+                // exceptions thrown can never be reached thanks to the control done
             }
         }
 

@@ -4,8 +4,11 @@ import enumerations.*;
 import exceptions.AdrenalinaException;
 import exceptions.actions.InvalidActionException;
 import exceptions.actions.MissingActionException;
+import exceptions.cards.InvalidPowerupActionException;
 import exceptions.game.InexistentColorException;
 import exceptions.game.InvalidGameStateException;
+import exceptions.map.InvalidSpawnColorException;
+import exceptions.player.EmptyHandException;
 import exceptions.player.MaxCardsInHandException;
 import exceptions.playerboard.NotEnoughAmmoException;
 import model.Game;
@@ -40,7 +43,7 @@ public class RoundManager {
         return this.turnManager;
     }
 
-    public void setInitialActions() {
+    private void setInitialActions() {
         if (gameInstance.getState() == GameState.NORMAL) {
             ActionManager.setPossibleActions(turnManager.getTurnOwner());
         } else if (gameInstance.getState() == GameState.FINAL_FRENZY) {
@@ -55,6 +58,263 @@ public class RoundManager {
     public void setReloadAction() {
         turnManager.getTurnOwner().setActions(EnumSet.of(PossibleAction.RELOAD));
     }
+
+    /***************************************** NEW IMPLEMENTATION ******************************************/
+
+    public Response handleTerminatorFirstSpawn(TerminatorSpawnRequest spawnRequest) {
+        if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.SPAWN_TERMINATOR)) {
+            // terminator does not still exist!
+            try {
+                gameInstance.buildTerminator();
+                gameInstance.spawnTerminator(gameInstance.getGameMap().getSpawnSquare(spawnRequest.getSpawnColor()));
+            } catch (InvalidSpawnColorException e) {
+                return new Response("Invalid color for spawning!", MessageStatus.ERROR);
+            }
+        } else {
+            return new Response("Invalid Action", MessageStatus.ERROR);
+        }
+
+        // I pick the two powerups for the first turn of the player an I set his state to FIRST_SPAWN
+        pickTwoPowerups();
+        turnManager.getTurnOwner().changePlayerState(PossiblePlayerState.FIRST_SPAWN);
+        return new Response("Terminator has spawned!", MessageStatus.OK);
+    }
+
+    public Response handleFirstSpawn(DiscardPowerupRequest discardRequest) {
+        RoomColor spawnColor;
+
+        if (discardRequest.getPowerup() < 0 || discardRequest.getPowerup() > 2) {
+            return new Response("Invalid powerup index", MessageStatus.ERROR);
+        }
+
+        if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.CHOOSE_SPAWN)) {
+            try {
+                spawnColor = Ammo.toColor(turnManager.getTurnOwner().getPowerups()[discardRequest.getPowerup()].getValue());
+                turnManager.getTurnOwner().discardPowerupByIndex(discardRequest.getPowerup());
+            } catch (EmptyHandException e) {
+                // never reached, in first spawn state every player always have two powerups!
+                return new Response("GAME ERROR", MessageStatus.ERROR);
+            }
+        } else {
+            return new Response("Invalid Action", MessageStatus.ERROR);
+        }
+
+        // i spawn the turnOwner and then pass the turn picking the powerups for the next player
+        try {
+            gameInstance.spawnPlayer(turnManager.getTurnOwner(), gameInstance.getGameMap().getSpawnSquare(spawnColor));
+        } catch (InvalidSpawnColorException e) {
+            // never reached, a powerup has always a corresponding spawning color!
+            // TODO add different kind of color ? SpawnColor ?
+        }
+
+        // changing state handling
+        if (gameInstance.isTerminatorPresent()) {
+            if (turnManager.getTurnOwner().isFirstPlayer()) {
+                turnManager.nextTurn();
+                pickTwoPowerups();
+            }
+        } else {
+            if (turnManager.endOfRound()) {
+                turnManager.nextTurn();
+                setInitialActions();
+                GameManager.changeState(PossibleGameState.GAME_STARTED);
+            } else {
+                turnManager.nextTurn();
+                pickTwoPowerups();
+            }
+        }
+        return new Response("Player spawned with chosen powerup", MessageStatus.OK);
+    }
+
+    public Response handleTerminatorAction(UseTerminatorRequest terminatorRequest, PossibleGameState gameState) {
+        TerminatorAction terminatorAction;
+
+        if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.TERMINATOR_ACTION)) {
+            terminatorAction = new TerminatorAction(turnManager.getTurnOwner(), terminatorRequest.getTargetPlayer(), terminatorRequest.getMovingPosition());
+            try {
+                if (terminatorAction.validate()) {
+                    terminatorAction.execute();
+                    turnManager.setDamagedPlayers(new ArrayList<>(List.of(terminatorRequest.getTargetPlayer())));
+                } else {
+                    return new Response("Terminator action not valid", MessageStatus.ERROR);
+                }
+            } catch (InvalidActionException e) {
+                return new Response("Invalid Action", MessageStatus.ERROR);
+            }
+        } else {
+            return new Response("Invalid Action", MessageStatus.ERROR);
+        }
+
+        if (!turnManager.getDamagedPlayers().isEmpty()) {
+            GameManager.changeState(PossibleGameState.GRANADE_USAGE);
+            turnManager.giveTurn(turnManager.getDamagedPlayers().get(0));
+            turnManager.resetGranadeCount();
+            turnManager.increaseGranadeCount();
+            turnManager.setArrivingGameState(gameState);
+        } else {
+            afterTerminatorActionHandler(gameState);
+        }
+
+        return new Response("Terminator action used", MessageStatus.OK);
+    }
+
+    public void afterTerminatorActionHandler(PossibleGameState gameState) {
+        if (gameState == PossibleGameState.GAME_READY) {
+            if (turnManager.endOfRound()) {
+                turnManager.nextTurn();
+                setInitialActions();
+                GameManager.changeState(PossibleGameState.GAME_STARTED);
+            } else {
+                turnManager.nextTurn();
+                pickTwoPowerups();
+            }
+        } else if (gameState == PossibleGameState.GAME_STARTED) {
+            turnManager.getTurnOwner().removeAction(PossibleAction.TERMINATOR_ACTION);
+        }
+    }
+
+    public void handleNextTurnReset() {
+        PossibleGameState arrivingState = turnManager.getArrivingGameState();
+
+        if (arrivingState == PossibleGameState.GAME_READY) {
+            turnManager.nextTurn();
+            if(turnManager.getTurnOwner().isFirstPlayer()) {
+                GameManager.changeState(PossibleGameState.GAME_STARTED);
+            } else {
+                pickTwoPowerups();
+            }
+        } else if(arrivingState == PossibleGameState.GAME_STARTED) {
+            // TODO reset depending on actions done
+        }
+    }
+
+    private void pickTwoPowerups() {
+        for (int i = 0; i < 2; ++i) {
+            PowerupCard drawnPowerup = (PowerupCard) gameInstance.getPowerupCardsDeck().draw();
+            try {
+                turnManager.getTurnOwner().addPowerup(drawnPowerup);
+            } catch (MaxCardsInHandException e) {
+                // nothing to do here, never reached when picking for the first time two powerups!
+            }
+        }
+    }
+
+    public Response handleGranadeUsage(PowerupRequest granadeMessage) {
+        PowerupCard chosenGranade;
+
+        if(granadeMessage.getPowerup() < 0 || granadeMessage.getPowerup() > turnManager.getTurnOwner().getPowerups().length) {
+            return new Response("Invalid Powerup index!", MessageStatus.ERROR);
+        }
+
+        chosenGranade = turnManager.getTurnOwner().getPowerups()[granadeMessage.getPowerup()];
+
+        if(!chosenGranade.getName().equals(TAGBACK_GRANADE)) {
+            return new Response("Invalid Powerup", MessageStatus.ERROR);
+        }
+
+        try {
+            chosenGranade.use(granadeMessage);
+        } catch (NotEnoughAmmoException e) {
+            // never reached because granade has never a cost
+        } catch (InvalidPowerupActionException e) {
+            return new Response("Powerup can not be used", MessageStatus.ERROR);
+        }
+
+        // after having executed the granade action I discard it from the players hand
+        try {
+            turnManager.getTurnOwner().discardPowerupByIndex(granadeMessage.getPowerup());
+        } catch (EmptyHandException e) {
+            // never reached if the player has the powerup!
+        }
+
+        // then I give the turn to the next damaged player
+        turnManager.increaseGranadeCount();
+        turnManager.giveTurn(turnManager.getDamagedPlayers().get(turnManager.getGranadeCount()));
+
+        return new Response("Granade has been Used", MessageStatus.OK);
+    }
+
+    public Response handlePowerupAction(PowerupRequest powerupRequest) {
+        PowerupCard chosenPowerup;
+
+        if(powerupRequest.getPowerup() < 0 || powerupRequest.getPowerup() > turnManager.getTurnOwner().getPowerups().length) {
+            return new Response("Invalid Powerup index!", MessageStatus.ERROR);
+        }
+
+        chosenPowerup = turnManager.getTurnOwner().getPowerups()[powerupRequest.getPowerup()];
+
+        if(!chosenPowerup.equals(NEWTON) || !chosenPowerup.equals(TELEPORTER)) {
+            return new Response("Invalid Powerup", MessageStatus.ERROR);
+        }
+
+        try {
+            chosenPowerup.use(powerupRequest);
+        } catch (NotEnoughAmmoException e) {
+            // never reached because neither newton nor teleporter need a cost
+        } catch (InvalidPowerupActionException e) {
+            return new Response("Powerup can not be used", MessageStatus.ERROR);
+        }
+
+        // after having used the powerup I discard it from the players hand
+        try {
+            turnManager.getTurnOwner().discardPowerupByIndex(powerupRequest.getPowerup());
+        } catch (EmptyHandException e) {
+            // never reached if the player has the powerup!
+        }
+
+        return new Response("Powerup has been used", MessageStatus.OK);
+    }
+
+    public Response handleMoveAction(MoveRequest moveRequest, boolean secondAction) {
+        UserPlayer turnOwner = turnManager.getTurnOwner();
+        PossibleAction actionType;
+        MoveAction moveAction;
+
+        if (turnOwner.getPossibleActions().contains(PossibleAction.MOVE)) {
+            actionType = PossibleAction.MOVE;
+        } else if (turnOwner.getPossibleActions().contains(PossibleAction.FRENZY_MOVE)) {
+            actionType = PossibleAction.FRENZY_MOVE;
+        } else {
+            throw new MissingActionException();
+        }
+
+        // first I build the MoveAction
+
+        moveAction = new MoveAction(turnOwner, moveRequest.getSenderMovePosition(), actionType);
+
+        try {
+            if(moveAction.validate()) {
+                moveAction.execute();
+            } else {
+                return new Response("Invalid move action", MessageStatus.ERROR);
+            }
+        } catch (InvalidActionException e) {
+            return new Response("Invalid move action", MessageStatus.ERROR);
+        }
+
+        GameManager.changeState(handleAfterActionState(secondAction));
+        return new Response("Move action done", MessageStatus.OK);
+    }
+
+    private PossibleGameState handleAfterActionState(boolean secondAction) {
+        if (!secondAction) {
+            return PossibleGameState.SECOND_ACTION;
+        } else {
+            if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.TERMINATOR_ACTION)) {
+                return PossibleGameState.MISSING_TERMINATOR_ACTION;
+            } else {
+                if (gameInstance.getState().equals(GameState.NORMAL)) {
+                    return PossibleGameState.ACTIONS_DONE;
+                } else if (gameInstance.getState().equals(GameState.FINAL_FRENZY)) {
+                    return PossibleGameState.FRENZY_ACTIONS_DONE;
+                } else {
+                    throw new InvalidGameStateException();
+                }
+            }
+        }
+    }
+
+    /*********************************************************************************************************/
 
     public PossibleGameState handleDecision(PossibleGameState changingState) {
         Scanner in = new Scanner(System.in);
@@ -186,24 +446,6 @@ public class RoundManager {
         return handleAfterActionState(secondAction);
     }
 
-    private PossibleGameState handleAfterActionState(boolean secondAction) {
-        if (!secondAction) {
-            return PossibleGameState.SECOND_ACTION;
-        } else {
-            if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.TERMINATOR_ACTION)) {
-                return PossibleGameState.MISSING_TERMINATOR_ACTION;
-            } else {
-                if (gameInstance.getState().equals(GameState.NORMAL)) {
-                    return PossibleGameState.ACTIONS_DONE;
-                } else if (gameInstance.getState().equals(GameState.FINAL_FRENZY)) {
-                    return PossibleGameState.FRENZY_ACTIONS_DONE;
-                } else {
-                    throw new InvalidGameStateException();
-                }
-            }
-        }
-    }
-
     private PossibleGameState handlePowerupAction(PossibleGameState changingState) {
         Scanner in = new Scanner(System.in);
         UserPlayer turnOwner = turnManager.getTurnOwner();
@@ -247,7 +489,7 @@ public class RoundManager {
         if (chosenPowerup.getName().equals(decision)) {
             try {
                 chosenPowerup.use(powerupRequest);
-            } catch (NotEnoughAmmoException e) {
+            } catch (Exception e) {
                 // never reached, NEWTON and TELEPORTER never cost anything
             }
         }
@@ -393,7 +635,7 @@ public class RoundManager {
 
         }
 
-        gameInstance.spawnPlayer(spawningPlayer, gameInstance.getGameMap().getSpawnSquare(spawnColor));
+        // gameInstance.spawnPlayer(spawningPlayer, gameInstance.getGameMap().getSpawnSquare(spawnColor));
     }
 
     public void handlePlayerRespawn(UserPlayer player) {
@@ -432,7 +674,7 @@ public class RoundManager {
             }
         }
 
-        gameInstance.spawnPlayer(player, gameInstance.getGameMap().getSpawnSquare(spawnColor));
+        // gameInstance.spawnPlayer(player, gameInstance.getGameMap().getSpawnSquare(spawnColor));
     }
 
 
@@ -459,7 +701,7 @@ public class RoundManager {
                 if (chosenPowerup.getName().equals(TAGBACK_GRANADE)) {
                     try {
                         chosenPowerup.use(powerupRequest);
-                    } catch (NotEnoughAmmoException e) {
+                    } catch (Exception e) {
                         // Can't happen with Tagback granade
                     }
                 }

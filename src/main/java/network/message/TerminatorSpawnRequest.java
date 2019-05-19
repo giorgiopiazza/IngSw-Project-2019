@@ -1,18 +1,19 @@
 package network.message;
 
 import enumerations.MessageContent;
+import enumerations.RoomColor;
 import model.player.PlayerPosition;
 
 public class TerminatorSpawnRequest extends Message {
-    private final PlayerPosition terminatorSpawnPosition;
+    private final RoomColor spawnColor;
 
-    public TerminatorSpawnRequest(String username, PlayerPosition terminatorSpawnPosition) {
+    public TerminatorSpawnRequest(String username, RoomColor spawnColor) {
         super(username, MessageContent.TERMINATOR_SPAWN);
 
-        this.terminatorSpawnPosition = terminatorSpawnPosition;
+        this.spawnColor = spawnColor;
     }
 
-    public PlayerPosition getTerminatorSpawnPosition() {
-        return terminatorSpawnPosition;
+    public RoomColor getSpawnColor() {
+        return this.spawnColor;
     }
 }
