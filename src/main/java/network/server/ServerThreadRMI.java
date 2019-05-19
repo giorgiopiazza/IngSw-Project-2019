@@ -2,9 +2,7 @@ package network.server;
 
 import network.message.Message;
 
-import java.io.IOException;
 import java.net.Socket;
-import java.rmi.registry.LocateRegistry;
 
 class ServerThreadRMI extends ServerThread {
 
@@ -14,6 +12,11 @@ class ServerThreadRMI extends ServerThread {
 
     @Override
     public void sendToClient(Message message) {
+
+    }
+
+    @Override
+    public void close(Message message) {
 
     }
 }

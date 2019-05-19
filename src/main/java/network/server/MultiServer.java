@@ -1,8 +1,13 @@
 package network.server;
 
+import enumerations.MessageStatus;
 import exceptions.network.ClassAdrenalinaNotFoundException;
+import model.Game;
+import model.player.Player;
 import network.message.ConnectionRequest;
 import network.message.Message;
+import network.message.Response;
+import utility.ClientsStateParser;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -16,6 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class MultiServer implements CloseConnectionListener {
+    private static final String CLOSING_CONN = "connection closed";
     public static final int SOCKET_PORT = 2727;
     public static final int RMI_PORT = 7272;
 
@@ -78,17 +84,27 @@ public class MultiServer implements CloseConnectionListener {
      */
     public boolean closeClient(String username) {
         for (int i = 0; i < clients.size(); i++) {
-            String currUser = clients.get(i).getUsername();
-            final Socket currSocket = clients.get(i).getClient();
+            if (clients.get(i).getUsername().equals(username)) {
+                clients.get(i).close(new Response(CLOSING_CONN, MessageStatus.OK));
+                clients.remove(i);
+                return true;
+            }
+        }
 
-            if (currUser.equals(username)) {
-                synchronized (currSocket) {
-                    try {
-                        currSocket.close();
-                    } catch (IOException e) {
-                        LOGGER.log(Level.SEVERE, e.toString());
-                    }
-                }
+        return false;
+    }
+
+    /**
+     * Close the connection of the {@code username} sending the {@code reason} and remove it from the {@code clients} list
+     *
+     * @param username username of the client to close
+     * @param reason reason to closing connection
+     * @return true if username is present, otherwise false
+     */
+    public boolean closeClientWithReason(String username, String reason) {
+        for (int i = 0; i < clients.size(); i++) {
+            if (clients.get(i).getUsername().equals(username)) {
+                clients.get(i).close(new Response(reason, MessageStatus.ERROR));
                 clients.remove(i);
                 return true;
             }
@@ -103,15 +119,7 @@ public class MultiServer implements CloseConnectionListener {
      */
     public void closeAll() {
         for (ServerThread client : clients) {
-            Socket socket = client.getClient();
-
-            synchronized (socket) {
-                try {
-                    socket.close();
-                } catch (IOException e) {
-                    LOGGER.log(Level.SEVERE, e.toString());
-                }
-            }
+            client.close(new Response(CLOSING_CONN, MessageStatus.OK));
         }
 
         clients.clear();
@@ -123,9 +131,14 @@ public class MultiServer implements CloseConnectionListener {
      * @param message the message to send
      */
     public void sendToAll(Message message) {
+        List<String> users = new ArrayList<>();
+
         for (ServerThread serverThread : clients) {
             serverThread.sendToClient(message);
+            users.add(serverThread.getUsername());
         }
+
+        ClientsStateParser.saveClientsState(users);
     }
 
     @Override
@@ -136,5 +149,17 @@ public class MultiServer implements CloseConnectionListener {
                 break;
             }
         }
+    }
+
+    public List<Player> suspendedPlayers() {
+        List<Player> players = new ArrayList<>();
+
+        for (ServerThread serverThread : clients) {
+            if (serverThread.isSuspended()) {
+                players.add(Game.getInstance().getPlayerByName(serverThread.getUsername()));
+            }
+        }
+
+        return players;
     }
 }

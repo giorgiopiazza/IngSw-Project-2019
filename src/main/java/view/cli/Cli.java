@@ -20,7 +20,7 @@ public class Cli {
     }
 
     /**
-     * Starts the cli
+     * Starts the view.cli
      */
     public void start() {
 

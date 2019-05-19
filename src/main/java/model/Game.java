@@ -569,4 +569,20 @@ public class Game {
     KillShot[] getKillShotsTrack() {
         return killShotsTrack;
     }
+
+    /**
+     * Method that return the player with username {@code username}, if the player is not present returns {@code null}
+     *
+     * @param username the username of searching player
+     * @return the player with {@code username} username, otherwhise null
+     */
+    public Player getPlayerByName(String username) {
+        for (Player player : players) {
+            if (player.getUsername().equals(username)) return player;
+        }
+
+        if (terminator.getUsername().equals(username)) return terminator;
+
+        return null;
+    }
 }

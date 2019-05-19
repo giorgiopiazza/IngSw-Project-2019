@@ -13,7 +13,7 @@ import java.util.logging.Level;
 
 class ServerThreadSocket extends ServerThread {
     private boolean requested;
-    private List<Message> sendQueue;
+    private final List<Message> sendQueue;
     private CloseConnectionListener listener;
 
     ServerThreadSocket(Socket socket, String username, ObjectInputStream in, CloseConnectionListener listener) {
@@ -31,10 +31,10 @@ class ServerThreadSocket extends ServerThread {
 
     @Override
     public void run() {
-        synchronized (socket) {
-            while (true) {
-                Message cmd;
+        while (true) {
+            Message cmd;
 
+            synchronized (socket) {
                 // read request from the client
                 try {
                     cmd = (Message) in.readObject();
@@ -60,12 +60,16 @@ class ServerThreadSocket extends ServerThread {
                     MultiServer.LOGGER.log(Level.SEVERE, e.toString());
                 }
 
-                MultiServer.LOGGER.log(Level.INFO, "ServerThread {0}: {1}", new Object[] {id, cmd});
             }
+            MultiServer.LOGGER.log(Level.INFO, "ServerThread {0}: {1}", new Object[] {id, cmd});
+        }
 
+        synchronized (socket) {
             try {
                 socket.close();
-            } catch (IOException e) { MultiServer.LOGGER.log(Level.SEVERE, e.toString()); }
+            } catch (IOException e) {
+                MultiServer.LOGGER.log(Level.SEVERE, e.toString());
+            }
         }
         MultiServer.LOGGER.log(Level.INFO, "ServerThread {0}: stop", this.id);
         listener.onCloseConnection(username);
@@ -77,17 +81,19 @@ class ServerThreadSocket extends ServerThread {
      * type of server side messages: GAME_STATE
      */
     private void sendQueueMessages() {
-        if (this.requested) {
-            try {
-                for (Message message : sendQueue) {
-                    out.writeObject(message);
-                    out.reset();
+        synchronized (sendQueue) {
+            if (this.requested) {
+                try {
+                    for (Message message : sendQueue) {
+                        out.writeObject(message);
+                        out.reset();
+                    }
+                    sendQueue.clear();
+                    this.requested = false;
+                } catch (IOException e) {
+                    MultiServer.LOGGER.log(Level.SEVERE, e.toString());
                 }
-                sendQueue.clear();
-            } catch (IOException e) {
-                MultiServer.LOGGER.log(Level.SEVERE, e.toString());
             }
-            this.requested = false;
         }
     }
 
@@ -113,6 +119,7 @@ class ServerThreadSocket extends ServerThread {
             case POWERUP:
                 break;
             case PASS_TURN:
+
                 break;
 
             default:
@@ -127,7 +134,23 @@ class ServerThreadSocket extends ServerThread {
      */
     @Override
     public void sendToClient(Message message) {
-        this.requested = true;
-        this.sendQueue.add(message);
+        synchronized (sendQueue) {
+            this.requested = true;
+            this.sendQueue.add(message);
+        }
     }
+
+    @Override
+    public void close(Message message) {
+        synchronized (socket) {
+            try {
+                out.writeObject(message);
+                out.reset();
+                socket.close();
+            } catch (IOException e) {
+                MultiServer.LOGGER.log(Level.SEVERE, e.toString());
+            }
+        }
+    }
+
 }
