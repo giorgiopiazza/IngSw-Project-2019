@@ -43,14 +43,6 @@ public class RoundManager {
         return this.turnManager;
     }
 
-    private void setInitialActions() {
-        if (gameInstance.getState() == GameState.NORMAL) {
-            ActionManager.setPossibleActions(turnManager.getTurnOwner());
-        } else if (gameInstance.getState() == GameState.FINAL_FRENZY) {
-            ActionManager.setFrenzyPossibleActions(turnManager.getTurnOwner(), turnManager);
-        }
-    }
-
     public void removeTerminatorAction() {
         turnManager.getTurnOwner().getPossibleActions().remove(PossibleAction.TERMINATOR_ACTION);
     }
@@ -60,6 +52,14 @@ public class RoundManager {
     }
 
     /***************************************** NEW IMPLEMENTATION ******************************************/
+
+    private void setInitialActions() {
+        if (gameInstance.getState() == GameState.NORMAL) {
+            ActionManager.setPossibleActions(turnManager.getTurnOwner());
+        } else if (gameInstance.getState() == GameState.FINAL_FRENZY) {
+            ActionManager.setFrenzyPossibleActions(turnManager.getTurnOwner(), turnManager);
+        }
+    }
 
     public Response handleTerminatorFirstSpawn(TerminatorSpawnRequest spawnRequest) {
         if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.SPAWN_TERMINATOR)) {
@@ -169,7 +169,18 @@ public class RoundManager {
                 pickTwoPowerups();
             }
         } else if (gameState == PossibleGameState.GAME_STARTED) {
+            // if terminator action is done before the 2 actions the game state does not change, otherwise it must be done before passing the turn
             turnManager.getTurnOwner().removeAction(PossibleAction.TERMINATOR_ACTION);
+        } else if (gameState == PossibleGameState.MISSING_TERMINATOR_ACTION) {
+            if (gameInstance.getState().equals(GameState.NORMAL)) {
+                GameManager.changeState(PossibleGameState.ACTIONS_DONE);
+            } else if (gameInstance.getState().equals(GameState.FINAL_FRENZY)) {
+                GameManager.changeState(PossibleGameState.FRENZY_ACTIONS_DONE);
+            } else {
+                throw new InvalidGameStateException();
+            }
+        } else {
+            throw new InvalidGameStateException();
         }
     }
 
@@ -286,10 +297,10 @@ public class RoundManager {
             if(moveAction.validate()) {
                 moveAction.execute();
             } else {
-                return new Response("Invalid move action", MessageStatus.ERROR);
+                return new Response("Invalid Move action", MessageStatus.ERROR);
             }
         } catch (InvalidActionException e) {
-            return new Response("Invalid move action", MessageStatus.ERROR);
+            return new Response("Invalid Move action", MessageStatus.ERROR);
         }
 
         GameManager.changeState(handleAfterActionState(secondAction));
@@ -312,6 +323,55 @@ public class RoundManager {
                 }
             }
         }
+    }
+
+    public Response handlePickAction(MovePickRequest pickRequest, boolean secondAction) {
+        UserPlayer turnOwner = turnManager.getTurnOwner();
+        PickAction pickAction;
+        Set<PossibleAction> ownersActions = turnOwner.getPossibleActions();
+        PossibleAction actionType;
+        Square movingSquare;
+
+        if (ownersActions.contains(PossibleAction.MOVE_AND_PICK)) {
+            actionType = PossibleAction.MOVE_AND_PICK;
+        } else if (ownersActions.contains(PossibleAction.ADRENALINE_PICK)) {
+            actionType = PossibleAction.ADRENALINE_PICK;
+        } else if (ownersActions.contains(PossibleAction.FRENZY_PICK)) {
+            actionType = PossibleAction.FRENZY_PICK;
+        } else if (ownersActions.contains(PossibleAction.LIGHT_FRENZY_PICK)) {
+            actionType = PossibleAction.LIGHT_FRENZY_PICK;
+        } else {
+            throw new MissingActionException();
+        }
+
+        // first I understand if the moving square is a spawn or a tile one then I build the relative pick action
+        movingSquare = gameInstance.getGameMap().getSquare(pickRequest.getSenderMovePosition());
+
+        if(movingSquare.getSquareType() == SquareType.TILE) {
+            pickAction = new PickAction(turnOwner, pickRequest.getSenderMovePosition(), actionType, null, null, pickRequest);
+        } else if (movingSquare.getSquareType() == SquareType.SPAWN) {
+            pickAction = new PickAction(turnOwner, pickRequest.getSenderMovePosition(), actionType, pickRequest.getAddingWeapon(), pickRequest.getDiscardingWeapon(), pickRequest);
+        } else {
+            throw new NullPointerException("A square must always have a type!");
+        }
+
+        // now I can try to validate and use the action
+        try {
+            if(pickAction.validate()) {
+                pickAction.execute();
+            } else {
+                return new Response("Invalid Pick Action", MessageStatus.ERROR);
+            }
+        } catch (InvalidActionException e) {
+            return new Response("Invalid Pick Action", MessageStatus.ERROR);
+        }
+
+        GameManager.changeState(handleAfterActionState(secondAction));
+        return new Response("Pick Action done", MessageStatus.OK);
+    }
+
+    public Response handleShootAction(ShootRequest shootRequest, boolean secondAction) {
+        return new Response("Sonarlint cagacazzo", MessageStatus.OK);
     }
 
     /*********************************************************************************************************/
@@ -876,12 +936,14 @@ public class RoundManager {
         Scanner in = new Scanner(System.in);
         ActionRequest pickRequest;
         Set<PossibleAction> ownersActions = turnOwner.getPossibleActions();
-        PossibleAction actionType;
+        PossibleAction actionType = null;
         PlayerPosition movingPos;
         Square movingSquare;
         int coordX;
         int coordY;
 
+
+        /*
         if (ownersActions.contains(PossibleAction.MOVE_AND_PICK)) {
             actionType = PossibleAction.MOVE_AND_PICK;
         } else if (ownersActions.contains(PossibleAction.ADRENALINE_PICK)) {
@@ -892,7 +954,7 @@ public class RoundManager {
             actionType = PossibleAction.LIGHT_FRENZY_PICK;
         } else {
             throw new MissingActionException();
-        }
+        }*/
 
         // movement setting
         for (; ; ) {
@@ -916,8 +978,8 @@ public class RoundManager {
         }
 
         if (movingSquare.getSquareType() == SquareType.TILE) {
-            pickRequest = new MovePickRequest(turnOwner.getUsername(), movingPos, null);
-            return new PickAction(turnOwner, movingPos, actionType, null, null, pickRequest);
+            // pickRequest = new MovePickRequest(turnOwner.getUsername(), movingPos, null);
+            return new PickAction(turnOwner, movingPos, actionType, null, null, null);
         } else if (movingSquare.getSquareType() == SquareType.SPAWN) {
             return handleWeaponPick(turnOwner, movingPos, actionType, (SpawnSquare) movingSquare);
         } else {
@@ -990,8 +1052,8 @@ public class RoundManager {
         }
 
         // all informations have been decided
-        pickRequest = new MovePickRequest(turnOwner.getUsername(), movingPos, powerups);
-        return new PickAction(turnOwner, movingPos, actionType, pickingWeapon, discardingWeapon, pickRequest);
+        // pickRequest = new MovePickRequest(turnOwner.getUsername(), movingPos, powerups);
+        return new PickAction(turnOwner, movingPos, actionType, pickingWeapon, discardingWeapon, null);
 
     }
 

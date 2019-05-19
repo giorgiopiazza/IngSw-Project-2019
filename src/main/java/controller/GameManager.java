@@ -38,12 +38,18 @@ public class GameManager {
             return new Response("Message from a player that is not his turn!", MessageStatus.ERROR);
         }
 
+        // SPECIAL CASES
         if (gameState == PossibleGameState.GRANADE_USAGE) {
             if (roundManager.getTurnManager().getGranadeCount() > roundManager.getTurnManager().getDamagedPlayers().size()) {
                 roundManager.handleNextTurnReset();
             } else {
                 return onGranadeMessage(receivedMessage);
             }
+        }
+
+        if (gameState == PossibleGameState.MISSING_TERMINATOR_ACTION) {
+            // only messages to use the terminator action and a powerup can be used!
+            return handleTerminatorAsLastAction(receivedMessage);
         }
 
         switch (receivedMessage.getContent()) {
@@ -77,14 +83,26 @@ public class GameManager {
                     return buildInvalidResponse();
                 }
             case POWERUP:
-                if (gameState == PossibleGameState.GAME_STARTED) {
+                if (gameState == PossibleGameState.GAME_STARTED || gameState == PossibleGameState.SECOND_ACTION || gameState == PossibleGameState.FINAL_FRENZY) {
                     return roundManager.handlePowerupAction((PowerupRequest) receivedMessage);
                 } else {
                     return buildInvalidResponse();
                 }
             case MOVE:
-                if(gameState == PossibleGameState.GAME_STARTED || gameState == PossibleGameState.SECOND_ACTION) {
+                if(gameState == PossibleGameState.GAME_STARTED || gameState == PossibleGameState.SECOND_ACTION || gameState == PossibleGameState.FINAL_FRENZY) {
                     return roundManager.handleMoveAction((MoveRequest) receivedMessage, handleSecondAction());
+                } else {
+                    return buildInvalidResponse();
+                }
+            case MOVE_PICK:
+                if(gameState == PossibleGameState.GAME_STARTED || gameState == PossibleGameState.SECOND_ACTION || gameState == PossibleGameState.FINAL_FRENZY) {
+                    return roundManager.handlePickAction((MovePickRequest) receivedMessage, handleSecondAction());
+                } else {
+                    return buildInvalidResponse();
+                }
+            case SHOOT:
+                if(gameState == PossibleGameState.GAME_STARTED || gameState == PossibleGameState.SECOND_ACTION || gameState == PossibleGameState.FINAL_FRENZY) {
+                    return roundManager.handleShootAction((ShootRequest) receivedMessage, handleSecondAction());
                 } else {
                     return buildInvalidResponse();
                 }
@@ -115,13 +133,20 @@ public class GameManager {
             case SECOND_ACTION:
                 return true;
             case FINAL_FRENZY:
-                if(roundManager.getTurnManager().getAfterFrenzy().contains(roundManager.getTurnManager().getTurnOwner())) {
-                    return false;
-                } else {
-                    return true;
-                }
+                return roundManager.getTurnManager().getAfterFrenzy().contains(roundManager.getTurnManager().getTurnOwner());
             default:
                 throw new InvalidGameStateException();
+        }
+    }
+
+    private Response handleTerminatorAsLastAction(Message receivedMessage) {
+        switch (receivedMessage.getContent()) {
+            case TERMINATOR:
+                return roundManager.handleTerminatorAction((UseTerminatorRequest) receivedMessage, PossibleGameState.MISSING_TERMINATOR_ACTION);
+            case POWERUP:
+                return roundManager.handlePowerupAction((PowerupRequest) receivedMessage);
+            default:
+                return buildInvalidResponse();
         }
     }
 

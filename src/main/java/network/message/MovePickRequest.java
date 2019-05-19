@@ -1,12 +1,27 @@
 package network.message;
 
 import enumerations.MessageContent;
+import model.cards.WeaponCard;
 import model.player.PlayerPosition;
 
 import java.util.ArrayList;
 
 public class MovePickRequest extends ActionRequest {
-    public MovePickRequest(String username, PlayerPosition senderMovePosition, ArrayList<Integer> paymentPowerups) {
+    private WeaponCard addingWeapon;
+    private WeaponCard discardingWeapon;
+
+    public MovePickRequest(String username, PlayerPosition senderMovePosition, ArrayList<Integer> paymentPowerups, WeaponCard addingWeapon, WeaponCard discardingWeapon) {
         super(username, MessageContent.MOVE_PICK, senderMovePosition, paymentPowerups);
+
+        this.addingWeapon = addingWeapon;
+        this.discardingWeapon = discardingWeapon;
+    }
+
+    public WeaponCard getAddingWeapon() {
+        return this.addingWeapon;
+    }
+
+    public WeaponCard getDiscardingWeapon() {
+        return this.discardingWeapon;
     }
 }

@@ -4,6 +4,7 @@ import enumerations.PossibleAction;
 import enumerations.SquareType;
 import exceptions.actions.IncompatibleActionException;
 import exceptions.actions.InvalidActionException;
+import exceptions.actions.WeaponChargementException;
 import exceptions.cards.WeaponAlreadyChargedException;
 import exceptions.player.MaxCardsInHandException;
 import exceptions.playerboard.NotEnoughAmmoException;
@@ -90,13 +91,7 @@ public class PickAction implements Action {
         }
 
         // pick validation
-        if (squareType == SquareType.TILE) {
-            return ((CardSquare) pickingSquare).isAmmoTilePresent();
-        } else if (squareType == SquareType.SPAWN) {
-            return ((SpawnSquare) pickingSquare).hasWeapon(pickingWeapon);
-        } else {
-            throw new NullPointerException("You must always have something to pick in a pick Action!");
-        }
+        return pickValidation();
     }
 
     @Override
@@ -109,9 +104,7 @@ public class PickAction implements Action {
             ((CardSquare) pickingSquare).pickAmmoTile().giveResources(actingPlayer);
         } else if (squareType == SquareType.SPAWN) {
             try {
-                // first I have to pay the weapon to take it
-                pickingWeapon.payRechargeCost(pickRequest);
-
+                // weapon is already payid in the validation
                 // then I add the weapon to my hand
                 actingPlayer.addWeapon(pickingWeapon);
                 ((SpawnSquare) pickingSquare).removeWeapon(pickingWeapon);
@@ -119,13 +112,31 @@ public class PickAction implements Action {
                 actingPlayer.addWeapon(pickingWeapon, discardingWeapon);
                 discardingWeapon.setStatus(new SemiChargedWeapon());
                 ((SpawnSquare) pickingSquare).swapWeapons(discardingWeapon, pickingWeapon);
-            } catch (WeaponAlreadyChargedException e) {
-                // TODO Should we do something?
-            } catch (NotEnoughAmmoException e) {
-                // TODO Should we do something?
             }
         } else {
             throw new NullPointerException("A square must have a type!");
+        }
+    }
+
+    private boolean pickValidation() {
+        if (squareType == SquareType.TILE) {
+            return ((CardSquare) pickingSquare).isAmmoTilePresent();
+        } else if (squareType == SquareType.SPAWN && pickingWeapon != null) {
+            try {
+                pickingWeapon.payRechargeCost(pickRequest);
+            } catch (WeaponAlreadyChargedException e) {
+                // this is never reached because weapons on the map are never already charged!
+                throw new WeaponChargementException();
+            } catch (NotEnoughAmmoException e) {
+                return false;
+            }
+
+            if(actingPlayer.getWeapons().length == 3 && discardingWeapon == null) {
+                return false;
+            }
+            return ((SpawnSquare) pickingSquare).hasWeapon(pickingWeapon);
+        } else {
+            throw new NullPointerException("You must always have something to pick in a pick Action!");
         }
     }
 }
