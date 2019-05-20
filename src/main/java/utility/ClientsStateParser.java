@@ -36,7 +36,7 @@ public class ClientsStateParser {
             return false;
         }
 
-        Logger.getGlobal().log(Level.INFO, file.toString());
+        Logger.getGlobal().log(Level.INFO, "Opened: {0}", file);
         try (JsonWriter jsonWriter = new JsonWriter(fw)) {
             jsonWriter.beginArray();
 
@@ -54,7 +54,10 @@ public class ClientsStateParser {
 
         try {
             fw.close();
-        } catch (IOException e) {}
+        } catch (IOException e) {
+            Logger.getGlobal().log(Level.SEVERE, e.toString());
+            return false;
+        }
 
         return true;
     }

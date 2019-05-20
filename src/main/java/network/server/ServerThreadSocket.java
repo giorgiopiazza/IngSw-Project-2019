@@ -1,12 +1,12 @@
 package network.server;
 
 import controller.GameManager;
-import enumerations.MessageStatus;
 import network.message.Message;
 import network.message.Response;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,58 +15,75 @@ import java.util.logging.Level;
 class ServerThreadSocket extends ServerThread {
     private boolean requested;
     private final List<Message> sendQueue;
-    private CloseConnectionListener listener;
+    private CloseConnectionListener closeConnectionListener;
+    private final Socket socket;
+    private ObjectInputStream in;
+    private ObjectOutputStream out;
+    private boolean closed;
 
     ServerThreadSocket(Socket socket, String username, ObjectInputStream in) {
-        super(socket, username, in);
+        super(username);
+
+        this.socket = socket;
+
+        try {
+            this.in = in;
+            this.out = new ObjectOutputStream(socket.getOutputStream());
+        } catch (IOException e) { MultiServer.LOGGER.log(Level.SEVERE, e.toString()); }
+
         sendQueue = new ArrayList<>();
         requested = false;
+        closed = false;
+
         addMessageListener(GameManager.getInstance());
+    }
+
+    ServerThreadSocket(Socket socket, String username, ObjectInputStream in, CloseConnectionListener closeConnectionListener) {
+        this(socket, username, in);
+        this.closeConnectionListener = closeConnectionListener;
     }
 
     @Override
     public synchronized void start() {
         super.start();
-        MultiServer.LOGGER.log(Level.INFO, "ServerThread {0}: started", this.id);
+        MultiServer.LOGGER.log(Level.INFO, "ServerThread {0}: started", getServerThreadId());
     }
 
-    public void addCloseConnectionListener(CloseConnectionListener connectionListener) {
-        this.listener = connectionListener;
+    void addCloseConnectionListener(CloseConnectionListener closeConnectionListener) {
+        this.closeConnectionListener = closeConnectionListener;
     }
 
     @Override
     public void run() {
         while (true) {
-            Message cmd;
+            Message cmd = null;
+            Response response = null;
 
             synchronized (socket) {
                 // read request from the client
                 try {
                     cmd = (Message) in.readObject();
-                } catch (IOException | ClassNotFoundException e) {
+                } catch (IOException e) {
                     MultiServer.LOGGER.log(Level.SEVERE, e.toString());
                     cmd = null;
+                } catch (ClassNotFoundException e) {
+                    // TODO: qualcuno ha fatto il furbo, da gestire
                 }
 
                 sendQueueMessages();
 
                 if (cmd == null) break;
 
-                // switch with possible requests by client
                 try {
-                    out.writeObject(getMessageListener().onMessage(cmd));
-                } catch (IOException e) {
-                    MultiServer.LOGGER.log(Level.SEVERE, e.toString());
-                }
-
-                try {
+                    response = getMessageListener().onMessage(cmd);
+                    out.writeObject(response);
                     out.reset();
                 } catch (IOException e) {
                     MultiServer.LOGGER.log(Level.SEVERE, e.toString());
                 }
 
             }
-            MultiServer.LOGGER.log(Level.INFO, "ServerThread {0}: {1}", new Object[] {id, cmd});
+            MultiServer.LOGGER.log(Level.INFO, "ServerThread {0} <request: {1}, response: {2}>", new Object[] {getServerThreadId(), cmd, response});
         }
 
         synchronized (socket) {
@@ -76,8 +93,8 @@ class ServerThreadSocket extends ServerThread {
                 MultiServer.LOGGER.log(Level.SEVERE, e.toString());
             }
         }
-        MultiServer.LOGGER.log(Level.INFO, "ServerThread {0}: stop", this.id);
-        listener.onCloseConnection(username);
+        MultiServer.LOGGER.log(Level.INFO, "ServerThread {0}: stop", getServerThreadId());
+        if (!closed) closeConnectionListener.onCloseConnection(getUsername());
     }
 
     /**
@@ -122,6 +139,7 @@ class ServerThreadSocket extends ServerThread {
                 out.writeObject(message);
                 out.reset();
                 socket.close();
+                closed = true;
             } catch (IOException e) {
                 MultiServer.LOGGER.log(Level.SEVERE, e.toString());
             }

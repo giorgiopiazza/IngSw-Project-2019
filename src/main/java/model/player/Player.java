@@ -2,14 +2,15 @@ package model.player;
 
 import enumerations.*;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public abstract class Player implements Comparable<Player> {
+public abstract class Player implements Serializable, Comparable<Player> {
     private final String username;
     protected PlayerColor color;
     private final PlayerBoard playerBoard;
     private PlayerPosition position;
-    private int points;
+    private transient int points;
 
     public Player(String username) {
         this.username = username;

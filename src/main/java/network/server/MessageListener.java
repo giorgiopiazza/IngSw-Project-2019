@@ -3,6 +3,7 @@ package network.server;
 import network.message.Message;
 import network.message.Response;
 
+@FunctionalInterface
 public interface MessageListener {
 
     /**
@@ -11,5 +12,5 @@ public interface MessageListener {
      * @param received the message received from a client
      * @return the response calculated based on the request
      */
-    public Response onMessage(Message received);
+    Response onMessage(Message received);
 }

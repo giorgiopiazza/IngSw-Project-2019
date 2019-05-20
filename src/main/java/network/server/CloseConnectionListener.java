@@ -1,5 +1,6 @@
 package network.server;
 
+@FunctionalInterface
 public interface CloseConnectionListener {
 
     /**
@@ -7,6 +8,6 @@ public interface CloseConnectionListener {
      *
      * @param username the username to remove
      */
-    public void onCloseConnection(String username);
+    void onCloseConnection(String username);
 
 }
