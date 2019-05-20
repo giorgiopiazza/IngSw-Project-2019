@@ -11,11 +11,12 @@ import model.player.PlayerBoard;
 import model.player.Terminator;
 import model.player.UserPlayer;
 import network.message.*;
+import network.server.MessageListener;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class GameManager {
+public class GameManager implements MessageListener {
     private final Game gameInstance;
     private static PossibleGameState gameState;
     private RoundManager roundManager;
@@ -32,6 +33,7 @@ public class GameManager {
 
     /********************************************** NEW IMPLEMENTATION *************************************************/
 
+    @Override
     public Response onMessage(Message receivedMessage) {
         // if the message received comes from a client that is not the turn owner it is never executed!
         if (!gameInstance.getPlayerByName(receivedMessage.getSenderUsername()).equals(roundManager.getTurnManager().getTurnOwner())) {
