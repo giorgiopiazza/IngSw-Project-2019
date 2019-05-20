@@ -2,29 +2,21 @@ package network.server;
 
 import network.message.Message;
 
-import java.io.*;
-import java.net.Socket;
-import java.util.logging.Level;
-
 abstract class ServerThread extends Thread {
+    private static int totId = 0;
     private boolean suspended;
     private MessageListener messageListener;
-    int id;
-    final Socket socket;
-    ObjectInputStream in;
-    ObjectOutputStream out;
-    String username;
+    private int id;
+    private String username;
 
-    ServerThread(Socket socket, String username, ObjectInputStream in) {
+    ServerThread(String username) {
         this.username = username;
-        this.socket = socket;
         this.suspended = false;
-
-        try {
-            this.in = in;
-            this.out = new ObjectOutputStream(socket.getOutputStream());
-        } catch (IOException e) { MultiServer.LOGGER.log(Level.SEVERE, e.toString()); }
+        this.id = totId++;
     }
+
+    @Override
+    public abstract void run();
 
     /**
      *
@@ -32,10 +24,6 @@ abstract class ServerThread extends Thread {
      */
     public void addMessageListener(MessageListener messageListener) {
         this.messageListener = messageListener;
-    }
-
-    public Socket getClient() {
-        return socket;
     }
 
     /**
@@ -66,5 +54,9 @@ abstract class ServerThread extends Thread {
 
     public MessageListener getMessageListener() {
         return messageListener;
+    }
+
+    public int getServerThreadId() {
+        return id;
     }
 }
