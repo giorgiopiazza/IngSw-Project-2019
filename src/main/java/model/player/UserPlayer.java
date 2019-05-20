@@ -199,22 +199,6 @@ public class UserPlayer extends Player {
         return occurrences;
     }
 
-    /**
-     * Method that returns the unloaded weapons a player can recharge
-     *
-     * @return an ArrayList containing the rechargeable weapons
-     */
-    public ArrayList<WeaponCard> getUnloadedWeapons() {
-        ArrayList<WeaponCard> unloadedWeapons = new ArrayList<>();
-        for(WeaponCard weapon : weapons) {
-            if(weapon.status() == 1) {  // UNCHARGED
-                unloadedWeapons.add(weapon);
-            }
-        }
-
-        return unloadedWeapons;
-    }
-
     public Set<PossibleAction> getPossibleActions() {
         return this.possibleActions;
     }
@@ -231,37 +215,6 @@ public class UserPlayer extends Player {
         this.possibleActions.remove(removingAction);
     }
 
-    /**
-     * Method that verifies if the player has the action he chooses to do
-     *
-     * @param actionChosen String containing the action chosen
-     * @return true if the player's possible actions contain the action specified, otherwise false
-     */
-    public boolean hasAction(String actionChosen) {
-        PossibleAction[] actions = getPossibleActions().toArray(new PossibleAction[0]);
-        for(PossibleAction action : actions) {
-            if(action.name().equalsIgnoreCase(actionChosen)) {
-                return true;
-            }
-        }
-
-        // remove when add the message protocol
-        if(actionChosen.equalsIgnoreCase("move") && getPossibleActions().contains(PossibleAction.FRENZY_MOVE)) {
-            return true;
-        }
-
-        if(actionChosen.equalsIgnoreCase("pick") && (getPossibleActions().contains(PossibleAction.ADRENALINE_PICK) ||
-                getPossibleActions().contains(PossibleAction.FRENZY_PICK) || getPossibleActions().contains(PossibleAction.LIGHT_FRENZY_PICK))) {
-            return true;
-        }
-
-        if(actionChosen.equalsIgnoreCase("shoot") && (getPossibleActions().contains(PossibleAction.ADRENALINE_SHOOT) ||
-                getPossibleActions().contains(PossibleAction.FRENZY_SHOOT) || getPossibleActions().contains(PossibleAction.LIGHT_FRENZY_SHOOT))) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 
     @Override
     public String toString() {

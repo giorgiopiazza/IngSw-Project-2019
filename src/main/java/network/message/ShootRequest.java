@@ -7,6 +7,7 @@ import model.player.PlayerPosition;
 import java.util.ArrayList;
 
 public class ShootRequest extends EffectRequest {
+    // TODO add arraylist of indexes for MIRINO USAGE
     private final int weaponID;
     private final int effect;
 

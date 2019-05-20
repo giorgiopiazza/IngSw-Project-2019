@@ -1,7 +1,6 @@
 package model.actions;
 
 import enumerations.PossibleAction;
-import exceptions.AdrenalinaException;
 import exceptions.actions.IncompatibleActionException;
 import exceptions.actions.InvalidActionException;
 import exceptions.cards.WeaponAlreadyChargedException;

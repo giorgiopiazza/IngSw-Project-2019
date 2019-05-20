@@ -111,7 +111,7 @@ public class GameManager implements MessageListener {
                 }
             case SHOOT:
                 if(gameState == PossibleGameState.GAME_STARTED || gameState == PossibleGameState.SECOND_ACTION || gameState == PossibleGameState.FINAL_FRENZY) {
-                    return roundManager.handleShootAction((ShootRequest) receivedMessage, handleSecondAction());
+                    return roundManager.handleShootAction((ShootRequest) receivedMessage, handleSecondAction(), gameState);
                 } else {
                     return buildInvalidResponse();
                 }
@@ -250,6 +250,7 @@ public class GameManager implements MessageListener {
         gameState = PossibleGameState.GAME_READY;
     }
 
+    /*
     public void run() {
         System.out.println("Welcome to the very first version of the game: \n\n");
 
@@ -338,7 +339,7 @@ public class GameManager implements MessageListener {
             handleKillShotTrackDistribution();
             declareWinner();
         }
-    }
+    } */
 
     private PossibleGameState handleDeathPlayers() {
         boolean terminatorDied = false;

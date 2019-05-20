@@ -95,7 +95,6 @@ public class TurnManager {
     public void setFrenzyPlayers() {
         UserPlayer frenzyActivator = turnOwner;
         boolean beforeFirst = true;
-        UserPlayer tempPlayer;
 
         do {
             nextTurn();

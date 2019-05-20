@@ -5,6 +5,8 @@ import exceptions.AdrenalinaException;
 import exceptions.actions.InvalidActionException;
 import exceptions.actions.MissingActionException;
 import exceptions.cards.InvalidPowerupActionException;
+import exceptions.cards.WeaponAlreadyChargedException;
+import exceptions.cards.WeaponNotChargedException;
 import exceptions.game.InexistentColorException;
 import exceptions.game.InvalidGameStateException;
 import exceptions.map.InvalidSpawnColorException;
@@ -68,23 +70,23 @@ public class RoundManager {
                 gameInstance.buildTerminator();
                 gameInstance.spawnTerminator(gameInstance.getGameMap().getSpawnSquare(spawnRequest.getSpawnColor()));
             } catch (InvalidSpawnColorException e) {
-                return new Response("Invalid color for spawning!", MessageStatus.ERROR);
+                return buildNegativeResponse("Invalid color for spawning!");
             }
         } else {
-            return new Response("Invalid Action", MessageStatus.ERROR);
+            return buildNegativeResponse("Invalid Action");
         }
 
         // I pick the two powerups for the first turn of the player an I set his state to FIRST_SPAWN
         pickTwoPowerups();
         turnManager.getTurnOwner().changePlayerState(PossiblePlayerState.FIRST_SPAWN);
-        return new Response("Terminator has spawned!", MessageStatus.OK);
+        return buildPositiveResponse("Terminator has spawned!");
     }
 
     public Response handleFirstSpawn(DiscardPowerupRequest discardRequest) {
         RoomColor spawnColor;
 
         if (discardRequest.getPowerup() < 0 || discardRequest.getPowerup() > 2) {
-            return new Response("Invalid powerup index", MessageStatus.ERROR);
+            return buildNegativeResponse("Invalid powerup index");
         }
 
         if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.CHOOSE_SPAWN)) {
@@ -93,10 +95,10 @@ public class RoundManager {
                 turnManager.getTurnOwner().discardPowerupByIndex(discardRequest.getPowerup());
             } catch (EmptyHandException e) {
                 // never reached, in first spawn state every player always have two powerups!
-                return new Response("GAME ERROR", MessageStatus.ERROR);
+                return buildNegativeResponse("GAME ERROR");
             }
         } else {
-            return new Response("Invalid Action", MessageStatus.ERROR);
+            return buildNegativeResponse("Invalid Action");
         }
 
         // i spawn the turnOwner and then pass the turn picking the powerups for the next player
@@ -123,39 +125,7 @@ public class RoundManager {
                 pickTwoPowerups();
             }
         }
-        return new Response("Player spawned with chosen powerup", MessageStatus.OK);
-    }
-
-    public Response handleTerminatorAction(UseTerminatorRequest terminatorRequest, PossibleGameState gameState) {
-        TerminatorAction terminatorAction;
-
-        if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.TERMINATOR_ACTION)) {
-            terminatorAction = new TerminatorAction(turnManager.getTurnOwner(), terminatorRequest.getTargetPlayer(), terminatorRequest.getMovingPosition());
-            try {
-                if (terminatorAction.validate()) {
-                    terminatorAction.execute();
-                    turnManager.setDamagedPlayers(new ArrayList<>(List.of(terminatorRequest.getTargetPlayer())));
-                } else {
-                    return new Response("Terminator action not valid", MessageStatus.ERROR);
-                }
-            } catch (InvalidActionException e) {
-                return new Response("Invalid Action", MessageStatus.ERROR);
-            }
-        } else {
-            return new Response("Invalid Action", MessageStatus.ERROR);
-        }
-
-        if (!turnManager.getDamagedPlayers().isEmpty()) {
-            GameManager.changeState(PossibleGameState.GRANADE_USAGE);
-            turnManager.giveTurn(turnManager.getDamagedPlayers().get(0));
-            turnManager.resetGranadeCount();
-            turnManager.increaseGranadeCount();
-            turnManager.setArrivingGameState(gameState);
-        } else {
-            afterTerminatorActionHandler(gameState);
-        }
-
-        return new Response("Terminator action used", MessageStatus.OK);
+        return buildPositiveResponse("Player spawned with chosen powerup");
     }
 
     public void afterTerminatorActionHandler(PossibleGameState gameState) {
@@ -189,12 +159,12 @@ public class RoundManager {
 
         if (arrivingState == PossibleGameState.GAME_READY) {
             turnManager.nextTurn();
-            if(turnManager.getTurnOwner().isFirstPlayer()) {
+            if (turnManager.getTurnOwner().isFirstPlayer()) {
                 GameManager.changeState(PossibleGameState.GAME_STARTED);
             } else {
                 pickTwoPowerups();
             }
-        } else if(arrivingState == PossibleGameState.GAME_STARTED) {
+        } else if (arrivingState == PossibleGameState.GAME_STARTED) {
             // TODO reset depending on actions done
         }
     }
@@ -210,17 +180,49 @@ public class RoundManager {
         }
     }
 
+    public Response handleTerminatorAction(UseTerminatorRequest terminatorRequest, PossibleGameState gameState) {
+        TerminatorAction terminatorAction;
+
+        if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.TERMINATOR_ACTION)) {
+            terminatorAction = new TerminatorAction(turnManager.getTurnOwner(), gameInstance.getUserPlayerByUsername(terminatorRequest.getTargetPlayer()), terminatorRequest.getMovingPosition());
+            try {
+                if (terminatorAction.validate()) {
+                    terminatorAction.execute();
+                    turnManager.setDamagedPlayers(new ArrayList<>(List.of(gameInstance.getUserPlayerByUsername(terminatorRequest.getTargetPlayer()))));
+                } else {
+                    return buildNegativeResponse("Terminator action not valid");
+                }
+            } catch (InvalidActionException e) {
+                return buildNegativeResponse("Invalid Action");
+            }
+        } else {
+            return buildNegativeResponse("Player can not do this Action");
+        }
+
+        if (!turnManager.getDamagedPlayers().isEmpty()) {
+            GameManager.changeState(PossibleGameState.GRANADE_USAGE);
+            turnManager.giveTurn(turnManager.getDamagedPlayers().get(0));
+            turnManager.resetGranadeCount();
+            turnManager.increaseGranadeCount();
+            turnManager.setArrivingGameState(gameState);
+        } else {
+            afterTerminatorActionHandler(gameState);
+        }
+
+        return buildPositiveResponse("Terminator action used");
+    }
+
     public Response handleGranadeUsage(PowerupRequest granadeMessage) {
         PowerupCard chosenGranade;
 
-        if(granadeMessage.getPowerup() < 0 || granadeMessage.getPowerup() > turnManager.getTurnOwner().getPowerups().length) {
-            return new Response("Invalid Powerup index!", MessageStatus.ERROR);
+        if (granadeMessage.getPowerup() < 0 || granadeMessage.getPowerup() > turnManager.getTurnOwner().getPowerups().length) {
+            return buildNegativeResponse("Invalid Powerup index!");
         }
 
         chosenGranade = turnManager.getTurnOwner().getPowerups()[granadeMessage.getPowerup()];
 
-        if(!chosenGranade.getName().equals(TAGBACK_GRANADE)) {
-            return new Response("Invalid Powerup", MessageStatus.ERROR);
+        if (!chosenGranade.getName().equals(TAGBACK_GRANADE)) {
+            return buildNegativeResponse("Invalid Powerup");
         }
 
         try {
@@ -228,7 +230,7 @@ public class RoundManager {
         } catch (NotEnoughAmmoException e) {
             // never reached because granade has never a cost
         } catch (InvalidPowerupActionException e) {
-            return new Response("Powerup can not be used", MessageStatus.ERROR);
+            return buildNegativeResponse("Powerup can not be used");
         }
 
         // after having executed the granade action I discard it from the players hand
@@ -242,20 +244,20 @@ public class RoundManager {
         turnManager.increaseGranadeCount();
         turnManager.giveTurn(turnManager.getDamagedPlayers().get(turnManager.getGranadeCount()));
 
-        return new Response("Granade has been Used", MessageStatus.OK);
+        return buildPositiveResponse("Granade has been Used");
     }
 
     public Response handlePowerupAction(PowerupRequest powerupRequest) {
         PowerupCard chosenPowerup;
 
-        if(powerupRequest.getPowerup() < 0 || powerupRequest.getPowerup() > turnManager.getTurnOwner().getPowerups().length) {
-            return new Response("Invalid Powerup index!", MessageStatus.ERROR);
+        if (powerupRequest.getPowerup() < 0 || powerupRequest.getPowerup() > turnManager.getTurnOwner().getPowerups().length) {
+            return buildNegativeResponse("Invalid Powerup index!");
         }
 
         chosenPowerup = turnManager.getTurnOwner().getPowerups()[powerupRequest.getPowerup()];
 
-        if(!chosenPowerup.equals(NEWTON) || !chosenPowerup.equals(TELEPORTER)) {
-            return new Response("Invalid Powerup", MessageStatus.ERROR);
+        if (!chosenPowerup.getName().equals(NEWTON) || !chosenPowerup.getName().equals(TELEPORTER)) {
+            return buildNegativeResponse("Invalid Powerup");
         }
 
         try {
@@ -263,7 +265,7 @@ public class RoundManager {
         } catch (NotEnoughAmmoException e) {
             // never reached because neither newton nor teleporter need a cost
         } catch (InvalidPowerupActionException e) {
-            return new Response("Powerup can not be used", MessageStatus.ERROR);
+            return buildNegativeResponse("Powerup can not be used");
         }
 
         // after having used the powerup I discard it from the players hand
@@ -273,7 +275,7 @@ public class RoundManager {
             // never reached if the player has the powerup!
         }
 
-        return new Response("Powerup has been used", MessageStatus.OK);
+        return buildPositiveResponse("Powerup has been used");
     }
 
     public Response handleMoveAction(MoveRequest moveRequest, boolean secondAction) {
@@ -286,25 +288,139 @@ public class RoundManager {
         } else if (turnOwner.getPossibleActions().contains(PossibleAction.FRENZY_MOVE)) {
             actionType = PossibleAction.FRENZY_MOVE;
         } else {
-            throw new MissingActionException();
+            return buildNegativeResponse("Player can not do this action");
         }
 
         // first I build the MoveAction
-
         moveAction = new MoveAction(turnOwner, moveRequest.getSenderMovePosition(), actionType);
 
         try {
-            if(moveAction.validate()) {
+            if (moveAction.validate()) {
                 moveAction.execute();
             } else {
-                return new Response("Invalid Move action", MessageStatus.ERROR);
+                return buildNegativeResponse("Invalid Move action");
             }
         } catch (InvalidActionException e) {
-            return new Response("Invalid Move action", MessageStatus.ERROR);
+            return buildNegativeResponse("Invalid Move action");
         }
 
         GameManager.changeState(handleAfterActionState(secondAction));
-        return new Response("Move action done", MessageStatus.OK);
+        return buildPositiveResponse("Move action done");
+    }
+
+    public Response handlePickAction(MovePickRequest pickRequest, boolean secondAction) {
+        UserPlayer turnOwner = turnManager.getTurnOwner();
+        PickAction pickAction;
+        Set<PossibleAction> ownersActions = turnOwner.getPossibleActions();
+        PossibleAction actionType;
+        Square movingSquare;
+
+        if (ownersActions.contains(PossibleAction.MOVE_AND_PICK)) {
+            actionType = PossibleAction.MOVE_AND_PICK;
+        } else if (ownersActions.contains(PossibleAction.ADRENALINE_PICK)) {
+            actionType = PossibleAction.ADRENALINE_PICK;
+        } else if (ownersActions.contains(PossibleAction.FRENZY_PICK)) {
+            actionType = PossibleAction.FRENZY_PICK;
+        } else if (ownersActions.contains(PossibleAction.LIGHT_FRENZY_PICK)) {
+            actionType = PossibleAction.LIGHT_FRENZY_PICK;
+        } else {
+            return buildNegativeResponse("Player can not do this action");
+        }
+
+        // first I understand if the moving square is a spawn or a tile one then I build the relative pick action
+        movingSquare = gameInstance.getGameMap().getSquare(pickRequest.getSenderMovePosition());
+
+        if (movingSquare.getSquareType() == SquareType.TILE) {
+            pickAction = new PickAction(turnOwner, actionType, pickRequest);
+        } else if (movingSquare.getSquareType() == SquareType.SPAWN) {
+            pickAction = new PickAction(turnOwner, actionType, pickRequest);
+        } else {
+            throw new NullPointerException("A square must always have a type!");
+        }
+
+        // now I can try to validate and use the action
+        try {
+            if (pickAction.validate()) {
+                pickAction.execute();
+            } else {
+                return buildNegativeResponse("Invalid Pick Action");
+            }
+        } catch (InvalidActionException e) {
+            return buildNegativeResponse("Invalid Pick Action");
+        }
+
+        GameManager.changeState(handleAfterActionState(secondAction));
+        return buildPositiveResponse("Pick Action done");
+    }
+
+    public Response handleShootAction(ShootRequest shootRequest, boolean secondAction, PossibleGameState gameState) {
+        UserPlayer turnOwner = turnManager.getTurnOwner();
+        ShootAction shootAction;
+        PossibleAction actionType;
+        Set<PossibleAction> ownersActions = turnOwner.getPossibleActions();
+
+        if (ownersActions.contains(PossibleAction.SHOOT)) {
+            actionType = PossibleAction.SHOOT;
+        } else if (ownersActions.contains(PossibleAction.ADRENALINE_SHOOT)) {
+            actionType = PossibleAction.ADRENALINE_SHOOT;
+        } else if (ownersActions.contains(PossibleAction.FRENZY_SHOOT)) {
+            actionType = PossibleAction.FRENZY_SHOOT;
+        } else if (ownersActions.contains(PossibleAction.LIGHT_FRENZY_SHOOT)) {
+            actionType = PossibleAction.LIGHT_FRENZY_SHOOT;
+        } else {
+            return buildNegativeResponse("Player can not do this action");
+        }
+
+        // first I can build the shoot action
+        shootAction = new ShootAction(turnOwner, actionType, shootRequest);
+
+        // now I can try to validate and use the action, care, a shoot action can throw different exceptions, each will be returned with a different response
+        try {
+            if (shootAction.validate()) {
+                List<UserPlayer> beforeShootPlayers = gameInstance.getPlayers();
+                shootAction.execute();
+                turnManager.setDamagedPlayers(buildDamagedPlayers(beforeShootPlayers));
+            } else {
+                return buildNegativeResponse("Invalid Shoot Action");
+            }
+        } catch (WeaponAlreadyChargedException e) {
+            return buildNegativeResponse("Trying to recharge an already charged weapon with frenzy shoot");
+        } catch (NotEnoughAmmoException e) {
+            return buildNegativeResponse("Not enough ammo to recharge a weapon with frenzy shoot");
+        } catch (WeaponNotChargedException e) {
+            return buildNegativeResponse("Not charged weapon can not be used to shoot");
+        } catch (InvalidActionException e) {
+            return buildNegativeResponse("Invalid Shoot Action");
+        }
+
+        // TODO control that turnOwner has the TARGETING_SCOPES specified in the shootRequest in his hand
+
+        // tagback granade handler
+        if (!turnManager.getDamagedPlayers().isEmpty()) {
+            GameManager.changeState(PossibleGameState.GRANADE_USAGE);
+            turnManager.giveTurn(turnManager.getDamagedPlayers().get(0));
+            turnManager.resetGranadeCount();
+            turnManager.increaseGranadeCount();
+            turnManager.setArrivingGameState(gameState);
+        } else {
+            GameManager.changeState(handleAfterActionState(secondAction));
+        }
+
+        return buildPositiveResponse("Shoot Action done");
+    }
+
+    private ArrayList<UserPlayer> buildDamagedPlayers(List<UserPlayer> beforeShootPlayers) {
+        ArrayList<UserPlayer> reallyDamagedPlayers = new ArrayList<>();
+
+        for(UserPlayer afterPlayer : gameInstance.getPlayers()) {
+            for(UserPlayer beforePlayer : beforeShootPlayers) {
+                if(afterPlayer.equals(beforePlayer) && afterPlayer.getPlayerBoard().getDamageCount() > beforePlayer.getPlayerBoard().getDamageCount()) {
+                    reallyDamagedPlayers.add(afterPlayer);
+                }
+            }
+        }
+
+        return reallyDamagedPlayers;
     }
 
     private PossibleGameState handleAfterActionState(boolean secondAction) {
@@ -325,57 +441,17 @@ public class RoundManager {
         }
     }
 
-    public Response handlePickAction(MovePickRequest pickRequest, boolean secondAction) {
-        UserPlayer turnOwner = turnManager.getTurnOwner();
-        PickAction pickAction;
-        Set<PossibleAction> ownersActions = turnOwner.getPossibleActions();
-        PossibleAction actionType;
-        Square movingSquare;
-
-        if (ownersActions.contains(PossibleAction.MOVE_AND_PICK)) {
-            actionType = PossibleAction.MOVE_AND_PICK;
-        } else if (ownersActions.contains(PossibleAction.ADRENALINE_PICK)) {
-            actionType = PossibleAction.ADRENALINE_PICK;
-        } else if (ownersActions.contains(PossibleAction.FRENZY_PICK)) {
-            actionType = PossibleAction.FRENZY_PICK;
-        } else if (ownersActions.contains(PossibleAction.LIGHT_FRENZY_PICK)) {
-            actionType = PossibleAction.LIGHT_FRENZY_PICK;
-        } else {
-            throw new MissingActionException();
-        }
-
-        // first I understand if the moving square is a spawn or a tile one then I build the relative pick action
-        movingSquare = gameInstance.getGameMap().getSquare(pickRequest.getSenderMovePosition());
-
-        if(movingSquare.getSquareType() == SquareType.TILE) {
-            pickAction = new PickAction(turnOwner, pickRequest.getSenderMovePosition(), actionType, null, null, pickRequest);
-        } else if (movingSquare.getSquareType() == SquareType.SPAWN) {
-            pickAction = new PickAction(turnOwner, pickRequest.getSenderMovePosition(), actionType, pickRequest.getAddingWeapon(), pickRequest.getDiscardingWeapon(), pickRequest);
-        } else {
-            throw new NullPointerException("A square must always have a type!");
-        }
-
-        // now I can try to validate and use the action
-        try {
-            if(pickAction.validate()) {
-                pickAction.execute();
-            } else {
-                return new Response("Invalid Pick Action", MessageStatus.ERROR);
-            }
-        } catch (InvalidActionException e) {
-            return new Response("Invalid Pick Action", MessageStatus.ERROR);
-        }
-
-        GameManager.changeState(handleAfterActionState(secondAction));
-        return new Response("Pick Action done", MessageStatus.OK);
+    private Response buildPositiveResponse(String reason) {
+        return new Response(reason, MessageStatus.OK);
     }
 
-    public Response handleShootAction(ShootRequest shootRequest, boolean secondAction) {
-        return new Response("Sonarlint cagacazzo", MessageStatus.OK);
+    private Response buildNegativeResponse(String reason) {
+        return new Response(reason, MessageStatus.ERROR);
     }
 
     /*********************************************************************************************************/
 
+    /*
     public PossibleGameState handleDecision(PossibleGameState changingState) {
         Scanner in = new Scanner(System.in);
 
@@ -422,8 +498,7 @@ public class RoundManager {
                 }
             }
         }
-    }
-
+    }*/
     public void handleFirstRound() {
         for (int i = 0; i < gameInstance.getPlayers().size(); ++i) {
             UserPlayer currentPlayer = turnManager.getTurnOwner();
@@ -451,8 +526,8 @@ public class RoundManager {
 
         GameManager.changeState(PossibleGameState.GAME_STARTED);
     }
-
-    private PossibleGameState handlePlayerAction(boolean secondAction, PossibleGameState changingState/* ,message */) {
+    /*
+    private PossibleGameState handlePlayerAction(boolean secondAction, PossibleGameState changingState/* ,message) {
         Scanner in = new Scanner(System.in);
         UserPlayer turnOwner = turnManager.getTurnOwner();
 
@@ -496,7 +571,7 @@ public class RoundManager {
                 // no action recognised, nothing will be executed
                 return PossibleGameState.GAME_STARTED;
         }
-    }
+    } */
 
     private PossibleGameState handleAfterShootChangings(boolean secondAction) {
         if (!turnManager.getDamagedPlayers().isEmpty()) {
@@ -932,6 +1007,7 @@ public class RoundManager {
         }
     }
 
+    /*
     private PickAction setPickAction(UserPlayer turnOwner) {
         Scanner in = new Scanner(System.in);
         ActionRequest pickRequest;
@@ -942,8 +1018,6 @@ public class RoundManager {
         int coordX;
         int coordY;
 
-
-        /*
         if (ownersActions.contains(PossibleAction.MOVE_AND_PICK)) {
             actionType = PossibleAction.MOVE_AND_PICK;
         } else if (ownersActions.contains(PossibleAction.ADRENALINE_PICK)) {
@@ -954,7 +1028,7 @@ public class RoundManager {
             actionType = PossibleAction.LIGHT_FRENZY_PICK;
         } else {
             throw new MissingActionException();
-        }*/
+        }
 
         // movement setting
         for (; ; ) {
@@ -993,7 +1067,7 @@ public class RoundManager {
      *
      * @param turnOwner UserPlayer who is currently playing
      * @return true if the action is executed, otherwise false
-     */
+
     private boolean handlePickAction(UserPlayer turnOwner) {
         PickAction builtAction = setPickAction(turnOwner);
 
@@ -1007,8 +1081,9 @@ public class RoundManager {
         } catch (InvalidActionException e) {
             return false;
         }
-    }
+    } */
 
+    /*
     private PickAction handleWeaponPick(UserPlayer turnOwner, PlayerPosition movingPos, PossibleAction actionType, SpawnSquare pickingSquare) {
         Scanner in = new Scanner(System.in);
         ActionRequest pickRequest;
@@ -1053,7 +1128,7 @@ public class RoundManager {
 
         // all informations have been decided
         // pickRequest = new MovePickRequest(turnOwner.getUsername(), movingPos, powerups);
-        return new PickAction(turnOwner, movingPos, actionType, pickingWeapon, discardingWeapon, null);
+        // return new PickAction(turnOwner, movingPos, actionType, pickingWeapon, discardingWeapon, null);
 
     }
 
@@ -1087,20 +1162,7 @@ public class RoundManager {
 
     private ShootAction setShootAction(UserPlayer turnOwner) {
         Scanner in = new Scanner(System.in);
-        PossibleAction actionType;
-        Set<PossibleAction> ownersActions = turnOwner.getPossibleActions();
 
-        if (ownersActions.contains(PossibleAction.SHOOT)) {
-            actionType = PossibleAction.SHOOT;
-        } else if (ownersActions.contains(PossibleAction.ADRENALINE_SHOOT)) {
-            actionType = PossibleAction.ADRENALINE_SHOOT;
-        } else if (ownersActions.contains(PossibleAction.FRENZY_SHOOT)) {
-            actionType = PossibleAction.FRENZY_SHOOT;
-        } else if (ownersActions.contains(PossibleAction.LIGHT_FRENZY_SHOOT)) {
-            actionType = PossibleAction.LIGHT_FRENZY_SHOOT;
-        } else {
-            throw new MissingActionException();
-        }
 
         return null;
 
@@ -1110,8 +1172,9 @@ public class RoundManager {
         turnManager.setDamagedPlayers(null);
         // TODO decidere come fare la interazione + request del cazzo
         return true;
-    }
+    } */
 
+    /*
     private ReloadAction setReloadAction(UserPlayer turnOwner) {
         Scanner in = new Scanner(System.in);
         ReloadRequest reloadRequest;
@@ -1154,7 +1217,7 @@ public class RoundManager {
      *
      * @param turnOwner UserPlayer containing the action
      * @return true if the action is executed, otherwise false
-     */
+
     private boolean handleReloadAction(UserPlayer turnOwner) {
         ReloadAction builtAction = setReloadAction(turnOwner);
 
@@ -1168,5 +1231,5 @@ public class RoundManager {
         } catch (Exception e) {     // here different exceptions are thrown we should even catch each and print different messages
             return false;
         }
-    }
+    } */
 }
