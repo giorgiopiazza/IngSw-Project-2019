@@ -12,7 +12,7 @@ public class ClientRMI extends Client {
 
     @Override
     public void sendMessage(Message message) throws Exception {
-        
+
     }
 
     @Override
