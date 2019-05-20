@@ -17,6 +17,7 @@ import model.map.Square;
 import model.player.PlayerPosition;
 import model.player.UserPlayer;
 import network.message.ActionRequest;
+import network.message.MovePickRequest;
 
 public class PickAction implements Action {
     private static final int MAX_NORMAL_MOVE = 1;
@@ -35,18 +36,19 @@ public class PickAction implements Action {
     private SquareType squareType;
     private Square pickingSquare;
 
-    public PickAction(UserPlayer actingPlayer, PlayerPosition movingPos, PossibleAction actionChosen, WeaponCard pickingWeapon, WeaponCard descardingWeapon, ActionRequest pickRequest) {
+    public PickAction(UserPlayer actingPlayer, PossibleAction actionChosen, MovePickRequest pickRequest) {
+        // verify that if a parameter in the request is null then the game crashes!
         this.actingPlayer = actingPlayer;
+        this.movingPos = pickRequest.getSenderMovePosition();
         this.actionChosen = actionChosen;
-        this.pickingWeapon = pickingWeapon;
-        this.discardingWeapon = descardingWeapon;
+        this.pickingWeapon = pickRequest.getAddingWeapon();
+        this.discardingWeapon = pickRequest.getDiscardingWeapon();
         this.pickRequest = pickRequest;
 
-        if (actingPlayer.getPosition().equals(movingPos) || movingPos == null) {
+        if (movingPos == null) {
             this.movingPos = actingPlayer.getPosition();
             pickingSquare = Game.getInstance().getGameMap().getSquare(movingPos);
         } else {
-            this.movingPos = movingPos;
             pickingSquare = Game.getInstance().getGameMap().getSquare(movingPos);
         }
         squareType = pickingSquare.getSquareType();
@@ -104,7 +106,7 @@ public class PickAction implements Action {
             ((CardSquare) pickingSquare).pickAmmoTile().giveResources(actingPlayer);
         } else if (squareType == SquareType.SPAWN) {
             try {
-                // weapon is already payid in the validation
+                // weapon is already payed in the validation
                 // then I add the weapon to my hand
                 actingPlayer.addWeapon(pickingWeapon);
                 ((SpawnSquare) pickingSquare).removeWeapon(pickingWeapon);

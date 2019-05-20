@@ -13,6 +13,8 @@ public class ShootRequest extends EffectRequest {
     private final boolean moveSenderFirst;
     private final boolean moveTargetsFirst;
 
+    private ArrayList<Integer> rechargingWeapons;
+
     public ShootRequest(FireRequestBuilder builder) {
         super(
                 new EffectRequestBuilder(builder.username, MessageContent.SHOOT)
@@ -28,6 +30,7 @@ public class ShootRequest extends EffectRequest {
         this.effect = builder.effect;
         this.moveSenderFirst = builder.moveSenderFirst;
         this.moveTargetsFirst = builder.moveTargetsFirst;
+        this.rechargingWeapons = builder.rechargingWeapons;
     }
 
     public int getWeaponID() {
@@ -46,6 +49,10 @@ public class ShootRequest extends EffectRequest {
         return moveTargetsFirst;
     }
 
+    public ArrayList<Integer> getRechargingWeapons() {
+        return rechargingWeapons;
+    }
+
     public static class FireRequestBuilder {
         private String username;
         private int weaponID;
@@ -62,11 +69,13 @@ public class ShootRequest extends EffectRequest {
         private boolean moveTargetsFirst;
 
         private ArrayList<Integer> paymentPowerups;
+        private ArrayList<Integer> rechargingWeapons;
 
-        public FireRequestBuilder(String username, int weaponID, int effect) {
+        public FireRequestBuilder(String username, int weaponID, int effect, ArrayList<Integer> rechargingWeapons) {
             this.username = username;
             this.weaponID = weaponID;
             this.effect = effect;
+            this.rechargingWeapons = rechargingWeapons;
         }
 
         public FireRequestBuilder targetPlayersUsernames(ArrayList<String> targetPlayersUsernames) {

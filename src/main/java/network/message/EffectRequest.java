@@ -50,6 +50,7 @@ public abstract class EffectRequest extends ActionRequest {
         private ArrayList<PlayerPosition> targetPlayersMovePositions;
 
         private ArrayList<Integer> paymentPowerups;
+        private ArrayList<Integer> rechargingWeapons;
 
         public EffectRequestBuilder(String username, MessageContent content) {
             this.username = username;
@@ -83,6 +84,11 @@ public abstract class EffectRequest extends ActionRequest {
 
         public EffectRequestBuilder paymentPowerups(ArrayList<Integer> paymentPowerups) {
             this.paymentPowerups = paymentPowerups;
+            return this;
+        }
+
+        public EffectRequestBuilder rechargingWeapons(ArrayList<Integer> rechargingWeapons) {
+            this.rechargingWeapons = rechargingWeapons;
             return this;
         }
     }

@@ -5,13 +5,14 @@ import exceptions.AdrenalinaException;
 import exceptions.actions.IncompatibleActionException;
 import exceptions.actions.InvalidActionException;
 import exceptions.cards.WeaponAlreadyChargedException;
+import exceptions.cards.WeaponNotChargedException;
 import exceptions.playerboard.NotEnoughAmmoException;
 import model.cards.WeaponCard;
 import model.player.PlayerPosition;
 import model.player.UserPlayer;
 import network.message.EffectRequest;
-
-import java.util.List;
+import network.message.ReloadRequest;
+import network.message.ShootRequest;
 
 public class ShootAction implements Action {
     private static final int MAX_NORMAL_MOVE = 0;
@@ -24,23 +25,23 @@ public class ShootAction implements Action {
     private PossibleAction actionChosen;
     private PlayerPosition movingPos;
     private EffectRequest shootRequest;
-    private List<WeaponCard> rechargingWeapons;
     private ReloadAction reloadAction;
 
-    public ShootAction(UserPlayer actingPlayer, WeaponCard shootingWeapon, PossibleAction actionChosen,
-                       PlayerPosition movingPos, EffectRequest shootRequest, List<WeaponCard> rechargingWeapons) {
+    public ShootAction(UserPlayer actingPlayer, PossibleAction actionChosen, ShootRequest shootRequest) {
         this.actingPlayer = actingPlayer;
-        this.shootingWeapon = shootingWeapon;
+        this.shootingWeapon = actingPlayer.getWeapons()[shootRequest.getWeaponID()];
         this.actionChosen = actionChosen;
+        this.movingPos = shootRequest.getSenderMovePosition();
         this.shootRequest = shootRequest;
-        this.rechargingWeapons = rechargingWeapons;
-        /* TODO Giorgio storie di tipo request ricordati coglione
-        this.reloadAction = new ReloadAction(actingPlayer, rechargingWeapons, shootRequest);
-         */
-        if (actingPlayer.getPosition().equals(movingPos) || movingPos == null) {
+
+        if(shootRequest.getRechargingWeapons() != null) {
+            // i payment powerup in questo caso devono essere dentro la shootRequest per pagare le armi da ricaricare
+            ReloadRequest reloadRequest = new ReloadRequest(actingPlayer.getUsername(), shootRequest.getRechargingWeapons(), shootRequest.getPaymentPowerups());
+            this.reloadAction = new ReloadAction(actingPlayer, reloadRequest);
+        }
+
+        if (movingPos == null) {
             this.movingPos = actingPlayer.getPosition();
-        } else {
-            this.movingPos = movingPos;
         }
     }
 
@@ -51,22 +52,22 @@ public class ShootAction implements Action {
         // moving validation
         switch (actionChosen) {
             case SHOOT:
-                if (movingDistance != MAX_NORMAL_MOVE) {
+                if (movingDistance != MAX_NORMAL_MOVE || reloadAction != null) {
                     return false;
                 }
                 break;
             case ADRENALINE_SHOOT:
-                if (movingDistance > MAX_ADRENALINE_MOVE) {
+                if (movingDistance > MAX_ADRENALINE_MOVE || reloadAction != null) {
                     return false;
                 }
                 break;
             case FRENZY_SHOOT:
-                if (movingDistance > MAX_FRENZY_MOVE) {
+                if (movingDistance > MAX_FRENZY_MOVE || reloadAction == null) {
                     return false;
                 }
                 break;
             case LIGHT_FRENZY_SHOOT:
-                if (movingDistance > MAX_LIGHT_FRENZY_MOVE) {
+                if (movingDistance > MAX_LIGHT_FRENZY_MOVE || reloadAction == null) {
                     return false;
                 }
                 break;
@@ -79,23 +80,15 @@ public class ShootAction implements Action {
     }
 
     @Override
-    public void execute() throws InvalidActionException {
+    public void execute() throws InvalidActionException, WeaponAlreadyChargedException, NotEnoughAmmoException, WeaponNotChargedException {
         // first I move the shooter saving his position in case after the weapon validate it can not be used
         PlayerPosition startingPos = actingPlayer.getPosition();
         actingPlayer.changePosition(movingPos.getCoordX(), movingPos.getCoordY());
 
         // if the shooting action is a frenzy one I can also recharge my weapons before shooting
-        if (rechargingWeapons != null && reloadAction != null &&
-                (actionChosen == PossibleAction.FRENZY_SHOOT || actionChosen == PossibleAction.LIGHT_FRENZY_SHOOT)) {
+        if (actionChosen == PossibleAction.FRENZY_SHOOT || actionChosen == PossibleAction.LIGHT_FRENZY_SHOOT) {
             if (reloadAction.validate()) {
-                try {
-                    reloadAction.execute();
-                } catch (WeaponAlreadyChargedException e) {
-                    // Should we do something? No nothing the action is not executable and a new one will be done
-                } catch (NotEnoughAmmoException e) {
-                    // Should we do something? No nothing the action is not executable and a new one will be done
-                }
-
+                reloadAction.execute();
             } else {
                 throw new InvalidActionException();
             }
@@ -104,10 +97,11 @@ public class ShootAction implements Action {
         // then I shoot
         try {
             shootingWeapon.use(shootRequest);
-        } catch (AdrenalinaException e) {
+        } catch (WeaponNotChargedException e) {
             // the weapon can not be used, then I set back the shooting position to his starting position because this
             // action can not be executed
             actingPlayer.changePosition(startingPos.getCoordX(), startingPos.getCoordY());
+            throw new WeaponNotChargedException();
         }
     }
 }
