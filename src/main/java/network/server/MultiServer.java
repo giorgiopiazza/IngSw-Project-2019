@@ -58,7 +58,8 @@ public class MultiServer implements CloseConnectionListener {
             throw new ClassAdrenalinaNotFoundException();
         }
 
-        ServerThread serverThread = new ServerThreadSocket(client, request.getSenderUsername(), in, this);
+        ServerThreadSocket serverThread = new ServerThreadSocket(client, request.getSenderUsername(), in);
+        serverThread.addCloseConnectionListener(this);
         clients.add(serverThread);
         serverThread.start();
 

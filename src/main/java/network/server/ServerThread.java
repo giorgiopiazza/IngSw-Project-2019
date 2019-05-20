@@ -8,6 +8,7 @@ import java.util.logging.Level;
 
 abstract class ServerThread extends Thread {
     private boolean suspended;
+    private MessageListener messageListener;
     int id;
     final Socket socket;
     ObjectInputStream in;
@@ -23,6 +24,14 @@ abstract class ServerThread extends Thread {
             this.in = in;
             this.out = new ObjectOutputStream(socket.getOutputStream());
         } catch (IOException e) { MultiServer.LOGGER.log(Level.SEVERE, e.toString()); }
+    }
+
+    /**
+     *
+     * @param messageListener the {@code messageListener} to set
+     */
+    public void addMessageListener(MessageListener messageListener) {
+        this.messageListener = messageListener;
     }
 
     public Socket getClient() {
@@ -53,5 +62,9 @@ abstract class ServerThread extends Thread {
 
     public void setSuspended(boolean suspended) {
         this.suspended = suspended;
+    }
+
+    public MessageListener getMessageListener() {
+        return messageListener;
     }
 }

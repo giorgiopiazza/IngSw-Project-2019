@@ -1,5 +1,6 @@
 package network.server;
 
+import controller.GameManager;
 import enumerations.MessageStatus;
 import network.message.Message;
 import network.message.Response;
@@ -16,17 +17,21 @@ class ServerThreadSocket extends ServerThread {
     private final List<Message> sendQueue;
     private CloseConnectionListener listener;
 
-    ServerThreadSocket(Socket socket, String username, ObjectInputStream in, CloseConnectionListener listener) {
+    ServerThreadSocket(Socket socket, String username, ObjectInputStream in) {
         super(socket, username, in);
-        this.listener = listener;
         sendQueue = new ArrayList<>();
         requested = false;
+        addMessageListener(GameManager.getInstance());
     }
 
     @Override
     public synchronized void start() {
         super.start();
         MultiServer.LOGGER.log(Level.INFO, "ServerThread {0}: started", this.id);
+    }
+
+    public void addCloseConnectionListener(CloseConnectionListener connectionListener) {
+        this.listener = connectionListener;
     }
 
     @Override
@@ -49,7 +54,7 @@ class ServerThreadSocket extends ServerThread {
 
                 // switch with possible requests by client
                 try {
-                    messageCasesSwitch(cmd);
+                    out.writeObject(getMessageListener().onMessage(cmd));
                 } catch (IOException e) {
                     MultiServer.LOGGER.log(Level.SEVERE, e.toString());
                 }
@@ -94,36 +99,6 @@ class ServerThreadSocket extends ServerThread {
                     MultiServer.LOGGER.log(Level.SEVERE, e.toString());
                 }
             }
-        }
-    }
-
-    private void messageCasesSwitch(Message request) throws IOException {
-        // TODO: all request
-        switch (request.getContent()) {
-            case READY:
-                break;
-            case TERMINATOR_SPAWN:
-                break;
-            case DISCARD_POWERUP:
-                break;
-            case MOVE:
-                // only for testing, to change
-                out.writeObject(new Response("moved", MessageStatus.OK));
-                break;
-            case MOVE_PICK:
-                break;
-            case SHOOT:
-                break;
-            case RELOAD:
-                break;
-            case POWERUP:
-                break;
-            case PASS_TURN:
-
-                break;
-
-            default:
-
         }
     }
 
