@@ -17,14 +17,21 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class GameManager implements MessageListener {
-    private final Game gameInstance;
+    private static GameManager instance;
     private static PossibleGameState gameState;
+    private final Game gameInstance;
     private RoundManager roundManager;
 
-    public GameManager() {
+    private GameManager() {
         gameState = PossibleGameState.GAME_ROOM;
         this.gameInstance = Game.getInstance();
         this.roundManager = new RoundManager(this.gameInstance);
+    }
+
+    public static GameManager getInstance() {
+        if (instance == null) instance = new GameManager();
+
+        return instance;
     }
 
     public static void changeState(PossibleGameState changeState) {

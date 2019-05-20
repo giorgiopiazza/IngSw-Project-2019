@@ -5,7 +5,7 @@ import view.cli.Cli;
 public class LocalServerTautology {
 
     public static void main(String[] args) {
-        GameManager match = new GameManager();
+        GameManager match = GameManager.getInstance();
         match.run();
 
         /*Cli cli = new Cli();
