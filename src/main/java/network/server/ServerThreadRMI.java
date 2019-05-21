@@ -7,7 +7,12 @@ import java.net.Socket;
 class ServerThreadRMI extends ServerThread {
 
     ServerThreadRMI(Socket socket, String username) {
-        super(socket, username, null);
+        super(username);
+    }
+
+    @Override
+    public void run() {
+
     }
 
     @Override

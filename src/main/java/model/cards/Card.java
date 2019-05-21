@@ -1,8 +1,9 @@
 package model.cards;
 
 import java.io.File;
+import java.io.Serializable;
 
-public abstract class Card {
+public abstract class Card implements Serializable  {
     private final File image;
 
     public Card(File image) {

@@ -2,6 +2,7 @@ package network;
 
 import model.player.PlayerPosition;
 import network.client.Client;
+import network.client.ClientSocket;
 import network.message.GameStateMessage;
 import network.message.Message;
 import network.message.MoveRequest;
@@ -29,8 +30,8 @@ public class ServerClient {
     }
 
     @Test
-    void clientTest() throws IOException, InterruptedException {
-        Client client = new Client("tose", "localhost");
+    void clientTest() throws Exception {
+        Client client = new ClientSocket("tose", "localhost");
 
         for (int i=0; i<5; i++) {
             client.sendMessage(new MoveRequest("tose", new PlayerPosition(0, 0)));
