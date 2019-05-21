@@ -145,18 +145,23 @@ public class MessageBuilder {
 
     @NotNull
     @Contract("null, _ -> fail; !null, null -> fail")
-    public static PowerupRequest buildPowerupRequest(UserPlayer player, PowerupCard powerupCard) throws PowerupCardsNotFoundException {
-        if (player == null || powerupCard == null) throw new NullPointerException("player and powerupCard cannot be null");
+    public static PowerupRequest buildPowerupRequest(UserPlayer player, ArrayList<PowerupCard> powerupCards) throws PowerupCardsNotFoundException {
+        if (player == null || powerupCards == null) throw new NullPointerException("player and powerupCard cannot be null");
 
-        int index = -1;
+        ArrayList<Integer> powerupsIndexes = new ArrayList<>();
 
         for (int i = 0; i < player.getPowerups().length; i++) {
-            if (player.getPowerups()[i].equals(powerupCard)) index = i;
+            for(PowerupCard powerupCard : powerupCards) {
+                if (player.getPowerups()[i].equals(powerupCard)) {
+                    powerupsIndexes.add(i);
+                }
+            }
+
         }
 
-        if (index < 0) throw new PowerupCardsNotFoundException();
+        if (powerupsIndexes.isEmpty()) throw new PowerupCardsNotFoundException();
 
-        return new PowerupRequest(new PowerupRequest.PowerupRequestBuilder(player.getUsername(), index));
+        return new PowerupRequest(new PowerupRequest.PowerupRequestBuilder(player.getUsername(), powerupsIndexes));
     }
 
     @NotNull

@@ -63,7 +63,7 @@ public class WeaponParser {
             Effect baseEffect = parseEffect(effects.get(0).getAsJsonObject());
 
             // The others are secondary effects
-            List<Effect> secondaryEffects = new ArrayList<>();
+            ArrayList<Effect> secondaryEffects = new ArrayList<>();
             for (int i = 1; i < effects.size(); ++i) {
                 secondaryEffects.add(parseEffect(effects.get(i).getAsJsonObject()));
             }

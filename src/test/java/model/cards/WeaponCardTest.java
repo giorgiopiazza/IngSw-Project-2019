@@ -26,7 +26,7 @@ class WeaponCardTest {
     private WeaponCard weaponTest;
     private Ammo[] cost = new Ammo[]{YELLOW, YELLOW, BLUE};
     private Ammo[] halfCost = new Ammo[]{YELLOW, BLUE};
-    private List<Effect> secondaryEffects = new ArrayList<>();
+    private ArrayList<Effect> secondaryEffects = new ArrayList<>();
     private WeaponState full;
     private WeaponState empty;
 
