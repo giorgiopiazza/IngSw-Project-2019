@@ -5,10 +5,7 @@ import exceptions.actions.WeaponCardsNotFoundException;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
 import model.map.Square;
-import model.player.Player;
-import model.player.PlayerPosition;
-import model.player.Terminator;
-import model.player.UserPlayer;
+import model.player.*;
 import network.message.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -21,12 +18,27 @@ public class MessageBuilder {
     @Contract(" -> fail")
     private MessageBuilder() {  throw new IllegalStateException("Utility class"); }
 
+    /**
+     * Create a {@link ConnectionRequest ConnectionRequest} object from {@code username}
+     *
+     * @param username username chosen by the user to request from the server if available
+     * @return the {@link ConnectionRequest ConnectionRequest} object to send to the server
+     */
     @NotNull
     @Contract("_ -> new")
     public static ConnectionRequest buildConnectionRequest(String username) {
         return new ConnectionRequest(username);
     }
 
+    /**
+     * Create a {@link DiscardPowerupRequest DiscardPowerupRequest} object from the actual
+     * {@code player} and his {@code powerupCard}
+     *
+     * @param player the actual player
+     * @param powerupCard the card to discard
+     * @return the {@link DiscardPowerupRequest DiscardPowerupRequest} object to send to the server
+     * @throws PowerupCardsNotFoundException if the player does not have that {@code powerupCard}
+     */
     @NotNull
     @Contract("null, _ -> fail; !null, null -> fail")
     public static DiscardPowerupRequest buildDiscardPowerupRequest(UserPlayer player, PowerupCard powerupCard) throws PowerupCardsNotFoundException {
@@ -41,6 +53,18 @@ public class MessageBuilder {
         throw new PowerupCardsNotFoundException("powerupCard not found in " + player);
     }
 
+    /**
+     * Create a {@link MovePickRequest MovePickupRequest} object from the actual {@code player},
+     * his {@code newPos}, {@code paymentPowerups}, {@code addingWeapon} and {@code discardingWeapon}
+     *
+     * @param player the actual player
+     * @param newPos the new position where pick up something ({@link PowerupCard PowerupCard} or {@link WeaponCard WeaponCard})
+     * @param paymentPowerups the powerUps to pay the {@link WeaponCard WeaponCard}
+     * @param addingWeapon the {@link WeaponCard WeaponCard} to add to the player's {@link model.player.PlayerBoard PlayerBoard}
+     * @param discardingWeapon the {@link WeaponCard WeaponCard} to remove to the player's {@link model.player.PlayerBoard PlayerBoard}
+     * @return the {@link MovePickRequest MovePickRequest} generated object
+     * @throws PowerupCardsNotFoundException if the player does not have that {@code paymentsPowerups}
+     */
     @NotNull
     @Contract("null, _, _, _, _ -> fail; !null, null, _, _, _ -> fail; !null, !null, _, null, _ -> fail; !null, !null, null, !null, _ -> fail")
     public static MovePickRequest buildMovePickRequest(UserPlayer player, PlayerPosition newPos, List<PowerupCard> paymentPowerups, WeaponCard addingWeapon, WeaponCard discardingWeapon) throws PowerupCardsNotFoundException{
@@ -53,6 +77,16 @@ public class MessageBuilder {
         return new MovePickRequest(player.getUsername(), newPos, (ArrayList<Integer>) powerupIndexes, addingWeapon, discardingWeapon);
     }
 
+    /**
+     * Create a {@link MovePickRequest MovePickupRequest} object from the actual {@code player},
+     * his {@code newPos}, {@code addingWeapon} and {@code discardingWeapon}
+     *
+     * @param player the actual player
+     * @param newPos the new position where pick up something ({@link PowerupCard PowerupCard} or {@link WeaponCard WeaponCard})
+     * @param addingWeapon the {@link WeaponCard WeaponCard} to add to the player's {@link model.player.PlayerBoard PlayerBoard}
+     * @param discardingWeapon the {@link WeaponCard WeaponCard} to remove to the player's {@link model.player.PlayerBoard PlayerBoard}
+     * @return the {@link MovePickRequest MovePickRequest} generated object
+     */
     @NotNull
     @Contract("null, _, _, _ -> fail; !null, null, _, _ -> fail; !null, !null, null, _ -> fail; !null, !null, !null, _ -> new")
     public static MovePickRequest buildMovePickRequest(UserPlayer player, PlayerPosition newPos, WeaponCard addingWeapon, WeaponCard discardingWeapon) {
@@ -61,12 +95,32 @@ public class MessageBuilder {
         return new MovePickRequest(player.getUsername(), newPos, null, addingWeapon, discardingWeapon);
     }
 
+    /**
+     * Create a {@link MovePickRequest MovePickupRequest} object from the actual {@code player},
+     * his {@code newPos} and {@code addingWeapon}
+     *
+     * @param player the actual player
+     * @param newPos the new position where pick up something ({@link PowerupCard PowerupCard} or {@link WeaponCard WeaponCard})
+     * @param addingWeapon the {@link WeaponCard WeaponCard} to add to the player's {@link model.player.PlayerBoard PlayerBoard}
+     * @return the {@link MovePickRequest MovePickRequest} generated object
+     */
     @NotNull
     @Contract("null, _, _ -> fail; !null, null, _ -> fail; !null, !null, null -> fail")
     public static MovePickRequest buildMovePickRequest(UserPlayer player, PlayerPosition newPos, WeaponCard addingWeapon) {
         return buildMovePickRequest(player, newPos, addingWeapon, null);
     }
 
+    /**
+     * Create a {@link MovePickRequest MovePickupRequest} object from the actual {@code player},
+     * his {@code newPos}, {@code paymentPowerups} and {@code addingWeapon}
+     *
+     * @param player the actual player
+     * @param newPos the new position where pick up something ({@link PowerupCard PowerupCard} or {@link WeaponCard WeaponCard})
+     * @param paymentPowerups the powerUps to pay the {@link WeaponCard WeaponCard}
+     * @param addingWeapon the {@link WeaponCard WeaponCard} to add to the player's {@link model.player.PlayerBoard PlayerBoard}
+     * @return the {@link MovePickRequest MovePickRequest} generated object
+     * @throws PowerupCardsNotFoundException if the player does not have that {@code paymentsPowerups}
+     */
     @NotNull
     @Contract("null, _, _, _ -> fail; !null, null, _, _ -> fail; !null, !null, _, null -> fail; !null, !null, null, !null -> fail")
     public static MovePickRequest buildMovePickRequest(UserPlayer player, PlayerPosition newPos, List<PowerupCard> paymentPowerups, WeaponCard addingWeapon) throws PowerupCardsNotFoundException {
