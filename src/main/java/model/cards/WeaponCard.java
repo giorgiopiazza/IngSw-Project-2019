@@ -27,14 +27,14 @@ import java.util.List;
 public class WeaponCard extends UsableCard {
     private final int id;
     private final Ammo[] cost;
-    private final List<Effect> secondaryEffects;
+    private final ArrayList<Effect> secondaryEffects;
     private WeaponState weaponState;
     public static final int CHARGED = 0;
     public static final int UNCHARGED = 1;
     public static final int SEMI_CHARGED = 2;
 
     public WeaponCard(String name, File image, Effect baseEffect, int id, Ammo[] cost,
-                      List<Effect> secondaryEffects, WeaponState weaponState) {
+                      ArrayList<Effect> secondaryEffects, WeaponState weaponState) {
         super(name, image, baseEffect);
         this.id = id;
         this.cost = cost;

@@ -10,7 +10,7 @@ public abstract class ActionRequest extends Message {
     private final PlayerPosition senderMovePosition;
     private final ArrayList<Integer> paymentPowerups;
 
-    ActionRequest(String username, MessageContent content, PlayerPosition senderMovePosition, ArrayList<Integer> paymentPowerups) {
+    public ActionRequest(String username, MessageContent content, PlayerPosition senderMovePosition, ArrayList<Integer> paymentPowerups) {
         super(username, content);
         this.senderMovePosition = senderMovePosition;
         this.paymentPowerups = Objects.requireNonNullElse(paymentPowerups, new ArrayList<>());

@@ -12,8 +12,12 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Cli {
+    private static final String RMI = "rmi";
+    private static final String SOCKET = "socket";
     private Scanner in;
     private AdrenalinePrintStream out;
+    private String connectionType;
+    private String username;
 
     public Cli() {
         in = new Scanner(System.in);
@@ -56,14 +60,14 @@ public class Cli {
         gs.setPlayers(players);
         gs.setGameMap(new GameMap(GameMap.MAP_1));
 
-        /*
+
         printLogo();
         askConnection();
         askUsername();
         askColor();
 
         CliPrinter.printPlayerBoards(out, gs);
-        */
+
 
         CliPrinter.printMap(out, gs);
     }
@@ -110,8 +114,10 @@ public class Cli {
 
         if (connection == 0) {
             out.println("You chose RMI connection");
+            connectionType = RMI;
         } else {
             out.println("You chose Socket connection");
+            connectionType = SOCKET;
         }
     }
 
@@ -139,7 +145,8 @@ public class Cli {
             }
         } while (!validUsername);
 
-        out.printf("Hi %s, now pick your color.%n", username);
+        out.printf("Hi %s, wait for server connection.%n", username);
+        this.username = username;
     }
 
     private void askColor() {
