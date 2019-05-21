@@ -5,6 +5,7 @@ import exceptions.AdrenalinaException;
 import exceptions.game.InvalidGameStateException;
 import exceptions.game.MaxPlayerException;
 import model.Game;
+import model.cards.PowerupCard;
 import model.player.KillShot;
 import model.player.Player;
 import model.player.PlayerBoard;
@@ -21,6 +22,7 @@ public class GameManager implements MessageListener {
     private static PossibleGameState gameState;
     private final Game gameInstance;
     private RoundManager roundManager;
+    private ShootParameters shootParameters;
 
     private GameManager() {
         gameState = PossibleGameState.GAME_ROOM;
@@ -49,11 +51,32 @@ public class GameManager implements MessageListener {
 
         // SPECIAL CASES
         if (gameState == PossibleGameState.GRANADE_USAGE) {
-            if (roundManager.getTurnManager().getGranadeCount() > roundManager.getTurnManager().getDamagedPlayers().size()) {
+            if (roundManager.getTurnManager().getTurnCount() > roundManager.getTurnManager().getDamagedPlayers().size()) {
                 roundManager.handleNextTurnReset();
             } else {
-                return onGranadeMessage(receivedMessage);
+                if(receivedMessage.getContent() == MessageContent.POWERUP) {
+                    return onGranadeMessage(receivedMessage);
+                } else {
+                    return buildInvalidResponse();
+                }
             }
+        }
+
+        if(gameState == PossibleGameState.SCOPE_USAGE) {
+            if(receivedMessage.getContent() == MessageContent.POWERUP) {
+                if(!((PowerupRequest) receivedMessage).getPowerup().isEmpty()) {
+                    return roundManager.handleShootAction(shootParameters.shootRequest, (PowerupRequest) receivedMessage, shootParameters.secondAction, shootParameters.arrivingState);
+                } else {
+                    return roundManager.handleShootAction(shootParameters.shootRequest, null, shootParameters.secondAction, shootParameters.arrivingState);
+                }
+            } else {
+                return buildInvalidResponse();
+            }
+        }
+
+        if(gameState == PossibleGameState.MANAGE_DEATHS) {
+            /* TODO fare uguale al granade usage per fare cambiare correttamente il turno, anche se non serve resettare lo stato finale ma solo fare la handle giusta a seconda che si sia nella NORMAL action done o FRENZY
+             */
         }
 
         if (gameState == PossibleGameState.MISSING_TERMINATOR_ACTION) {
@@ -92,7 +115,8 @@ public class GameManager implements MessageListener {
                     return buildInvalidResponse();
                 }
             case POWERUP:
-                if (gameState == PossibleGameState.GAME_STARTED || gameState == PossibleGameState.SECOND_ACTION || gameState == PossibleGameState.FINAL_FRENZY) {
+                if (gameState == PossibleGameState.GAME_STARTED || gameState == PossibleGameState.SECOND_ACTION || gameState == PossibleGameState.FINAL_FRENZY
+                        || gameState == PossibleGameState.ACTIONS_DONE || gameState == PossibleGameState.FRENZY_ACTIONS_DONE) {
                     return roundManager.handlePowerupAction((PowerupRequest) receivedMessage);
                 } else {
                     return buildInvalidResponse();
@@ -111,7 +135,19 @@ public class GameManager implements MessageListener {
                 }
             case SHOOT:
                 if(gameState == PossibleGameState.GAME_STARTED || gameState == PossibleGameState.SECOND_ACTION || gameState == PossibleGameState.FINAL_FRENZY) {
-                    return roundManager.handleShootAction((ShootRequest) receivedMessage, handleSecondAction(), gameState);
+                    return onShootMessage((ShootRequest) receivedMessage, handleSecondAction(), gameState);
+                } else {
+                    return buildInvalidResponse();
+                }
+            case RELOAD:
+                if(gameState == PossibleGameState.ACTIONS_DONE) {
+                    return roundManager.handleReloadAction((ReloadRequest) receivedMessage);
+                } else {
+                    return buildInvalidResponse();
+                }
+            case PASS_TURN:
+                if(gameState == PossibleGameState.ACTIONS_DONE || gameState == PossibleGameState.FRENZY_ACTIONS_DONE) {
+                    return roundManager.handlePassAction();
                 } else {
                     return buildInvalidResponse();
                 }
@@ -128,11 +164,27 @@ public class GameManager implements MessageListener {
             case PASS_TURN:     // this is a "false" PASS_TURN, turn goes to the next damaged player by the "real" turnOwner
                 // implementation then goes directly here
                 roundManager.getTurnManager().increaseGranadeCount();
-                roundManager.getTurnManager().giveTurn(roundManager.getTurnManager().getDamagedPlayers().get(roundManager.getTurnManager().getGranadeCount()));
+                roundManager.getTurnManager().giveTurn(roundManager.getTurnManager().getDamagedPlayers().get(roundManager.getTurnManager().getTurnCount()));
                 return new Response("Granade not used", MessageStatus.OK);
             default:
                 return new Response("Invalid Message while in granade state", MessageStatus.ERROR);
         }
+    }
+
+    private Response onShootMessage(ShootRequest shootRequest, boolean secondAction, PossibleGameState gameState) {
+        shootParameters = null;
+        PowerupCard[] ownersPowerups = roundManager.getTurnManager().getTurnOwner().getPowerups();
+
+        for(PowerupCard powerupCard : ownersPowerups) {
+            if(powerupCard.getName().equals("TARGETING SCOPE")) {
+                shootParameters = new ShootParameters(shootRequest, secondAction, gameState);
+                changeState(PossibleGameState.SCOPE_USAGE);
+                return new Response("Shoot Action can have SCOPE usage", MessageStatus.OK);
+            }
+        }
+
+        // if turnOwner has no SCOPEs the shoot action is handled normally
+        return roundManager.handleShootAction(shootRequest, null, secondAction, gameState);
     }
 
     private boolean handleSecondAction() {
@@ -161,6 +213,18 @@ public class GameManager implements MessageListener {
 
     private Response buildInvalidResponse() {
         return new Response("Invalid message", MessageStatus.ERROR);
+    }
+
+    class ShootParameters {
+        ShootRequest shootRequest;
+        PossibleGameState arrivingState;
+        boolean secondAction;
+
+        ShootParameters(ShootRequest shootRequest, boolean secondAction, PossibleGameState arrivingState) {
+            this.shootRequest = shootRequest;
+            this.arrivingState = arrivingState;
+            this.secondAction = secondAction;
+        }
     }
 
     /*******************************************************************************************************************/
@@ -341,6 +405,7 @@ public class GameManager implements MessageListener {
         }
     } */
 
+    /*
     private PossibleGameState handleDeathPlayers() {
         boolean terminatorDied = false;
         List<UserPlayer> deathPlayers = gameInstance.getDeathPlayers();
@@ -375,7 +440,7 @@ public class GameManager implements MessageListener {
         }
 
 
-    }
+    }*/
 
     private void distributePoints(Player deathPlayer) {
         PlayerBoard deathsPlayerBoard = deathPlayer.getPlayerBoard();

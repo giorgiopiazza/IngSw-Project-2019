@@ -16,8 +16,7 @@ import exceptions.playerboard.NotEnoughAmmoException;
 import model.Game;
 import model.actions.*;
 import model.cards.PowerupCard;
-import model.cards.WeaponCard;
-import model.map.SpawnSquare;
+
 import model.map.Square;
 import model.player.PlayerPosition;
 import model.player.UserPlayer;
@@ -49,10 +48,6 @@ public class RoundManager {
         turnManager.getTurnOwner().getPossibleActions().remove(PossibleAction.TERMINATOR_ACTION);
     }
 
-    public void setReloadAction() {
-        turnManager.getTurnOwner().setActions(EnumSet.of(PossibleAction.RELOAD));
-    }
-
     /***************************************** NEW IMPLEMENTATION ******************************************/
 
     private void setInitialActions() {
@@ -61,6 +56,10 @@ public class RoundManager {
         } else if (gameInstance.getState() == GameState.FINAL_FRENZY) {
             ActionManager.setFrenzyPossibleActions(turnManager.getTurnOwner(), turnManager);
         }
+    }
+
+    private void setReloadAction() {
+        turnManager.getTurnOwner().setActions(EnumSet.of(PossibleAction.RELOAD));
     }
 
     public Response handleTerminatorFirstSpawn(TerminatorSpawnRequest spawnRequest) {
@@ -143,6 +142,7 @@ public class RoundManager {
             turnManager.getTurnOwner().removeAction(PossibleAction.TERMINATOR_ACTION);
         } else if (gameState == PossibleGameState.MISSING_TERMINATOR_ACTION) {
             if (gameInstance.getState().equals(GameState.NORMAL)) {
+                setReloadAction();
                 GameManager.changeState(PossibleGameState.ACTIONS_DONE);
             } else if (gameInstance.getState().equals(GameState.FINAL_FRENZY)) {
                 GameManager.changeState(PossibleGameState.FRENZY_ACTIONS_DONE);
@@ -215,11 +215,15 @@ public class RoundManager {
     public Response handleGranadeUsage(PowerupRequest granadeMessage) {
         PowerupCard chosenGranade;
 
-        if (granadeMessage.getPowerup() < 0 || granadeMessage.getPowerup() > turnManager.getTurnOwner().getPowerups().length) {
+        if (granadeMessage.getPowerup().get(0) < 0 || granadeMessage.getPowerup().get(0) > turnManager.getTurnOwner().getPowerups().length) {
             return buildNegativeResponse("Invalid Powerup index!");
         }
 
-        chosenGranade = turnManager.getTurnOwner().getPowerups()[granadeMessage.getPowerup()];
+        if (granadeMessage.getPowerup().size() != 1) {
+            return buildNegativeResponse("Too many powerups!");
+        }
+
+        chosenGranade = turnManager.getTurnOwner().getPowerups()[granadeMessage.getPowerup().get(0)];
 
         if (!chosenGranade.getName().equals(TAGBACK_GRANADE)) {
             return buildNegativeResponse("Invalid Powerup");
@@ -235,26 +239,165 @@ public class RoundManager {
 
         // after having executed the granade action I discard it from the players hand
         try {
-            turnManager.getTurnOwner().discardPowerupByIndex(granadeMessage.getPowerup());
+            turnManager.getTurnOwner().discardPowerupByIndex(granadeMessage.getPowerup().get(0));
         } catch (EmptyHandException e) {
             // never reached if the player has the powerup!
         }
 
         // then I give the turn to the next damaged player
         turnManager.increaseGranadeCount();
-        turnManager.giveTurn(turnManager.getDamagedPlayers().get(turnManager.getGranadeCount()));
+        turnManager.giveTurn(turnManager.getDamagedPlayers().get(turnManager.getTurnCount()));
 
         return buildPositiveResponse("Granade has been Used");
+    }
+
+    private Response handleScopeUsage(PowerupRequest scopeMessage) {
+        UserPlayer turnOwner = turnManager.getTurnOwner();
+        PowerupRequest tempRequest;
+        List<Integer> powerupsIndexes = scopeMessage.getPowerup();
+        List<Integer> paymentPowerups = scopeMessage.getPaymentPowerups();
+        List<String> targets = scopeMessage.getTargetPlayersUsernames();
+        int sizeDifference = powerupsIndexes.size() - targets.size();
+
+        for(Integer index : powerupsIndexes) {
+            if(index < 0 || index > turnOwner.getPowerups().length -1) {
+                return buildNegativeResponse("Invalid Index");
+            }
+            for(Integer paymentIndex : paymentPowerups) {
+                if(index.equals(paymentIndex)) {
+                    return buildNegativeResponse("Invalid Payment indexes");
+                }
+            }
+        }
+
+        if(powerupsIndexes.size() > turnOwner.getPowerups().length) {
+            return buildNegativeResponse("Too many indexes");
+        }
+
+        for(Integer index : powerupsIndexes) {
+            if(!turnOwner.getPowerups()[index].getName().equals(TARGETING_SCOPE)) {
+                return buildNegativeResponse("Invalid Scope Index");
+            }
+        }
+
+        switch (sizeDifference) {
+            case 0:
+                for(int i = 0; i < powerupsIndexes.size(); ++i) {
+                    if(!paymentPowerups.isEmpty()) {
+                        tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
+                                                        .paymentPowerups(scopeMessage.getPaymentPowerups())
+                                                        .targetPlayersID(new ArrayList<>(List.of(targets.get(i))))
+                                                        .build();
+                        paymentPowerups.remove(0);
+                    } else {
+                        tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
+                                                        .targetPlayersID(new ArrayList<>(List.of(targets.get(i))))
+                                                        .build();
+                    }
+                    try {
+                        turnOwner.getPowerups()[i].use(tempRequest);
+                        turnOwner.discardPowerupByIndex(i);
+                    } catch (NotEnoughAmmoException e) {
+                        return buildNegativeResponse("Not Enough Ammo");
+                    } catch (InvalidPowerupActionException e) {
+                        return buildNegativeResponse("Invalid Action");
+                    } catch (EmptyHandException e) {
+                        // can not happen here because powerup is already verified to be possessed
+                    }
+                }
+                return buildPositiveResponse("Targeting Scope used");
+            case 1:
+                if(powerupsIndexes.size() == 3) {
+                    for(int i = 0; i < 2; ++i) {
+                        tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
+                                                        .targetPlayersID(new ArrayList<>(List.of(targets.get(0))))
+                                                        .build();
+                        try {
+                            turnOwner.getPowerups()[i].use(tempRequest);
+                            turnOwner.discardPowerupByIndex(i);
+                        } catch (NotEnoughAmmoException e) {
+                            return buildNegativeResponse("Not Enough Ammo");
+                        } catch (EmptyHandException e) {
+                            // can not happen here because powerup is already verified to be possessed
+                        } catch (InvalidPowerupActionException e) {
+                            return buildNegativeResponse("Invalid Action");
+                        }
+                    }
+
+                    tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), new ArrayList<>(List.of(powerupsIndexes.get(2))))
+                                                    .targetPlayersID(new ArrayList<>(List.of(targets.get(1))))
+                                                    .build();
+                    try {
+                        turnOwner.getPowerups()[2].use(tempRequest);
+                        turnOwner.discardPowerupByIndex(2);
+                    } catch (NotEnoughAmmoException e) {
+                        return buildNegativeResponse("Not Enough Ammo ");
+                    } catch (InvalidPowerupActionException e) {
+                        return buildNegativeResponse("Invalid Action");
+                    } catch (EmptyHandException e) {
+                        // can not happen here because powerup is already verified to be possessed
+                    }
+                } else if(powerupsIndexes.size() == 2) {
+                    for(int i = 0; i < 2; ++i) {
+                        if(!paymentPowerups.isEmpty()) {
+                            tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
+                                    .paymentPowerups(scopeMessage.getPaymentPowerups())
+                                    .targetPlayersID(new ArrayList<>(List.of(targets.get(0))))
+                                    .build();
+                            paymentPowerups.remove(0);
+                        } else {
+                            tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
+                                    .targetPlayersID(new ArrayList<>(List.of(targets.get(0))))
+                                    .build();
+                        }
+                        try {
+                            turnOwner.getPowerups()[i].use(tempRequest);
+                            turnOwner.discardPowerupByIndex(i);
+                        } catch (NotEnoughAmmoException e) {
+                            return buildNegativeResponse("Not Enough Ammo ");
+                        } catch (InvalidPowerupActionException e) {
+                            return buildNegativeResponse("Invalid Action");
+                        } catch (EmptyHandException e) {
+                            // cn not happen here because powerup is already verified to be possessed
+                        }
+                    }
+                }
+                return buildPositiveResponse("Targeting Scopes Used");
+            case 2:
+                for(int i = 0; i < 3; ++i) {
+                    tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
+                            .targetPlayersID(new ArrayList<>(List.of(targets.get(0))))
+                            .build();
+                    try {
+                        turnOwner.getPowerups()[i].use(tempRequest);
+                        turnOwner.discardPowerupByIndex(i);
+                    } catch (EmptyHandException e) {
+                        // can not happen here because powerup is already verified to be possessed
+                    } catch (NotEnoughAmmoException e) {
+                        return buildNegativeResponse("Not Enough Ammo  ");
+                    } catch (InvalidPowerupActionException e) {
+                        return buildNegativeResponse("Invalid Action");
+                    }
+                }
+
+                return buildPositiveResponse("Targeting Scope Used");
+            default:
+                return buildNegativeResponse("Invalid Action");
+        }
     }
 
     public Response handlePowerupAction(PowerupRequest powerupRequest) {
         PowerupCard chosenPowerup;
 
-        if (powerupRequest.getPowerup() < 0 || powerupRequest.getPowerup() > turnManager.getTurnOwner().getPowerups().length) {
+        if (powerupRequest.getPowerup().size() != 1) {
+            return buildNegativeResponse("Too many powerups!");
+        }
+
+        if (powerupRequest.getPowerup().get(0) < 0 || powerupRequest.getPowerup().get(0) > turnManager.getTurnOwner().getPowerups().length) {
             return buildNegativeResponse("Invalid Powerup index!");
         }
 
-        chosenPowerup = turnManager.getTurnOwner().getPowerups()[powerupRequest.getPowerup()];
+        chosenPowerup = turnManager.getTurnOwner().getPowerups()[powerupRequest.getPowerup().get(0)];
 
         if (!chosenPowerup.getName().equals(NEWTON) || !chosenPowerup.getName().equals(TELEPORTER)) {
             return buildNegativeResponse("Invalid Powerup");
@@ -270,7 +413,7 @@ public class RoundManager {
 
         // after having used the powerup I discard it from the players hand
         try {
-            turnManager.getTurnOwner().discardPowerupByIndex(powerupRequest.getPowerup());
+            turnManager.getTurnOwner().discardPowerupByIndex(powerupRequest.getPowerup().get(0));
         } catch (EmptyHandException e) {
             // never reached if the player has the powerup!
         }
@@ -353,8 +496,9 @@ public class RoundManager {
         return buildPositiveResponse("Pick Action done");
     }
 
-    public Response handleShootAction(ShootRequest shootRequest, boolean secondAction, PossibleGameState gameState) {
+    public Response handleShootAction(ShootRequest shootRequest, PowerupRequest scopeRequest, boolean secondAction, PossibleGameState gameState) {
         UserPlayer turnOwner = turnManager.getTurnOwner();
+        Response response;
         ShootAction shootAction;
         PossibleAction actionType;
         Set<PossibleAction> ownersActions = turnOwner.getPossibleActions();
@@ -393,7 +537,13 @@ public class RoundManager {
             return buildNegativeResponse("Invalid Shoot Action");
         }
 
-        // TODO control that turnOwner has the TARGETING_SCOPES specified in the shootRequest in his hand
+        // targeting scope handler
+        if (scopeRequest != null) {
+            response = handleScopeUsage(scopeRequest);
+            if(response.getStatus() == MessageStatus.ERROR) {
+                return response;
+            } // else targeting scope can be used and granade usage is handled
+        }
 
         // tagback granade handler
         if (!turnManager.getDamagedPlayers().isEmpty()) {
@@ -409,18 +559,69 @@ public class RoundManager {
         return buildPositiveResponse("Shoot Action done");
     }
 
+    public Response handleReloadAction(ReloadRequest reloadRequest) {
+        UserPlayer turnOwner = turnManager.getTurnOwner();
+        ReloadAction reloadAction;
+
+        if(turnOwner.getPossibleActions().contains(PossibleAction.RELOAD)) {
+            reloadAction = new ReloadAction(turnOwner, reloadRequest);
+        } else {
+            return buildNegativeResponse("Invalid Action");
+        }
+
+        try {
+            if(reloadAction.validate()) {
+                reloadAction.execute();
+            } else {
+                return buildNegativeResponse("Invalid Action");
+            }
+        } catch (WeaponAlreadyChargedException e) {
+            return buildNegativeResponse("You are trying to recharge a weapon that is already charged");
+        } catch (NotEnoughAmmoException e) {
+            return buildNegativeResponse("Not enough ammo to reload");
+        }
+
+        // after a reload action a player always passes his turn and the game has to manage the death players
+        // TODO fixare stato finale come granade in game manager
+        GameManager.changeState(PossibleGameState.PASS_NORMAL_TURN);
+        return buildPositiveResponse("Reload Action done");
+    }
+
     private ArrayList<UserPlayer> buildDamagedPlayers(List<UserPlayer> beforeShootPlayers) {
         ArrayList<UserPlayer> reallyDamagedPlayers = new ArrayList<>();
 
-        for(UserPlayer afterPlayer : gameInstance.getPlayers()) {
-            for(UserPlayer beforePlayer : beforeShootPlayers) {
-                if(afterPlayer.equals(beforePlayer) && afterPlayer.getPlayerBoard().getDamageCount() > beforePlayer.getPlayerBoard().getDamageCount()) {
+        for (UserPlayer afterPlayer : gameInstance.getPlayers()) {
+            for (UserPlayer beforePlayer : beforeShootPlayers) {
+                if (afterPlayer.equals(beforePlayer) && afterPlayer.getPlayerBoard().getDamageCount() > beforePlayer.getPlayerBoard().getDamageCount()) {
                     reallyDamagedPlayers.add(afterPlayer);
                 }
             }
         }
 
         return reallyDamagedPlayers;
+    }
+
+    public Response handlePassAction() {    // TODO cambiare a seconda di come diventa la handle finale
+        if(gameInstance.getState() == GameState.NORMAL) {
+            GameManager.changeState(PossibleGameState.PASS_NORMAL_TURN);
+            return buildPositiveResponse("Turn Passed");
+        } else if(gameInstance.getState() == GameState.FINAL_FRENZY) {
+            GameManager.changeState(PossibleGameState.PASS_FRENZY_TURN);
+            return buildPositiveResponse("Turn Passed");
+        } else {
+            throw new InvalidGameStateException();
+        }
+    }
+
+    private void deathPlayersHandler(PossibleGameState nextPassState) {
+        List<UserPlayer> deathPlayers = gameInstance.getDeathPlayers();
+
+        if(!gameInstance.getDeathPlayers().isEmpty()) {
+           turnManager.setArrivingGameState(nextPassState);
+
+        } else {
+            GameManager.changeState(nextPassState);
+        }
     }
 
     private PossibleGameState handleAfterActionState(boolean secondAction) {
@@ -431,6 +632,7 @@ public class RoundManager {
                 return PossibleGameState.MISSING_TERMINATOR_ACTION;
             } else {
                 if (gameInstance.getState().equals(GameState.NORMAL)) {
+                    setReloadAction();
                     return PossibleGameState.ACTIONS_DONE;
                 } else if (gameInstance.getState().equals(GameState.FINAL_FRENZY)) {
                     return PossibleGameState.FRENZY_ACTIONS_DONE;
@@ -573,14 +775,16 @@ public class RoundManager {
         }
     } */
 
+    /*
     private PossibleGameState handleAfterShootChangings(boolean secondAction) {
         if (!turnManager.getDamagedPlayers().isEmpty()) {
             handleTagBackGranadeUsage(turnManager.getDamagedPlayers(), turnManager.getTurnOwner());
         }
 
         return handleAfterActionState(secondAction);
-    }
+    } */
 
+    /*
     private PossibleGameState handlePowerupAction(PossibleGameState changingState) {
         Scanner in = new Scanner(System.in);
         UserPlayer turnOwner = turnManager.getTurnOwner();
@@ -630,7 +834,7 @@ public class RoundManager {
         }
 
         return changingState;
-    }
+    } */
 
     private int getChosenPowerup(UserPlayer player, String powerupChosen) {
         Scanner in = new Scanner(System.in);
@@ -657,6 +861,7 @@ public class RoundManager {
         return -1;
     }
 
+    /*
     public PossibleGameState handlePowerupDecision(PossibleGameState changingState) {
         Scanner in = new Scanner(System.in);
 
@@ -672,7 +877,7 @@ public class RoundManager {
                 // wrong input will be asked again
             }
         }
-    }
+    } */
 
     private void spawnTerminator() {
         Scanner in = new Scanner(System.in);
@@ -812,7 +1017,7 @@ public class RoundManager {
         // gameInstance.spawnPlayer(player, gameInstance.getGameMap().getSpawnSquare(spawnColor));
     }
 
-
+    /*
     private void handleTagBackGranadeUsage(ArrayList<UserPlayer> damaged, UserPlayer turnOwner) {
         ArrayList<UserPlayer> granadePossessors = new ArrayList<>();
         PowerupCard chosenPowerup;
@@ -842,7 +1047,7 @@ public class RoundManager {
                 }
             }
         }
-    }
+    } */
 
     private int getTagBackGranate(UserPlayer player) {
         Scanner in = new Scanner(System.in);

@@ -581,7 +581,7 @@ class EffectValidator {
      */
     static boolean isPowerupIndexValid(PowerupRequest request) {
         UserPlayer powerupUser = Game.getInstance().getUserPlayerByUsername(request.getSenderUsername());
-        int powerupIndex = request.getPowerup();
+        int powerupIndex = request.getPowerup().get(0);
 
         if (powerupIndex < 1 || powerupIndex > 3) {
             throw new InvalidCommandException();

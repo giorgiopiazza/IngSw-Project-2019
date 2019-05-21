@@ -19,7 +19,7 @@ public class TurnManager {
     private PossibleGameState arrivingGameState;
 
     private int count;
-    private int granadeCount;
+    private int turnCount;
 
     public TurnManager(List<UserPlayer> players) {
         this.players = players;
@@ -75,15 +75,15 @@ public class TurnManager {
     }
 
     public void resetGranadeCount() {
-        this.granadeCount = 0;
+        this.turnCount = 0;
     }
 
     public void increaseGranadeCount() {
-        ++this.granadeCount;
+        ++this.turnCount;
     }
 
-    public int getGranadeCount() {
-        return this.granadeCount;
+    public int getTurnCount() {
+        return this.turnCount;
     }
 
     public void nextTurn() {
