@@ -50,6 +50,10 @@ public class MessageBuilder {
             }
         }
 
+        if(player.getSpawningCard().equals(powerupCard)) {
+            return new DiscardPowerupRequest(player.getUsername(), 3);
+        }
+
         throw new PowerupCardsNotFoundException("powerupCard not found in " + player);
     }
 

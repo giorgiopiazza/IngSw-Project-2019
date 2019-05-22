@@ -6,13 +6,17 @@ import model.player.UserPlayer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TurnManager {
+class TurnManager {
     private UserPlayer turnOwner;
     private UserPlayer lastPlayer;
     private final UserPlayer lastRoundPlayer;
 
     private List<UserPlayer> players;
     private ArrayList<UserPlayer> damagedPlayers;
+    private ArrayList<UserPlayer> deathPlayers;
+
+    private boolean secondAction;
+
     private ArrayList<UserPlayer> afterFrenzy;
     private ArrayList<UserPlayer> beforeFrenzy;
 
@@ -21,7 +25,7 @@ public class TurnManager {
     private int count;
     private int turnCount;
 
-    public TurnManager(List<UserPlayer> players) {
+    TurnManager(List<UserPlayer> players) {
         this.players = players;
         this.lastRoundPlayer = players.get(players.size() - 1);
         this.turnOwner = players.get(count);
@@ -30,80 +34,92 @@ public class TurnManager {
 
     }
 
-    public UserPlayer getTurnOwner() {
+    UserPlayer getTurnOwner() {
         return turnOwner;
     }
 
-    public void setLastPlayer() {
+    void setLastPlayer() {
         this.lastPlayer = turnOwner;
     }
 
-    public UserPlayer getLastPlayer() {
+    UserPlayer getLastPlayer() {
         return this.lastPlayer;
     }
 
-    public UserPlayer getLastRoundPlayer() {
-        return this.lastRoundPlayer;
-    }
-
-    public void setDamagedPlayers(ArrayList<UserPlayer> damaged) {
-        if(damaged == null) {
+    void setDamagedPlayers(ArrayList<UserPlayer> damaged) {
+        if (damaged == null) {
             this.damagedPlayers = new ArrayList<>();
         } else {
             this.damagedPlayers = damaged;
         }
     }
 
-    public ArrayList<UserPlayer> getDamagedPlayers() {
+    ArrayList<UserPlayer> getDamagedPlayers() {
         return this.damagedPlayers;
     }
 
-    public ArrayList<UserPlayer> getAfterFrenzy() {
+    void setDeathPlayers(ArrayList<UserPlayer> deaths) {
+        if (deaths == null) {
+            this.deathPlayers = new ArrayList<>();
+        } else {
+            this.deathPlayers = deaths;
+        }
+    }
+
+    ArrayList<UserPlayer> getDeathPlayers() {
+        return this.deathPlayers;
+    }
+
+    void setSecondAction(boolean secondAction) {
+        this.secondAction = secondAction;
+    }
+
+    boolean isSecondAction() {
+        return this.secondAction;
+    }
+
+    ArrayList<UserPlayer> getAfterFrenzy() {
         return this.afterFrenzy;
     }
 
-    public ArrayList<UserPlayer> getBeforeFrenzy() {
-        return this.beforeFrenzy;
-    }
-
-    public void setArrivingGameState(PossibleGameState arrivingGameState) {
+    void setArrivingGameState(PossibleGameState arrivingGameState) {
         this.arrivingGameState = arrivingGameState;
     }
 
-    public PossibleGameState getArrivingGameState() {
+    PossibleGameState getArrivingGameState() {
         return this.arrivingGameState;
     }
 
-    public void resetGranadeCount() {
+    void resetCount() {
         this.turnCount = 0;
     }
 
-    public void increaseGranadeCount() {
+    void increaseCount() {
         ++this.turnCount;
     }
 
-    public int getTurnCount() {
+    int getTurnCount() {
         return this.turnCount;
     }
 
-    public void nextTurn() {
+    void nextTurn() {
         count++;
         count = count % players.size();
         turnOwner = players.get(count);
     }
 
-    public void setFrenzyPlayers() {
+    void setFrenzyPlayers() {
         UserPlayer frenzyActivator = turnOwner;
         boolean beforeFirst = true;
 
         do {
             nextTurn();
 
-            if(turnOwner.isFirstPlayer()) {
+            if (turnOwner.isFirstPlayer()) {
                 beforeFirst = false;
             }
 
-            if(beforeFirst) {
+            if (beforeFirst) {
                 afterFrenzy.add(turnOwner);
             } else {
                 beforeFrenzy.add(turnOwner);
@@ -112,15 +128,11 @@ public class TurnManager {
         } while (!turnOwner.equals(frenzyActivator));
     }
 
-    public boolean endOfRound() {
-        if(turnOwner.equals(lastRoundPlayer)) {
-            return true;
-        } else {
-            return false;
-        }
+    boolean endOfRound() {
+        return turnOwner.equals(lastRoundPlayer);
     }
 
-    public void giveTurn(UserPlayer damagedPlayer) {
+    void giveTurn(UserPlayer damagedPlayer) {
         this.turnOwner = damagedPlayer;
     }
 }

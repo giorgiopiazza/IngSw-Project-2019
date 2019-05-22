@@ -526,8 +526,8 @@ public class Game {
      *
      * @return an ArrayList containing all dead players
      */
-    public List<UserPlayer> getDeathPlayers() {
-        List<UserPlayer> deathPlayers = new ArrayList<>();
+    public ArrayList<UserPlayer> getDeathPlayers() {
+        ArrayList<UserPlayer> deathPlayers = new ArrayList<>();
 
         for (UserPlayer player : players) {
             if (player.getPlayerBoard().getDamageCount() > 10) {

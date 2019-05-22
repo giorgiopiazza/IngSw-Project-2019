@@ -19,6 +19,7 @@ public class UserPlayer extends Player {
     private transient PossiblePlayerState playerState;
     private transient List<WeaponCard> weapons;
     private transient List<PowerupCard> powerups;
+    private transient PowerupCard spawningCard;
     private boolean firstPlayer;
 
     public UserPlayer(String nickname) {
@@ -51,6 +52,14 @@ public class UserPlayer extends Player {
 
     public void changePlayerState(PossiblePlayerState playerState) {
         this.playerState = playerState;
+    }
+
+    public void setSpawningCard(PowerupCard spawningCard) {
+        this.spawningCard = spawningCard;
+    }
+
+    public PowerupCard getSpawningCard() {
+        return this.spawningCard;
     }
 
     /**
