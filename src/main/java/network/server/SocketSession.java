@@ -2,6 +2,7 @@ package network.server;
 
 import enumerations.MessageContent;
 import network.message.Message;
+import network.message.PingMessage;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -12,7 +13,6 @@ class SocketSession extends Thread implements Session {
     private final SocketServer socketServer;
     private final Socket socket;
 
-    private boolean running;
     private boolean connected;
 
     private ObjectInputStream in;
@@ -23,7 +23,6 @@ class SocketSession extends Thread implements Session {
         this.socket = socket;
 
         this.connected = true;
-        this.running = true;
 
         try {
             this.in = new ObjectInputStream(socket.getInputStream());
@@ -35,7 +34,7 @@ class SocketSession extends Thread implements Session {
 
     @Override
     public void run() {
-        while (running) {
+        while (!Thread.currentThread().isInterrupted()) {
             try {
                 Message message = (Message) in.readObject();
                 if (message != null) {
@@ -62,8 +61,14 @@ class SocketSession extends Thread implements Session {
             Server.LOGGER.severe(e.getMessage());
         }
 
-        running = false;
+        this.interrupt(); // Interrupts the thread
         connected = false;
+
+        socketServer.onDisconnect(this);
+    }
+
+    public void ping() {
+        sendMessage(new PingMessage());
     }
 
     @Override
@@ -73,13 +78,14 @@ class SocketSession extends Thread implements Session {
 
     @Override
     public void sendMessage(Message message) {
-        try {
-            out.writeObject(message);
-            out.flush();
-            out.reset();
-        } catch (IOException e) {
-            Server.LOGGER.severe(e.getMessage());
-            disconnect();
+        if (connected) {
+            try {
+                out.writeObject(message);
+                out.flush();
+                out.reset();
+            } catch (IOException e) {
+                disconnect();
+            }
         }
     }
 }

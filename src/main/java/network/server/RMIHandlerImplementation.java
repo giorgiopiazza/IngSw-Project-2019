@@ -15,7 +15,7 @@ public class RMIHandlerImplementation extends UnicastRemoteObject implements RMI
 
     @Override
     public void login(String username, RMIClientSession clientSession) {
-        RMISession rmiSession = new RMISession(clientSession);
+        RMISession rmiSession = new RMISession(server, clientSession);
         server.login(username, rmiSession);
     }
 

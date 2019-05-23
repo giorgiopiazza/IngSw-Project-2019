@@ -44,4 +44,9 @@ public class ClientRMI extends Client implements RMIClientSession {
     public void onMessage(Message message) {
         // TODO
     }
+
+    @Override
+    public void ping() {
+        // Pinged
+    }
 }

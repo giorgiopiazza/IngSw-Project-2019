@@ -8,4 +8,5 @@ public interface Session {
     boolean isConnected();
     void sendMessage(Message message) throws IOException;
     void disconnect();
+    void ping();
 }

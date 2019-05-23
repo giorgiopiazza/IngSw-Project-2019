@@ -14,10 +14,10 @@ import java.util.List;
 
 public class ClientSocket extends Client {
 
-    private Socket socket;
+    private transient Socket socket;
 
-    private ObjectInputStream in;
-    private ObjectOutputStream out;
+    private transient ObjectInputStream in;
+    private transient ObjectOutputStream out;
 
     public ClientSocket(String username, String address, int port) throws IOException {
         super(username, address, port);
@@ -34,8 +34,10 @@ public class ClientSocket extends Client {
 
     @Override
     public void sendMessage(Message message) throws IOException {
-        out.writeObject(message);
-        out.reset();
+        if (out != null) {
+            out.writeObject(message);
+            out.reset();
+        }
     }
 
     public List<Message> receiveMessages() throws IOException {
@@ -56,6 +58,11 @@ public class ClientSocket extends Client {
 
     @Override
     public void close() throws IOException {
-        socket.close();
+        if (!socket.isClosed()) {
+            socket.close();
+        }
+
+        in = null;
+        out = null;
     }
 }

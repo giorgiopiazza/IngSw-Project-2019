@@ -28,7 +28,7 @@ public class SocketServer extends Thread {
 
     @Override
     public void run() {
-        while (true) {
+        while (!Thread.currentThread().isInterrupted()) {
             try {
                 Socket client = serverSocket.accept();
                 new SocketSession(this, client).start();
@@ -44,5 +44,9 @@ public class SocketServer extends Thread {
 
     void onMessage(Message message) {
         server.onMessage(message);
+    }
+
+    void onDisconnect(Session playerSession) {
+        server.onDisconnect(playerSession);
     }
 }
