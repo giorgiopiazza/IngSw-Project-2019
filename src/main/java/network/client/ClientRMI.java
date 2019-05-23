@@ -42,7 +42,9 @@ public class ClientRMI extends Client implements RMIClientSession {
 
     @Override
     public void onMessage(Message message) {
-        // TODO
+        synchronized (messageQueue) {
+            messageQueue.add(message);
+        }
     }
 
     @Override

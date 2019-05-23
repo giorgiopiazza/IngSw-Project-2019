@@ -1,7 +1,5 @@
 package network.client;
 
-import enumerations.MessageContent;
-import exceptions.network.ClassAdrenalinaNotFoundException;
 import network.message.ConnectionRequest;
 import network.message.Message;
 
@@ -9,15 +7,15 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.logging.Logger;
 
-public class ClientSocket extends Client {
-
+public class ClientSocket extends Client implements Runnable {
     private transient Socket socket;
 
     private transient ObjectInputStream in;
     private transient ObjectOutputStream out;
+
+    private transient Thread messageReceiver;
 
     public ClientSocket(String username, String address, int port) throws IOException {
         super(username, address, port);
@@ -30,6 +28,9 @@ public class ClientSocket extends Client {
         in = new ObjectInputStream(socket.getInputStream());
 
         sendMessage(new ConnectionRequest(getUsername()));
+
+        messageReceiver = new Thread(this);
+        messageReceiver.start();
     }
 
     @Override
@@ -40,20 +41,40 @@ public class ClientSocket extends Client {
         }
     }
 
-    public List<Message> receiveMessages() throws IOException {
-        List<Message> messageList = new ArrayList<>();
-        Message current;
-
-        do {
+    @Override
+    public void run() {
+        while (!Thread.currentThread().isInterrupted()) {
             try {
-                current = (Message) in.readObject();
-            } catch (ClassNotFoundException e) {
-                throw new ClassAdrenalinaNotFoundException();
-            }
-            messageList.add(current);
-        } while (current.getContent() != MessageContent.RESPONSE);
+                Message message = (Message) in.readObject();
 
-        return messageList;
+                if (message != null) {
+                    synchronized (messageQueue) {
+                        messageQueue.add(message);
+                    }
+                }
+            } catch (IOException e) {
+                disconnect();
+            } catch (ClassNotFoundException e) {
+                // Discard Message
+            }
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                disconnect();
+            }
+        }
+    }
+
+    private void disconnect() {
+        try {
+            close();
+        } catch (IOException e) {
+            Logger.getGlobal().severe(e.getMessage());
+        }
+
+        messageReceiver.interrupt();
     }
 
     @Override

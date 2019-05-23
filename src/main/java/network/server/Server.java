@@ -17,10 +17,11 @@ public class Server implements Runnable {
     public static final int RMI_PORT = 7272;
 
     private static final int MAX_CLIENT = 5;
-
     private static final String[] FORBIDDEN_USERNAMES = {Game.GOD, Game.TERMINATOR_USERNAME};
 
     private Map<String, Session> clients;
+    private Thread pinger;
+
     static final Logger LOGGER = Logger.getLogger("Server");
 
     public Server() {
@@ -36,7 +37,7 @@ public class Server implements Runnable {
 
         LOGGER.info("RMI Server Started");
 
-        Thread pinger = new Thread(this);
+        pinger = new Thread(this);
         pinger.start();
     }
 
@@ -53,7 +54,7 @@ public class Server implements Runnable {
     public void login(String username, Session session) {
         try {
             if (clients.containsKey(username)) {
-                if (!session.isConnected()) { // Reconnection
+                if (!clients.get(username).isConnected()) { // Reconnection
                     clients.replace(username, session);
                     session.sendMessage(
                             new Response("Successfully reconnected", MessageStatus.OK)
@@ -123,6 +124,11 @@ public class Server implements Runnable {
         // TODO
     }
 
+    /**
+     * Called when a player disconnects
+     *
+     * @param playerSession session of disconnected player
+     */
     public void onDisconnect(Session playerSession) {
         String username = getUsernameBySession(playerSession);
 
