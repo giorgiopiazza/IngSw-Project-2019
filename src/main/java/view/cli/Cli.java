@@ -1,23 +1,34 @@
 package view.cli;
 
+import enumerations.MessageContent;
+import enumerations.MessageStatus;
 import enumerations.PlayerColor;
 import model.GameSerialized;
 import model.map.GameMap;
 import model.player.Player;
 import model.player.PlayerBoard;
 import model.player.UserPlayer;
+import network.client.Client;
+import network.client.ClientRMI;
+import network.client.ClientSocket;
+import network.message.Message;
+import network.message.Response;
 
+import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
 public class Cli {
-    private static final String RMI = "rmi";
-    private static final String SOCKET = "socket";
+    private static final int RMI_PORT = 7272;
+    private static final int SOCKET_PORT = 2727;
+    private static final String ADDRESS = "localhost";
     private Scanner in;
     private AdrenalinePrintStream out;
-    private String connectionType;
     private String username;
+    private Client client;
 
     public Cli() {
         in = new Scanner(System.in);
@@ -62,8 +73,12 @@ public class Cli {
 
 
         printLogo();
-        askConnection();
         askUsername();
+        try {
+            askConnection();
+        } catch (Exception e) {
+            out.println(e.getMessage());
+        }
         askColor();
 
         CliPrinter.printPlayerBoards(out, gs);
@@ -85,7 +100,7 @@ public class Cli {
         out.println(adrenalineLogo);
     }
 
-    private void askConnection() {
+    private void askConnection() throws Exception {
         boolean validConnection = false;
         boolean firstError = true;
         int connection = -1;
@@ -114,17 +129,48 @@ public class Cli {
 
         if (connection == 0) {
             out.println("You chose RMI connection");
-            connectionType = RMI;
+
+            client = new ClientRMI(username, ADDRESS, RMI_PORT);
         } else {
             out.println("You chose Socket connection");
-            connectionType = SOCKET;
+
+            client = new ClientSocket(username, ADDRESS, SOCKET_PORT);
         }
+
+        startConnection();
+    }
+
+    private void startConnection() throws Exception {
+        client.startConnection();
+        List<Message> messages;
+
+        do {
+            messages = client.receiveMessages();
+        } while (messages.isEmpty());
+
+        boolean connected = false;
+
+        for (Message message : messages) {
+            if (message.getContent().equals(MessageContent.RESPONSE)) {
+                Response response = (Response) message;
+
+                if (response.getStatus().equals(MessageStatus.ERROR)) {
+                    promptError(false, "Error: " + response.getMessage());
+                    out.println("Please retry...");
+                    break;
+                } else {
+                    out.println("Connected with username: " + username);
+                    connected = true;
+                }
+            }
+        }
+
+        if (!connected) askConnection();
     }
 
     private void askUsername() {
         boolean validUsername = false;
         boolean firstError = true;
-        String username = "";
 
         out.println("\nChoose your username:");
 
@@ -134,7 +180,7 @@ public class Cli {
             if (in.hasNextLine()) {
                 username = in.nextLine();
 
-                if (!username.equals("god")) {
+                if (!username.equals("god") && !username.equals("bot")) {
                     validUsername = true;
                 } else {
                     firstError = promptError(firstError, "Invalid username!");
@@ -146,7 +192,6 @@ public class Cli {
         } while (!validUsername);
 
         out.printf("Hi %s, wait for server connection.%n", username);
-        this.username = username;
     }
 
     private void askColor() {
