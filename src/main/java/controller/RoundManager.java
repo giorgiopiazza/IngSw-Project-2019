@@ -751,8 +751,12 @@ class RoundManager {
 
 
     private Response handleNextTurn(PossibleGameState arrivingState) {
+        // first I set the turn to the next player and give him his possible actions
         turnManager.nextTurn();
         setInitialActions();
+
+        // then I reset the missing cards on the board
+        gameInstance.getGameMap().addMissingCards();
 
         if (arrivingState == PossibleGameState.PASS_NORMAL_TURN) {
             gameManager.changeState(PossibleGameState.GAME_STARTED);

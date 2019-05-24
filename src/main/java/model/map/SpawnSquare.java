@@ -35,14 +35,12 @@ public class SpawnSquare extends Square {
      * Inserts the <code>weapon</code> card in the first empty space it finds inside the weapons array
      *
      * @param weapon the weapon card to insert
-     * @return index where the card is inserted
      * @throws MaxSquareWeaponsException if the array already contains 3 cards
      */
-    public int addWeapon(WeaponCard weapon) {
+    public void addWeapon(WeaponCard weapon) {
         for (int i = 0; i < MAX_WEAPONS; i++) {
             if (weapons[i] == null) {
                 weapons[i] = weapon;
-                return i;
             }
         }
 

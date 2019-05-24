@@ -349,28 +349,6 @@ public class Game {
     }
 
     /**
-     * Method that verifies if the color passed is already used in the game
-     *
-     * @param color the color to check
-     * @return true if the color is already used, otherwise false
-     */
-    public boolean isColorUsed(PlayerColor color) {
-        ArrayList<PlayerColor> ar = new ArrayList<>();
-
-        for (UserPlayer player : players) {
-            ar.add(player.getColor());
-        }
-
-        for (int i = 0; i < PlayerColor.values().length; ++i) {
-            if (ar.contains(color)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Spawn the player to a spawn point on the map
      *
      * @param player         the player to spawn
@@ -423,7 +401,7 @@ public class Game {
      *
      * @return number of killshot set
      */
-    public int getKillShotNum() {
+    int getKillShotNum() {
         return killShotNum;
     }
 
@@ -461,36 +439,6 @@ public class Game {
             if (p.getUsername().equals(username)) return p;
         }
         throw new MissingPlayerUsernameException(username);
-    }
-
-    /**
-     * Method to verify if the nickname is a valid one with the players in the game
-     *
-     * @param username the String containing the nickname
-     * @return true if the nickname is present otherwise false
-     */
-    public boolean isPlayerPresent(String username) {
-        for (UserPlayer p : players) {
-            if (p.getUsername().equals(username)) return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Method to obtain the positions of the players passed
-     *
-     * @param players ArrayList of players you need their position
-     * @return the ArrayList of positions of the players
-     */
-    public List<PlayerPosition> getPlayersPositions(List<Player> players) {
-        List<PlayerPosition> positions = new ArrayList<>();
-
-        for (Player player : players) {
-            positions.add(player.getPosition());
-        }
-
-        return positions;
     }
 
     public boolean doesPlayerExists(String username) {

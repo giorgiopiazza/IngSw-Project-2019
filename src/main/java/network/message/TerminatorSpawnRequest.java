@@ -2,7 +2,6 @@ package network.message;
 
 import enumerations.MessageContent;
 import enumerations.RoomColor;
-import model.player.PlayerPosition;
 
 public class TerminatorSpawnRequest extends Message {
     private final RoomColor spawnColor;
