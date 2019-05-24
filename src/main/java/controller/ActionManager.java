@@ -7,7 +7,14 @@ import model.player.UserPlayer;
 
 import java.util.EnumSet;
 
+/**
+ * Static Class used by the controllers to handle the changings of the Actions of a {@link UserPlayer UserPlayer}
+ */
 public class ActionManager {
+    private ActionManager() {
+        throw new IllegalStateException("Utility class");
+    }
+
     /**
      * Method that sets the possible actions for a player whose state is FIRST_SPAWN
      *
@@ -27,7 +34,7 @@ public class ActionManager {
      * Method that sets the possible actions a player has due to his state, when the game is in NORMAL state
      * If the game has the terminator, every player in his turn must always do also the terminator action
      */
-    public static void setPossibleActions(UserPlayer player) {
+    static void setPossibleActions(UserPlayer player) {
         PlayerBoardState currentPlayerBoardState = player.getPlayerBoard().getBoardState();
 
         switch (currentPlayerBoardState) {
@@ -52,7 +59,7 @@ public class ActionManager {
      * @param player      the Player whose actions need to be set
      * @param turnManager TurnManager of the game containing the lists of different frenzyPlayers
      */
-    public static void setFrenzyPossibleActions(UserPlayer player, TurnManager turnManager) {
+    static void setFrenzyPossibleActions(UserPlayer player, TurnManager turnManager) {
         if (turnManager.getAfterFrenzy().contains(player)) {
             player.setActions(EnumSet.of(PossibleAction.FRENZY_MOVE, PossibleAction.FRENZY_PICK, PossibleAction.FRENZY_SHOOT));
         } else {
