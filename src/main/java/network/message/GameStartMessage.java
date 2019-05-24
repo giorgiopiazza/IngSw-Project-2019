@@ -7,7 +7,7 @@ public class GameStartMessage extends Message {
     private final String firstPlayer;
 
     public GameStartMessage(String firstPlayer) {
-        super(Game.GOD, MessageContent.READY);
+        super(Game.GOD, null, MessageContent.READY);
         this.firstPlayer = firstPlayer;
     }
 

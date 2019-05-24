@@ -9,7 +9,7 @@ public class Response extends Message {
     private final MessageStatus status;
 
     public Response(String message, MessageStatus status) {
-        super(Game.GOD, MessageContent.RESPONSE);
+        super(Game.GOD, null, MessageContent.RESPONSE);
 
         this.message = message;
         this.status = status;

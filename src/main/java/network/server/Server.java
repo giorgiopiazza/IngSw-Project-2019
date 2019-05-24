@@ -3,9 +3,9 @@ package network.server;
 import controller.GameManager;
 import enumerations.MessageStatus;
 import model.Game;
+import network.message.ConnectionResponse;
 import network.message.DisconnectionMessage;
 import network.message.Message;
-import network.message.Response;
 
 import java.io.IOException;
 import java.util.*;
@@ -57,7 +57,7 @@ public class Server implements Runnable {
     /**
      * Adds or reconnects a player to the server
      *
-     * @param username username of the player
+     * @param username   username of the player
      * @param connection connection of the client
      */
     public void login(String username, Connection connection) {
@@ -65,14 +65,18 @@ public class Server implements Runnable {
             if (clients.containsKey(username)) {
                 if (!clients.get(username).isConnected()) { // Player Reconnection
                     clients.replace(username, connection);
+
+                    String token = UUID.randomUUID().toString();
+                    connection.setToken(token);
+
                     connection.sendMessage(
-                            new Response("Successfully reconnected", MessageStatus.OK)
+                            new ConnectionResponse("Successfully reconnected", token, MessageStatus.OK)
                     );
 
                     LOGGER.log(Level.INFO, "{0} reconnected to server!", username);
                 } else { // Player already connected
                     connection.sendMessage(
-                            new Response("Player already connected", MessageStatus.ERROR)
+                            new ConnectionResponse("Player already connected", null, MessageStatus.ERROR)
                     );
 
                     connection.disconnect();
@@ -81,7 +85,7 @@ public class Server implements Runnable {
             } else {
                 if (clients.keySet().size() == MAX_CLIENT) { // Max players
                     connection.sendMessage(
-                            new Response("Max number of player reached", MessageStatus.ERROR)
+                            new ConnectionResponse("Max number of player reached", null, MessageStatus.ERROR)
                     );
 
                     connection.disconnect();
@@ -89,13 +93,18 @@ public class Server implements Runnable {
                 } else { // New player
                     if (isUsernameLegit(username)) { // Username legit
                         clients.put(username, connection);
+
+                        String token = UUID.randomUUID().toString();
+                        connection.setToken(token);
+
                         connection.sendMessage(
-                                new Response("Successfully connected", MessageStatus.OK)
+                                new ConnectionResponse("Successfully connected", token, MessageStatus.OK)
                         );
+
                         LOGGER.log(Level.INFO, "{0} connected to server!", username);
                     } else { // Username not legit
                         connection.sendMessage(
-                                new Response("Invalid Username", MessageStatus.ERROR)
+                                new ConnectionResponse("Invalid Username", null, MessageStatus.ERROR)
                         );
 
                         connection.disconnect();
@@ -130,7 +139,14 @@ public class Server implements Runnable {
      * @param message message sent to server
      */
     public void onMessage(Message message) {
-        // TODO
+        if (message != null && message.getToken() != null && message.getSenderUsername() != null) {
+            String msgToken = message.getToken();
+            String connToken = clients.get(message.getSenderUsername()).getToken();
+
+            if (msgToken.equals(connToken)) { // Checks that sender is the real player
+                gameManager.onMessage(message);
+            }
+        }
     }
 
     /**

@@ -15,6 +15,7 @@ public abstract class Client extends UnicastRemoteObject {
     private final String username;
     private final String address;
     private final int port;
+    private String token;
 
     final ArrayList<Message> messageQueue;
 
@@ -55,6 +56,17 @@ public abstract class Client extends UnicastRemoteObject {
      */
     public abstract void startConnection() throws Exception;
 
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public ArrayList<Message> getMessageQueue() {
+        return messageQueue;
+    }
 
     /**
      * Sends a message to the server

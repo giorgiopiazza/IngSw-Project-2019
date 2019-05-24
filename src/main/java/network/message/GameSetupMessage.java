@@ -9,8 +9,8 @@ public class GameSetupMessage extends Message {
     private boolean terminatorVote;
     private int skullNumVote;
 
-    public GameSetupMessage(String userName, int mapVote, boolean terminatorVote, int skullNumVote) {
-        super(userName, MessageContent.GAME_SETUP);
+    public GameSetupMessage(String username, String token, int mapVote, boolean terminatorVote, int skullNumVote) {
+        super(username, token, MessageContent.GAME_SETUP);
 
         this.mapVote = mapVote;
         this.terminatorVote = terminatorVote;

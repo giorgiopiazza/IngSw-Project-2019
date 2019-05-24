@@ -17,7 +17,7 @@ public class ShootRequest extends EffectRequest {
 
     public ShootRequest(FireRequestBuilder builder) {
         super(
-                new EffectRequestBuilder(builder.username, MessageContent.SHOOT)
+                new EffectRequestBuilder(builder.username, builder.token, MessageContent.SHOOT)
                         .targetPlayersUsernames(builder.targetPlayersUsernames)
                         .targetPositions(builder.targetPositions)
                         .targetRoomColor(builder.targetRoomColor)
@@ -55,6 +55,7 @@ public class ShootRequest extends EffectRequest {
 
     public static class FireRequestBuilder {
         private String username;
+        private String token;
         private int weaponID;
         private int effect;
 
@@ -71,8 +72,9 @@ public class ShootRequest extends EffectRequest {
         private ArrayList<Integer> paymentPowerups;
         private ArrayList<Integer> rechargingWeapons;
 
-        public FireRequestBuilder(String username, int weaponID, int effect, ArrayList<Integer> rechargingWeapons) {
+        public FireRequestBuilder(String username, String token, int weaponID, int effect, ArrayList<Integer> rechargingWeapons) {
             this.username = username;
+            this.token = token;
             this.weaponID = weaponID;
             this.effect = effect;
             this.rechargingWeapons = rechargingWeapons;

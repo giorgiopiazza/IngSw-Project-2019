@@ -10,7 +10,7 @@ import java.rmi.server.UnicastRemoteObject;
  * This class is the implementation of the interface RMIHandler
  */
 public class RMIHandlerImplementation extends UnicastRemoteObject implements RMIHandler {
-    private final Server server;
+    private final transient Server server;
 
     public RMIHandlerImplementation(Server server) throws RemoteException {
         this.server = server;
