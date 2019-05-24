@@ -32,6 +32,10 @@ public class MessageBuilder {
         return new ConnectionRequest(username);
     }
 
+    public static ColorRequest buildColorRequest(String token, String username) {
+        return new ColorRequest(username, token);
+    }
+
     /**
      * Create a {@link DiscardPowerupRequest DiscardPowerupRequest} object from the actual
      * {@code player} and his {@code powerupCard}
