@@ -14,4 +14,8 @@ public class WinnersResponse extends Message {
 
         this.winners = winners;
     }
+
+    public ArrayList<Player> getWinners() {
+        return this.winners;
+    }
 }
