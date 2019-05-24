@@ -11,13 +11,10 @@ import model.player.UserPlayer;
 import network.client.Client;
 import network.client.ClientRMI;
 import network.client.ClientSocket;
+import network.message.ConnectionResponse;
 import network.message.Message;
-import network.message.Response;
 
-import java.io.IOException;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -151,8 +148,8 @@ public class Cli {
         boolean connected = false;
 
         for (Message message : messages) {
-            if (message.getContent().equals(MessageContent.RESPONSE)) {
-                Response response = (Response) message;
+            if (message.getContent().equals(MessageContent.CONNECTION_RESPONSE)) {
+                ConnectionResponse response = (ConnectionResponse) message;
 
                 if (response.getStatus().equals(MessageStatus.ERROR)) {
                     promptError(false, "Error: " + response.getMessage());
@@ -160,6 +157,7 @@ public class Cli {
                     break;
                 } else {
                     out.println("Connected with username: " + username);
+                    client.setToken(response.getNewToken());
                     connected = true;
                 }
             }

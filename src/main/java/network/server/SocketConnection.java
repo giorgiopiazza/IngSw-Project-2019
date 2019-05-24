@@ -12,7 +12,7 @@ import java.net.Socket;
 /**
  * This class represents a Socket connection with a client
  */
-class SocketConnection extends Thread implements Connection {
+class SocketConnection extends Connection implements Runnable {
     private final SocketServer socketServer;
     private final Socket socket;
 
@@ -20,6 +20,8 @@ class SocketConnection extends Thread implements Connection {
 
     private ObjectInputStream in;
     private ObjectOutputStream out;
+
+    private Thread listener;
 
     /**
      * Constructs a connection over the socket with the socket server
@@ -39,6 +41,9 @@ class SocketConnection extends Thread implements Connection {
         } catch (IOException e) {
             Server.LOGGER.severe(e.toString());
         }
+
+        listener = new Thread(this);
+        listener.start();
     }
 
     /**
@@ -104,7 +109,7 @@ class SocketConnection extends Thread implements Connection {
             Server.LOGGER.severe(e.getMessage());
         }
 
-        this.interrupt(); // Interrupts the thread
+        listener.interrupt(); // Interrupts the thread
         connected = false;
 
         socketServer.onDisconnect(this);

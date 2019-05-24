@@ -4,14 +4,15 @@ import enumerations.MessageContent;
 import enumerations.MessageStatus;
 import model.Game;
 
-public class Response extends Message {
+public class ConnectionResponse extends Message {
+    private final String newToken;
     private final String message;
     private final MessageStatus status;
 
-    public Response(String message, MessageStatus status) {
-        super(Game.GOD, null, MessageContent.RESPONSE);
-
+    public ConnectionResponse(String message, String newToken, MessageStatus status) {
+        super(Game.GOD, null, MessageContent.CONNECTION_RESPONSE);
         this.message = message;
+        this.newToken = newToken;
         this.status = status;
     }
 
@@ -19,7 +20,13 @@ public class Response extends Message {
         return message;
     }
 
+    public String getNewToken() {
+        return newToken;
+    }
+
     public MessageStatus getStatus() {
         return status;
     }
+
+
 }

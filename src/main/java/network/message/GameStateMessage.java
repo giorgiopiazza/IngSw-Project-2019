@@ -9,7 +9,7 @@ public class GameStateMessage extends Message {
     private GameSerialized gameSerialized;
 
     public GameStateMessage() {
-        super (Game.GOD, MessageContent.GAME_STATE);
+        super (Game.GOD, null, MessageContent.GAME_STATE);
         this.gameSerialized = new GameSerialized();
     }
 

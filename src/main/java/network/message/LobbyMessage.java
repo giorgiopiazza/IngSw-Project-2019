@@ -8,9 +8,9 @@ import java.util.Objects;
 public class LobbyMessage extends Message {
     private PlayerColor chosenColor;
 
-    public LobbyMessage(String userName, MessageContent messageContent, PlayerColor chosenColor) {
+    public LobbyMessage(String username, String token, MessageContent messageContent, PlayerColor chosenColor) {
         // message content can only be GET_IN_LOBBY or DISCONNECTION
-        super(userName, messageContent);
+        super(username, token, messageContent);
 
         this.chosenColor = chosenColor;
     }

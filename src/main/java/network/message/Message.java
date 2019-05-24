@@ -6,10 +6,12 @@ import java.io.Serializable;
 
 public abstract class Message implements Serializable {
     private final String senderUsername;
+    private final String token;
     private final MessageContent content;
 
-    Message(String senderUsername, MessageContent content) {
+    Message(String senderUsername, String token, MessageContent content) {
         this.senderUsername = senderUsername;
+        this.token = token;
         this.content = content;
     }
 
@@ -19,6 +21,10 @@ public abstract class Message implements Serializable {
 
     public MessageContent getContent() {
         return content;
+    }
+
+    public String getToken() {
+        return token;
     }
 
     @Override

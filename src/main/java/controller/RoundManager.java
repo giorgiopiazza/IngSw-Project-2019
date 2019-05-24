@@ -285,13 +285,13 @@ class RoundManager {
             case 0:
                 for(int i = 0; i < powerupsIndexes.size(); ++i) {
                     if(!paymentPowerups.isEmpty()) {
-                        tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
+                        tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
                                                         .paymentPowerups(scopeMessage.getPaymentPowerups())
                                                         .targetPlayersID(new ArrayList<>(List.of(targets.get(i))))
                                                         .build();
                         paymentPowerups.remove(0);
                     } else {
-                        tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
+                        tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
                                                         .targetPlayersID(new ArrayList<>(List.of(targets.get(i))))
                                                         .build();
                     }
@@ -310,7 +310,7 @@ class RoundManager {
             case 1:
                 if(powerupsIndexes.size() == 3) {
                     for(int i = 0; i < 2; ++i) {
-                        tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
+                        tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
                                                         .targetPlayersID(new ArrayList<>(List.of(targets.get(0))))
                                                         .build();
                         try {
@@ -325,7 +325,7 @@ class RoundManager {
                         }
                     }
 
-                    tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), new ArrayList<>(List.of(powerupsIndexes.get(2))))
+                    tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(2))))
                                                     .targetPlayersID(new ArrayList<>(List.of(targets.get(1))))
                                                     .build();
                     try {
@@ -341,13 +341,13 @@ class RoundManager {
                 } else if(powerupsIndexes.size() == 2) {
                     for(int i = 0; i < 2; ++i) {
                         if(!paymentPowerups.isEmpty()) {
-                            tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
+                            tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
                                     .paymentPowerups(scopeMessage.getPaymentPowerups())
                                     .targetPlayersID(new ArrayList<>(List.of(targets.get(0))))
                                     .build();
                             paymentPowerups.remove(0);
                         } else {
-                            tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
+                            tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
                                     .targetPlayersID(new ArrayList<>(List.of(targets.get(0))))
                                     .build();
                         }
@@ -366,7 +366,7 @@ class RoundManager {
                 return buildPositiveResponse("Targeting Scopes Used");
             case 2:
                 for(int i = 0; i < 3; ++i) {
-                    tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
+                    tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
                             .targetPlayersID(new ArrayList<>(List.of(targets.get(0))))
                             .build();
                     try {

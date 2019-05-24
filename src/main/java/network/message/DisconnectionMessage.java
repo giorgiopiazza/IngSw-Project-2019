@@ -7,7 +7,7 @@ public class DisconnectionMessage extends Message {
     private final String username;
 
     public DisconnectionMessage(String username) {
-        super(Game.GOD, MessageContent.DISCONNECTION);
+        super(Game.GOD, null, MessageContent.DISCONNECTION);
         this.username = username;
     }
 

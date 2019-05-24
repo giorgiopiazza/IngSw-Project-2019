@@ -7,11 +7,16 @@ import java.io.IOException;
 /**
  * This interface that represents a connection with a client
  */
-public interface Connection {
+public abstract class Connection {
+    private boolean connected = true;
+    private String token;
+
     /**
      * @return the connection status
      */
-    boolean isConnected();
+    public boolean isConnected() {
+        return connected;
+    }
 
     /**
      * Sends a message to the client
@@ -19,15 +24,23 @@ public interface Connection {
      * @param message message to send to the client
      * @throws IOException in case of problems with communication with client
      */
-    void sendMessage(Message message) throws IOException;
+    public abstract void sendMessage(Message message) throws IOException;
 
     /**
      * Disconnects from the client
      */
-    void disconnect();
+    public abstract void disconnect();
 
     /**
      * Sends a ping message to client
      */
-    void ping();
+    public abstract void ping();
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 }

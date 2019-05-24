@@ -8,7 +8,7 @@ import java.rmi.RemoteException;
 /**
  * This class represents a RMI Connection with a client
  */
-public class RMIConnection implements Connection {
+public class RMIConnection extends Connection {
     private final Server server;
     private final RMIClientConnection clientSession;
 
