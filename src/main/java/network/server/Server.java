@@ -6,6 +6,7 @@ import model.Game;
 import network.message.ConnectionResponse;
 import network.message.DisconnectionMessage;
 import network.message.Message;
+import network.message.Response;
 
 import java.io.IOException;
 import java.util.*;
@@ -146,7 +147,8 @@ public class Server implements Runnable {
             if (conn == null) {
                 LOGGER.log(Level.INFO, "Message Request {0} - Unknown username {1}", new Object[]{message.getContent().name(), message.getSenderUsername()});
             } else if (msgToken.equals(conn.getToken())) { // Checks that sender is the real player
-                gameManager.onMessage(message);
+                Message response = gameManager.onMessage(message);
+                sendMessage(message.getSenderUsername(), response);
             }
         }
     }

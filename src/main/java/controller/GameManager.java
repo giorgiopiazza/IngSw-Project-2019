@@ -5,7 +5,6 @@ import exceptions.AdrenalinaException;
 import exceptions.game.InvalidGameStateException;
 import exceptions.game.InvalidKillshotNumberException;
 import exceptions.game.InvalidMapNumberException;
-import exceptions.game.MaxPlayerException;
 import model.Game;
 import model.cards.PowerupCard;
 import model.player.KillShot;
@@ -14,14 +13,13 @@ import model.player.PlayerBoard;
 import model.player.Terminator;
 import model.player.UserPlayer;
 import network.message.*;
-import network.server.MessageListener;
 import network.server.Server;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 
-public class GameManager implements MessageListener {
+public class GameManager {
     private static final int MIN_PLAYERS = 3;
     private static final int MAX_PLAYERS = 5;
 
@@ -53,8 +51,7 @@ public class GameManager implements MessageListener {
 
     }
 
-    @Override
-    public Response onMessage(Message receivedMessage) {
+    public Message onMessage(Message receivedMessage) {
         // on the game setup messages can be received from any player
         if(gameState == PossibleGameState.GAME_ROOM) {
             return firstStateHandler(receivedMessage);
@@ -205,15 +202,21 @@ public class GameManager implements MessageListener {
 
     }
 
-    private Response firstStateHandler(Message receivedMessage) {
+    private Message firstStateHandler(Message receivedMessage) {
         switch(receivedMessage.getContent()) {
             case GET_IN_LOBBY:
                 return lobbyMessageHandler((LobbyMessage) receivedMessage);
             case GAME_SETUP:
                 return setupMessageHandler((GameSetupMessage) receivedMessage);
+            case COLOR:
+                return colorRequestHandler();
             default:
                 return buildInvalidResponse();
         }
+    }
+
+    private ColorResponse colorRequestHandler() {
+        return new ColorResponse(lobby.getUnusedColors());
     }
 
     private void gameSetupHandler() {

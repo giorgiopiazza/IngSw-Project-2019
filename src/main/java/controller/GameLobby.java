@@ -1,5 +1,6 @@
 package controller;
 
+import enumerations.PlayerColor;
 import network.message.GameSetupMessage;
 import network.message.LobbyMessage;
 
@@ -59,4 +60,20 @@ public class GameLobby {
         return 5;
     }
 
+    ArrayList<PlayerColor> getUnusedColors() {
+        ArrayList<PlayerColor> playerColorsList = new ArrayList<>();
+
+        for (LobbyMessage message : inLobbyPlayers) {
+            playerColorsList.add(message.getChosenColor());
+        }
+
+        ArrayList<PlayerColor> unusedColorsList = new ArrayList<>();
+        for (PlayerColor curColor : PlayerColor.values()) {
+            if (!playerColorsList.contains(curColor)) {
+                unusedColorsList.add(curColor);
+            }
+        }
+
+        return unusedColorsList;
+    }
 }

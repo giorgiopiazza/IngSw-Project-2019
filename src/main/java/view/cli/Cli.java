@@ -11,17 +11,20 @@ import model.player.UserPlayer;
 import network.client.Client;
 import network.client.ClientRMI;
 import network.client.ClientSocket;
+import network.message.ColorResponse;
 import network.message.ConnectionResponse;
 import network.message.Message;
+import utility.MessageBuilder;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Cli {
-    private static final int RMI_PORT = 7272;
-    private static final int SOCKET_PORT = 2727;
-    private static final String ADDRESS = "localhost";
     private Scanner in;
     private AdrenalinePrintStream out;
     private String username;
@@ -36,7 +39,6 @@ public class Cli {
      * Starts the view.cli
      */
     public void start() {
-
         GameSerialized gs = new GameSerialized();
         PlayerBoard pb = new PlayerBoard();
         UserPlayer p1 = new UserPlayer("Pippo", PlayerColor.BLUE, pb);
@@ -71,17 +73,11 @@ public class Cli {
 
         printLogo();
         askUsername();
-        try {
-            askConnection();
-        } catch (Exception e) {
-            out.println(e.getMessage());
-        }
+        askConnection();
         askColor();
 
-        CliPrinter.printPlayerBoards(out, gs);
-
-
-        CliPrinter.printMap(out, gs);
+        //CliPrinter.printPlayerBoards(out, gs);
+        //CliPrinter.printMap(out, gs);
     }
 
     private void printLogo() {
@@ -97,12 +93,41 @@ public class Cli {
         out.println(adrenalineLogo);
     }
 
-    private void askConnection() throws Exception {
+    private void askUsername() {
+        boolean validUsername = false;
+        boolean firstError = true;
+
+        out.println("Enter your username:");
+
+        do {
+            out.print(">>> ");
+
+            if (in.hasNextLine()) {
+                username = in.nextLine();
+
+                if (username.equals("") ||
+                        username.equalsIgnoreCase("god") ||
+                        username.equalsIgnoreCase("bot")) {
+                    firstError = promptError(firstError, "Invalid username!");
+                } else {
+                    validUsername = true;
+                }
+            } else {
+                in.nextLine();
+                firstError = promptError(firstError, "Invalid string!");
+            }
+        } while (!validUsername);
+
+        clearConsole();
+    }
+
+    private void askConnection() {
         boolean validConnection = false;
         boolean firstError = true;
         int connection = -1;
 
-        out.println("Choose the connection type (0 = RMI or 1 = Sockets):");
+        out.printf("Hi %s!%n", username);
+        out.println("\nEnter the connection type (0 = Sockets or 1 = RMI):");
 
         do {
             out.print(">>> ");
@@ -122,22 +147,104 @@ public class Cli {
             }
         } while (!validConnection);
 
-        out.println();
+        clearConsole();
 
         if (connection == 0) {
-            out.println("You chose RMI connection");
-
-            client = new ClientRMI(username, ADDRESS, RMI_PORT);
+            out.println("You chose Socket connection\n");
         } else {
-            out.println("You chose Socket connection");
-
-            client = new ClientSocket(username, ADDRESS, SOCKET_PORT);
+            out.println("You chose RMI connection\n");
         }
 
-        startConnection();
+        String address = askAddress();
+        out.println("\nServer Address: " + address);
+
+        int port = askPort();
+        try {
+            if (connection == 0) {
+                client = new ClientSocket(username, address, port);
+            } else {
+                client = new ClientRMI(username, address, port);
+            }
+
+            startConnection();
+        } catch (Exception e) {
+            errorClose(e.getMessage());
+        }
+    }
+
+    private String askAddress() {
+        String address;
+        boolean firstError = true;
+
+        out.println("Enter the server address (default is \"localhost\"):");
+
+        do {
+            out.print(">>> ");
+
+            if (in.hasNextLine()) {
+                address = in.nextLine();
+
+                if (address.equals("")) {
+                    return "localhost";
+                } else if (isAddressValid(address)) {
+                    return address;
+                } else {
+                    firstError = promptError(firstError, "Invalid address!");
+                }
+            } else {
+                in.nextLine();
+                firstError = promptError(firstError, "Invalid string!");
+            }
+        } while (true);
+    }
+
+    private boolean isAddressValid(String address) {
+        if (address == null || address.equals("localhost")) {
+            return true;
+        }
+
+        String[] groups = address.split("\\.");
+
+        if (groups.length != 4)
+            return false;
+
+        try {
+            return Arrays.stream(groups)
+                    .filter(s -> s.length() > 1 && s.startsWith("0"))
+                    .map(Integer::parseInt)
+                    .filter(i -> (i >= 0 && i <= 255))
+                    .count() == 4;
+        } catch(NumberFormatException e) {
+            return false;
+        }
+    }
+
+    private int askPort() {
+        boolean firstError = true;
+
+        out.println("\nEnter the server port:");
+
+        do {
+            out.print(">>> ");
+
+            if (in.hasNextInt()) {
+                int port = in.nextInt();
+                in.nextLine();
+
+                if (port >= 1 && port <= 65535) {
+                    return port;
+                } else {
+                    firstError = promptError(firstError, "Invalid port!");
+                }
+            } else {
+                in.nextLine();
+                firstError = promptError(firstError, "Invalid integer!");
+            }
+        } while (true);
     }
 
     private void startConnection() throws Exception {
+        clearConsole();
         client.startConnection();
         List<Message> messages;
 
@@ -153,10 +260,10 @@ public class Cli {
 
                 if (response.getStatus().equals(MessageStatus.ERROR)) {
                     promptError(false, "Error: " + response.getMessage());
-                    out.println("Please retry...");
+                    out.println("Please retry...\n");
                     break;
                 } else {
-                    out.println("Connected with username: " + username);
+                    out.println("Connected to " + client.getAddress() + ":" + client.getPort() + " with username " + username);
                     client.setToken(response.getNewToken());
                     connected = true;
                 }
@@ -166,52 +273,57 @@ public class Cli {
         if (!connected) askConnection();
     }
 
-    private void askUsername() {
-        boolean validUsername = false;
-        boolean firstError = true;
-
-        out.println("\nChoose your username:");
-
-        do {
-            out.print(">>> ");
-
-            if (in.hasNextLine()) {
-                username = in.nextLine();
-
-                if (!username.equalsIgnoreCase("god") && !username.equalsIgnoreCase("bot")) {
-                    validUsername = true;
-                } else {
-                    firstError = promptError(firstError, "Invalid username!");
-                }
-            } else {
-                in.nextLine();
-                firstError = promptError(firstError, "Invalid string!");
-            }
-        } while (!validUsername);
-
-        out.printf("Hi %s, wait for server connection.%n", username);
-    }
-
     private void askColor() {
         boolean validColor = false;
         boolean firstError = true;
+        List<Message> messages;
+
         String color = "";
-        List<String> availableColors = new ArrayList<>();
+        List<PlayerColor> availableColors = new ArrayList<>();
 
-        availableColors.add("GREEN");
-        availableColors.add("YELLOW");
-        availableColors.add("RED");
+        try {
+            client.sendMessage(MessageBuilder.buildColorRequest(client.getToken(), client.getUsername()));
+        } catch (IOException e) {
+            errorClose(e.getMessage());
+        }
 
-        String colorString = String.join(", ", availableColors.toArray(new String[0]));
-        out.printf("%nAvailable colors are %s%n", colorString );
+        do {
+            messages = client.receiveMessages();
+        } while (messages.isEmpty());
+
+        for (Message message : messages) {
+            if (message.getContent().equals(MessageContent.COLOR_RESPONSE)) {
+                ColorResponse response = (ColorResponse) message;
+
+                availableColors = response.getColorList();
+            }
+        }
+
+        if (availableColors.isEmpty()) {
+            errorClose("The game is full!");
+        }
+
+        String colorString = availableColors.stream()
+                .map(PlayerColor::name)
+                .collect(Collectors.joining(", "));
+
+        out.printf("%nAvailable colors are %s%n", colorString);
 
         do {
             out.print(">>> ");
 
             if (in.hasNextLine()) {
                 color = in.nextLine();
+                PlayerColor playerColor;
 
-                if (availableColors.contains(color.toUpperCase())) {
+                try {
+                    playerColor = PlayerColor.valueOf(color.toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    firstError = promptError(firstError, "Invalid color!");
+                    continue;
+                }
+
+                if (availableColors.contains(playerColor)) {
                     validColor = true;
                 } else {
                     firstError = promptError(firstError, "Invalid color!");
@@ -233,5 +345,19 @@ public class Cli {
 
         out.println(errorMessage);
         return false;
+    }
+
+    private void clearConsole() {
+        out.print("\033[H\033[2J");
+        out.flush();
+    }
+
+    private void errorClose(String error) {
+        clearConsole();
+
+        out.println("ERROR: " + error);
+        out.println("\nPress ENTER to exit");
+        in.nextLine();
+        System.exit(1);
     }
 }
