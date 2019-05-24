@@ -14,6 +14,7 @@ import network.client.ClientSocket;
 import network.message.ColorResponse;
 import network.message.ConnectionResponse;
 import network.message.Message;
+import network.message.Response;
 import utility.MessageBuilder;
 
 import java.io.IOException;
@@ -22,12 +23,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Cli {
     private Scanner in;
     private AdrenalinePrintStream out;
     private String username;
+    private PlayerColor playerColor;
     private Client client;
 
     public Cli() {
@@ -75,6 +76,7 @@ public class Cli {
         askUsername();
         askConnection();
         askColor();
+        askLobbyJoin();
 
         //CliPrinter.printPlayerBoards(out, gs);
         //CliPrinter.printMap(out, gs);
@@ -108,13 +110,13 @@ public class Cli {
                 if (username.equals("") ||
                         username.equalsIgnoreCase("god") ||
                         username.equalsIgnoreCase("bot")) {
-                    firstError = promptError(firstError, "Invalid username!");
+                    firstError = promptInputError(firstError, "Invalid username!");
                 } else {
                     validUsername = true;
                 }
             } else {
                 in.nextLine();
-                firstError = promptError(firstError, "Invalid string!");
+                firstError = promptInputError(firstError, "Invalid string!");
             }
         } while (!validUsername);
 
@@ -139,11 +141,11 @@ public class Cli {
                 if (connection >= 0 && connection <= 1) {
                     validConnection = true;
                 } else {
-                    firstError = promptError(firstError, "Invalid selection!");
+                    firstError = promptInputError(firstError, "Invalid selection!");
                 }
             } else {
                 in.nextLine();
-                firstError = promptError(firstError, "Invalid integer!");
+                firstError = promptInputError(firstError, "Invalid integer!");
             }
         } while (!validConnection);
 
@@ -168,7 +170,7 @@ public class Cli {
 
             startConnection();
         } catch (Exception e) {
-            errorClose(e.getMessage());
+            promptError(e.getMessage(), true);
         }
     }
 
@@ -189,11 +191,11 @@ public class Cli {
                 } else if (isAddressValid(address)) {
                     return address;
                 } else {
-                    firstError = promptError(firstError, "Invalid address!");
+                    firstError = promptInputError(firstError, "Invalid address!");
                 }
             } else {
                 in.nextLine();
-                firstError = promptError(firstError, "Invalid string!");
+                firstError = promptInputError(firstError, "Invalid string!");
             }
         } while (true);
     }
@@ -214,7 +216,7 @@ public class Cli {
                     .map(Integer::parseInt)
                     .filter(i -> (i >= 0 && i <= 255))
                     .count() == 4;
-        } catch(NumberFormatException e) {
+        } catch (NumberFormatException e) {
             return false;
         }
     }
@@ -234,11 +236,11 @@ public class Cli {
                 if (port >= 1 && port <= 65535) {
                     return port;
                 } else {
-                    firstError = promptError(firstError, "Invalid port!");
+                    firstError = promptInputError(firstError, "Invalid port!");
                 }
             } else {
                 in.nextLine();
-                firstError = promptError(firstError, "Invalid integer!");
+                firstError = promptInputError(firstError, "Invalid integer!");
             }
         } while (true);
     }
@@ -259,8 +261,8 @@ public class Cli {
                 ConnectionResponse response = (ConnectionResponse) message;
 
                 if (response.getStatus().equals(MessageStatus.ERROR)) {
-                    promptError(false, "Error: " + response.getMessage());
-                    out.println("Please retry...\n");
+                    promptError(response.getMessage(), false);
+                    out.println();
                     break;
                 } else {
                     out.println("Connected to " + client.getAddress() + ":" + client.getPort() + " with username " + username);
@@ -270,21 +272,64 @@ public class Cli {
             }
         }
 
-        if (!connected) askConnection();
+        if (!connected) askUsername();
     }
 
     private void askColor() {
         boolean validColor = false;
         boolean firstError = true;
-        List<Message> messages;
 
-        String color = "";
+        PlayerColor playerColor = null;
+        List<PlayerColor> availableColors = getUnusedColors();
+
+
+        if (availableColors.isEmpty()) {
+            promptError("The game is full!", true);
+        }
+
+        String colorString = availableColors.stream()
+                .map(PlayerColor::name)
+                .collect(Collectors.joining(", "));
+
+        out.printf("%nAvailable colors are %s%n", colorString);
+
+        do {
+            out.print(">>> ");
+
+            if (in.hasNextLine()) {
+                String color = in.nextLine();
+
+
+                try {
+                    playerColor = PlayerColor.valueOf(color.toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    firstError = promptInputError(firstError, "Invalid color!");
+                    continue;
+                }
+
+                if (availableColors.contains(playerColor)) {
+                    validColor = true;
+                } else {
+                    firstError = promptInputError(firstError, "Invalid color!");
+                }
+            } else {
+                in.nextLine();
+                firstError = promptInputError(firstError, "Invalid string!");
+            }
+        } while (!validColor);
+
+        out.printf("%nYou picked %s color.%n", playerColor.name());
+        this.playerColor = playerColor;
+    }
+
+    private List<PlayerColor> getUnusedColors() {
+        List<Message> messages;
         List<PlayerColor> availableColors = new ArrayList<>();
 
         try {
             client.sendMessage(MessageBuilder.buildColorRequest(client.getToken(), client.getUsername()));
         } catch (IOException e) {
-            errorClose(e.getMessage());
+            promptError(e.getMessage(), true);
         }
 
         do {
@@ -299,45 +344,42 @@ public class Cli {
             }
         }
 
-        if (availableColors.isEmpty()) {
-            errorClose("The game is full!");
-        }
-
-        String colorString = availableColors.stream()
-                .map(PlayerColor::name)
-                .collect(Collectors.joining(", "));
-
-        out.printf("%nAvailable colors are %s%n", colorString);
-
-        do {
-            out.print(">>> ");
-
-            if (in.hasNextLine()) {
-                color = in.nextLine();
-                PlayerColor playerColor;
-
-                try {
-                    playerColor = PlayerColor.valueOf(color.toUpperCase());
-                } catch (IllegalArgumentException e) {
-                    firstError = promptError(firstError, "Invalid color!");
-                    continue;
-                }
-
-                if (availableColors.contains(playerColor)) {
-                    validColor = true;
-                } else {
-                    firstError = promptError(firstError, "Invalid color!");
-                }
-            } else {
-                in.nextLine();
-                firstError = promptError(firstError, "Invalid string!");
-            }
-        } while (!validColor);
-
-        out.printf("%nYou picked %s color.%n", color.toUpperCase());
+        return availableColors;
     }
 
-    private boolean promptError(boolean firstError, String errorMessage) {
+    private void askLobbyJoin() {
+        List<Message> messages;
+
+        try {
+            client.sendMessage(MessageBuilder.buildGetInLobbyMessage(client.getToken(), username, playerColor));
+        } catch (IOException e) {
+            promptError(e.getMessage(), true);
+        }
+
+        do {
+            messages = client.receiveMessages();
+        } while (messages.isEmpty());
+
+        for (Message message : messages) {
+            if (message.getContent().equals(MessageContent.RESPONSE)) {
+                Response response = (Response) message;
+
+                clearConsole();
+                out.println(response.getMessage());
+                if (response.getStatus() == MessageStatus.ERROR) {
+                    out.println();
+                    askColor();
+                }
+            }
+        }
+    }
+
+    private void clearConsole() {
+        out.print("\033[H\033[2J");
+        out.flush();
+    }
+
+    private boolean promptInputError(boolean firstError, String errorMessage) {
         out.print("\33[1A\33[2K");
         if (!firstError) {
             out.print("\33[1A\33[2K");
@@ -347,17 +389,15 @@ public class Cli {
         return false;
     }
 
-    private void clearConsole() {
-        out.print("\033[H\033[2J");
-        out.flush();
-    }
-
-    private void errorClose(String error) {
+    private void promptError(String error, boolean close) {
         clearConsole();
 
         out.println("ERROR: " + error);
-        out.println("\nPress ENTER to exit");
-        in.nextLine();
-        System.exit(1);
+
+        if (close) {
+            out.println("\nPress ENTER to exit");
+            in.nextLine();
+            System.exit(1);
+        }
     }
 }

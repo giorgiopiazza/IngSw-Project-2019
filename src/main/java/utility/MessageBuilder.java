@@ -1,5 +1,7 @@
 package utility;
 
+import enumerations.MessageContent;
+import enumerations.PlayerColor;
 import exceptions.actions.PowerupCardsNotFoundException;
 import exceptions.actions.WeaponCardsNotFoundException;
 import model.cards.PowerupCard;
@@ -34,6 +36,10 @@ public class MessageBuilder {
 
     public static ColorRequest buildColorRequest(String token, String username) {
         return new ColorRequest(username, token);
+    }
+
+    public static LobbyMessage buildGetInLobbyMessage(String token, String username, PlayerColor color) {
+        return new LobbyMessage(username, token, MessageContent.GET_IN_LOBBY, color);
     }
 
     /**
