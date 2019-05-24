@@ -1,16 +1,32 @@
 package network.message;
 
+import enumerations.MessageContent;
 import enumerations.MessageStatus;
+import model.Game;
 
-public class ConnectionResponse extends Response {
+public class ConnectionResponse extends Message {
     private final String newToken;
+    private final String message;
+    private final MessageStatus status;
 
-    public ConnectionResponse(String message, String token, MessageStatus status) {
-        super(message, status);
-        this.newToken = token;
+    public ConnectionResponse(String message, String newToken, MessageStatus status) {
+        super(Game.GOD, null, MessageContent.CONNECTION_RESPONSE);
+        this.message = message;
+        this.newToken = newToken;
+        this.status = status;
+    }
+
+    public String getMessage() {
+        return message;
     }
 
     public String getNewToken() {
         return newToken;
     }
+
+    public MessageStatus getStatus() {
+        return status;
+    }
+
+
 }
