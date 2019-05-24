@@ -22,7 +22,7 @@ public class Server implements Runnable {
     public static final int RMI_PORT = 7272;
 
     private static final int MAX_CLIENT = 5;
-    private static final String[] FORBIDDEN_USERNAMES = {Game.GOD, Game.TERMINATOR_USERNAME};
+    private static final String[] FORBIDDEN_USERNAME = {Game.GOD, Game.TERMINATOR_USERNAME};
 
     private Map<String, Connection> clients;
     private Thread pinger;
@@ -124,7 +124,7 @@ public class Server implements Runnable {
      * @return if a username is legit
      */
     private boolean isUsernameLegit(String username) {
-        for (String forbidden : FORBIDDEN_USERNAMES) {
+        for (String forbidden : FORBIDDEN_USERNAME) {
             if (username.equalsIgnoreCase(forbidden)) {
                 return false;
             }
@@ -141,9 +141,11 @@ public class Server implements Runnable {
     public void onMessage(Message message) {
         if (message != null && message.getToken() != null && message.getSenderUsername() != null) {
             String msgToken = message.getToken();
-            String connToken = clients.get(message.getSenderUsername()).getToken();
+            Connection conn = clients.get(message.getSenderUsername());
 
-            if (msgToken.equals(connToken)) { // Checks that sender is the real player
+            if (conn == null) {
+                LOGGER.log(Level.INFO, "Message Request {0} - Unknown username {1}", new Object[]{message.getContent().name(), message.getSenderUsername()});
+            } else if (msgToken.equals(conn.getToken())) { // Checks that sender is the real player
                 gameManager.onMessage(message);
             }
         }
