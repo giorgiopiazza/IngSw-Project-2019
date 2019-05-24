@@ -10,6 +10,8 @@ import exceptions.file.JsonFileNotFoundException;
 import exceptions.map.InvalidSpawnColorException;
 import exceptions.map.MapUnknowException;
 import model.Game;
+import model.cards.AmmoTile;
+import model.cards.WeaponCard;
 import model.player.Player;
 import model.player.PlayerPosition;
 
@@ -32,14 +34,14 @@ public class GameMap implements Serializable {
      * Map of type:
      * B B B
      * R R R Y
-     *   W W Y
+     * W W Y
      */
     public static final int MAP_1 = 1;
     /**
      * Map of type:
      * B B B G
      * R R Y Y
-     *   W Y Y
+     * W Y Y
      */
     public static final int MAP_2 = 2;
     /**
@@ -243,11 +245,11 @@ public class GameMap implements Serializable {
      * @return the playerposition of the square whre to spawn
      * @throws InvalidSpawnColorException if color chosen does not correspond to a spawn one
      */
-    public PlayerPosition getSpawnSquare(RoomColor spawnColor) throws InvalidSpawnColorException{
+    public PlayerPosition getSpawnSquare(RoomColor spawnColor) throws InvalidSpawnColorException {
         List<PlayerPosition> room = getRoom(spawnColor);
         for (PlayerPosition spawnPosition : room) {
             if (getSquare(spawnPosition).getSquareType().equals(SquareType.SPAWN)) {
-                return  spawnPosition;
+                return spawnPosition;
             }
         }
 
@@ -257,6 +259,39 @@ public class GameMap implements Serializable {
 
     public Square[][] getRooms() {
         return rooms;
+    }
+
+    /**
+     * Method used at the end of the turn of each player to set the missing cards back on the map
+     */
+    public void addMissingCards() {
+        for (int i = 0; i < MAX_ROWS; ++i) {
+            for (int j = 0; j < MAX_COLUMNS; ++j) {
+                Square tempSquare = getSquare(i, j);
+                if (tempSquare.getSquareType() == SquareType.TILE) {
+                    if (!((CardSquare) tempSquare).isAmmoTilePresent()) {
+                        ((CardSquare) tempSquare).setAmmoTile((AmmoTile) Game.getInstance().getAmmoTileDeck().draw());
+                    }
+                } else if (tempSquare.getSquareType() == SquareType.SPAWN) {
+                    if (((SpawnSquare) tempSquare).getWeapons().length < 3) {
+                        addMissingWeapons((SpawnSquare) tempSquare);
+                    }
+                } else {
+                    throw new NullPointerException("A Square must always have a type!");
+                }
+            }
+        }
+    }
+
+    /**
+     * Method used to reduce cognitive complexity when we need to add more than just one missing card to a Spawn Square
+     *
+     * @param missingSquare SpawnSquare on which 1 or more Weapon is missing
+     */
+    private void addMissingWeapons(SpawnSquare missingSquare) {     // remember: on a square can stay maximum 3 cards!
+        for (int i = 0; i < (3 - missingSquare.getWeapons().length); ++i) {
+            missingSquare.addWeapon((WeaponCard) Game.getInstance().getWeaponsCardsDeck().draw());
+        }
     }
 
     @Override
