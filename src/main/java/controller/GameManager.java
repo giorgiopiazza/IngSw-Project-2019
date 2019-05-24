@@ -34,7 +34,7 @@ public class GameManager {
     private ShootParameters shootParameters;
 
     /**
-     * Creates an instance of GameManager binding the server tha will send messages to him
+     * Creates an instance of {@link GameManager GameManager} binding the server tha will send messages to him
      *
      * @param server the Server to be bind
      */
@@ -320,11 +320,13 @@ public class GameManager {
      */
     private Response lobbyMessageHandler(LobbyMessage lobbyMessage) {
         ArrayList<LobbyMessage> inLobbyPlayers = lobby.getInLobbyPlayers();
+        ArrayList<PlayerColor> unusedColors = lobby.getUnusedColors();
 
         // here time expiration has to be verified
         if (lobbyMessage.getContent() == MessageContent.GET_IN_LOBBY && !inLobbyPlayers.contains(lobbyMessage)) {
             if ((lobby.getTerminatorPresence() && inLobbyPlayers.size() < 4) ||
-                    (!lobby.getTerminatorPresence() && inLobbyPlayers.size() < 5) && lobbyMessage.getChosenColor() != null) {
+                    (!lobby.getTerminatorPresence() && inLobbyPlayers.size() < 5) &&
+                            lobbyMessage.getChosenColor() != null && unusedColors.contains(lobbyMessage.getChosenColor())) {
                 inLobbyPlayers.add(lobbyMessage);
             } else {
                 return buildInvalidResponse();
