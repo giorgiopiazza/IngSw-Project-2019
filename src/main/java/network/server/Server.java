@@ -1,5 +1,6 @@
 package network.server;
 
+import controller.GameManager;
 import enumerations.MessageStatus;
 import model.Game;
 import network.message.DisconnectionMessage;
@@ -22,6 +23,8 @@ public class Server implements Runnable {
     private Map<String, Session> clients;
     private Thread pinger;
 
+    private final GameManager gameManager;
+
     static final Logger LOGGER = Logger.getLogger("Server");
 
     public Server() {
@@ -39,6 +42,8 @@ public class Server implements Runnable {
 
         pinger = new Thread(this);
         pinger.start();
+
+        gameManager = new GameManager(this);
     }
 
     public static void main(String[] args) {
@@ -61,7 +66,7 @@ public class Server implements Runnable {
                     );
 
                     LOGGER.log(Level.INFO, "{0} reconnected to server!", username);
-                } else { // Username not valid
+                } else { // Player already connected
                     session.sendMessage(
                             new Response("Player already connected", MessageStatus.ERROR)
                     );
@@ -74,17 +79,16 @@ public class Server implements Runnable {
                     session.sendMessage(
                             new Response("Max number of player reached", MessageStatus.ERROR)
                     );
-
                     session.disconnect();
                     LOGGER.log(Level.INFO, "{0} tried to connect but game is full!", username);
                 } else { // New player
-                    if (isUsernameLegit(username)) {
+                    if (isUsernameLegit(username)) { // Username legit
                         clients.put(username, session);
                         session.sendMessage(
                                 new Response("Successfully connected", MessageStatus.OK)
                         );
                         LOGGER.log(Level.INFO, "{0} connected to server!", username);
-                    } else {
+                    } else { // Username not legit
                         session.sendMessage(
                                 new Response("Invalid Username", MessageStatus.ERROR)
                         );
