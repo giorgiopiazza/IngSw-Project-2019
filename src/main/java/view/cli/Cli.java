@@ -180,7 +180,7 @@ public class Cli {
             if (in.hasNextLine()) {
                 username = in.nextLine();
 
-                if (!username.equals("god") && !username.equals("bot")) {
+                if (!username.equalsIgnoreCase("god") && !username.equalsIgnoreCase("bot")) {
                     validUsername = true;
                 } else {
                     firstError = promptError(firstError, "Invalid username!");
