@@ -20,7 +20,7 @@ import network.message.*;
 
 import java.util.*;
 
-public class RoundManager {
+class RoundManager {
     private static final String TAGBACK_GRANADE = "TAGBACK_GRANADE";
     private static final String TELEPORTER = "TELEPORTER";
     private static final String NEWTON = "NEWTON";
@@ -35,7 +35,7 @@ public class RoundManager {
         this.gameManager = gameManager;
     }
 
-    public void initTurnManager() {
+    void initTurnManager() {
         this.turnManager = new TurnManager(gameInstance.getPlayers());
     }
 
@@ -165,7 +165,7 @@ public class RoundManager {
         }
     }
 
-    private void pickTwoPowerups() {
+    void pickTwoPowerups() {
         for (int i = 0; i < 2; ++i) {
             PowerupCard drawnPowerup = (PowerupCard) gameInstance.getPowerupCardsDeck().draw();
             try {
@@ -321,7 +321,7 @@ public class RoundManager {
                         } catch (EmptyHandException e) {
                             // can not happen here because powerup is already verified to be possessed
                         } catch (InvalidPowerupActionException e) {
-                            return buildNegativeResponse("Invalid Action");
+                            return buildNegativeResponse(" Invalid Action");
                         }
                     }
 
@@ -334,7 +334,7 @@ public class RoundManager {
                     } catch (NotEnoughAmmoException e) {
                         return buildNegativeResponse("Not Enough Ammo ");
                     } catch (InvalidPowerupActionException e) {
-                        return buildNegativeResponse("Invalid Action");
+                        return buildNegativeResponse("Invalid Action  ");
                     } catch (EmptyHandException e) {
                         // can not happen here because powerup is already verified to be possessed
                     }
@@ -357,7 +357,7 @@ public class RoundManager {
                         } catch (NotEnoughAmmoException e) {
                             return buildNegativeResponse("Not Enough Ammo ");
                         } catch (InvalidPowerupActionException e) {
-                            return buildNegativeResponse("Invalid Action");
+                            return buildNegativeResponse("Invalid  Action");
                         } catch (EmptyHandException e) {
                             // cn not happen here because powerup is already verified to be possessed
                         }
@@ -377,13 +377,13 @@ public class RoundManager {
                     } catch (NotEnoughAmmoException e) {
                         return buildNegativeResponse("Not Enough Ammo  ");
                     } catch (InvalidPowerupActionException e) {
-                        return buildNegativeResponse("Invalid Action");
+                        return buildNegativeResponse("Invalid  Action ");
                     }
                 }
 
                 return buildPositiveResponse("Targeting Scope Used");
             default:
-                return buildNegativeResponse("Invalid Action");
+                return buildNegativeResponse(" Invalid Action ");
         }
     }
 

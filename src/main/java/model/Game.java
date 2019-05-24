@@ -152,7 +152,7 @@ public class Game {
      * @throws GameAlreadyStartedException if the game has already gameStarted
      * @throws MaxPlayerException          if the maximum number of players has been reached
      */
-    public void addPlayer(UserPlayer player) throws MaxPlayerException {
+    public void addPlayer(UserPlayer player) {
         if (gameStarted)
             throw new GameAlreadyStartedException("It is not possible to add a player when the game has already gameStarted");
         if (player == null) throw new NullPointerException("Player cannot be null");
@@ -174,20 +174,14 @@ public class Game {
      *
      * @return {@code true} if the game is ready {@code false} otherwise
      */
-    public boolean isGameReadyToStart(boolean ready) {
+    public boolean isGameReadyToStart() {
 
         if (players.size() < 3) return false;
         if (killShotNum == 0) return false;
 
-        if (ready) {
-            if (isTerminatorPresent() && players.size() < 5) {
-                return true;
-            } else return (!isTerminatorPresent() && players.size() < 6);
-        } else {
-            if (isTerminatorPresent() && players.size() == 4) {
-                return true;
-            } else return (!isTerminatorPresent() && players.size() == 5);
-        }
+        if (isTerminatorPresent() && players.size() < 5) {
+            return true;
+        } else return (!isTerminatorPresent() && players.size() < 6);
     }
 
     /**
@@ -320,7 +314,7 @@ public class Game {
      * @param terminatorPresent true in case the terminator is present, otherwise false
      * @throws MaxPlayerException in case the game already has 5 players
      */
-    public void setTerminator(boolean terminatorPresent) throws MaxPlayerException {
+    public void setTerminator(boolean terminatorPresent) {
         if (gameStarted)
             throw new GameAlreadyStartedException("It is not possible to set the setTerminator player when the game has already gameStarted.");
         if (players.size() >= 5 && terminatorPresent)

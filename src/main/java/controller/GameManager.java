@@ -3,6 +3,8 @@ package controller;
 import enumerations.*;
 import exceptions.AdrenalinaException;
 import exceptions.game.InvalidGameStateException;
+import exceptions.game.InvalidKillshotNumberException;
+import exceptions.game.InvalidMapNumberException;
 import exceptions.game.MaxPlayerException;
 import model.Game;
 import model.cards.PowerupCard;
@@ -18,28 +20,25 @@ import network.server.Server;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
 public class GameManager implements MessageListener {
+    private static final int MIN_PLAYERS = 3;
+    private static final int MAX_PLAYERS = 5;
+
     private final Server server;
-    private GameManager instance;
     private PossibleGameState gameState;
     private final Game gameInstance;
+    private GameLobby lobby;
     private RoundManager roundManager;
     private ShootParameters shootParameters;
 
-    private GameManager(Server server) {
+    public GameManager(Server server) {
         this.server = server;
         gameState = PossibleGameState.GAME_ROOM;
+        this.lobby = new GameLobby();
         this.gameInstance = Game.getInstance();
         this.roundManager = new RoundManager(this);
     }
-
-    public GameManager getInstance(Server server) {
-        if (instance == null) instance = new GameManager(server);
-
-        return instance;
-    }
-
-    /********************************************** NEW IMPLEMENTATION *************************************************/
 
     void changeState(PossibleGameState changeState) {
         gameState = changeState;
@@ -56,6 +55,11 @@ public class GameManager implements MessageListener {
 
     @Override
     public Response onMessage(Message receivedMessage) {
+        // on the game setup messages can be received from any player
+        if(gameState == PossibleGameState.GAME_ROOM) {
+            return firstStateHandler(receivedMessage);
+        }
+
         // if the message received comes from a client that is not the turn owner it is never executed!
         if (!gameInstance.getPlayerByName(receivedMessage.getSenderUsername()).equals(roundManager.getTurnManager().getTurnOwner())) {
             return new Response("Message from a player that is not his turn!", MessageStatus.ERROR);
@@ -137,14 +141,6 @@ public class GameManager implements MessageListener {
         }
 
         switch (receivedMessage.getContent()) {
-            case GAME_SETUP:
-                // handle the decisions : CHOOSE THE MAP, TERMINATOR PRESENCE, NUMBER OF SKULLS
-                if (gameState == PossibleGameState.GAME_ROOM) {
-                    // handling, last handle returns gameState = GAME_READY
-                    // first player must be in state: SPAWN_TERMINATOR IF THE GAME HAS THE TERMINATOR
-                    // if the game has no terminator all players must be in FIRST_SPAWN and first player needs a method to pick the two powerups to spawn with
-                }
-                return new Response("Sonarlint del porco", MessageStatus.OK);
             case TERMINATOR_SPAWN:
                 if (gameState == PossibleGameState.GAME_READY) {
                     // remember a player must see the powerups he has drawn before spawning the terminator!
@@ -208,6 +204,125 @@ public class GameManager implements MessageListener {
         }
 
     }
+
+    private Response firstStateHandler(Message receivedMessage) {
+        switch(receivedMessage.getContent()) {
+            case GET_IN_LOBBY:
+                return lobbyMessageHandler((LobbyMessage) receivedMessage);
+            case GAME_SETUP:
+                return setupMessageHandler((GameSetupMessage) receivedMessage);
+            default:
+                return buildInvalidResponse();
+        }
+    }
+
+    private void gameSetupHandler() {
+        // first of all I set the terminator presence
+        gameInstance.setTerminator(lobby.getTerminatorPresence());
+
+        // then I can start adding players to the game with the color specified in their Lobby Message
+        for(LobbyMessage player : lobby.getInLobbyPlayers()) {
+            gameInstance.addPlayer(new UserPlayer(player.getSenderUsername(), player.getChosenColor(), new PlayerBoard()));
+        }
+
+        // in the end I set the map and the number of Skulls chosen
+        try {
+            gameInstance.setGameMap(lobby.getFavouriteMap());
+        } catch (InvalidMapNumberException e) {
+            // never reached here the lobby returns always a valid number
+        }
+
+        try {
+            gameInstance.setKillShotNum(lobby.getFavouriteSkullsNum());
+        } catch (InvalidKillshotNumberException e) {
+            // never reached here the lobby returns always a valid number
+        }
+
+        // at this point gme should always be ready to start
+        if(gameInstance.isGameReadyToStart()) {
+            startingStateHandler();
+        }
+
+        // nothing to do here as we said game should always be ready to start at this point
+    }
+
+    private void startingStateHandler() {
+        // first I start the game, the turnManager and set the state of the game
+        gameInstance.startGame();
+        roundManager.initTurnManager();
+        changeState(PossibleGameState.GAME_READY);
+
+        UserPlayer firstPlayer = roundManager.getTurnManager().getTurnOwner();
+
+        // if the game has the terminator I set the first player state depending on the presence of the terminator
+        if(gameInstance.isTerminatorPresent()) {
+            firstPlayer.changePlayerState(PossiblePlayerState.SPAWN_TERMINATOR);
+        } // else the state remains first spawn and it's ok to start
+
+        // I first need to pick the two powerups for the first player playing
+        roundManager.pickTwoPowerups();
+
+        server.sendMessageToAll(new GameStartMessage(roundManager.getTurnManager().getTurnOwner().getUsername()));
+    }
+
+    private Response lobbyMessageHandler(LobbyMessage lobbyMessage) {
+        ArrayList<LobbyMessage> inLobbyPlayers = lobby.getInLobbyPlayers();
+
+        // here time expiration has to be verified
+        if(lobbyMessage.getContent() == MessageContent.GET_IN_LOBBY && !inLobbyPlayers.contains(lobbyMessage)) {
+            if((lobby.getTerminatorPresence() && inLobbyPlayers.size() < 4) ||
+                    (!lobby.getTerminatorPresence() && inLobbyPlayers.size() < 5) && lobbyMessage.getChosenColor() != null) {
+                inLobbyPlayers.add(lobbyMessage);
+            } else {
+                return buildInvalidResponse();
+            }
+        } else if(lobbyMessage.getContent() == MessageContent.DISCONNECTION && inLobbyPlayers.contains(lobbyMessage)) {
+            inLobbyPlayers.remove(lobbyMessage);
+            removeVote(lobbyMessage.getSenderUsername());
+            return new Response("Player removed from Lobby", MessageStatus.OK);
+        } else {
+            return buildInvalidResponse();
+        }
+
+        if(inLobbyPlayers.size() == MIN_PLAYERS) {
+            // timer starts here
+        }
+
+        // then if the game has reached the maximum number of players also considering the terminator presence, it starts
+        if((lobby.getTerminatorPresence() && inLobbyPlayers.size() == MAX_PLAYERS - 1) ||
+                (!lobby.getTerminatorPresence() && inLobbyPlayers.size() == MAX_PLAYERS)) {
+            gameSetupHandler();
+            return new Response("Last player added to lobby, game is starting...", MessageStatus.OK);
+        } else {
+            return new Response("Player added to lobby", MessageStatus.OK);
+        }
+    }
+
+    private void removeVote(String disconnectedPlayer) {
+        ArrayList<GameSetupMessage> playersVotes = lobby.getVotedPlayers();
+
+        for(GameSetupMessage setupMessage : playersVotes) {
+            if(setupMessage.getSenderUsername().equals(disconnectedPlayer)) {
+                playersVotes.remove(setupMessage);
+            }
+        }
+    }
+
+    private Response setupMessageHandler(GameSetupMessage setupMessage) {
+        ArrayList<LobbyMessage> inLobbyPlayers = lobby.getInLobbyPlayers();
+        ArrayList<GameSetupMessage> alreadyVotedPlayers = lobby.getVotedPlayers();
+
+        for(LobbyMessage lobbyPlayer : inLobbyPlayers) {
+            if(lobbyPlayer.getSenderUsername().equals(setupMessage.getSenderUsername()) && !alreadyVotedPlayers.contains(setupMessage)) {
+                alreadyVotedPlayers.add(setupMessage);
+                return new Response("Vote added", MessageStatus.OK);
+            }
+        }
+
+        return new Response("Vote NOT added player already voted!", MessageStatus.ERROR);
+    }
+
+
 
     private Response onGranadeMessage(Message receivedMessage) {
         switch (receivedMessage.getContent()) {
@@ -508,93 +623,4 @@ public class GameManager implements MessageListener {
             return Objects.hash(position, damage);
         }
     }
-
-    /*************************************** TO USE FOR FIRST GAME HANDLING *******************************************/
-
-    private void gameSetup() {
-        Scanner in = new Scanner(System.in);
-
-        System.out.println("Provide the game setup informations: \n\n");
-
-        for (; ; ) {
-            System.out.println("Insert the map you want to play with (1-4): \n");
-
-            try {
-                gameInstance.setGameMap(in.nextInt());
-                break;
-            } catch (Exception e) {
-                System.out.println("Invalid Map Number!\n");
-                // Re-ask input
-            }
-        }
-
-        for (; ; ) {
-            System.out.println("Decide if you want to play with a terminator (true/false): \n");
-
-            try {
-                gameInstance.setTerminator(in.nextBoolean());
-                break;
-            } catch (Exception e) {
-                System.out.println("Not a boolean value found!\n");
-                // Re-ask input
-            }
-        }
-
-        for (; ; ) {
-            System.out.println("Insert the number of killshots you want to play with (>= 5 and <= 8): \n");
-
-            try {
-                gameInstance.setKillShotNum(in.nextInt());
-                break;
-            } catch (Exception e) {
-                System.out.println("Invalid killshot Number!\n");
-                // Re-ask input
-            }
-        }
-    }
-
-    private void roomSetup() {
-        Scanner in = new Scanner(System.in);
-
-        String userName;
-        boolean ready = false;
-
-        System.out.println("Please insert the usernames of the players playing: \n");
-
-        while (!gameInstance.isGameReadyToStart(ready)) {
-            System.out.println("Username >>> ");
-            userName = in.nextLine();
-            PlayerColor colorChosen;
-
-            if (!gameInstance.doesPlayerExists(userName)) {
-                for (; ; ) {
-                    System.out.println(userName + " provide the color you have chosen: ");
-
-                    try {
-                        colorChosen = PlayerColor.getColor(in.nextLine());
-                        if (!gameInstance.isColorUsed(colorChosen)) {
-                            break;
-                        }
-                    } catch (Exception e) {
-                        System.out.println("Invalid color chosen!\n");
-                        // choose again a color
-                    }
-                }
-
-                try {
-                    gameInstance.addPlayer(new UserPlayer(userName, colorChosen, new PlayerBoard()));
-                    System.out.println("The player: " + userName + " has been added to the game, do you want to start the game ?" +
-                            " Type true to start, false to wait for other players: ");
-                    ready = Boolean.parseBoolean(in.nextLine());
-                } catch (MaxPlayerException e) {
-                    // the game has reached the maximum number of players
-                    break;
-                }
-            }
-        }
-
-        gameState = PossibleGameState.GAME_READY;
-    }
-
-    /******************************************************************************************************************/
 }
