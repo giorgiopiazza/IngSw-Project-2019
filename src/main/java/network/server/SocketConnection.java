@@ -9,7 +9,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-class SocketSession extends Thread implements Session {
+/**
+ * This class represents a Socket connection with a client
+ */
+class SocketConnection extends Thread implements Connection {
     private final SocketServer socketServer;
     private final Socket socket;
 
@@ -18,7 +21,13 @@ class SocketSession extends Thread implements Session {
     private ObjectInputStream in;
     private ObjectOutputStream out;
 
-    SocketSession(SocketServer socketServer, Socket socket) {
+    /**
+     * Constructs a connection over the socket with the socket server
+     *
+     * @param socketServer socket server
+     * @param socket       socket of the client
+     */
+    SocketConnection(SocketServer socketServer, Socket socket) {
         this.socketServer = socketServer;
         this.socket = socket;
 
@@ -32,6 +41,10 @@ class SocketSession extends Thread implements Session {
         }
     }
 
+    /**
+     * Process that continues to listen the input stream and send the messages to
+     * server in case of message
+     */
     @Override
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
@@ -52,6 +65,36 @@ class SocketSession extends Thread implements Session {
         }
     }
 
+    /**
+     * @return the connection status
+     */
+    @Override
+    public boolean isConnected() {
+        return connected;
+    }
+
+    /**
+     * Sends a message to the client
+     *
+     * @param message to send to the client
+     */
+    @Override
+    public void sendMessage(Message message) {
+        if (connected) {
+            try {
+                out.writeObject(message);
+                out.flush();
+                out.reset();
+            } catch (IOException e) {
+                disconnect();
+            }
+        }
+    }
+
+    /**
+     * Disconnects from the client
+     */
+    @Override
     public void disconnect() {
         try {
             if (!socket.isClosed()) {
@@ -67,25 +110,11 @@ class SocketSession extends Thread implements Session {
         socketServer.onDisconnect(this);
     }
 
+    /**
+     * Sends a ping message to client
+     */
+    @Override
     public void ping() {
         sendMessage(new PingMessage());
-    }
-
-    @Override
-    public boolean isConnected() {
-        return connected;
-    }
-
-    @Override
-    public void sendMessage(Message message) {
-        if (connected) {
-            try {
-                out.writeObject(message);
-                out.flush();
-                out.reset();
-            } catch (IOException e) {
-                disconnect();
-            }
-        }
     }
 }

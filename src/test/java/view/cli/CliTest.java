@@ -7,7 +7,7 @@ public class CliTest {
     @Test
     void cliTest() {
         view.cli.Cli cli = new Cli();
-        cli.start();
+        // cli.start();
     }
 
 }

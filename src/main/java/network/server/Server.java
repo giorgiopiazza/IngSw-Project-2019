@@ -13,6 +13,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * This class is the main server class which starts a Socket and a RMI server.
+ * It handles all the client regardless of whether they are Sockets or RMI
+ */
 public class Server implements Runnable {
     public static final int SOCKET_PORT = 2727;
     public static final int RMI_PORT = 7272;
@@ -20,7 +24,7 @@ public class Server implements Runnable {
     private static final int MAX_CLIENT = 5;
     private static final String[] FORBIDDEN_USERNAMES = {Game.GOD, Game.TERMINATOR_USERNAME};
 
-    private Map<String, Session> clients;
+    private Map<String, Connection> clients;
     private Thread pinger;
 
     private final GameManager gameManager;
@@ -53,60 +57,61 @@ public class Server implements Runnable {
     /**
      * Adds or reconnects a player to the server
      *
-     * @param username of the player
-     * @param session  of the connection
+     * @param username username of the player
+     * @param connection connection of the client
      */
-    public void login(String username, Session session) {
+    public void login(String username, Connection connection) {
         try {
             if (clients.containsKey(username)) {
-                if (!clients.get(username).isConnected()) { // Reconnection
-                    clients.replace(username, session);
-                    session.sendMessage(
+                if (!clients.get(username).isConnected()) { // Player Reconnection
+                    clients.replace(username, connection);
+                    connection.sendMessage(
                             new Response("Successfully reconnected", MessageStatus.OK)
                     );
 
                     LOGGER.log(Level.INFO, "{0} reconnected to server!", username);
                 } else { // Player already connected
-                    session.sendMessage(
+                    connection.sendMessage(
                             new Response("Player already connected", MessageStatus.ERROR)
                     );
 
-                    session.disconnect();
+                    connection.disconnect();
                     LOGGER.log(Level.INFO, "{0} already connected to server!", username);
                 }
             } else {
                 if (clients.keySet().size() == MAX_CLIENT) { // Max players
-                    session.sendMessage(
+                    connection.sendMessage(
                             new Response("Max number of player reached", MessageStatus.ERROR)
                     );
-                    session.disconnect();
+
+                    connection.disconnect();
                     LOGGER.log(Level.INFO, "{0} tried to connect but game is full!", username);
                 } else { // New player
                     if (isUsernameLegit(username)) { // Username legit
-                        clients.put(username, session);
-                        session.sendMessage(
+                        clients.put(username, connection);
+                        connection.sendMessage(
                                 new Response("Successfully connected", MessageStatus.OK)
                         );
                         LOGGER.log(Level.INFO, "{0} connected to server!", username);
                     } else { // Username not legit
-                        session.sendMessage(
+                        connection.sendMessage(
                                 new Response("Invalid Username", MessageStatus.ERROR)
                         );
 
-                        session.disconnect();
+                        connection.disconnect();
                         LOGGER.log(Level.INFO, "{0} tried to connect with invalid name!", username);
                     }
                 }
             }
         } catch (IOException e) {
-            session.disconnect();
+            connection.disconnect();
         }
     }
 
     /**
      * Checks if a username is legit by checking that is not equal to a forbidden username
      *
-     * @param username to check
+     * @param username username to check
      * @return if a username is legit
      */
     private boolean isUsernameLegit(String username) {
@@ -122,7 +127,7 @@ public class Server implements Runnable {
     /**
      * Process a message sent to server
      *
-     * @param message sent to server
+     * @param message message sent to server
      */
     public void onMessage(Message message) {
         // TODO
@@ -131,10 +136,10 @@ public class Server implements Runnable {
     /**
      * Called when a player disconnects
      *
-     * @param playerSession session of disconnected player
+     * @param playerConnection connection of the player that just disconnected
      */
-    public void onDisconnect(Session playerSession) {
-        String username = getUsernameBySession(playerSession);
+    public void onDisconnect(Connection playerConnection) {
+        String username = getUsernameByConnection(playerConnection);
 
         if (username != null) {
             sendMessageToAll(new DisconnectionMessage(username));
@@ -145,10 +150,10 @@ public class Server implements Runnable {
     /**
      * Sends a message to all clients
      *
-     * @param message to send
+     * @param message message to send
      */
     public void sendMessageToAll(Message message) {
-        for (Map.Entry<String, Session> client : clients.entrySet()) {
+        for (Map.Entry<String, Connection> client : clients.entrySet()) {
             if (client.getValue().isConnected()) {
                 try {
                     client.getValue().sendMessage(message);
@@ -162,11 +167,11 @@ public class Server implements Runnable {
     /**
      * Sends a message to a client
      *
-     * @param username of the client who will receive the message
-     * @param message  to send
+     * @param username username of the client who will receive the message
+     * @param message  message to send
      */
     public void sendMessage(String username, Message message) {
-        for (Map.Entry<String, Session> client : clients.entrySet()) {
+        for (Map.Entry<String, Connection> client : clients.entrySet()) {
             if (client.getKey().equals(username) && client.getValue().isConnected()) {
                 try {
                     client.getValue().sendMessage(message);
@@ -186,7 +191,7 @@ public class Server implements Runnable {
     public List<String> getDisconnectedPlayers() {
         List<String> players = new ArrayList<>();
 
-        for (Map.Entry<String, Session> client : clients.entrySet()) {
+        for (Map.Entry<String, Connection> client : clients.entrySet()) {
             if (!client.getValue().isConnected()) {
                 players.add(client.getKey());
             }
@@ -196,22 +201,22 @@ public class Server implements Runnable {
     }
 
     /**
-     * Returns the username of the session owner
+     * Returns the username of the connection owner
      *
-     * @param session to check
+     * @param connection connection to check
      * @return the username
      */
-    private String getUsernameBySession(Session session) {
-        Set<String> usernames = clients.entrySet()
+    private String getUsernameByConnection(Connection connection) {
+        Set<String> usernameList = clients.entrySet()
                 .stream()
-                .filter(entry -> session.equals(entry.getValue()))
+                .filter(entry -> connection.equals(entry.getValue()))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
 
-        if (usernames.isEmpty()) {
+        if (usernameList.isEmpty()) {
             return null;
         } else {
-            return usernames.iterator().next();
+            return usernameList.iterator().next();
         }
     }
 
@@ -221,7 +226,7 @@ public class Server implements Runnable {
     @Override
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
-            for (Map.Entry<String, Session> client : clients.entrySet()) {
+            for (Map.Entry<String, Connection> client : clients.entrySet()) {
                 if (client.getValue().isConnected()) {
                     client.getValue().ping();
                 }
