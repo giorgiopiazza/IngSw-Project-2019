@@ -1,0 +1,6 @@
+{
+  "socketPort": 2727,
+  "rmiPort": 7272,
+  "lobbyTime": 30000,
+  "turnTime": 60000
+}
