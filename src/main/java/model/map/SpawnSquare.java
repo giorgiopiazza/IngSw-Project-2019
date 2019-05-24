@@ -41,6 +41,7 @@ public class SpawnSquare extends Square {
         for (int i = 0; i < MAX_WEAPONS; i++) {
             if (weapons[i] == null) {
                 weapons[i] = weapon;
+                return;
             }
         }
 
