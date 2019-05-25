@@ -90,7 +90,7 @@ public class Game {
     }
 
     public Integer[] getTrackerPoints() {
-        return trackerPoints.toArray(new Integer[trackerPoints.size()]);
+        return trackerPoints.toArray(new Integer[0]);
     }
 
     /**

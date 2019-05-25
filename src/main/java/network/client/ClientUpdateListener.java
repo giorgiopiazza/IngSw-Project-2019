@@ -6,6 +6,5 @@ import java.util.List;
 
 public interface ClientUpdateListener {
 
-    public void onUpdate(List<Message> messages);
-
+    void onUpdate(List<Message> messages);
 }

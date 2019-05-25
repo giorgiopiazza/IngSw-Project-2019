@@ -1,7 +1,6 @@
 package network.client;
 
 import network.message.Message;
-import view.cli.Cli;
 
 import java.util.List;
 import java.util.logging.Level;

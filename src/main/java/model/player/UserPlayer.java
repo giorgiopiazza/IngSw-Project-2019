@@ -17,7 +17,7 @@ import java.util.Set;
 public class UserPlayer extends Player {
     private transient EnumSet<PossibleAction> possibleActions;
     private transient PossiblePlayerState playerState;
-    private transient List<WeaponCard> weapons;
+    private List<WeaponCard> weapons;
     private transient List<PowerupCard> powerups;
     private transient PowerupCard spawningCard;
     private boolean firstPlayer;
@@ -167,23 +167,23 @@ public class UserPlayer extends Player {
      * Method used to receive a powerup given his name and color in case two are possessed
      *
      * @param powerupName String containing the powerup name
-     * @param color the color of the powerup to be returned
+     * @param color       the color of the powerup to be returned
      * @return the powerup specified in the player's hand
      * @throws InexistentColorException in case the color passed does not exist
      */
-    public int getPowerupByName(String powerupName, RoomColor color) throws InexistentColorException{
-        if(powerups.isEmpty()) throw new NullPointerException(this.getUsername() + " has no powerups!");
+    public int getPowerupByName(String powerupName, RoomColor color) throws InexistentColorException {
+        if (powerups.isEmpty()) throw new NullPointerException(this.getUsername() + " has no powerups!");
 
-        for(int i = 0; i < powerups.size(); ++i) {
+        for (int i = 0; i < powerups.size(); ++i) {
             try {
-                if(powerups.get(i).getName().equals(powerupName) && color == null) {
+                if (powerups.get(i).getName().equals(powerupName) && color == null) {
                     return i;
                 }
 
-                if(powerups.get(i).getName().equals(powerupName) && RoomColor.getColor(powerups.get(i).getValue().name()).equals(color)) {
+                if (powerups.get(i).getName().equals(powerupName) && RoomColor.getColor(powerups.get(i).getValue().name()).equals(color)) {
                     return i;
                 }
-            } catch (InexistentColorException e){
+            } catch (InexistentColorException e) {
                 throw new InexistentColorException(color.name());
             }
         }
@@ -199,8 +199,8 @@ public class UserPlayer extends Player {
      */
     public int getPowerupOccurrences(String powerupName) {
         int occurrences = 0;
-        for(PowerupCard powerup : powerups) {
-            if(powerup.getName().equals(powerupName)) {
+        for (PowerupCard powerup : powerups) {
+            if (powerup.getName().equals(powerupName)) {
                 ++occurrences;
             }
         }
