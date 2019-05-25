@@ -5,6 +5,6 @@ import model.Game;
 
 public class PingMessage extends Message {
     public PingMessage() {
-        super(Game.GOD, MessageContent.PING);
+        super(Game.GOD, null, MessageContent.PING);
     }
 }

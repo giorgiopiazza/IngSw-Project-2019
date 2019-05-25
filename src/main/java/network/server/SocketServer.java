@@ -31,22 +31,22 @@ public class SocketServer extends Thread {
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 Socket client = serverSocket.accept();
-                new SocketSession(this, client).start();
+                new SocketConnection(this, client);
             } catch (IOException e) {
                 Server.LOGGER.warning(e.getMessage());
             }
         }
     }
 
-    void login(String username, Session session) {
-        server.login(username, session);
+    void login(String username, Connection connection) {
+        server.login(username, connection);
     }
 
     void onMessage(Message message) {
         server.onMessage(message);
     }
 
-    void onDisconnect(Session playerSession) {
-        server.onDisconnect(playerSession);
+    void onDisconnect(Connection playerConnection) {
+        server.onDisconnect(playerConnection);
     }
 }

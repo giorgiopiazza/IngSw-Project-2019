@@ -9,7 +9,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-class SocketSession extends Thread implements Session {
+/**
+ * This class represents a Socket connection with a client
+ */
+class SocketConnection extends Connection implements Runnable {
     private final SocketServer socketServer;
     private final Socket socket;
 
@@ -18,7 +21,15 @@ class SocketSession extends Thread implements Session {
     private ObjectInputStream in;
     private ObjectOutputStream out;
 
-    SocketSession(SocketServer socketServer, Socket socket) {
+    private Thread listener;
+
+    /**
+     * Constructs a connection over the socket with the socket server
+     *
+     * @param socketServer socket server
+     * @param socket       socket of the client
+     */
+    SocketConnection(SocketServer socketServer, Socket socket) {
         this.socketServer = socketServer;
         this.socket = socket;
 
@@ -30,8 +41,15 @@ class SocketSession extends Thread implements Session {
         } catch (IOException e) {
             Server.LOGGER.severe(e.toString());
         }
+
+        listener = new Thread(this);
+        listener.start();
     }
 
+    /**
+     * Process that continues to listen the input stream and send the messages to
+     * server in case of message
+     */
     @Override
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
@@ -52,30 +70,19 @@ class SocketSession extends Thread implements Session {
         }
     }
 
-    public void disconnect() {
-        try {
-            if (!socket.isClosed()) {
-                socket.close();
-            }
-        } catch (IOException e) {
-            Server.LOGGER.severe(e.getMessage());
-        }
-
-        this.interrupt(); // Interrupts the thread
-        connected = false;
-
-        socketServer.onDisconnect(this);
-    }
-
-    public void ping() {
-        sendMessage(new PingMessage());
-    }
-
+    /**
+     * @return the connection status
+     */
     @Override
     public boolean isConnected() {
         return connected;
     }
 
+    /**
+     * Sends a message to the client
+     *
+     * @param message to send to the client
+     */
     @Override
     public void sendMessage(Message message) {
         if (connected) {
@@ -87,5 +94,32 @@ class SocketSession extends Thread implements Session {
                 disconnect();
             }
         }
+    }
+
+    /**
+     * Disconnects from the client
+     */
+    @Override
+    public void disconnect() {
+        try {
+            if (!socket.isClosed()) {
+                socket.close();
+            }
+        } catch (IOException e) {
+            Server.LOGGER.severe(e.getMessage());
+        }
+
+        listener.interrupt(); // Interrupts the thread
+        connected = false;
+
+        socketServer.onDisconnect(this);
+    }
+
+    /**
+     * Sends a ping message to client
+     */
+    @Override
+    public void ping() {
+        sendMessage(new PingMessage());
     }
 }

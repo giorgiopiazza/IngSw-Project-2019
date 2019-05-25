@@ -35,7 +35,7 @@ public class ShootAction implements Action {
 
         if(shootRequest.getRechargingWeapons() != null) {
             // i payment powerup in questo caso devono essere dentro la shootRequest per pagare le armi da ricaricare
-            ReloadRequest reloadRequest = new ReloadRequest(actingPlayer.getUsername(), shootRequest.getRechargingWeapons(), shootRequest.getPaymentPowerups());
+            ReloadRequest reloadRequest = new ReloadRequest(actingPlayer.getUsername(), shootRequest.getToken(), shootRequest.getRechargingWeapons(), shootRequest.getPaymentPowerups());
             this.reloadAction = new ReloadAction(actingPlayer, reloadRequest);
         }
 

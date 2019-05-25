@@ -8,8 +8,8 @@ import java.util.Objects;
 public class ReloadRequest extends ActionRequest {
     private final ArrayList<Integer> weapons;
 
-    public ReloadRequest(String username, ArrayList<Integer> weapons, ArrayList<Integer> paymentPowerups) {
-        super(username, MessageContent.RELOAD, null, paymentPowerups);
+    public ReloadRequest(String username, String token, ArrayList<Integer> weapons, ArrayList<Integer> paymentPowerups) {
+        super(username, token, MessageContent.RELOAD, null, paymentPowerups);
 
         this.weapons = Objects.requireNonNullElse(weapons, new ArrayList<>());
     }

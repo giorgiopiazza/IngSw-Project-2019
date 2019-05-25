@@ -14,7 +14,7 @@ public abstract class EffectRequest extends ActionRequest {
     private final ArrayList<PlayerPosition> targetPlayersMovePositions;
 
     public EffectRequest(EffectRequestBuilder builder) {
-        super(builder.username, builder.content, builder.senderMovePosition, builder.paymentPowerups);
+        super(builder.username, builder.token, builder.content, builder.senderMovePosition, builder.paymentPowerups);
 
         this.targetPlayersUsernames = Objects.requireNonNullElse(builder.targetPlayersUsernames, new ArrayList<>());
         this.targetPositions = Objects.requireNonNullElse(builder.targetPositions, new ArrayList<>());
@@ -40,6 +40,7 @@ public abstract class EffectRequest extends ActionRequest {
 
     public static class EffectRequestBuilder {
         private String username;
+        private String token;
         private MessageContent content;
 
         private ArrayList<String> targetPlayersUsernames;
@@ -52,8 +53,9 @@ public abstract class EffectRequest extends ActionRequest {
         private ArrayList<Integer> paymentPowerups;
         private ArrayList<Integer> rechargingWeapons;
 
-        public EffectRequestBuilder(String username, MessageContent content) {
+        public EffectRequestBuilder(String username, String token, MessageContent content) {
             this.username = username;
+            this.token = token;
             this.content = content;
         }
 

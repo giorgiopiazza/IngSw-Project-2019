@@ -20,7 +20,10 @@ import network.message.*;
 
 import java.util.*;
 
-public class RoundManager {
+/**
+ * This class contains all the methods needed to handle entirely the Round of a player's turn
+ */
+class RoundManager {
     private static final String TAGBACK_GRANADE = "TAGBACK_GRANADE";
     private static final String TELEPORTER = "TELEPORTER";
     private static final String NEWTON = "NEWTON";
@@ -30,20 +33,36 @@ public class RoundManager {
     private GameManager gameManager;
     private TurnManager turnManager;
 
+    /**
+     * Creates an instance of {@link RoundManager RoundManager} binding to it the {@link GameManager GameManager} and
+     * taking also the reference to the {@link Game Game} started
+     *
+     * @param gameManager the {@link GameManager GameManager} of the started {@link Game Game}
+     */
     RoundManager(GameManager gameManager) {
         this.gameInstance = Game.getInstance();
         this.gameManager = gameManager;
     }
 
-    public void initTurnManager() {
+    /**
+     * Method that inits the {@link TurnManager TurnManager} for the starting {@link Game Game}
+     */
+    void initTurnManager() {
         this.turnManager = new TurnManager(gameInstance.getPlayers());
     }
 
+    /**
+     * @return the {@link TurnManager TurnManager} for the started {@link Game Game}
+     */
     TurnManager getTurnManager() {
         return this.turnManager;
     }
 
-
+    /**
+     * Method that sets the {@link Action Actions} a {@link UserPlayer UserPLayer} can do at the start of his Turn,
+     * depending on the {@link Game Game} state that can be: {@link GameState GameState.NORMAL} or
+     * {@link GameState GameState}
+     */
     private void setInitialActions() {
         if (gameInstance.getState() == GameState.NORMAL) {
             ActionManager.setPossibleActions(turnManager.getTurnOwner());
@@ -52,10 +71,20 @@ public class RoundManager {
         }
     }
 
+    /**
+     * Method used to set <b>only</b> the {@link ReloadAction ReloadAction} to a {@link UserPlayer UserPlayer} when needed
+     */
     private void setReloadAction() {
         turnManager.getTurnOwner().setActions(EnumSet.of(PossibleAction.RELOAD));
     }
 
+    /**
+     * Method that handles the FirstSpawn of the {@link model.player.Terminator Terminator}, performed by the First
+     * {@link UserPlayer Player} that starts the {@link Game Game}
+     *
+     * @param spawnRequest the {@link TerminatorSpawnRequest TerminatorSpawnRequest} received
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
     Response handleTerminatorFirstSpawn(TerminatorSpawnRequest spawnRequest) {
         if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.SPAWN_TERMINATOR)) {
             // terminator does not still exist!
@@ -75,6 +104,13 @@ public class RoundManager {
         return buildPositiveResponse("Terminator has spawned!");
     }
 
+    /**
+     * Method that handles the FirstSpawn of a {@link UserPlayer UserPlayer} depending on the {@link PowerupCard PowerupCard}
+     * chosen
+     *
+     * @param discardRequest the {@link DiscardPowerupRequest DiscardPowerupRequest} received
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
     Response handleFirstSpawn(DiscardPowerupRequest discardRequest) {
         UserPlayer turnOwner = turnManager.getTurnOwner();
         int firstSpawnPowerup = discardRequest.getPowerup();
@@ -123,6 +159,12 @@ public class RoundManager {
         return buildPositiveResponse("Player spawned with chosen powerup");
     }
 
+    /**
+     * Method that handles the new {@link GameState GameState} in which the {@link Game Game} evolves after the
+     * {@link TerminatorAction TerminatorAction} has been performed
+     *
+     * @param gameState the {@link GameState GameState} in which the {@link GameManager GameManager} needs to evolve
+     */
     private void afterTerminatorActionHandler(PossibleGameState gameState) {
         if (gameState == PossibleGameState.GAME_READY) {
             if (turnManager.endOfRound()) {
@@ -150,6 +192,9 @@ public class RoundManager {
         }
     }
 
+    /**
+     * Method that handles the TurnPass after that all needed informations have been restored because of a TAGBACK GRANADE usage
+     */
     private void handleNextTurnReset() {
         PossibleGameState arrivingState = turnManager.getArrivingGameState();
 
@@ -165,7 +210,10 @@ public class RoundManager {
         }
     }
 
-    private void pickTwoPowerups() {
+    /**
+     * Method used to Pick two {@link PowerupCard PowerupCards} for a {@link UserPlayer UserPlayer} when spawning
+     */
+    void pickTwoPowerups() {
         for (int i = 0; i < 2; ++i) {
             PowerupCard drawnPowerup = (PowerupCard) gameInstance.getPowerupCardsDeck().draw();
             try {
@@ -176,6 +224,14 @@ public class RoundManager {
         }
     }
 
+    /**
+     * Method that handles the {@link TerminatorAction TerminatorAction}
+     *
+     * @param terminatorRequest the {@link UseTerminatorRequest UseTerminatorRequest} received
+     * @param gameState the {@link GameState GameState} used by the method
+     *                  {@link #afterTerminatorActionHandler(PossibleGameState) afterTerminatorActionHandler}
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
     Response handleTerminatorAction(UseTerminatorRequest terminatorRequest, PossibleGameState gameState) {
         TerminatorAction terminatorAction;
 
@@ -207,6 +263,12 @@ public class RoundManager {
         return buildPositiveResponse("Terminator action used");
     }
 
+    /**
+     * Method that handles the usage of a TAGBACK GRANADE by a damaged {@link UserPlayer UserPlayer} in the TurnOwner's Round
+     *
+     * @param granadeMessage the {@link PowerupRequest GranadeRequest} received
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
     Response handleGranadeUsage(PowerupRequest granadeMessage) {
         PowerupCard chosenGranade;
 
@@ -252,6 +314,12 @@ public class RoundManager {
         return buildPositiveResponse("Granade has been Used");
     }
 
+    /**
+     * Method that handles the usage of the TARGETING SCOPE by the Shooting {@link UserPlayer UserPlayer}
+     *
+     * @param scopeMessage the {@link PowerupRequest ScopeRequest} received
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
     private Response handleScopeUsage(PowerupRequest scopeMessage) {
         UserPlayer turnOwner = turnManager.getTurnOwner();
         PowerupRequest tempRequest;
@@ -285,13 +353,13 @@ public class RoundManager {
             case 0:
                 for(int i = 0; i < powerupsIndexes.size(); ++i) {
                     if(!paymentPowerups.isEmpty()) {
-                        tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
+                        tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
                                                         .paymentPowerups(scopeMessage.getPaymentPowerups())
                                                         .targetPlayersID(new ArrayList<>(List.of(targets.get(i))))
                                                         .build();
                         paymentPowerups.remove(0);
                     } else {
-                        tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
+                        tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
                                                         .targetPlayersID(new ArrayList<>(List.of(targets.get(i))))
                                                         .build();
                     }
@@ -310,7 +378,7 @@ public class RoundManager {
             case 1:
                 if(powerupsIndexes.size() == 3) {
                     for(int i = 0; i < 2; ++i) {
-                        tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
+                        tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
                                                         .targetPlayersID(new ArrayList<>(List.of(targets.get(0))))
                                                         .build();
                         try {
@@ -321,11 +389,11 @@ public class RoundManager {
                         } catch (EmptyHandException e) {
                             // can not happen here because powerup is already verified to be possessed
                         } catch (InvalidPowerupActionException e) {
-                            return buildNegativeResponse("Invalid Action");
+                            return buildNegativeResponse(" Invalid Action");
                         }
                     }
 
-                    tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), new ArrayList<>(List.of(powerupsIndexes.get(2))))
+                    tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(2))))
                                                     .targetPlayersID(new ArrayList<>(List.of(targets.get(1))))
                                                     .build();
                     try {
@@ -334,20 +402,20 @@ public class RoundManager {
                     } catch (NotEnoughAmmoException e) {
                         return buildNegativeResponse("Not Enough Ammo ");
                     } catch (InvalidPowerupActionException e) {
-                        return buildNegativeResponse("Invalid Action");
+                        return buildNegativeResponse("Invalid Action  ");
                     } catch (EmptyHandException e) {
                         // can not happen here because powerup is already verified to be possessed
                     }
                 } else if(powerupsIndexes.size() == 2) {
                     for(int i = 0; i < 2; ++i) {
                         if(!paymentPowerups.isEmpty()) {
-                            tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
+                            tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
                                     .paymentPowerups(scopeMessage.getPaymentPowerups())
                                     .targetPlayersID(new ArrayList<>(List.of(targets.get(0))))
                                     .build();
                             paymentPowerups.remove(0);
                         } else {
-                            tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
+                            tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
                                     .targetPlayersID(new ArrayList<>(List.of(targets.get(0))))
                                     .build();
                         }
@@ -357,7 +425,7 @@ public class RoundManager {
                         } catch (NotEnoughAmmoException e) {
                             return buildNegativeResponse("Not Enough Ammo ");
                         } catch (InvalidPowerupActionException e) {
-                            return buildNegativeResponse("Invalid Action");
+                            return buildNegativeResponse("Invalid  Action");
                         } catch (EmptyHandException e) {
                             // cn not happen here because powerup is already verified to be possessed
                         }
@@ -366,7 +434,7 @@ public class RoundManager {
                 return buildPositiveResponse("Targeting Scopes Used");
             case 2:
                 for(int i = 0; i < 3; ++i) {
-                    tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
+                    tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
                             .targetPlayersID(new ArrayList<>(List.of(targets.get(0))))
                             .build();
                     try {
@@ -377,16 +445,22 @@ public class RoundManager {
                     } catch (NotEnoughAmmoException e) {
                         return buildNegativeResponse("Not Enough Ammo  ");
                     } catch (InvalidPowerupActionException e) {
-                        return buildNegativeResponse("Invalid Action");
+                        return buildNegativeResponse("Invalid  Action ");
                     }
                 }
 
                 return buildPositiveResponse("Targeting Scope Used");
             default:
-                return buildNegativeResponse("Invalid Action");
+                return buildNegativeResponse(" Invalid Action ");
         }
     }
 
+    /**
+     * Method used to handle the usage of one of the powerups: NEWTON or TELEPORTER
+     *
+     * @param powerupRequest the {@link PowerupRequest PowerupRequest} received
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
     Response handlePowerupAction(PowerupRequest powerupRequest) {
         PowerupCard chosenPowerup;
 
@@ -422,6 +496,13 @@ public class RoundManager {
         return buildPositiveResponse("Powerup has been used");
     }
 
+    /**
+     * Method that handles the {@link MoveAction MoveAction} performed by the TurnOwner
+     *
+     * @param moveRequest the {@link MoveRequest MoveRequest} received
+     * @param secondAction Boolean that specifies if the performing action is the second
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
     Response handleMoveAction(MoveRequest moveRequest, boolean secondAction) {
         UserPlayer turnOwner = turnManager.getTurnOwner();
         PossibleAction actionType;
@@ -452,6 +533,13 @@ public class RoundManager {
         return buildPositiveResponse("Move action done");
     }
 
+    /**
+     * Method thah handles a {@link PickAction PickAction} performed by the TurnOwner
+     *
+     * @param pickRequest the {@link MovePickRequest PickRequest} received
+     * @param secondAction Boolean that specifies if the performing action is the second
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
     Response handlePickAction(MovePickRequest pickRequest, boolean secondAction) {
         UserPlayer turnOwner = turnManager.getTurnOwner();
         PickAction pickAction;
@@ -497,6 +585,15 @@ public class RoundManager {
         return buildPositiveResponse("Pick Action done");
     }
 
+    /**
+     * Method that handles a {@link ShootAction ShootAction} performed by the TurnOwner
+     *
+     * @param shootRequest the {@link ShootRequest ShootRequest} received before
+     * @param scopeRequest the {@link PowerupRequest ScopeRequest} just received, if <b>null</b> the TurnOwner can't or
+     *                     has decided not to use the TARGETING SCOPE
+     * @param secondAction Boolean that specifies if the performing action is the second
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
     Response handleShootAction(ShootRequest shootRequest, PowerupRequest scopeRequest, boolean secondAction) {
         UserPlayer turnOwner = turnManager.getTurnOwner();
         Response response;
@@ -559,6 +656,12 @@ public class RoundManager {
         return buildPositiveResponse("Shoot Action done");
     }
 
+    /**
+     * Method that handles the {@link ReloadAction ReloadAction} performed by the TurnOwner
+     *
+     * @param reloadRequest the {@link ReloadRequest ReloadRequest} received
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
     Response handleReloadAction(ReloadRequest reloadRequest) {
         UserPlayer turnOwner = turnManager.getTurnOwner();
         ReloadAction reloadAction;
@@ -586,6 +689,14 @@ public class RoundManager {
         return buildPositiveResponse("Reload Action done");
     }
 
+    /**
+     * Method that builds an ArrayList of the damaged {@link UserPlayer UserPlayers} after a {@link ShootAction ShootAction},
+     * used by the {@link #handleScopeUsage(PowerupRequest) handleScopeUsage} method to verify that the TARGETING SCOPE
+     * is used only on a damaged {@link UserPlayer UserPlayer}
+     *
+     * @param beforeShootPlayers the List of {@link UserPlayer UserPlayers} before the {@link ShootAction ShootAction}
+     * @return the ArrayList of damaged {@link UserPlayer UserPlayers}
+     */
     private ArrayList<UserPlayer> buildDamagedPlayers(List<UserPlayer> beforeShootPlayers) {
         ArrayList<UserPlayer> reallyDamagedPlayers = new ArrayList<>();
 
@@ -600,6 +711,12 @@ public class RoundManager {
         return reallyDamagedPlayers;
     }
 
+    /**
+     * Method that handles the Phase of passing an action, handling in case the Dead {@link UserPlayer UserPlayers} giving
+     * them a turn to Respawn in the method {@link #deathPlayersHandler(PossibleGameState) deathPlayersHandler}
+     *
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
     Response handlePassAction() {
         if(gameInstance.getState() == GameState.NORMAL) {
             return deathPlayersHandler(PossibleGameState.PASS_NORMAL_TURN);
@@ -615,6 +732,15 @@ public class RoundManager {
         }
     }
 
+    /**
+     * Method that handles the Death of the {@link model.player.Player Players} that died after the end of each Turn.
+     * In case the dead {@link UserPlayer UserPlayers} are more than one, the {@link TurnManager TurnManager} handles
+     * their Turns with some parameters set in this method
+     *
+     * @param nextPassState the {@link PossibleGameState PossibleGameState} in which the {@link GameManager GameManager}
+     *                      evolves after every dead {@link UserPlayer Player} is respawned
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
     private Response deathPlayersHandler(PossibleGameState nextPassState) {
         ArrayList<UserPlayer> deathPlayers = gameInstance.getDeathPlayers();
 
@@ -647,6 +773,12 @@ public class RoundManager {
         }
     }
 
+    /**
+     * Method that handles the Respawn of the {@link model.player.Terminator Terminatore} performed by the TurnOwner
+     *
+     * @param respawnRequest the {@link TerminatorSpawnRequest TerminatorRespawnRequest} received
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
     Response handleTerminatorRespawn(TerminatorSpawnRequest respawnRequest) {
         ArrayList<UserPlayer> deathPlayers = gameInstance.getDeathPlayers();
 
@@ -675,6 +807,12 @@ public class RoundManager {
         }
     }
 
+    /**
+     * Method that handles the Respawn of a dead {@link UserPlayer UserPlayer}
+     *
+     * @param respawnRequest the {@link DiscardPowerupRequest RespawnRequest} received
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
     Response handlePlayerRespawn(DiscardPowerupRequest respawnRequest) {
         UserPlayer turnOwner = turnManager.getTurnOwner();
         PowerupCard spawnPowerup;
@@ -730,6 +868,14 @@ public class RoundManager {
         return buildPositiveResponse("Player Respawned");
     }
 
+    /**
+     * This is the real method that changes the State of the {@link GameManager GameManager} after each {@link Action Action}
+     * is performed. In this method is used the method {@link #setReloadAction() setReloadAction} as the TurnOwner's
+     * {@link ReloadAction ReloadAction} can be handled
+     *
+     * @param secondAction Boolean that specifies if the performing action is the second
+     * @return the {@link PossibleGameState PossibleGameState} in which the {@link GameManager GameManager} has to evolve
+     */
     private PossibleGameState handleAfterActionState(boolean secondAction) {
         if (!secondAction) {
             return PossibleGameState.SECOND_ACTION;
@@ -749,10 +895,20 @@ public class RoundManager {
         }
     }
 
-
+    /**
+     * This is the real method that Passes the Turn from the TurnOwner to the next one
+     *
+     * @param arrivingState the {@link PossibleGameState PossibleGameState} of the {@link GameManager GameManager} used
+     *                      to handle the new State in which the {@link GameManager GameManager} is evolving
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
     private Response handleNextTurn(PossibleGameState arrivingState) {
+        // first I set the turn to the next player and give him his possible actions
         turnManager.nextTurn();
         setInitialActions();
+
+        // then I reset the missing cards on the board
+        gameInstance.getGameMap().addMissingCards();
 
         if (arrivingState == PossibleGameState.PASS_NORMAL_TURN) {
             gameManager.changeState(PossibleGameState.GAME_STARTED);
@@ -766,10 +922,23 @@ public class RoundManager {
         }
     }
 
+    /**
+     * Method that builds a Positive {@link Response Response}, that has {@link MessageStatus MessageStatus.OK}
+     *
+     * @param reason the reason why the {@link Response Response} is Positive
+     * @return the Positive {@link Response Response} built
+     */
     private Response buildPositiveResponse(String reason) {
         return new Response(reason, MessageStatus.OK);
     }
 
+    /**
+     *
+     * Method that builds a Negative {@link Response Response}, that has {@link MessageStatus MessageStatus.ERROR}
+     *
+     * @param reason the reason why the {@link Response Response} is Negative
+     * @return the Negative {@link Response Response} built
+     */
     private Response buildNegativeResponse(String reason) {
         return new Response(reason, MessageStatus.ERROR);
     }

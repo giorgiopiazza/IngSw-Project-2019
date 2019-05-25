@@ -13,7 +13,7 @@ public class PowerupRequest extends EffectRequest {
 
     public PowerupRequest(PowerupRequestBuilder builder) {
         super(
-                new EffectRequestBuilder(builder.username, MessageContent.POWERUP)
+                new EffectRequestBuilder(builder.username, builder.token, MessageContent.POWERUP)
                         .targetPlayersUsernames(builder.targetPlayersUsernames)
                         .targetPositions(builder.targetPositions)
                         .targetRoomColor(builder.targetRoomColor)
@@ -36,6 +36,7 @@ public class PowerupRequest extends EffectRequest {
 
     public static class PowerupRequestBuilder {
         private String username;
+        private String token;
         private ArrayList<Integer> powerup;
         private Ammo ammoColor;
 
@@ -48,8 +49,9 @@ public class PowerupRequest extends EffectRequest {
 
         private ArrayList<Integer> paymentPowerups;
 
-        public PowerupRequestBuilder(String username, ArrayList<Integer> powerup) {
+        public PowerupRequestBuilder(String username, String token, ArrayList<Integer> powerup) {
             this.username = username;
+            this.token = token;
             this.powerup = powerup;
         }
 

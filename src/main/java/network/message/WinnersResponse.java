@@ -10,8 +10,12 @@ public class WinnersResponse extends Message {
     private ArrayList<Player> winners;
 
     public WinnersResponse(ArrayList<Player> winners) {
-        super(Game.GOD, MessageContent.LAST_RESPONSE);
+        super(Game.GOD, null,MessageContent.LAST_RESPONSE);
 
         this.winners = winners;
+    }
+
+    public ArrayList<Player> getWinners() {
+        return this.winners;
     }
 }

@@ -1,8 +1,8 @@
 package exceptions.game;
 
-import exceptions.AdrenalinaException;
+import exceptions.AdrenalinaRuntimeException;
 
-public class MaxPlayerException extends AdrenalinaException {
+public class MaxPlayerException extends AdrenalinaRuntimeException {
     public MaxPlayerException() {
         super("Reached max number of players");
     }
