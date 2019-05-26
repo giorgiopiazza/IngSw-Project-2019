@@ -69,13 +69,15 @@ public class GameManager {
     }
 
     /**
-     * Main method on which the class is based. Is the method that receives messages, validate them and then execute
+     * Main method on which the class is based. It is the method that receives messages, validate them and then execute
      * changing the state of the real model
      *
      * @param receivedMessage Message received by the server from a Client that wants to act
-     * @return a {@link Message} which contains the result of the received message
+     * @return a {@link Message Message} which contains the result of the received message
      */
     public Message onMessage(Message receivedMessage) {
+        Response tempResponse;
+
         // on the game setup messages can be received from any player
         if (gameState == PossibleGameState.GAME_ROOM) {
             return firstStateHandler(receivedMessage);
@@ -86,144 +88,306 @@ public class GameManager {
             return new Response("Message from a player that is not his turn!", MessageStatus.ERROR);
         }
 
-        // SPECIAL CASES
-        if (gameState == PossibleGameState.GRANADE_USAGE) {
-            if (receivedMessage.getContent() == MessageContent.POWERUP) {
-                return onGranadeMessage(receivedMessage);
-            } else {
-                return buildInvalidResponse();
-            }
-        }
+        // SPECIAL STATES handling
+        tempResponse = specialStatesHandler(receivedMessage);
 
-        if (gameState == PossibleGameState.SCOPE_USAGE) {
-            if (receivedMessage.getContent() == MessageContent.POWERUP) {
-                if (!((PowerupRequest) receivedMessage).getPowerup().isEmpty()) {
-                    return roundManager.handleShootAction(shootParameters.shootRequest, (PowerupRequest) receivedMessage, shootParameters.secondAction);
-                } else {
-                    return roundManager.handleShootAction(shootParameters.shootRequest, null, shootParameters.secondAction);
-                }
-            } else {
-                return buildInvalidResponse();
-            }
-        }
-
-        if (gameState == PossibleGameState.TERMINATOR_RESPAWN) {
-            Response tempResponse;
-            if (receivedMessage.getContent() == MessageContent.TERMINATOR_SPAWN) {
-                tempResponse = roundManager.handleTerminatorRespawn((TerminatorSpawnRequest) receivedMessage);
-                if (tempResponse.getStatus() == MessageStatus.OK) {
-                    // if the Respawn message is validated I can distribute the points of the terminator's playerboard, move the skull from the tracker and then reset his playerboard
-                    distributePoints(gameInstance.getTerminator());
-                    moveSkull(gameInstance.getTerminator());
-                    gameInstance.getTerminator().getPlayerBoard().onDeath();
-
-                    // if the state changed to FINAL_FRENZY, no other players died and the FRENZY MODE starts
-                    if (gameState == PossibleGameState.FINAL_FRENZY) {
-                        gameInstance.setState(GameState.FINAL_FRENZY);
-                        finalFrenzySetup();
-                    }
-                    return tempResponse;
-                } else {
-                    return tempResponse;
-                }
-            } else {
-                return buildInvalidResponse();
-            }
-        }
-
-        if (gameState == PossibleGameState.MANAGE_DEATHS) {
-            Response tempResponse;
-            if (receivedMessage.getContent() == MessageContent.DISCARD_POWERUP) {
-                tempResponse = roundManager.handlePlayerRespawn((DiscardPowerupRequest) receivedMessage);
-                if (tempResponse.getStatus() == MessageStatus.OK) {
-                    // if the player respawn is validated I can distribute the points of the terminator's playerboard, move the skull from the tracker and then reset his playerboard
-                    UserPlayer respawnedPlayer = gameInstance.getUserPlayerByUsername(receivedMessage.getSenderUsername());
-                    distributePoints(respawnedPlayer);
-                    moveSkull(respawnedPlayer);
-                    respawnedPlayer.getPlayerBoard().onDeath();
-
-                    // if the state changed to FINAL_FRENZY, no other players died and the FRENZY MODE starts
-                    if (gameState == PossibleGameState.FINAL_FRENZY) {
-                        gameInstance.setState(GameState.FINAL_FRENZY);
-                        finalFrenzySetup();
-                    }
-                    return tempResponse;
-                } else {
-                    return tempResponse;
-                }
-            } else {
-                buildInvalidResponse();
-            }
-        }
-
-        if (gameState == PossibleGameState.MISSING_TERMINATOR_ACTION) {
-            // only messages to use the terminator action and a powerup can be used!
-            return handleTerminatorAsLastAction(receivedMessage);
-        }
+        if(tempResponse.getStatus() != MessageStatus.NO_RESPONSE) {
+            return tempResponse;
+        } // else no special States are affected
 
         switch (receivedMessage.getContent()) {
             case TERMINATOR_SPAWN:
-                if (gameState == PossibleGameState.GAME_READY) {
-                    // remember a player must see the powerups he has drawn before spawning the terminator!
-                    return roundManager.handleTerminatorFirstSpawn((TerminatorSpawnRequest) receivedMessage);
-                } else {
-                    return buildInvalidResponse();
-                }
+                return terminatorSpawnCheckState(receivedMessage);
             case DISCARD_POWERUP:
-                if (gameState == PossibleGameState.GAME_READY) {
-                    return roundManager.handleFirstSpawn((DiscardPowerupRequest) receivedMessage);
-                } else {
-                    return buildInvalidResponse();
-                }
+                return discardPowerupCheckState(receivedMessage);
             case TERMINATOR:
-                if (gameState == PossibleGameState.GAME_READY) {
-                    return roundManager.handleTerminatorAction((UseTerminatorRequest) receivedMessage, gameState);
-                } else if (gameState == PossibleGameState.GAME_STARTED) {
-                    return roundManager.handleTerminatorAction((UseTerminatorRequest) receivedMessage, gameState);
-                } else {
-                    return buildInvalidResponse();
-                }
+                return terminatorCheckState(receivedMessage);
             case POWERUP:
-                if (gameState == PossibleGameState.GAME_STARTED || gameState == PossibleGameState.SECOND_ACTION || gameState == PossibleGameState.FINAL_FRENZY
-                        || gameState == PossibleGameState.ACTIONS_DONE || gameState == PossibleGameState.FRENZY_ACTIONS_DONE) {
-                    return roundManager.handlePowerupAction((PowerupRequest) receivedMessage);
-                } else {
-                    return buildInvalidResponse();
-                }
+                return powerupCheckState(receivedMessage);
             case MOVE:
-                if (gameState == PossibleGameState.GAME_STARTED || gameState == PossibleGameState.SECOND_ACTION || gameState == PossibleGameState.FINAL_FRENZY) {
-                    return roundManager.handleMoveAction((MoveRequest) receivedMessage, handleSecondAction());
-                } else {
-                    return buildInvalidResponse();
-                }
+                return moveCheckState(receivedMessage);
             case MOVE_PICK:
-                if (gameState == PossibleGameState.GAME_STARTED || gameState == PossibleGameState.SECOND_ACTION || gameState == PossibleGameState.FINAL_FRENZY) {
-                    return roundManager.handlePickAction((MovePickRequest) receivedMessage, handleSecondAction());
-                } else {
-                    return buildInvalidResponse();
-                }
+                return pickCheckState(receivedMessage);
             case SHOOT:
-                if (gameState == PossibleGameState.GAME_STARTED || gameState == PossibleGameState.SECOND_ACTION || gameState == PossibleGameState.FINAL_FRENZY) {
-                    return onShootMessage((ShootRequest) receivedMessage, handleSecondAction());
-                } else {
-                    return buildInvalidResponse();
-                }
+                return shootCheckState(receivedMessage);
             case RELOAD:
-                if (gameState == PossibleGameState.ACTIONS_DONE) {
-                    return roundManager.handleReloadAction((ReloadRequest) receivedMessage);
-                } else {
-                    return buildInvalidResponse();
-                }
+                return reloadCheckState(receivedMessage);
             case PASS_TURN:
-                if (gameState == PossibleGameState.ACTIONS_DONE || gameState == PossibleGameState.FRENZY_ACTIONS_DONE) {
-                    return roundManager.handlePassAction();
-                } else {
-                    return buildInvalidResponse();
-                }
+                return passCheckState();
             default:
                 throw new InvalidGameStateException();
         }
 
+    }
+
+    /**
+     * This method handles both the extemporary usage of a powerup like: TAGBACK GRANADE or TARGETING SCOPE and the
+     * Respawn actions of the {@link Terminator Terminator} and {@link UserPlayer UserPlayer}
+     *
+     * @param receivedMessage the {@link Message Message} received
+     * @return a positive or negative {@link Response Response} in case that one of the cases is matched; default case
+     * returns a {@link Response Response} with {@link MessageStatus MessageStatus.NO_RESPONSE} used by the main receiving
+     * method {@link #onMessage(Message) onMessage} that will continue handling the {@link Message Message} not handled
+     * in this method
+     */
+    private Response specialStatesHandler(Message receivedMessage) {
+        switch (gameState) {
+            case GRANADE_USAGE:
+                return granadeCheckContent(receivedMessage);
+            case SCOPE_USAGE:
+                return scopeCheckContent(receivedMessage);
+            case TERMINATOR_RESPAWN:
+                return checkTerminatorRespawn(receivedMessage);
+            case MANAGE_DEATHS:
+                return checkPlayerRespawn(receivedMessage);
+            case MISSING_TERMINATOR_ACTION:
+                return handleTerminatorAsLastAction(receivedMessage);
+            default:
+                return new Response("Utility Response", MessageStatus.NO_RESPONSE);
+        }
+    }
+
+    /**
+     * Method used to oblige a player to use the {@link model.actions.TerminatorAction TerminatorAction} in case he hasn't
+     * already performed it
+     *
+     * @param receivedMessage the {@link Message Message} received that can be both: {@link UseTerminatorRequest UseTerminatorRequest}
+     *                        or a {@link PowerupRequest PowerupRequest}
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
+    private Response handleTerminatorAsLastAction(Message receivedMessage) {
+        // only messages to use the terminator action and a powerup can be used!
+        switch (receivedMessage.getContent()) {
+            case TERMINATOR:
+                return roundManager.handleTerminatorAction((UseTerminatorRequest) receivedMessage, PossibleGameState.MISSING_TERMINATOR_ACTION);
+            case POWERUP:
+                return roundManager.handlePowerupAction((PowerupRequest) receivedMessage);
+            default:
+                return buildInvalidResponse();
+        }
+    }
+
+    /**
+     * Method that checks and executes a TAGBACK GRANADE {@link PowerupRequest PowerupRequest}
+     *
+     * @param receivedMessage the {@link Message Message} received
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
+    private Response granadeCheckContent(Message receivedMessage) {
+        if (receivedMessage.getContent() == MessageContent.POWERUP) {
+            return onGranadeMessage(receivedMessage);
+        } else {
+            return buildInvalidResponse();
+        }
+    }
+
+    /**
+     * Method that checks and execute a TARGETING SCOPE {@link PowerupRequest PowerupRequest}
+     *
+     * @param receivedMessage the {@link Message Message} received
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
+    private Response scopeCheckContent(Message receivedMessage) {
+        if (receivedMessage.getContent() == MessageContent.POWERUP) {
+            if (!((PowerupRequest) receivedMessage).getPowerup().isEmpty()) {
+                return roundManager.handleShootAction(shootParameters.shootRequest, (PowerupRequest) receivedMessage, shootParameters.secondAction);
+            } else {
+                return roundManager.handleShootAction(shootParameters.shootRequest, null, shootParameters.secondAction);
+            }
+        } else {
+            return buildInvalidResponse();
+        }
+    }
+
+    /**
+     * Method that checks and execute the methods related to the Respawn of the {@link Terminator Terminator}
+     *
+     * @param receivedMessage the {@link Message Message} received
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
+    private Response checkTerminatorRespawn(Message receivedMessage) {
+        Response tempResponse;
+        if (receivedMessage.getContent() == MessageContent.TERMINATOR_SPAWN) {
+            tempResponse = roundManager.handleTerminatorRespawn((TerminatorSpawnRequest) receivedMessage);
+            if (tempResponse.getStatus() == MessageStatus.OK) {
+                // if the Respawn message is validated I can distribute the points of the terminator's playerboard, move the skull from the tracker and then reset his playerboard
+                distributePoints(gameInstance.getTerminator());
+                moveSkull(gameInstance.getTerminator());
+                gameInstance.getTerminator().getPlayerBoard().onDeath();
+
+                // if the state changed to FINAL_FRENZY, no other players died and the FRENZY MODE starts
+                if (gameState == PossibleGameState.FINAL_FRENZY) {
+                    gameInstance.setState(GameState.FINAL_FRENZY);
+                    finalFrenzySetup();
+                }
+                return tempResponse;
+            } else {
+                return tempResponse;
+            }
+        } else {
+            return buildInvalidResponse();
+        }
+    }
+
+    /**
+     * Method that checks and execute the methods related to the Respawn of a {@link UserPlayer UserPlayer}
+     *
+     * @param receivedMessage the {@link Message Message} received
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
+    private Response checkPlayerRespawn(Message receivedMessage) {
+        Response tempResponse;
+        if (receivedMessage.getContent() == MessageContent.DISCARD_POWERUP) {
+            tempResponse = roundManager.handlePlayerRespawn((DiscardPowerupRequest) receivedMessage);
+            if (tempResponse.getStatus() == MessageStatus.OK) {
+                // if the player respawn is validated I can distribute the points of the terminator's playerboard, move the skull from the tracker and then reset his playerboard
+                UserPlayer respawnedPlayer = gameInstance.getUserPlayerByUsername(receivedMessage.getSenderUsername());
+                distributePoints(respawnedPlayer);
+                moveSkull(respawnedPlayer);
+                respawnedPlayer.getPlayerBoard().onDeath();
+
+                // if the state changed to FINAL_FRENZY, no other players died and the FRENZY MODE starts
+                if (gameState == PossibleGameState.FINAL_FRENZY) {
+                    gameInstance.setState(GameState.FINAL_FRENZY);
+                    finalFrenzySetup();
+                }
+                return tempResponse;
+            } else {
+                return tempResponse;
+            }
+        } else {
+            return buildInvalidResponse();
+        }
+    }
+
+    /**
+     * Method that checks and executes the FirstSpawn of the {@link Terminator Terminator}
+     *
+     * @param receivedMessage the {@link Message Message} received
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
+    private Response terminatorSpawnCheckState(Message receivedMessage) {
+        if (gameState == PossibleGameState.GAME_READY) {
+            // remember a player must see the powerups he has drawn before spawning the terminator!
+            return roundManager.handleTerminatorFirstSpawn((TerminatorSpawnRequest) receivedMessage);
+        } else {
+            return buildInvalidResponse();
+        }
+    }
+
+    /**
+     * Method that checks and executes the Spawn of a {@link UserPlayer UserPlayer} with a
+     * {@link DiscardPowerupRequest DiscardPowerupRequest}
+     *
+     * @param receivedMessage the {@link Message Message} received
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
+    private Response discardPowerupCheckState(Message receivedMessage) {
+        if (gameState == PossibleGameState.GAME_READY) {
+            return roundManager.handleFirstSpawn((DiscardPowerupRequest) receivedMessage);
+        } else {
+            return buildInvalidResponse();
+        }
+    }
+
+    /**
+     * Method that checks and executes the {@link UseTerminatorRequest TerminatorRequest}
+     *
+     * @param receivedMessage the {@link Message Message} received
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
+    private Response terminatorCheckState(Message receivedMessage) {
+        if (gameState == PossibleGameState.GAME_READY) {
+            return roundManager.handleTerminatorAction((UseTerminatorRequest) receivedMessage, gameState);
+        } else if (gameState == PossibleGameState.GAME_STARTED) {
+            return roundManager.handleTerminatorAction((UseTerminatorRequest) receivedMessage, gameState);
+        } else {
+            return buildInvalidResponse();
+        }
+    }
+
+    /**
+     * Method that checks and executes the usage of the powerups: NEWTON or TELEPORTER
+     *
+     * @param receivedMessage the {@link Message Message} received
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
+    private Response powerupCheckState(Message receivedMessage) {
+        if (gameState == PossibleGameState.GAME_STARTED || gameState == PossibleGameState.SECOND_ACTION || gameState == PossibleGameState.FINAL_FRENZY
+                || gameState == PossibleGameState.ACTIONS_DONE || gameState == PossibleGameState.FRENZY_ACTIONS_DONE) {
+            return roundManager.handlePowerupAction((PowerupRequest) receivedMessage);
+        } else {
+            return buildInvalidResponse();
+        }
+    }
+
+    /**
+     * Method that checks and executes the {@link MoveRequest MoveRequest}
+     *
+     * @param receivedMessage the {@link Message Message} received
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
+    private Response moveCheckState(Message receivedMessage) {
+        if (gameState == PossibleGameState.GAME_STARTED || gameState == PossibleGameState.SECOND_ACTION || gameState == PossibleGameState.FINAL_FRENZY) {
+            return roundManager.handleMoveAction((MoveRequest) receivedMessage, handleSecondAction());
+        } else {
+            return buildInvalidResponse();
+        }
+    }
+
+    /**
+     * Method that checks and executes the {@link MovePickRequest PickRequest}
+     *
+     * @param receivedMessage the {@link Message Message} receivec
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
+    private Response pickCheckState(Message receivedMessage) {
+        if (gameState == PossibleGameState.GAME_STARTED || gameState == PossibleGameState.SECOND_ACTION || gameState == PossibleGameState.FINAL_FRENZY) {
+            return roundManager.handlePickAction((MovePickRequest) receivedMessage, handleSecondAction());
+        } else {
+            return buildInvalidResponse();
+        }
+    }
+
+    /**
+     * Method that checks and executes the {@link ShootRequest ShootRequest}
+     *
+     * @param receivedMessage the {@link Message Message} received
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
+    private Response shootCheckState(Message receivedMessage) {
+        if (gameState == PossibleGameState.GAME_STARTED || gameState == PossibleGameState.SECOND_ACTION || gameState == PossibleGameState.FINAL_FRENZY) {
+            return onShootMessage((ShootRequest) receivedMessage, handleSecondAction());
+        } else {
+            return buildInvalidResponse();
+        }
+    }
+
+    /**
+     * Method that checks and executes the {@link ReloadRequest ReloadRequest}
+     *
+     * @param receivedMessage the {@link Message Message} received
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
+    private Response reloadCheckState(Message receivedMessage) {
+        if (gameState == PossibleGameState.ACTIONS_DONE) {
+            return roundManager.handleReloadAction((ReloadRequest) receivedMessage);
+        } else {
+            return buildInvalidResponse();
+        }
+    }
+
+    /**
+     * Method that checks and executes the {@link PassTurnRequest PassTurnRequest}
+     *
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
+    private Response passCheckState() {
+        if (gameState == PossibleGameState.ACTIONS_DONE || gameState == PossibleGameState.FRENZY_ACTIONS_DONE) {
+            return roundManager.handlePassAction();
+        } else {
+            return buildInvalidResponse();
+        }
     }
 
     /**
@@ -344,6 +508,18 @@ public class GameManager {
         }
 
         // then if the game has reached the maximum number of players also considering the terminator presence, it starts
+        return checkLobby();
+    }
+
+    /**
+     * Utility method used by {@link #lobbyMessageHandler(LobbyMessage) lobbyMessageHandler} each time a message is added
+     * to the {@link GameLobby Lobby} to control if it has the sufficient informations to start the {@link Game Game}
+     *
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
+    private Response checkLobby() {
+        ArrayList<LobbyMessage> inLobbyPlayers = lobby.getInLobbyPlayers();
+
         if ((lobby.getTerminatorPresence() && inLobbyPlayers.size() == MAX_PLAYERS - 1) ||
                 (!lobby.getTerminatorPresence() && inLobbyPlayers.size() == MAX_PLAYERS)) {
             gameSetupHandler();
@@ -450,25 +626,6 @@ public class GameManager {
                 return roundManager.getTurnManager().getAfterFrenzy().contains(roundManager.getTurnManager().getTurnOwner());
             default:
                 throw new InvalidGameStateException();
-        }
-    }
-
-    /**
-     * Method used to oblige a player to use the {@link model.actions.TerminatorAction TerminatorAction} in case he hasn't
-     * already performed it
-     *
-     * @param receivedMessage the {@link Message Message} received that can be both: {@link UseTerminatorRequest UseTerminatorRequest}
-     *                        or a {@link PowerupRequest PowerupRequest}
-     * @return
-     */
-    private Response handleTerminatorAsLastAction(Message receivedMessage) {
-        switch (receivedMessage.getContent()) {
-            case TERMINATOR:
-                return roundManager.handleTerminatorAction((UseTerminatorRequest) receivedMessage, PossibleGameState.MISSING_TERMINATOR_ACTION);
-            case POWERUP:
-                return roundManager.handlePowerupAction((PowerupRequest) receivedMessage);
-            default:
-                return buildInvalidResponse();
         }
     }
 

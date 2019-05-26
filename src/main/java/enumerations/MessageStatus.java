@@ -1,5 +1,5 @@
 package enumerations;
 
 public enum MessageStatus {
-    OK, ERROR
+    OK, ERROR, NO_RESPONSE
 }
