@@ -30,7 +30,7 @@ public class Server implements Runnable {
 
     private final GameManager gameManager;
 
-    static final Logger LOGGER = Logger.getLogger("Server");
+    public static final Logger LOGGER = Logger.getLogger("Server");
 
     public Server() {
         clients = new HashMap<>();

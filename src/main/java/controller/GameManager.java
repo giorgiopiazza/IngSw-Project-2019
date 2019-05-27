@@ -78,44 +78,49 @@ public class GameManager {
     public Message onMessage(Message receivedMessage) {
         Response tempResponse;
 
-        // on the game setup messages can be received from any player
-        if (gameState == PossibleGameState.GAME_ROOM) {
-            return firstStateHandler(receivedMessage);
-        }
+        try {
+            // on the game setup messages can be received from any player
+            if (gameState == PossibleGameState.GAME_ROOM) {
+                return firstStateHandler(receivedMessage);
+            }
 
-        // if the message received comes from a client that is not the turn owner it is never executed!
-        if (!gameInstance.getPlayerByName(receivedMessage.getSenderUsername()).equals(roundManager.getTurnManager().getTurnOwner())) {
-            return new Response("Message from a player that is not his turn!", MessageStatus.ERROR);
-        }
+            // if the message received comes from a client that is not the turn owner it is never executed!
+            if (!gameInstance.getPlayerByName(receivedMessage.getSenderUsername()).equals(roundManager.getTurnManager().getTurnOwner())) {
+                return new Response("Message from a player that is not his turn!", MessageStatus.ERROR);
+            }
 
-        // SPECIAL STATES handling
-        tempResponse = specialStatesHandler(receivedMessage);
+            // SPECIAL STATES handling
+            tempResponse = specialStatesHandler(receivedMessage);
 
-        if(tempResponse.getStatus() != MessageStatus.NO_RESPONSE) {
-            return tempResponse;
-        } // else no special States are affected
+            if (tempResponse.getStatus() != MessageStatus.NO_RESPONSE) {
+                return tempResponse;
+            } // else no special States are affected
 
-        switch (receivedMessage.getContent()) {
-            case TERMINATOR_SPAWN:
-                return terminatorSpawnCheckState(receivedMessage);
-            case DISCARD_POWERUP:
-                return discardPowerupCheckState(receivedMessage);
-            case TERMINATOR:
-                return terminatorCheckState(receivedMessage);
-            case POWERUP:
-                return powerupCheckState(receivedMessage);
-            case MOVE:
-                return moveCheckState(receivedMessage);
-            case MOVE_PICK:
-                return pickCheckState(receivedMessage);
-            case SHOOT:
-                return shootCheckState(receivedMessage);
-            case RELOAD:
-                return reloadCheckState(receivedMessage);
-            case PASS_TURN:
-                return passCheckState();
-            default:
-                throw new InvalidGameStateException();
+            switch (receivedMessage.getContent()) {
+                case TERMINATOR_SPAWN:
+                    return terminatorSpawnCheckState(receivedMessage);
+                case DISCARD_POWERUP:
+                    return discardPowerupCheckState(receivedMessage);
+                case TERMINATOR:
+                    return terminatorCheckState(receivedMessage);
+                case POWERUP:
+                    return powerupCheckState(receivedMessage);
+                case MOVE:
+                    return moveCheckState(receivedMessage);
+                case MOVE_PICK:
+                    return pickCheckState(receivedMessage);
+                case SHOOT:
+                    return shootCheckState(receivedMessage);
+                case RELOAD:
+                    return reloadCheckState(receivedMessage);
+                case PASS_TURN:
+                    return passCheckState();
+                default:
+                    throw new InvalidGameStateException();
+            }
+        } catch (ClassCastException e) {
+            Server.LOGGER.severe("Invalid cast of a message from " + receivedMessage.getSenderUsername());
+            return buildInvalidResponse();
         }
 
     }
