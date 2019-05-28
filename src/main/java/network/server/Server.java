@@ -1,12 +1,10 @@
 package network.server;
 
 import controller.GameManager;
+import enumerations.MessageContent;
 import enumerations.MessageStatus;
 import model.Game;
-import network.message.ConnectionResponse;
-import network.message.DisconnectionMessage;
-import network.message.Message;
-import network.message.Response;
+import network.message.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -19,20 +17,19 @@ import java.util.stream.Collectors;
  * It handles all the client regardless of whether they are Sockets or RMI
  */
 public class Server implements Runnable {
-    public static final int SOCKET_PORT = 2727;
-    public static final int RMI_PORT = 7272;
+    private static final int SOCKET_PORT = 2727;
+    private static final int RMI_PORT = 7272;
 
     private static final int MAX_CLIENT = 5;
     private static final String[] FORBIDDEN_USERNAME = {Game.GOD, Game.TERMINATOR_USERNAME};
 
     private Map<String, Connection> clients;
-    private Thread pinger;
 
     private final GameManager gameManager;
 
     public static final Logger LOGGER = Logger.getLogger("Server");
 
-    public Server() {
+    private Server() {
         clients = new HashMap<>();
 
         SocketServer serverSocket = new SocketServer(this, SOCKET_PORT);
@@ -45,7 +42,7 @@ public class Server implements Runnable {
 
         LOGGER.info("RMI Server Started");
 
-        pinger = new Thread(this);
+        Thread pinger = new Thread(this);
         pinger.start();
 
         gameManager = new GameManager(this);
@@ -61,7 +58,7 @@ public class Server implements Runnable {
      * @param username   username of the player
      * @param connection connection of the client
      */
-    public void login(String username, Connection connection) {
+    void login(String username, Connection connection) {
         try {
             if (clients.containsKey(username)) {
                 if (!clients.get(username).isConnected()) { // Player Reconnection
@@ -139,7 +136,7 @@ public class Server implements Runnable {
      *
      * @param message message sent to server
      */
-    public void onMessage(Message message) {
+    void onMessage(Message message) {
         if (message != null && message.getToken() != null && message.getSenderUsername() != null) {
             String msgToken = message.getToken();
             Connection conn = clients.get(message.getSenderUsername());
@@ -158,11 +155,12 @@ public class Server implements Runnable {
      *
      * @param playerConnection connection of the player that just disconnected
      */
-    public void onDisconnect(Connection playerConnection) {
+    void onDisconnect(Connection playerConnection) {
         String username = getUsernameByConnection(playerConnection);
 
         if (username != null) {
             sendMessageToAll(new DisconnectionMessage(username));
+            gameManager.onMessage(new LobbyMessage(username, null, MessageContent.DISCONNECTION, null));
             LOGGER.log(Level.INFO, "{0} disconnected from server!", username);
         }
     }
@@ -201,23 +199,6 @@ public class Server implements Runnable {
                 break;
             }
         }
-    }
-
-    /**
-     * Gets all disconnected players
-     *
-     * @return a list of all username of disconnected players
-     */
-    public List<String> getDisconnectedPlayers() {
-        List<String> players = new ArrayList<>();
-
-        for (Map.Entry<String, Connection> client : clients.entrySet()) {
-            if (!client.getValue().isConnected()) {
-                players.add(client.getKey());
-            }
-        }
-
-        return players;
     }
 
     /**
