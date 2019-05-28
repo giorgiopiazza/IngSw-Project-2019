@@ -137,7 +137,6 @@ class RoundManager {
             gameInstance.spawnPlayer(turnOwner, gameInstance.getGameMap().getSpawnSquare(spawnColor));
         } catch (InvalidSpawnColorException e) {
             // never reached, a powerup has always a corresponding spawning color!
-            // TODO add different kind of color ? SpawnColor ?
         }
 
         // changing state handling
@@ -156,6 +155,7 @@ class RoundManager {
                 pickTwoPowerups();
             }
         }
+
         return buildPositiveResponse("Player spawned with chosen powerup");
     }
 
@@ -374,6 +374,7 @@ class RoundManager {
                         // can not happen here because powerup is already verified to be possessed
                     }
                 }
+
                 return buildPositiveResponse("Targeting Scope used");
             case 1:
                 if(powerupsIndexes.size() == 3) {
@@ -431,6 +432,7 @@ class RoundManager {
                         }
                     }
                 }
+
                 return buildPositiveResponse("Targeting Scopes Used");
             case 2:
                 for(int i = 0; i < 3; ++i) {
@@ -846,7 +848,6 @@ class RoundManager {
             gameInstance.spawnPlayer(turnOwner, gameInstance.getGameMap().getSpawnSquare(spawnColor));
         } catch (InvalidSpawnColorException e) {
             // never reached, a powerup has always a corresponding spawning color!
-            // TODO add different kind of color ? SpawnColor ?
         }
 
         // now I have to pass the turn to the next death player and pick a card for him
@@ -929,6 +930,7 @@ class RoundManager {
      * @return the Positive {@link Response Response} built
      */
     private Response buildPositiveResponse(String reason) {
+        gameManager.updateClient();
         return new Response(reason, MessageStatus.OK);
     }
 

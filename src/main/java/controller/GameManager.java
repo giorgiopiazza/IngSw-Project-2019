@@ -73,7 +73,6 @@ public class GameManager implements TimerRunListener {
         handleKillShotTrackDistribution();
         winners = declareWinner();
         server.sendMessageToAll(winners);
-
     }
 
     /**
@@ -233,8 +232,10 @@ public class GameManager implements TimerRunListener {
                     gameInstance.setState(GameState.FINAL_FRENZY);
                     finalFrenzySetup();
                 }
+                updateClient();
                 return tempResponse;
             } else {
+                updateClient();
                 return tempResponse;
             }
         } else {
@@ -264,8 +265,10 @@ public class GameManager implements TimerRunListener {
                     gameInstance.setState(GameState.FINAL_FRENZY);
                     finalFrenzySetup();
                 }
+                updateClient();
                 return tempResponse;
             } else {
+                updateClient();
                 return tempResponse;
             }
         } else {
@@ -486,6 +489,7 @@ public class GameManager implements TimerRunListener {
         // I first need to pick the two powerups for the first player playing
         roundManager.pickTwoPowerups();
 
+        updateClient();
         server.sendMessageToAll(new GameStartMessage(roundManager.getTurnManager().getTurnOwner().getUsername()));
     }
 
@@ -512,8 +516,8 @@ public class GameManager implements TimerRunListener {
         } else if (lobbyMessage.getContent() == MessageContent.DISCONNECTION && inLobbyPlayers.contains(lobbyMessage)) {
             inLobbyPlayers.remove(lobbyMessage);
             removeVote(lobbyMessage.getSenderUsername());
-            timerCheck();
-            return null;
+            updateClient();
+            return new Response("Player removed from Lobby", MessageStatus.OK);
         } else {
             return buildInvalidResponse();
         }
@@ -916,6 +920,14 @@ public class GameManager implements TimerRunListener {
      */
     private Response buildInvalidResponse() {
         return new Response("Invalid message", MessageStatus.ERROR);
+    }
+
+    /**
+     * This method sends to all clients the new state of the {@link Game Game}, contained in the
+     * {@link model.GameSerialized GameSerialized}
+     */
+    void updateClient() {
+        server.sendMessageToAll(new GameStateMessage());
     }
 
     /**

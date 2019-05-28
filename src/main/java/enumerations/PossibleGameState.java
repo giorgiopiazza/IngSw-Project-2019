@@ -11,6 +11,7 @@ public enum PossibleGameState {
     GRANADE_USAGE,
     SCOPE_USAGE,
     PASS_NORMAL_TURN,
+    PASS_FRENZY_TURN,
     ASS_FRENZY_TURN,
     ACTIONS_DONE,
     FRENZY_ACTIONS_DONE,
