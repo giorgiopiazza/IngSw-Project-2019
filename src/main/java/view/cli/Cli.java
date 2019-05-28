@@ -3,6 +3,7 @@ package view.cli;
 import enumerations.MessageContent;
 import enumerations.MessageStatus;
 import enumerations.PlayerColor;
+import enumerations.PossibleGameState;
 import model.GameSerialized;
 import model.player.Player;
 import model.player.PlayerPosition;
@@ -30,11 +31,14 @@ public class Cli implements ClientUpdateListener {
     private Timer timer;
     private TimerTask timerTask;
     private ClientUpdater clientUpdater;
+    private boolean started;
+    private PossibleGameState gameState;
 
     public Cli() {
         in = new Scanner(System.in);
         out = new AdrenalinePrintStream();
         timerTime = 30;
+        started = false;
     }
 
     /**
@@ -524,7 +528,9 @@ public class Cli implements ClientUpdateListener {
                     break;
 
                 case READY:
-
+                    GameStartMessage gameStartMessage = (GameStartMessage) message;
+                    gameStartMessage.getFirstPlayer();
+                    started = true;
                     break;
 
                 default:
