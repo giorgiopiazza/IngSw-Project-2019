@@ -1,7 +1,13 @@
 package enumerations;
 
 public enum PossibleGameState {
+    /**
+     * Game State when wait to vote and entry in lobby
+     */
     GAME_ROOM,
+    /**
+     * Game started
+     */
     GAME_READY,
     GAME_STARTED,
     FINAL_FRENZY,
