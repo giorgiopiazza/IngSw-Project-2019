@@ -1,10 +1,11 @@
 package view.cli;
 
-import enumerations.MessageContent;
-import enumerations.MessageStatus;
-import enumerations.PlayerColor;
-import enumerations.PossibleGameState;
+import enumerations.*;
+import exceptions.AdrenalinaRuntimeException;
+import exceptions.actions.PowerupCardsNotFoundException;
+import exceptions.player.PlayerNotFoundException;
 import model.GameSerialized;
+import model.cards.PowerupCard;
 import model.player.Player;
 import model.player.PlayerPosition;
 import model.player.UserPlayer;
@@ -17,10 +18,13 @@ import utility.MessageBuilder;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class Cli implements ClientUpdateListener {
+    private final Object lock = new Object();
+
     private Client client;
     private Scanner in;
     private AdrenalinePrintStream out;
@@ -28,17 +32,23 @@ public class Cli implements ClientUpdateListener {
     private PlayerColor playerColor;
     private GameSerialized gameSerialized;
     private int timerTime;
+
     private Timer timer;
     private TimerTask timerTask;
     private ClientUpdater clientUpdater;
+
     private boolean started;
+    private boolean finished;
+    private List<Player> winners;
     private PossibleGameState gameState;
+    private Player firstPlayer;
 
     public Cli() {
-        in = new Scanner(System.in);
-        out = new AdrenalinePrintStream();
-        timerTime = 30;
-        started = false;
+        this.in = new Scanner(System.in);
+        this.out = new AdrenalinePrintStream();
+        this.timerTime = 0;
+        this.started = false;
+        this.finished = false;
     }
 
     /**
@@ -56,20 +66,21 @@ public class Cli implements ClientUpdateListener {
 
         timer = new Timer();
         timerTask = new LobbyTimer(() -> {
-            out.print(AnsiCode.CLEAR_LINE  + AnsiCode.CLEAR_LINE);
-
-            if (timerTime >= 0) promptInputError(false, "the game will start in " + timerTime-- + " seconds");
-            else {
-                timer.cancel();
-                checkStartGame();
+            synchronized (lock) {
+                if (!started) started = false;
+                else {
+                    timer.cancel();
+                    checkStartGame();
+                }
             }
         });
         timer.schedule(timerTask, 1000, 1000);
-        promptInputError(true, "the game will start in " + timerTime-- + " seconds");
     }
 
     private void checkStartGame() {
-        doSomething();
+        while (!Thread.currentThread().isInterrupted()) {
+            doSomething();
+        }
     }
 
     private void printLogo() {
@@ -428,17 +439,23 @@ public class Cli implements ClientUpdateListener {
 
         switch (choose) {
             case 0:
-                CliPrinter.printMap(out, gameSerialized);
+                synchronized (lock) {
+                    CliPrinter.printMap(out, gameSerialized);
+                }
                 break;
 
             case 1:
-                CliPrinter.printPlayerBoards(out, gameSerialized);
+                synchronized (lock) {
+                    CliPrinter.printPlayerBoards(out, gameSerialized);
+                }
                 break;
 
             case 2:
-                CliPrinter.printMap(out, gameSerialized);
+                synchronized (lock) {
+                    CliPrinter.printMap(out, gameSerialized);
+                }
 
-                player = gameSerialized.getPlayers().stream().filter(p -> p.getUsername().equals(username)).findFirst().orElse(null);
+                player = getPlayer(username);
 
                 message = MessageBuilder.buildMoveRequest(client.getToken(), player, getCoordinates());
 
@@ -456,12 +473,17 @@ public class Cli implements ClientUpdateListener {
                 break;
 
             case 5:
-
+                PowerupCard powerupCard = askPowerUpSpawn();
+                player = getPlayer(username);
+                try {
+                    client.sendMessage(MessageBuilder.buildDiscardPowerupRequest(client.getToken(), (UserPlayer) player, powerupCard));
+                } catch (IOException | PowerupCardsNotFoundException e) {
+                    promptError(e.getMessage(), true);
+                }
                 break;
 
             case 6:
-                player = gameSerialized.getPlayers().stream().filter(p -> p.getUsername().equals(username)).findFirst().orElse(null);
-
+                player = getPlayer(username);
                 try {
                     client.sendMessage(MessageBuilder.buildPassTurnRequest(client.getToken(), (UserPlayer) player));
                 } catch (IOException e) {
@@ -469,6 +491,41 @@ public class Cli implements ClientUpdateListener {
                 }
                 break;
         }
+    }
+
+    private PowerupCard askPowerUpSpawn() {
+        UserPlayer player = (UserPlayer) getPlayer(username);
+
+        List<PowerupCard> powerups = Arrays.asList(player.getPowerups());
+
+        powerups.add(player.getSpawningCard());
+
+        out.println("Where do you want to re spawn?");
+        for (int i = 0; i < powerups.size(); i++) {
+            out.println("\t" + i + " - " + CliPrinter.toStringPowerUpCard(powerups.get(i)) + " (" + Ammo.toColor(powerups.get(i).getValue()) + " room)");
+        }
+
+        out.println();
+        boolean firstError = true;
+        int choose = 0;
+
+        do {
+            if (choose >= powerups.size() || choose < 0) {
+                firstError = promptInputError(firstError, "Value not valid");
+            }
+
+            out.print(">>> ");
+
+            if (in.hasNextInt()) {
+                choose = in.nextInt();
+            } else {
+                choose = -1;
+                in.nextLine();
+                firstError = promptInputError(firstError, "Value not valid");
+            }
+        } while (choose < 0 || choose >= powerups.size());
+
+        return powerups.get(choose);
     }
 
     @NotNull
@@ -524,18 +581,45 @@ public class Cli implements ClientUpdateListener {
 
                 case GAME_STATE:
                     GameStateMessage stateMessage = (GameStateMessage) message;
-                    gameSerialized = stateMessage.getGameSerialized();
+                    out.println();
+                    synchronized (lock) {
+                        gameSerialized = stateMessage.getGameSerialized();
+                        out.println(gameSerialized.toString());
+                        out.println();
+                    }
                     break;
 
                 case READY:
                     GameStartMessage gameStartMessage = (GameStartMessage) message;
-                    gameStartMessage.getFirstPlayer();
-                    started = true;
+                    firstPlayer = getPlayer(gameStartMessage.getFirstPlayer());
+                    synchronized (lock) {
+                        started = true;
+                    }
+                    break;
+
+                case LAST_RESPONSE:
+                    WinnersResponse winnersList = (WinnersResponse) message;
+                    synchronized (lock) {
+                        this.finished = true;
+                        this.winners = winnersList.getWinners();
+                    }
+                    break;
+
+                case DISCONNECTION:
                     break;
 
                 default:
             }
 
+            Logger.getGlobal().log(Level.INFO, "{0}", message);
+        }
+    }
+
+    private Player getPlayer(String username) {
+        synchronized (lock) {
+            Player player = gameSerialized.getPlayers().stream().filter(p -> p.getUsername().equals(username)).findFirst().orElse(null);
+            if (player == null) throw new PlayerNotFoundException("player not found, cannot continue with the game");
+            return player;
         }
     }
 }

@@ -2,7 +2,7 @@ package utility;
 
 import java.util.TimerTask;
 
-public class LobbyTimer extends TimerTask {
+public class LobbyTimer extends TimerTask{
     private TimerRunListener timerRunListener;
 
     public LobbyTimer(TimerRunListener timerRunListener) {

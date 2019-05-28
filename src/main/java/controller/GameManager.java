@@ -14,15 +14,18 @@ import model.player.Terminator;
 import model.player.UserPlayer;
 import network.message.*;
 import network.server.Server;
+import utility.LobbyTimer;
+import utility.TimerRunListener;
 
 import java.util.*;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 
 /**
  * This Class is the Controller that receives Messages, validates them and moves the Game State to make the game evolve
  */
-public class GameManager {
+public class GameManager implements TimerRunListener {
     private static final int MIN_PLAYERS = 3;
     private static final int MAX_PLAYERS = 5;
 
@@ -32,6 +35,10 @@ public class GameManager {
     private GameLobby lobby;
     private RoundManager roundManager;
     private ShootParameters shootParameters;
+
+    private int lobbyTimeoutTime;
+    private Timer lobbyTimer;
+    private boolean lobbyTimerRunning = false;
 
     /**
      * Creates an instance of {@link GameManager GameManager} binding the server tha will send messages to him
@@ -44,6 +51,8 @@ public class GameManager {
         this.lobby = new GameLobby();
         this.gameInstance = Game.getInstance();
         this.roundManager = new RoundManager(this);
+
+        lobbyTimeoutTime = 10000;
     }
 
     /**
@@ -457,7 +466,6 @@ public class GameManager {
         if (gameInstance.isGameReadyToStart()) {
             startingStateHandler();
         }
-
         // nothing to do here as we said game should always be ready to start at this point
     }
 
@@ -501,24 +509,48 @@ public class GameManager {
                     (!lobby.getTerminatorPresence() && inLobbyPlayers.size() < 5) &&
                             lobbyMessage.getChosenColor() != null && unusedColors.contains(lobbyMessage.getChosenColor())) {
                 inLobbyPlayers.add(lobbyMessage);
+                Server.LOGGER.log(Level.INFO, "{0} joined the lobby", lobbyMessage.getSenderUsername());
+                timerCheck();
             } else {
                 return buildInvalidResponse();
             }
         } else if (lobbyMessage.getContent() == MessageContent.DISCONNECTION && inLobbyPlayers.contains(lobbyMessage)) {
             inLobbyPlayers.remove(lobbyMessage);
             removeVote(lobbyMessage.getSenderUsername());
+            Server.LOGGER.log(Level.INFO, "{0} left the lobby", lobbyMessage.getSenderUsername());
+            timerCheck();
             sendPrivateUpdates();
             return new Response("Player removed from Lobby", MessageStatus.OK);
         } else {
             return buildInvalidResponse();
         }
 
-        if (inLobbyPlayers.size() == MIN_PLAYERS) {
-            // timer starts here
-        }
-
         // then if the game has reached the maximum number of players also considering the terminator presence, it starts
         return checkLobby();
+    }
+
+    private void timerCheck() {
+        ArrayList<LobbyMessage> inLobbyPlayers = lobby.getInLobbyPlayers();
+
+        if (lobbyTimerRunning) {
+            if (inLobbyPlayers.size() < MIN_PLAYERS) {
+                lobbyTimer.cancel();
+                lobbyTimerRunning = false;
+            }
+        } else {
+            if (inLobbyPlayers.size() >= MIN_PLAYERS) {
+                lobbyTimer = new Timer();
+                lobbyTimer.schedule(new LobbyTimer(this), lobbyTimeoutTime);
+                Server.LOGGER.info("Lobby timer started (" + lobbyTimeoutTime / 1000 + " s)");
+                lobbyTimerRunning = true;
+            }
+        }
+
+    }
+
+    @Override
+    public void onTimerRun() {
+        gameSetupHandler();
     }
 
     /**
@@ -532,6 +564,8 @@ public class GameManager {
 
         if ((lobby.getTerminatorPresence() && inLobbyPlayers.size() == MAX_PLAYERS - 1) ||
                 (!lobby.getTerminatorPresence() && inLobbyPlayers.size() == MAX_PLAYERS)) {
+            lobbyTimer.cancel();
+            lobbyTimerRunning = false;
             gameSetupHandler();
             return new Response("Last player added to lobby, game is starting...", MessageStatus.OK);
         } else {
