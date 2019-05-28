@@ -137,7 +137,6 @@ class RoundManager {
             gameInstance.spawnPlayer(turnOwner, gameInstance.getGameMap().getSpawnSquare(spawnColor));
         } catch (InvalidSpawnColorException e) {
             // never reached, a powerup has always a corresponding spawning color!
-            // TODO add different kind of color ? SpawnColor ?
         }
 
         // changing state handling
@@ -846,7 +845,6 @@ class RoundManager {
             gameInstance.spawnPlayer(turnOwner, gameInstance.getGameMap().getSpawnSquare(spawnColor));
         } catch (InvalidSpawnColorException e) {
             // never reached, a powerup has always a corresponding spawning color!
-            // TODO add different kind of color ? SpawnColor ?
         }
 
         // now I have to pass the turn to the next death player and pick a card for him

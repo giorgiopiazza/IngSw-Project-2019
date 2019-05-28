@@ -5,6 +5,7 @@ import model.player.UserPlayer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This Class is the One that handles the Turn Assignment to a {@link UserPlayer UserPlayer} during each phase of the
@@ -72,11 +73,7 @@ class TurnManager {
      * @param damaged the ArrayList of damaged {@link UserPlayer UserPlayers}
      */
     void setDamagedPlayers(ArrayList<UserPlayer> damaged) {
-        if (damaged == null) {
-            this.damagedPlayers = new ArrayList<>();
-        } else {
-            this.damagedPlayers = damaged;
-        }
+        damagedPlayers = Objects.requireNonNullElse(damaged, new ArrayList<>());
     }
 
     /**
@@ -93,11 +90,7 @@ class TurnManager {
      * @param deaths the ArrayList of dead {@link UserPlayer UserPlayers}
      */
     void setDeathPlayers(ArrayList<UserPlayer> deaths) {
-        if (deaths == null) {
-            this.deathPlayers = new ArrayList<>();
-        } else {
-            this.deathPlayers = deaths;
-        }
+        deathPlayers = Objects.requireNonNullElse(deaths, new ArrayList<>());
     }
 
     /**
