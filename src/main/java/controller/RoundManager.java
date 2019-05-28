@@ -260,6 +260,7 @@ class RoundManager {
             afterTerminatorActionHandler(gameState);
         }
 
+        gameManager.sendPrivateUpdates();
         return buildPositiveResponse("Terminator action used");
     }
 
@@ -930,7 +931,7 @@ class RoundManager {
      * @return the Positive {@link Response Response} built
      */
     private Response buildPositiveResponse(String reason) {
-        gameManager.updateClient();
+        gameManager.sendPrivateUpdates();
         return new Response(reason, MessageStatus.OK);
     }
 
