@@ -224,10 +224,10 @@ public class GameManager {
                     gameInstance.setState(GameState.FINAL_FRENZY);
                     finalFrenzySetup();
                 }
-                updateClient();
+                sendPrivateUpdates();
                 return tempResponse;
             } else {
-                updateClient();
+                sendPrivateUpdates();
                 return tempResponse;
             }
         } else {
@@ -257,10 +257,10 @@ public class GameManager {
                     gameInstance.setState(GameState.FINAL_FRENZY);
                     finalFrenzySetup();
                 }
-                updateClient();
+                sendPrivateUpdates();
                 return tempResponse;
             } else {
-                updateClient();
+                sendPrivateUpdates();
                 return tempResponse;
             }
         } else {
@@ -481,7 +481,7 @@ public class GameManager {
         // I first need to pick the two powerups for the first player playing
         roundManager.pickTwoPowerups();
 
-        updateClient();
+        sendPrivateUpdates();
         server.sendMessageToAll(new GameStartMessage(roundManager.getTurnManager().getTurnOwner().getUsername()));
     }
 
@@ -507,7 +507,7 @@ public class GameManager {
         } else if (lobbyMessage.getContent() == MessageContent.DISCONNECTION && inLobbyPlayers.contains(lobbyMessage)) {
             inLobbyPlayers.remove(lobbyMessage);
             removeVote(lobbyMessage.getSenderUsername());
-            updateClient();
+            sendPrivateUpdates();
             return new Response("Player removed from Lobby", MessageStatus.OK);
         } else {
             return buildInvalidResponse();
@@ -895,8 +895,12 @@ public class GameManager {
      * This method sends to all clients the new state of the {@link Game Game}, contained in the
      * {@link model.GameSerialized GameSerialized}
      */
-    void updateClient() {
-        server.sendMessageToAll(new GameStateMessage());
+    void sendPrivateUpdates() {
+        List<UserPlayer> players = gameInstance.getPlayers();
+
+        for(UserPlayer player : players) {
+            server.sendMessage(player.getUsername(), new GameStateMessage(player.getUsername()));
+        }
     }
 
     /**
