@@ -31,6 +31,8 @@ public class GameSerialized implements Serializable  {
 
         killShotsTrack = instance.getKillShotsTrack() != null ? Arrays.copyOf(instance.getKillShotsTrack(), instance.getKillShotsTrack().length) : null;
         killShotNum = instance.getKillShotNum();
+
+        gameMap = new GameMap(instance.getGameMap());
     }
 
     public GameState getCurrentState() {
@@ -88,6 +90,7 @@ public class GameSerialized implements Serializable  {
     @Override
     public String toString() {
         return "GameSerialized{" +
+                "map=" + gameMap +
                 "currentState=" + currentState +
                 ", players=" + players +
                 ", terminatorPresent=" + terminatorPresent +

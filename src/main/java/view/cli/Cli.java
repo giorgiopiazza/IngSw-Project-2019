@@ -18,6 +18,7 @@ import utility.MessageBuilder;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -45,7 +46,7 @@ public class Cli implements ClientUpdateListener {
     public Cli() {
         this.in = new Scanner(System.in);
         this.out = new AdrenalinePrintStream();
-        this.timerTime = 30;
+        this.timerTime = 0;
         this.started = false;
         this.finished = false;
     }
@@ -65,9 +66,8 @@ public class Cli implements ClientUpdateListener {
 
         timer = new Timer();
         timerTask = new LobbyTimer(() -> {
-            out.print(AnsiCode.CLEAR_LINE  + AnsiCode.CLEAR_LINE);
             synchronized (lock) {
-                if (timerTime >= 0) promptInputError(false, "the game will start in " + timerTime-- + " seconds");
+                if (!started) started = false;
                 else {
                     timer.cancel();
                     checkStartGame();
@@ -75,13 +75,12 @@ public class Cli implements ClientUpdateListener {
             }
         });
         timer.schedule(timerTask, 1000, 1000);
-        synchronized (lock) {
-            promptInputError(true, "the game will start in " + timerTime-- + " seconds");
-        }
     }
 
     private void checkStartGame() {
-        doSomething();
+        while (!Thread.currentThread().isInterrupted()) {
+            doSomething();
+        }
     }
 
     private void printLogo() {
@@ -582,8 +581,11 @@ public class Cli implements ClientUpdateListener {
 
                 case GAME_STATE:
                     GameStateMessage stateMessage = (GameStateMessage) message;
+                    out.println();
                     synchronized (lock) {
                         gameSerialized = stateMessage.getGameSerialized();
+                        out.println(gameSerialized.toString());
+                        out.println();
                     }
                     break;
 
@@ -591,7 +593,6 @@ public class Cli implements ClientUpdateListener {
                     GameStartMessage gameStartMessage = (GameStartMessage) message;
                     firstPlayer = getPlayer(gameStartMessage.getFirstPlayer());
                     synchronized (lock) {
-                        timerTime = 0;
                         started = true;
                     }
                     break;
@@ -604,9 +605,13 @@ public class Cli implements ClientUpdateListener {
                     }
                     break;
 
+                case DISCONNECTION:
+                    break;
+
                 default:
             }
 
+            Logger.getGlobal().log(Level.INFO, "{0}", message);
         }
     }
 

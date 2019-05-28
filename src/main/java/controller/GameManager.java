@@ -18,6 +18,7 @@ import utility.LobbyTimer;
 import utility.TimerRunListener;
 
 import java.util.*;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 
@@ -465,7 +466,6 @@ public class GameManager implements TimerRunListener {
         if (gameInstance.isGameReadyToStart()) {
             startingStateHandler();
         }
-
         // nothing to do here as we said game should always be ready to start at this point
     }
 
@@ -509,6 +509,7 @@ public class GameManager implements TimerRunListener {
                     (!lobby.getTerminatorPresence() && inLobbyPlayers.size() < 5) &&
                             lobbyMessage.getChosenColor() != null && unusedColors.contains(lobbyMessage.getChosenColor())) {
                 inLobbyPlayers.add(lobbyMessage);
+                Server.LOGGER.log(Level.INFO, "{0} joined the lobby", lobbyMessage.getSenderUsername());
                 timerCheck();
             } else {
                 return buildInvalidResponse();
@@ -516,7 +517,8 @@ public class GameManager implements TimerRunListener {
         } else if (lobbyMessage.getContent() == MessageContent.DISCONNECTION && inLobbyPlayers.contains(lobbyMessage)) {
             inLobbyPlayers.remove(lobbyMessage);
             removeVote(lobbyMessage.getSenderUsername());
-            updateClient();
+            Server.LOGGER.log(Level.INFO, "{0} left the lobby", lobbyMessage.getSenderUsername());
+            timerCheck();
             return new Response("Player removed from Lobby", MessageStatus.OK);
         } else {
             return buildInvalidResponse();
