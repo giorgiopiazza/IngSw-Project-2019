@@ -52,7 +52,7 @@ public class MessageBuilder {
      * @throws PowerupCardsNotFoundException if the player does not have that {@code powerupCard}
      */
     @NotNull
-    @Contract("null, _ -> fail; !null, null -> fail")
+    @Contract("_, null, _ -> fail; _, !null, null -> fail")
     public static DiscardPowerupRequest buildDiscardPowerupRequest(String token, UserPlayer player, PowerupCard powerupCard) throws PowerupCardsNotFoundException {
         if (player == null || powerupCard == null)
             throw new NullPointerException("player and powerupCard cannot be null");

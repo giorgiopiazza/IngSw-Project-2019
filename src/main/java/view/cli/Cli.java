@@ -4,82 +4,68 @@ import enumerations.MessageContent;
 import enumerations.MessageStatus;
 import enumerations.PlayerColor;
 import model.GameSerialized;
-import model.map.GameMap;
 import model.player.Player;
-import model.player.PlayerBoard;
+import model.player.PlayerPosition;
 import model.player.UserPlayer;
-import network.client.Client;
-import network.client.ClientRMI;
-import network.client.ClientSocket;
-import network.message.ColorResponse;
-import network.message.ConnectionResponse;
-import network.message.Message;
-import network.message.Response;
+import network.client.*;
+import network.message.*;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import utility.LobbyTimer;
 import utility.MessageBuilder;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class Cli {
+public class Cli implements ClientUpdateListener {
+    private Client client;
     private Scanner in;
     private AdrenalinePrintStream out;
     private String username;
     private PlayerColor playerColor;
-    private Client client;
+    private GameSerialized gameSerialized;
+    private int timerTime;
+    private Timer timer;
+    private TimerTask timerTask;
+    private ClientUpdater clientUpdater;
 
     public Cli() {
         in = new Scanner(System.in);
         out = new AdrenalinePrintStream();
+        timerTime = 30;
     }
 
     /**
      * Starts the view.cli
      */
     public void start() {
-        GameSerialized gs = new GameSerialized();
-        PlayerBoard pb = new PlayerBoard();
-        UserPlayer p1 = new UserPlayer("Pippo", PlayerColor.BLUE, pb);
-        UserPlayer p2 = new UserPlayer("Pluto", PlayerColor.GREEN, new PlayerBoard());
-        UserPlayer p3 = new UserPlayer("Topolino", PlayerColor.PURPLE, new PlayerBoard());
-        UserPlayer p4 = new UserPlayer("Minnie", PlayerColor.GREY, new PlayerBoard());
-
-        p1.getPlayerBoard().addDamage(p2, 3);
-        p1.getPlayerBoard().addDamage(p4, 1);
-        p2.getPlayerBoard().addDamage(p1, 2);
-        p2.getPlayerBoard().addDamage(p4, 3);
-        p3.getPlayerBoard().addDamage(p4, 2);
-        p3.getPlayerBoard().addDamage(p1, 2);
-        p4.getPlayerBoard().addDamage(p2, 1);
-        p4.getPlayerBoard().addDamage(p3, 2);
-
-        pb.addMark(p2, 1);
-        pb.addMark(p3, 3);
-        pb.addMark(p4, 2);
-        pb.addMark(p2, 2);
-        pb.addMark(p4, 1);
-
-        ArrayList<Player> players = new ArrayList<>();
-        players.add(p1);
-        players.add(p2);
-        players.add(p3);
-        players.add(p4);
-
-        gs.setPlayers(players);
-        gs.setGameMap(new GameMap(GameMap.MAP_1));
-
-
         printLogo();
         askUsername();
         askConnection();
         askColor();
         askLobbyJoin();
 
-        //CliPrinter.printPlayerBoards(out, gs);
-        //CliPrinter.printMap(out, gs);
+        clientUpdater = new ClientUpdater(client, this);
+
+
+        timer = new Timer();
+        timerTask = new LobbyTimer(() -> {
+            out.print(AnsiCode.CLEAR_LINE  + AnsiCode.CLEAR_LINE);
+
+            if (timerTime >= 0) promptInputError(false, "the game will start in " + timerTime-- + " seconds");
+            else {
+                timer.cancel();
+                checkStartGame();
+            }
+        });
+        timer.schedule(timerTask, 1000, 1000);
+        promptInputError(true, "the game will start in " + timerTime-- + " seconds");
+    }
+
+    private void checkStartGame() {
+        doSomething();
     }
 
     private void printLogo() {
@@ -380,9 +366,9 @@ public class Cli {
     }
 
     private boolean promptInputError(boolean firstError, String errorMessage) {
-        out.print("\33[1A\33[2K");
+        out.print(AnsiCode.CLEAR_LINE);
         if (!firstError) {
-            out.print("\33[1A\33[2K");
+            out.print(AnsiCode.CLEAR_LINE);
         }
 
         out.println(errorMessage);
@@ -398,6 +384,152 @@ public class Cli {
             out.println("\nPress ENTER to exit");
             in.nextLine();
             System.exit(1);
+        }
+    }
+
+    private void doSomething() {
+        out.println("Choose your next move:");
+        out.println("\t0 - Print map");
+        out.println("\t1 - Print players board");
+        out.println("\t2 - Move (only your turn)");
+        out.println("\t3 - Shoot (only your turn)");
+        out.println("\t4 - Move and pickup power up or weapon (only your turn)");
+        out.println("\t5 - Spawn (only your turn)");
+        out.println("\t6 - Pass turn (only your turn)");
+        out.println();
+
+        boolean accepted = false;
+        boolean firstError = true;
+
+        int choose = -1;
+
+        do {
+            out.print(">>> ");
+            if(in.hasNextInt()) {
+                choose = in.nextInt();
+                if (choose >= 0 && choose <= 6) accepted = true;
+                else firstError = promptInputError(firstError, "Input not valid!");
+            } else {
+                firstError = promptInputError(firstError, "Invalid integer!");
+                in.nextLine();
+            }
+        } while(!accepted);
+
+        switchChooses(choose);
+    }
+
+    private void switchChooses(int choose) {
+        Player player;
+        Message message;
+
+        switch (choose) {
+            case 0:
+                CliPrinter.printMap(out, gameSerialized);
+                break;
+
+            case 1:
+                CliPrinter.printPlayerBoards(out, gameSerialized);
+                break;
+
+            case 2:
+                CliPrinter.printMap(out, gameSerialized);
+
+                player = gameSerialized.getPlayers().stream().filter(p -> p.getUsername().equals(username)).findFirst().orElse(null);
+
+                message = MessageBuilder.buildMoveRequest(client.getToken(), player, getCoordinates());
+
+                try {
+                    client.sendMessage(message);
+                } catch (IOException e) {
+                    promptError(e.getMessage(), true);
+                }
+                break;
+
+            case 3:
+                break;
+
+            case 4:
+                break;
+
+            case 5:
+
+                break;
+
+            case 6:
+                player = gameSerialized.getPlayers().stream().filter(p -> p.getUsername().equals(username)).findFirst().orElse(null);
+
+                try {
+                    client.sendMessage(MessageBuilder.buildPassTurnRequest(client.getToken(), (UserPlayer) player));
+                } catch (IOException e) {
+                    promptError(e.getMessage(), true);
+                }
+                break;
+        }
+    }
+
+    @NotNull
+    @Contract(" -> new")
+    private PlayerPosition getCoordinates() {
+        boolean exit = false;
+        boolean firstError = true;
+
+        int x = -1;
+        int y = -1;
+
+        if (in.hasNextLine()) in.nextLine();
+
+        out.println("Write the new coordinates (0,1):");
+        do {
+            out.print(">>> ");
+
+            if (in.hasNextLine()) {
+                String[] split = in.nextLine().split(",");
+
+                if (split.length != 2) firstError = promptInputError(firstError, "Wrong input (must be like \"0,0\" or \"0, 0\")");
+                else {
+                    try {
+                        x = Integer.parseInt(split[0].trim());
+                        y = Integer.parseInt(split[1].trim());
+
+                        exit = true;
+                    } catch (NumberFormatException e) {
+                        firstError = promptInputError(firstError, "Wrong input (must be like \"0,0\" or \"0, 0\")");
+                    }
+                }
+            }
+        } while (!exit);
+
+        return new PlayerPosition(x, y);
+    }
+
+    @Override
+    public void onUpdate(List<Message> messages) {
+        for (Message message : messages) {
+            out.println(message);
+
+            switch (message.getContent()) {
+                case RESPONSE:
+                    Response response = (Response) message;
+                    if (response.getStatus().equals(MessageStatus.ERROR)) {
+                        // TODO: torno indietro con la macchina a stati
+                        // Sei uno stronzo
+                    } else {
+                        // TODO: vado avanti con la macchina a stati
+                    }
+                    break;
+
+                case GAME_STATE:
+                    GameStateMessage stateMessage = (GameStateMessage) message;
+                    gameSerialized = stateMessage.getGameSerialized();
+                    break;
+
+                case READY:
+
+                    break;
+
+                default:
+            }
+
         }
     }
 }

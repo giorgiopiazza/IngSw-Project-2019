@@ -2,6 +2,7 @@ package view.cli;
 
 public class AnsiCode {
     public static final String RESET = "\u001B[0m";
+    public static final String CLEAR_LINE = "\33[1A\33[2K";
 
     public static final String TEXT_BLACK = "\u001B[30m";
     public static final String TEXT_RED = "\u001B[31m";
