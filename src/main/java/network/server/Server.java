@@ -176,7 +176,7 @@ public class Server implements Runnable {
                 try {
                     client.getValue().sendMessage(message);
                 } catch (IOException e) {
-                    // Already handled
+                    LOGGER.severe(e.getMessage());
                 }
             }
         }
@@ -194,7 +194,7 @@ public class Server implements Runnable {
                 try {
                     client.getValue().sendMessage(message);
                 } catch (IOException e) {
-                    // Already handled
+                    LOGGER.severe(e.getMessage());
                 }
                 break;
             }

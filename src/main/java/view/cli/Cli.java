@@ -161,7 +161,7 @@ public class Cli implements ClientUpdateListener {
         String address = askAddress();
         out.println("\nServer Address: " + address);
 
-        int port = askPort();
+        int port = askPort(connection);
         try {
             if (connection == 0) {
                 client = new ClientSocket(username, address, port);
@@ -222,10 +222,11 @@ public class Cli implements ClientUpdateListener {
         }
     }
 
-    private int askPort() {
+    private int askPort(int connection) {
         boolean firstError = true;
 
-        out.println("\nEnter the server port:");
+        int defaultPort = connection == 0 ? 2727 : 7272;
+        out.println("\nEnter the server port (default " + defaultPort + "):");
 
         do {
             out.print(">>> ");
@@ -239,9 +240,11 @@ public class Cli implements ClientUpdateListener {
                 } else {
                     firstError = promptInputError(firstError, "Invalid port!");
                 }
-            } else {
+            } else if (in.hasNextLine()) {
                 in.nextLine();
-                firstError = promptInputError(firstError, "Invalid integer!");
+                return defaultPort;
+                // if (in.nextLine().equals(""))
+                //firstError = promptInputError(firstError, "Invalid integer!");
             }
         } while (true);
     }

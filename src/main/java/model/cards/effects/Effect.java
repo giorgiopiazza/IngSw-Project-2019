@@ -3,9 +3,10 @@ package model.cards.effects;
 import enumerations.TargetType;
 import network.message.EffectRequest;
 
+import java.io.Serializable;
 import java.util.Map;
 
-public abstract class Effect {
+public abstract class Effect implements Serializable {
     private Map<String, String> properties;
     private TargetType[] targets;
 
