@@ -9,17 +9,19 @@ import java.util.logging.Logger;
 public class ClientUpdater implements Runnable {
     private final Client client;
     private ClientUpdateListener updateListener;
+    private boolean stop;
 
     public ClientUpdater(Client client, ClientUpdateListener updateListener) {
         this.client = client;
         this.updateListener = updateListener;
+        this.stop = false;
 
         new Thread(this).start();
     }
 
     @Override
     public void run() {
-        while (!Thread.currentThread().isInterrupted()) {
+        while (!stop) {
             synchronized (client) {
                 List<Message> messages;
 
@@ -36,6 +38,17 @@ public class ClientUpdater implements Runnable {
                 Logger.getGlobal().log(Level.SEVERE, e.getMessage());
                 Thread.currentThread().interrupt();
             }
+        }
+    }
+
+    public void stop() {
+        this.stop = true;
+    }
+
+    public void start() {
+        if (this.stop) {
+            this.stop = false;
+            new Thread(this).start();
         }
     }
 }
