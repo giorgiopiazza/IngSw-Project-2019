@@ -1,6 +1,7 @@
 package network.client;
 
 import view.cli.Cli;
+import view.gui.Gui;
 
 public class ClientMain {
     public static void main(String[] args) {
@@ -10,10 +11,10 @@ public class ClientMain {
                     new Cli().start();
                     break;
                 default:
-                    // Start GUI
+                    new Gui().start();
             }
         } else {
-            // Start GUI
+            new Gui().start();
         }
     }
 }
