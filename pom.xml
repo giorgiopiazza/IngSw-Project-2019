@@ -51,6 +51,16 @@
             <artifactId>annotations</artifactId>
             <version>17.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>11</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>11</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -101,7 +111,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.2</version>
                 <configuration>
-                    <mainClass>HelloFX</mainClass>
+                    <mainClass>view.gui.Gui</mainClass>
                 </configuration>
             </plugin>
 
