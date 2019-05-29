@@ -1,30 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import java.net.URL?>
 
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.image.Image?>
-<VBox alignment="CENTER" xmlns="http://javafx.com/javafx"
-          xmlns:fx="http://javafx.com/fxml"
-          id="mainPane">
+<?import javafx.scene.control.Label?>
+<VBox alignment="CENTER" xmlns="http://javafx.com/javafx" styleClass="mainPane">
     <stylesheets>
-        <URL value="@../css/menu.css"></URL>
+        <URL value="@../css/menu.css"/>
     </stylesheets>
 
-    <ImageView id="logoImage">
-        <Image url="@../img/scenes/logo.png" />
-    </ImageView>
+    <Label text="TEST FONT" styleClass="label"/>
 
-    <ImageView id="logoImage">
-        <Image url="@../img/scenes/startbutton.png" />
-    </ImageView>
+    <ImageView id="logoImage"/>
 
-    <ImageView id="logoImage">
-        <Image url="@../img/scenes/exitbutton.png" />
-    </ImageView>
+    <ImageView id="startButton"/>
+
+    <ImageView id="exitButton"/>
 </VBox>

@@ -1,3 +1,39 @@
-#mainPane {
+@font-face {
+    font-family: 'Ethnocentric';
+    src: url('../fonts/ethnocentric-rg.ttf');
+}
+
+@font-face {
+    font-family: 'EthnocentricItalic';
+    src: url('../fonts/ethnocentric-rg-it.ttf');
+}
+
+.mainPane {
     -fx-background-image: url("../img/scenes/bg.png");
+}
+
+.label {
+    -fx-font-family: 'Ethnocentric';
+    -fx-font-size: 15px;
+}
+
+#logoImage {
+    -fx-image: url("../img/scenes/logo.png");
+}
+
+#startButton {
+    -fx-image: url("../img/scenes/startbutton.png");
+}
+
+#exitButton {
+    -fx-image: url("../img/scenes/exitbutton.png");
+}
+
+#startButton:hover, #exitButton:hover {
+    -fx-effect: dropshadow(gaussian, #F44336, 15, 0.2, 0, 0)
+}
+
+#startButton:pressed, #exitButton:pressed {
+    -fx-scale-y: 0.98;
+    -fx-scale-x: 0.98;
 }

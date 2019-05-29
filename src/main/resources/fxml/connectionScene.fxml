@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import java.net.URL?>
+<BorderPane xmlns="http://javafx.com/javafx" styleClass="mainPane">
+    <stylesheets>
+        <URL value="@../css/menu.css"/>
+    </stylesheets>
+
+    <top>
+
+    </top>
+
+    <center>
+        <VBox alignment="CENTER">
+            <Label text="Enter your username:" styleClass="label"/>
+            <TextField id="usernameField"/>
+
+            <Label text="Select the type of connection: " styleClass="label"/>
+
+            <Label text="Enter server address:" styleClass="label"/>
+            <TextField id="addressField"/>
+
+            <Label text="Enter server port:" styleClass="label"/>
+            <TextField id="portField"/>
+        </VBox>
+    </center>
+
+</BorderPane>
