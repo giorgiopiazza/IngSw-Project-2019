@@ -8,6 +8,7 @@ import model.GameSerialized;
 import model.cards.PowerupCard;
 import model.player.Player;
 import model.player.PlayerPosition;
+import model.player.Terminator;
 import model.player.UserPlayer;
 import network.client.*;
 import network.message.*;
@@ -42,6 +43,7 @@ public class Cli implements ClientUpdateListener {
     private List<Player> winners;
     private PossibleGameState gameState;
     private Player firstPlayer;
+    private boolean isTerminator;
 
     public Cli() {
         this.in = new Scanner(System.in);
@@ -477,9 +479,10 @@ public class Cli implements ClientUpdateListener {
 
             case 5:
                 PowerupCard powerupCard = askPowerUpSpawn();
-                player = getPlayer(username);
+                List<PowerupCard> powerupCards = getPowerUps();
+
                 try {
-                    client.sendMessage(MessageBuilder.buildDiscardPowerupRequest(client.getToken(), (UserPlayer) player, powerupCard));
+                    client.sendMessage(MessageBuilder.buildDiscardPowerupRequest(client.getToken(), powerupCards, powerupCard, username));
                 } catch (IOException | PowerupCardsNotFoundException e) {
                     promptError(e.getMessage(), true);
                 }
@@ -496,13 +499,16 @@ public class Cli implements ClientUpdateListener {
         }
     }
 
+    private List<PowerupCard> getPowerUps() {
+        synchronized (lock) {
+            return gameSerialized.getPowerUps();
+        }
+    }
+
     private PowerupCard askPowerUpSpawn() {
-        UserPlayer player = (UserPlayer) getPlayer(username);
+        List<PowerupCard> powerups = getPowerUps();
 
-        List<PowerupCard> powerups = Arrays.asList(player.getPowerups());
-
-        powerups.add(player.getSpawningCard());
-
+        out.println();
         out.println("Where do you want to re spawn?");
         for (int i = 0; i < powerups.size(); i++) {
             out.println("\t" + i + " - " + CliPrinter.toStringPowerUpCard(powerups.get(i)) + " (" + Ammo.toColor(powerups.get(i).getValue()) + " room)");
@@ -596,6 +602,7 @@ public class Cli implements ClientUpdateListener {
                     GameStartMessage gameStartMessage = (GameStartMessage) message;
                     firstPlayer = getPlayer(gameStartMessage.getFirstPlayer());
                     synchronized (lock) {
+                        isTerminator = gameSerialized.isTerminatorPresent();
                         started = true;
                     }
                     break;
@@ -615,6 +622,12 @@ public class Cli implements ClientUpdateListener {
             }
 
             Logger.getGlobal().log(Level.INFO, "{0}", message);
+        }
+    }
+
+    private Terminator getTerminator() {
+        synchronized (lock) {
+            return gameSerialized.getTerminator();
         }
     }
 

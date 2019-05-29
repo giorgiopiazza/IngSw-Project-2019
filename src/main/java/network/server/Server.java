@@ -138,6 +138,7 @@ public class Server implements Runnable {
      */
     void onMessage(Message message) {
         if (message != null && message.getToken() != null && message.getSenderUsername() != null) {
+            LOGGER.log(Level.INFO, "Received: {0}", message);
             String msgToken = message.getToken();
             Connection conn = clients.get(message.getSenderUsername());
 

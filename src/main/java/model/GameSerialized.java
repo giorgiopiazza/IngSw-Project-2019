@@ -12,6 +12,7 @@ import model.player.UserPlayer;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class GameSerialized implements Serializable  {
 
@@ -86,15 +87,30 @@ public class GameSerialized implements Serializable  {
         return this.spawningPowerup;
     }
 
+    public List<PowerupCard> getPowerUps() {
+        List<PowerupCard> powerupList = Arrays.asList(this.powerupCards);
+        if (spawningPowerup != null) powerupList.add(this.spawningPowerup);
+
+        return powerupList;
+    }
+
+    public Terminator getTerminator() {
+        return terminator;
+    }
+
     @Override
     public String toString() {
         return "GameSerialized{" +
-                "map=" + gameMap +
                 "currentState=" + currentState +
+                ", gameMap=" + gameMap +
                 ", players=" + players +
+                ", terminator=" + terminator +
                 ", terminatorPresent=" + terminatorPresent +
                 ", killShotNum=" + killShotNum +
                 ", killShotsTrack=" + Arrays.toString(killShotsTrack) +
+                ", points=" + points +
+                ", powerupCards=" + Arrays.toString(powerupCards) +
+                ", spawningPowerup=" + spawningPowerup +
                 '}';
     }
 }
