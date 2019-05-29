@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 public class Cli implements ClientUpdateListener {
     private final Object lock = new Object();
+    private final Object waiter = new Object();
 
     private Client client;
     private Scanner in;
@@ -44,6 +45,8 @@ public class Cli implements ClientUpdateListener {
     private PossibleGameState gameState;
     private Player firstPlayer;
     private boolean isTerminator;
+    private boolean firstTurn;
+    private boolean yourTurn;
 
     public Cli() {
         this.in = new Scanner(System.in);
@@ -51,6 +54,8 @@ public class Cli implements ClientUpdateListener {
         this.timerTime = 0;
         this.started = false;
         this.finished = false;
+        this.firstTurn = true;
+        this.yourTurn = false;
     }
 
     /**
@@ -63,7 +68,7 @@ public class Cli implements ClientUpdateListener {
         askColor();
         askLobbyJoin();
 
-        clientUpdater = new ClientUpdater(client, this);
+        clientUpdater = new ClientUpdater(client, this, waiter);
 
 
         timer = new Timer();
@@ -81,7 +86,12 @@ public class Cli implements ClientUpdateListener {
 
     private void checkStartGame() {
         while (!Thread.currentThread().isInterrupted()) {
-            doSomething();
+            try {
+                doSomething();
+            } catch (InterruptedException e) {
+                Logger.getGlobal().severe(e.getMessage());
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
@@ -164,6 +174,8 @@ public class Cli implements ClientUpdateListener {
         out.println("\nServer Address: " + address);
 
         int port = askPort(connection);
+        out.println("\nServer Port: " + port);
+
         try {
             if (connection == 0) {
                 client = new ClientSocket(username, address, port);
@@ -229,24 +241,31 @@ public class Cli implements ClientUpdateListener {
 
         int defaultPort = connection == 0 ? 2727 : 7272;
         out.println("\nEnter the server port (default " + defaultPort + "):");
+        in.reset();
 
         do {
             out.print(">>> ");
 
-            if (in.hasNextInt()) {
-                int port = in.nextInt();
-                in.nextLine();
+            if (in.hasNextLine()) {
+                String line = in.nextLine();
 
-                if (port >= 1 && port <= 65535) {
-                    return port;
+                if (line.equals("")) {
+                    return defaultPort;
                 } else {
-                    firstError = promptInputError(firstError, "Invalid port!");
+                    try {
+                        int port = Integer.parseInt(line);
+                        if (port <= 0 || port > 25565) {
+                            firstError = promptInputError(firstError, "Invalid integer!");
+                        } else {
+                            return port;
+                        }
+                    } catch (NumberFormatException e) {
+                        firstError = promptInputError(firstError, "Invalid integer!");
+                    }
                 }
-            } else if (in.hasNextLine()) {
+            } else {
                 in.nextLine();
-                return defaultPort;
-                // if (in.nextLine().equals(""))
-                //firstError = promptInputError(firstError, "Invalid integer!");
+                firstError = promptInputError(firstError, "Invalid string!");
             }
         } while (true);
     }
@@ -407,17 +426,30 @@ public class Cli implements ClientUpdateListener {
         }
     }
 
-    private void doSomething() {
-        out.println("Choose your next move:");
-        out.println("\t0 - Print map");
-        out.println("\t1 - Print players board");
-        out.println("\t2 - Move (only your turn)");
-        out.println("\t3 - Shoot (only your turn)");
-        out.println("\t4 - Move and pickup power up or weapon (only your turn)");
-        out.println("\t5 - Spawn (only your turn)");
-        out.println("\t6 - Pass turn (only your turn)");
-        out.println();
+    private void doSomething() throws InterruptedException {
+        if (firstTurn) { // primo turno
+            if (firstPlayer.getUsername().equals(username)) { // primo giocatore che dovrà giocare
+                out.println("You are the first player");
+                yourTurn = true;
+            } else { // altri giocatori
+                out.println("The first player is: " + firstPlayer.getUsername());
+            }
+            firstTurn = false;
+        }
 
+        if (yourTurn) { // se è il tuo turno
+            playTurn();
+        } else {
+            out.println("Wait for your turn...");
+            out.println();
+            synchronized (waiter) {
+                waiter.wait();
+            }
+        }
+    }
+
+    private void playTurn() {
+        printPossibleMove(); // stampa a video le mosse che possono essere eseguite
         boolean accepted = false;
         boolean firstError = true;
 
@@ -435,7 +467,19 @@ public class Cli implements ClientUpdateListener {
             }
         } while(!accepted);
 
-        switchChooses(choose);
+        switchChooses(choose); // fa ciò che l'utente ha scelto
+    }
+
+    private void printPossibleMove() {
+        out.println("Choose your next move:");
+        out.println("\t0 - Print map");
+        out.println("\t1 - Print players board");
+        out.println("\t2 - Move");
+        out.println("\t3 - Shoot");
+        out.println("\t4 - Move and pickup power up or weapon");
+        out.println("\t5 - Spawn");
+        out.println("\t6 - Pass turn");
+        out.println();
     }
 
     private void switchChooses(int choose) {
@@ -593,15 +637,16 @@ public class Cli implements ClientUpdateListener {
                     out.println();
                     synchronized (lock) {
                         gameSerialized = stateMessage.getGameSerialized();
-                        out.println(gameSerialized.toString());
+                        CliPrinter.printMap(out, gameSerialized);
                         out.println();
+                        CliPrinter.printPlayerBoards(out, gameSerialized);
                     }
                     break;
 
                 case READY:
                     GameStartMessage gameStartMessage = (GameStartMessage) message;
-                    firstPlayer = getPlayer(gameStartMessage.getFirstPlayer());
                     synchronized (lock) {
+                        firstPlayer = getPlayer(gameStartMessage.getFirstPlayer());
                         isTerminator = gameSerialized.isTerminatorPresent();
                         started = true;
                     }
