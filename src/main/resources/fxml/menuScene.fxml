@@ -4,13 +4,10 @@
 <?import java.net.URL?>
 
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.control.Label?>
 <VBox alignment="CENTER" xmlns="http://javafx.com/javafx" styleClass="mainPane">
     <stylesheets>
         <URL value="@../css/menu.css"/>
     </stylesheets>
-
-    <Label text="TEST FONT" styleClass="label"/>
 
     <ImageView id="logoImage"/>
 

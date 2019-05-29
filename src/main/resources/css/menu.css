@@ -1,10 +1,8 @@
 @font-face {
-    font-family: 'Ethnocentric';
     src: url('../fonts/ethnocentric-rg.ttf');
 }
 
 @font-face {
-    font-family: 'EthnocentricItalic';
     src: url('../fonts/ethnocentric-rg-it.ttf');
 }
 
@@ -13,8 +11,9 @@
 }
 
 .label {
-    -fx-font-family: 'Ethnocentric';
-    -fx-font-size: 15px;
+    -fx-font-family: 'Ethnocentric Rg';
+    -fx-font-style: italic;
+    -fx-font-size: 20px;
 }
 
 #logoImage {
