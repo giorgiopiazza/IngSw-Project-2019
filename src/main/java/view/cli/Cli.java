@@ -48,6 +48,8 @@ public class Cli implements ClientUpdateListener {
     private boolean firstTurn;
     private boolean yourTurn;
 
+    private UserPlayerState playerState;
+
     public Cli() {
         this.in = new Scanner(System.in);
         this.out = new AdrenalinePrintStream();
