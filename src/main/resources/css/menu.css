@@ -45,21 +45,24 @@
     -fx-font-family: "Ethnocentric Rg";
     -fx-font-style: italic;
     -fx-font-size: 50px;
+    -fx-text-fill: #f3997b;
 }
 
 .menuLabel {
     -fx-font-family: "Exo 2 Black";
     -fx-font-size: 25px;
+    -fx-text-fill: white;
 }
 
 .menuTextField {
-    -fx-background-color: rgba(254, 192, 115, .5);
+    -fx-background-color: rgba(136, 188, 231, .5);
     -fx-border-color: #19110f;
     -fx-border-width: 2px;
     -fx-border-radius: 1px;
 
     -fx-font-family: "Exo 2 Medium";
     -fx-font-size: 20px;
+    -fx-text-fill: orange;
     -fx-alignment: center;
 }
 
@@ -75,6 +78,11 @@
 .button:pressed {
     -fx-scale-y: 0.95;
     -fx-scale-x: 0.95;
+}
+
+.playerCard:hover {
+    -fx-scale-y: 1.1;
+    -fx-scale-x: 1.1;
 }
 
 #logoImage {

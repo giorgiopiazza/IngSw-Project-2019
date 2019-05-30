@@ -18,11 +18,11 @@
 
     <center>
         <FlowPane styleClass="centerColorBox" alignment="CENTER">
-            <ImageView fitHeight="320" fitWidth="249" id="yellowCard" styleClass="button"/>
-            <ImageView fitHeight="320" fitWidth="249" id="blueCard" styleClass="button"/>
-            <ImageView fitHeight="320" fitWidth="249" id="greyCard" styleClass="button"/>
-            <ImageView fitHeight="320" fitWidth="249" id="purpleCard" styleClass="button"/>
-            <ImageView fitHeight="320" fitWidth="249" id="greenCard" styleClass="button"/>
+            <ImageView fitHeight="320" fitWidth="249" id="yellowCard" styleClass="button, playerCard"/>
+            <ImageView fitHeight="320" fitWidth="249" id="blueCard" styleClass="button, playerCard"/>
+            <ImageView fitHeight="320" fitWidth="249" id="greyCard" styleClass="button, playerCard"/>
+            <ImageView fitHeight="320" fitWidth="249" id="purpleCard" styleClass="button, playerCard"/>
+            <ImageView fitHeight="320" fitWidth="249" id="greenCard" styleClass="button, playerCard"/>
         </FlowPane>
     </center>
 
