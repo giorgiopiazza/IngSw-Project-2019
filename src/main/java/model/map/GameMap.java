@@ -14,11 +14,13 @@ import model.cards.AmmoTile;
 import model.cards.WeaponCard;
 import model.player.Player;
 import model.player.PlayerPosition;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class GameMap implements Serializable {
@@ -101,6 +103,10 @@ public class GameMap implements Serializable {
         fillMap(matrix, map);
 
         this.rooms = map;
+    }
+
+    public GameMap(@NotNull GameMap gameMap) {
+        this.rooms = gameMap.rooms;
     }
 
     private static void fillMap(JsonArray matrix, Square[][] map) {

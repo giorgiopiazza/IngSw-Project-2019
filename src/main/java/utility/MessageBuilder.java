@@ -46,28 +46,24 @@ public class MessageBuilder {
      * Create a {@link DiscardPowerupRequest DiscardPowerupRequest} object from the actual
      * {@code player} and his {@code powerupCard}
      *
-     * @param player      the actual player
+     * @param powerupCards      the actual player
      * @param powerupCard the card to discard
      * @return the {@link DiscardPowerupRequest DiscardPowerupRequest} object to send to the server
      * @throws PowerupCardsNotFoundException if the player does not have that {@code powerupCard}
      */
     @NotNull
-    @Contract("null, _ -> fail; !null, null -> fail")
-    public static DiscardPowerupRequest buildDiscardPowerupRequest(String token, UserPlayer player, PowerupCard powerupCard) throws PowerupCardsNotFoundException {
-        if (player == null || powerupCard == null)
+    @Contract("_, null, _ -> fail; _, !null, null -> fail")
+    public static DiscardPowerupRequest buildDiscardPowerupRequest(String token, List<PowerupCard> powerupCards, PowerupCard powerupCard, String username) throws PowerupCardsNotFoundException {
+        if (powerupCards == null || powerupCard == null)
             throw new NullPointerException("player and powerupCard cannot be null");
 
-        for (int i = 0; i < player.getPowerups().length; i++) {
-            if (player.getPowerups()[i].equals(powerupCard)) {
-                return new DiscardPowerupRequest(player.getUsername(), token, i);
+        for (int i = 0; i < powerupCards.size(); i++) {
+            if (powerupCards.get(i).equals(powerupCard)) {
+                return new DiscardPowerupRequest(username, token, i);
             }
         }
 
-        if (player.getSpawningCard().equals(powerupCard)) {
-            return new DiscardPowerupRequest(player.getUsername(), token, 3);
-        }
-
-        throw new PowerupCardsNotFoundException("powerupCard not found in " + player);
+        throw new PowerupCardsNotFoundException("powerupCard not found in " + powerupCards);
     }
 
     /**

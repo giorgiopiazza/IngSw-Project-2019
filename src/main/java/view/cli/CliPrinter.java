@@ -1,9 +1,11 @@
 package view.cli;
 
+import enumerations.Ammo;
 import enumerations.PlayerColor;
 import enumerations.SquareAdjacency;
 import enumerations.SquareType;
 import model.GameSerialized;
+import model.cards.PowerupCard;
 import model.player.Player;
 import model.map.*;
 
@@ -323,5 +325,12 @@ class CliPrinter {
         }
 
         return right;
+    }
+
+    public static String toStringPowerUpCard(PowerupCard powerupCard) {
+        String color = powerupCard.getValue().toString();
+        String name = powerupCard.getName();
+
+        return name + " " + color;
     }
 }
