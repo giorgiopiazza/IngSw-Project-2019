@@ -11,7 +11,7 @@
 
     <ImageView id="logoImage"/>
 
-    <ImageView id="startButton"/>
+    <ImageView id="startButton" styleClass="button"/>
 
-    <ImageView id="exitButton"/>
+    <ImageView id="exitButton" styleClass="button"/>
 </VBox>
