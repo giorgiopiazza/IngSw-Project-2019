@@ -124,7 +124,7 @@ public class ClientRoundManager {
 
             case FIRST_ADRENALINE:
                 // TODO: return first adrenaline actions
-                break;
+                throw new UnsupportedOperationException();
 
             case SECOND_ADRENALINE:
                 // TODO: return second adrenaline actions
