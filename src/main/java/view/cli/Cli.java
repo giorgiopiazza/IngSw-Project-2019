@@ -1,7 +1,6 @@
 package view.cli;
 
 import enumerations.*;
-import exceptions.AdrenalinaRuntimeException;
 import exceptions.actions.PowerupCardsNotFoundException;
 import exceptions.player.PlayerNotFoundException;
 import model.GameSerialized;
