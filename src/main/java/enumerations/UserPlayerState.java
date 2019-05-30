@@ -1,0 +1,6 @@
+package enumerations;
+
+public enum UserPlayerState {
+    BEGIN, FIRST_MOVE, SECOND_MOVE, TERMINATOR_FIRST,
+    TERMINATOR_SECOND, TERMINATOR_THIRD, END, TERMINATOR_MOVE
+}
