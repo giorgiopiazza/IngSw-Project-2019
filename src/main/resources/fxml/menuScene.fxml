@@ -2,8 +2,8 @@
 
 <?import javafx.scene.layout.*?>
 <?import java.net.URL?>
-
 <?import javafx.scene.image.ImageView?>
+
 <VBox alignment="CENTER" xmlns="http://javafx.com/javafx" styleClass="mainPane">
     <stylesheets>
         <URL value="@../css/menu.css"/>

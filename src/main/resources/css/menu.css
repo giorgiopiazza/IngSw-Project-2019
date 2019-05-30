@@ -18,20 +18,26 @@
     -fx-background-image: url("../img/scenes/bg.png");
 }
 
-.topVBox {
+.topBox {
     -fx-padding: 50 0 0 0;
 }
 
-.centerVBox {
+.centerBox {
     -fx-max-width: 500px;
     -fx-spacing: 10;
 }
 
-.botVBox {
+.centerColorBox {
+    -fx-max-width: 900px;
+    -fx-hgap: 10;
+    -fx-vgap: 20;
+}
+
+.botBox {
     -fx-padding: 0 0 50 0;
 }
 
-.connectHBox {
+.connectBox {
     -fx-spacing: 50;
 }
 
@@ -71,6 +77,11 @@
     -fx-scale-x: 0.95;
 }
 
+.playerCard {
+    -fx-fit-to-height: 100px;
+    -fx-fit-to-width: 100px;
+}
+
 #logoImage {
     -fx-image: url("../img/scenes/logo.png");
 }
@@ -93,4 +104,24 @@
 
 #backButton {
     -fx-image: url("../img/scenes/backbutton.png");
+}
+
+#yellowCard {
+    -fx-image: url("../img/players/yellow.png");
+}
+
+#blueCard {
+    -fx-image: url("../img/players/blue.png");
+}
+
+#greyCard {
+    -fx-image: url("../img/players/grey.png");
+}
+
+#purpleCard {
+    -fx-image: url("../img/players/purple.png");
+}
+
+#greenCard {
+    -fx-image: url("../img/players/green.png");
 }

@@ -1,26 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
 <?import java.net.URL?>
 <?import javafx.scene.image.ImageView?>
+
 <BorderPane xmlns="http://javafx.com/javafx" styleClass="mainPane">
     <stylesheets>
         <URL value="@../css/menu.css"/>
     </stylesheets>
 
     <top>
-        <VBox styleClass="topVBox" alignment="CENTER">
+        <VBox styleClass="topBox" alignment="CENTER">
             <Label alignment="CENTER" text="Join a game" styleClass="menuTitle"/>
         </VBox>
     </top>
 
     <center>
-        <VBox styleClass="centerVBox" alignment="CENTER">
+        <VBox styleClass="centerBox" alignment="CENTER">
             <Label text="Enter your username:" styleClass="menuLabel"/>
             <TextField id="usernameField" styleClass="menuTextField"/>
 
@@ -33,8 +30,8 @@
     </center>
 
     <bottom>
-        <VBox styleClass="botVBox" alignment="CENTER">
-            <HBox styleClass="connectHBox" alignment="CENTER">
+        <VBox styleClass="botBox" alignment="CENTER">
+            <HBox styleClass="connectBox" alignment="CENTER">
                 <ImageView id="connectSocketButton" styleClass="button"/>
                 <ImageView id="connectRmiButton" styleClass="button"/>
             </HBox>

@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import utility.LobbyTimer;
 import utility.MessageBuilder;
+import utility.ServerAddressValidator;
 
 import java.io.IOException;
 import java.util.*;
@@ -205,7 +206,7 @@ public class Cli implements ClientUpdateListener {
 
                 if (address.equals("")) {
                     return "localhost";
-                } else if (isAddressValid(address)) {
+                } else if (ServerAddressValidator.isAddressValid(address)) {
                     return address;
                 } else {
                     firstError = promptInputError(firstError, "Invalid address!");
@@ -215,27 +216,6 @@ public class Cli implements ClientUpdateListener {
                 firstError = promptInputError(firstError, "Invalid string!");
             }
         } while (true);
-    }
-
-    private boolean isAddressValid(String address) {
-        if (address == null || address.equals("localhost")) {
-            return true;
-        }
-
-        String[] groups = address.split("\\.");
-
-        if (groups.length != 4)
-            return false;
-
-        try {
-            return Arrays.stream(groups)
-                    .filter(s -> s.length() > 1 && s.startsWith("0"))
-                    .map(Integer::parseInt)
-                    .filter(i -> (i >= 0 && i <= 255))
-                    .count() == 4;
-        } catch (NumberFormatException e) {
-            return false;
-        }
     }
 
     private int askPort(int connection) {
@@ -254,15 +234,10 @@ public class Cli implements ClientUpdateListener {
                 if (line.equals("")) {
                     return defaultPort;
                 } else {
-                    try {
-                        int port = Integer.parseInt(line);
-                        if (port <= 0 || port > 25565) {
-                            firstError = promptInputError(firstError, "Invalid integer!");
-                        } else {
-                            return port;
-                        }
-                    } catch (NumberFormatException e) {
-                        firstError = promptInputError(firstError, "Invalid integer!");
+                    if (ServerAddressValidator.isPortValid(line)) {
+                        return Integer.parseInt(line);
+                    } else {
+                        firstError = promptInputError(firstError, "Invalid Port!");
                     }
                 }
             } else {
@@ -459,7 +434,7 @@ public class Cli implements ClientUpdateListener {
 
         do {
             out.print(">>> ");
-            if(in.hasNextInt()) {
+            if (in.hasNextInt()) {
                 choose = in.nextInt();
                 if (choose >= 0 && choose <= 6) accepted = true;
                 else firstError = promptInputError(firstError, "Input not valid!");
@@ -467,7 +442,7 @@ public class Cli implements ClientUpdateListener {
                 firstError = promptInputError(firstError, "Invalid integer!");
                 in.nextLine();
             }
-        } while(!accepted);
+        } while (!accepted);
 
         switchChooses(choose); // fa ciò che l'utente ha scelto
     }
@@ -601,7 +576,8 @@ public class Cli implements ClientUpdateListener {
             if (in.hasNextLine()) {
                 String[] split = in.nextLine().split(",");
 
-                if (split.length != 2) firstError = promptInputError(firstError, "Wrong input (must be like \"0,0\" or \"0, 0\")");
+                if (split.length != 2)
+                    firstError = promptInputError(firstError, "Wrong input (must be like \"0,0\" or \"0, 0\")");
                 else {
                     try {
                         x = Integer.parseInt(split[0].trim());
