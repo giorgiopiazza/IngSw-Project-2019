@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+<?import java.net.URL?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            styleClass="dialogPane">
+    <stylesheets>
+        <URL value="@../css/menu.css"/>
+    </stylesheets>
+
+    <top>
+        <VBox styleClass="topDialog" alignment="CENTER">
+            <Label id="dialogTitle" styleClass="dialogTitle"/>
+        </VBox>
+    </top>
+
+    <center>
+        <VBox styleClass="centerDialog" alignment="CENTER">
+            <Label id="dialogText" styleClass="dialogLabel"/>
+        </VBox>
+    </center>
+
+    <bottom>
+        <VBox styleClass="botDialog" alignment="CENTER">
+            <ImageView id="okButton" styleClass="button"/>
+        </VBox>
+    </bottom>
+
+</BorderPane>

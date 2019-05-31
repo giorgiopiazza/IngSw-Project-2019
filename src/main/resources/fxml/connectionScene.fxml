@@ -12,7 +12,7 @@
 
     <top>
         <VBox styleClass="topBox" alignment="CENTER">
-            <Label alignment="CENTER" text="Join a game" styleClass="menuTitle"/>
+            <Label text="Join a game" styleClass="menuTitle"/>
         </VBox>
     </top>
 

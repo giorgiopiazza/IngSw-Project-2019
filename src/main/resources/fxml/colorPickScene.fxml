@@ -12,17 +12,17 @@
 
     <top>
         <VBox styleClass="topBox" alignment="CENTER">
-            <Label alignment="CENTER" text="Choose your character" styleClass="menuTitle"/>
+            <Label text="Choose your character" styleClass="menuTitle"/>
         </VBox>
     </top>
 
     <center>
         <FlowPane styleClass="colorBox" alignment="CENTER">
-            <ImageView fitHeight="320" fitWidth="249" id="yellowCard" styleClass="button, playerCard"/>
-            <ImageView fitHeight="320" fitWidth="249" id="blueCard" styleClass="button, playerCard"/>
-            <ImageView fitHeight="320" fitWidth="249" id="greyCard" styleClass="button, playerCard"/>
-            <ImageView fitHeight="320" fitWidth="249" id="purpleCard" styleClass="button, playerCard"/>
-            <ImageView fitHeight="320" fitWidth="249" id="greenCard" styleClass="button, playerCard"/>
+            <ImageView fitHeight="320" fitWidth="249" id="yellowCard" styleClass="button, card"/>
+            <ImageView fitHeight="320" fitWidth="249" id="blueCard" styleClass="button, card"/>
+            <ImageView fitHeight="320" fitWidth="249" id="greyCard" styleClass="button, card"/>
+            <ImageView fitHeight="320" fitWidth="249" id="purpleCard" styleClass="button, card"/>
+            <ImageView fitHeight="320" fitWidth="249" id="greenCard" styleClass="button, card"/>
         </FlowPane>
     </center>
 

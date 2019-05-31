@@ -15,12 +15,12 @@
 
     <top>
         <VBox styleClass="topBox" alignment="CENTER">
-            <Label alignment="CENTER" text="Lobby" styleClass="menuTitle"/>
+            <Label text="Lobby" styleClass="menuTitle"/>
         </VBox>
     </top>
 
     <center>
-        <VBox styleClass="lobbyBox" alignment="CENTER">
+        <VBox alignment="CENTER">
             <Label text="Enter your username:" styleClass="menuLabel"/>
             <TextField id="usernameField" styleClass="menuTextField"/>
 
@@ -34,17 +34,13 @@
 
     <right>
         <VBox styleClass="voteBox" alignment="CENTER">
-            <Label text="Select the map you want to play with:" styleClass="menuLabel"/>
+            <Label text="Vote the map you want to play with:" styleClass="menuLabel"/>
             <FlowPane styleClass="voteInnerBox" alignment="CENTER">
-                <ToggleButton id="map1" styleClass="voteMap"/>
-                <ToggleButton id="map2" styleClass="voteMap"/>
-                <ToggleButton id="map3" styleClass="voteMap"/>
-                <ToggleButton id="map4" styleClass="voteMap"/>
+                <ImageView fitHeight="179" fitWidth="234" id="map1" styleClass="button"/>
+                <ImageView fitHeight="179" fitWidth="234" id="map2" styleClass="button"/>
+                <ImageView fitHeight="179" fitWidth="234" id="map3" styleClass="button"/>
+                <ImageView fitHeight="179" fitWidth="234" id="map4" styleClass="button"/>
             </FlowPane>
-
-            <Label text="Do you want to play with terminator?" styleClass="menuLabel"/>
-
-            <ImageView id="voteButton" styleClass="button"/>
         </VBox>
     </right>
 

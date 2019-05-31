@@ -5,6 +5,7 @@ import javafx.application.Application;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.image.Image;
@@ -12,7 +13,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import model.Game;
 import utility.ServerAddressValidator;
 
@@ -42,8 +45,8 @@ public class Gui extends Application {
 
         window.setScene(new Scene(new Pane()));
 
-        //setMainMenuLayout();
-        setLobbyLayout();
+        setMainMenuLayout();
+        //setLobbyLayout();
 
         window.show();
     }
@@ -76,13 +79,12 @@ public class Gui extends Application {
 
             TextField usernameField = (TextField) scene.lookup("#usernameField");
             usernameField.setTextFormatter(new TextFormatter<String>(change -> {
-                String input = change.getText();
-
-                if (input.length() <= MAX_USERNAME_LENGTH) {
-                    return change;
+                if (change.getControlText().length() > MAX_USERNAME_LENGTH) {
+                    change.setRange(0, MAX_USERNAME_LENGTH - 1);
+                    change.setText(change.getControlNewText().substring(0, MAX_USERNAME_LENGTH));
                 }
 
-                return null;
+                return change;
             }));
 
             TextField portField = (TextField) scene.lookup("#portField");
@@ -94,6 +96,9 @@ public class Gui extends Application {
 
                 return null;
             }));
+
+
+            showDialog("Error", "Sei un pezzente!");
         }
     }
 
@@ -217,5 +222,32 @@ public class Gui extends Application {
             return false;
         }
         return true;
+    }
+
+    private void showDialog(String title, String text) {
+        FXMLLoader loader = new FXMLLoader(Gui.class.getClassLoader().getResource("fxml/dialogScene.fxml"));
+
+        Scene dialogScene;
+
+        try {
+            dialogScene = new Scene(loader.load(), 600, 300);
+        } catch (IOException e) {
+            Logger.getGlobal().severe(e.getMessage());
+            return;
+        }
+
+        Stage dialog = new Stage();
+        dialog.setScene(dialogScene);
+        dialog.initOwner(window);
+        dialog.initStyle(StageStyle.UNDECORATED);
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setResizable(false);
+
+        dialogScene.lookup("#okButton").addEventHandler(MouseEvent.MOUSE_CLICKED, event -> dialog.close());
+
+        ((Label)dialogScene.lookup("#dialogTitle")).setText(title);
+        ((Label)dialogScene.lookup("#dialogText")).setText(text);
+
+        dialog.showAndWait();
     }
 }
