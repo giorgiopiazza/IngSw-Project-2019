@@ -27,10 +27,25 @@
     -fx-spacing: 10;
 }
 
-.centerColorBox {
+.colorBox {
     -fx-max-width: 1500px;
     -fx-hgap: 10;
     -fx-vgap: 20;
+}
+
+.voteBox {
+    -fx-min-width: 700px;
+    -fx-max-width: 700px;
+    -fx-spacing: 20;
+}
+
+.voteInnerBox {
+    -fx-hgap: 20;
+    -fx-vgap: 20;
+}
+
+.lobbyBox {
+    -fx-max-width: 800px;
 }
 
 .botBox {
@@ -70,7 +85,6 @@
     -fx-border-color: red;
 }
 
-
 .button:hover {
     -fx-effect: dropshadow(gaussian, #F44336, 15, 0.2, 0, 0)
 }
@@ -85,6 +99,23 @@
     -fx-scale-x: 1.1;
 }
 
+.voteMap {
+    -fx-max-height: 224px;
+    -fx-max-width: 293px;
+
+    -fx-min-height: 224px;
+    -fx-min-width: 293px;
+
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-radius: 0;
+    -fx-background-color: transparent;
+}
+
+.voteMap:selected {
+    -fx-effect: dropshadow(gaussian, #F44336, 15, 0.2, 0, 0)
+}
+
 #logoImage {
     -fx-image: url("../img/scenes/logo.png");
 }
@@ -95,6 +126,10 @@
 
 #exitButton {
     -fx-image: url("../img/scenes/exitbutton.png");
+}
+
+#voteButton {
+    -fx-image: url("../img/scenes/votebutton.png")
 }
 
 #connectSocketButton {
@@ -127,4 +162,32 @@
 
 #greenCard {
     -fx-image: url("../img/players/green.png");
+}
+
+#map1 {
+    -fx-background-image: url("../img/maps/vote/map1.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-background-size: contain;
+}
+
+#map2 {
+    -fx-background-image: url("../img/maps/vote/map2.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-background-size: contain;
+}
+
+#map3 {
+    -fx-background-image: url("../img/maps/vote/map3.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-background-size: contain;
+}
+
+#map4 {
+    -fx-background-image: url("../img/maps/vote/map4.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-background-size: contain;
 }

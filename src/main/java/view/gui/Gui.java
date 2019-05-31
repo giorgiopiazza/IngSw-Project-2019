@@ -14,7 +14,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import model.Game;
-import model.player.Player;
 import utility.ServerAddressValidator;
 
 import java.io.IOException;
@@ -23,6 +22,7 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 
 public class Gui extends Application {
+    private static final int MAX_USERNAME_LENGTH = 20;
     private final PseudoClass errorPseudo = PseudoClass.getPseudoClass("error");
 
     private Stage window;
@@ -43,13 +43,7 @@ public class Gui extends Application {
         window.setScene(new Scene(new Pane()));
 
         //setMainMenuLayout();
-
-        ArrayList<PlayerColor> colorList = new ArrayList<>();
-        colorList.add(PlayerColor.BLUE);
-        colorList.add(PlayerColor.PURPLE);
-        colorList.add(PlayerColor.YELLOW);
-
-        setColorPickLayout(colorList);
+        setLobbyLayout();
 
         window.show();
     }
@@ -79,6 +73,17 @@ public class Gui extends Application {
 
             ImageView connectRmiButton = (ImageView) scene.lookup("#connectRmiButton");
             connectRmiButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> tryStartConnection(1));
+
+            TextField usernameField = (TextField) scene.lookup("#usernameField");
+            usernameField.setTextFormatter(new TextFormatter<String>(change -> {
+                String input = change.getText();
+
+                if (input.length() <= MAX_USERNAME_LENGTH) {
+                    return change;
+                }
+
+                return null;
+            }));
 
             TextField portField = (TextField) scene.lookup("#portField");
             portField.setTextFormatter(new TextFormatter<String>(change -> {
@@ -125,6 +130,13 @@ public class Gui extends Application {
             } else {
                 // TODO RmiConnection
             }
+
+            ArrayList<PlayerColor> colorList = new ArrayList<>();
+            colorList.add(PlayerColor.BLUE);
+            colorList.add(PlayerColor.PURPLE);
+            colorList.add(PlayerColor.YELLOW);
+
+            setColorPickLayout(colorList);
         }
     }
 
@@ -133,13 +145,22 @@ public class Gui extends Application {
             Scene scene = window.getScene();
 
             ImageView backButton = (ImageView) scene.lookup("#backButton");
-            backButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> setMainMenuLayout());
+            backButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> setConnectionLayout());
 
             ImageView yellowCard = (ImageView) scene.lookup("#yellowCard");
+            yellowCard.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> tryJoinLobby(PlayerColor.YELLOW));
+
             ImageView blueCard = (ImageView) scene.lookup("#blueCard");
+            blueCard.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> tryJoinLobby(PlayerColor.BLUE));
+
             ImageView greyCard = (ImageView) scene.lookup("#greyCard");
+            greyCard.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> tryJoinLobby(PlayerColor.GREY));
+
             ImageView purpleCard = (ImageView) scene.lookup("#purpleCard");
+            purpleCard.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> tryJoinLobby(PlayerColor.PURPLE));
+
             ImageView greenCard = (ImageView) scene.lookup("#greenCard");
+            greenCard.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> tryJoinLobby(PlayerColor.GREEN));
 
             if (!availableColors.contains(PlayerColor.YELLOW)) {
                 yellowCard.setDisable(true);
@@ -162,6 +183,26 @@ public class Gui extends Application {
             }
 
 
+        }
+    }
+
+    private void tryJoinLobby(PlayerColor playerColor) {
+        Scene scene = window.getScene();
+
+        scene.lookup("#yellowCard").setDisable(true);
+        scene.lookup("#blueCard").setDisable(true);
+        scene.lookup("#greyCard").setDisable(true);
+        scene.lookup("#purpleCard").setDisable(true);
+        scene.lookup("#greenCard").setDisable(true);
+
+        // TODO Join Lobby Request
+
+        setLobbyLayout();
+    }
+
+    private void setLobbyLayout() {
+        if (setLayout("fxml/lobbyScene.fxml")) {
+            Scene scene = window.getScene();
         }
     }
 
