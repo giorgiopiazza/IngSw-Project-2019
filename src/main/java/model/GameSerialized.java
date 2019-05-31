@@ -4,6 +4,7 @@ import enumerations.GameState;
 import model.map.GameMap;
 import model.player.KillShot;
 import model.player.Player;
+import model.player.Terminator;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -83,6 +84,11 @@ public class GameSerialized implements Serializable  {
 
     public void setGameMap(GameMap gameMap) {
         this.gameMap = gameMap;
+    }
+
+    //utility method for cli debugging
+    public void setTerminator(Terminator terminator) {
+        players.add(terminator);
     }
 
     @Override

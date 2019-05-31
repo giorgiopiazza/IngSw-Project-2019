@@ -5,9 +5,7 @@ import enumerations.MessageStatus;
 import enumerations.PlayerColor;
 import model.GameSerialized;
 import model.map.GameMap;
-import model.player.Player;
-import model.player.PlayerBoard;
-import model.player.UserPlayer;
+import model.player.*;
 import network.client.Client;
 import network.client.ClientRMI;
 import network.client.ClientSocket;
@@ -40,12 +38,23 @@ public class Cli {
      * Starts the view.cli
      */
     public void start() {
+
+        /* CLI DEBUGGING
         GameSerialized gs = new GameSerialized();
         PlayerBoard pb = new PlayerBoard();
         UserPlayer p1 = new UserPlayer("Pippo", PlayerColor.BLUE, pb);
         UserPlayer p2 = new UserPlayer("Pluto", PlayerColor.GREEN, new PlayerBoard());
         UserPlayer p3 = new UserPlayer("Topolino", PlayerColor.PURPLE, new PlayerBoard());
         UserPlayer p4 = new UserPlayer("Minnie", PlayerColor.GREY, new PlayerBoard());
+        Terminator p5 = new Terminator(PlayerColor.YELLOW, new PlayerBoard());
+
+
+        p1.setPosition(new PlayerPosition(0,0));
+        p2.setPosition(new PlayerPosition(0,0));
+        p3.setPosition(new PlayerPosition(0,0));
+        p4.setPosition(new PlayerPosition(0,0));
+        p5.setPosition(new PlayerPosition(0,0));
+
 
         p1.getPlayerBoard().addDamage(p2, 3);
         p1.getPlayerBoard().addDamage(p4, 1);
@@ -69,7 +78,8 @@ public class Cli {
         players.add(p4);
 
         gs.setPlayers(players);
-        gs.setGameMap(new GameMap(GameMap.MAP_1));
+        gs.setTerminator(p5);
+        gs.setGameMap(new GameMap(GameMap.MAP_4));
 
 
         printLogo();
@@ -79,7 +89,8 @@ public class Cli {
         askLobbyJoin();
 
         //CliPrinter.printPlayerBoards(out, gs);
-        //CliPrinter.printMap(out, gs);
+        CliPrinter.printMap(out, gs);
+         */
     }
 
     private void printLogo() {
