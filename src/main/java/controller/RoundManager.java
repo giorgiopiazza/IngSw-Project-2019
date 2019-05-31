@@ -155,6 +155,7 @@ class RoundManager {
                 pickTwoPowerups();
             }
         }
+
         return buildPositiveResponse("Player spawned with chosen powerup");
     }
 
@@ -259,6 +260,7 @@ class RoundManager {
             afterTerminatorActionHandler(gameState);
         }
 
+        gameManager.sendPrivateUpdates();
         return buildPositiveResponse("Terminator action used");
     }
 
@@ -373,6 +375,7 @@ class RoundManager {
                         // can not happen here because powerup is already verified to be possessed
                     }
                 }
+
                 return buildPositiveResponse("Targeting Scope used");
             case 1:
                 if(powerupsIndexes.size() == 3) {
@@ -430,6 +433,7 @@ class RoundManager {
                         }
                     }
                 }
+
                 return buildPositiveResponse("Targeting Scopes Used");
             case 2:
                 for(int i = 0; i < 3; ++i) {
@@ -927,6 +931,7 @@ class RoundManager {
      * @return the Positive {@link Response Response} built
      */
     private Response buildPositiveResponse(String reason) {
+        gameManager.sendPrivateUpdates();
         return new Response(reason, MessageStatus.OK);
     }
 

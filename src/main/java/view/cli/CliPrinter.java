@@ -1,10 +1,12 @@
 package view.cli;
 
+import enumerations.Ammo;
 import enumerations.PlayerColor;
 import enumerations.SquareAdjacency;
 import enumerations.SquareType;
 import model.Game;
 import model.GameSerialized;
+import model.cards.PowerupCard;
 import model.player.Player;
 import model.map.*;
 import model.player.UserPlayer;
@@ -147,7 +149,7 @@ class CliPrinter {
     }
 
     private static void printMapRow(AdrenalinePrintStream out, Square[] squareRow, GameSerialized gameSerialized) {
-        ArrayList<Player> inGamePlayers = gameSerialized.getPlayers();
+        ArrayList<Player> inGamePlayers = gameSerialized.getAllPlayers();
 
         out.print(
                         getSquareTopRow(squareRow) +
@@ -492,5 +494,12 @@ class CliPrinter {
         }
 
         return right;
+    }
+
+    public static String toStringPowerUpCard(PowerupCard powerupCard) {
+        String color = powerupCard.getValue().toString();
+        String name = powerupCard.getName();
+
+        return name + " " + color;
     }
 }

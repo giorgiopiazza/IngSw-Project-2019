@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import java.net.URL?>
+<?import javafx.scene.image.ImageView?>
+
+<BorderPane xmlns="http://javafx.com/javafx" styleClass="mainPane">
+    <stylesheets>
+        <URL value="@../css/menu.css"/>
+    </stylesheets>
+
+    <top>
+        <VBox styleClass="topBox" alignment="CENTER">
+            <Label alignment="CENTER" text="Choose your color" styleClass="menuTitle"/>
+        </VBox>
+    </top>
+
+    <center>
+        <FlowPane styleClass="centerColorBox" alignment="CENTER">
+            <ImageView fitHeight="320" fitWidth="249" id="yellowCard" styleClass="button, playerCard"/>
+            <ImageView fitHeight="320" fitWidth="249" id="blueCard" styleClass="button, playerCard"/>
+            <ImageView fitHeight="320" fitWidth="249" id="greyCard" styleClass="button, playerCard"/>
+            <ImageView fitHeight="320" fitWidth="249" id="purpleCard" styleClass="button, playerCard"/>
+            <ImageView fitHeight="320" fitWidth="249" id="greenCard" styleClass="button, playerCard"/>
+        </FlowPane>
+    </center>
+
+    <bottom>
+        <VBox styleClass="botBox" alignment="CENTER">
+            <ImageView id="backButton" styleClass="button"/>
+        </VBox>
+    </bottom>
+</BorderPane>

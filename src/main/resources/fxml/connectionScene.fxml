@@ -1,34 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
 <?import java.net.URL?>
+<?import javafx.scene.image.ImageView?>
+
 <BorderPane xmlns="http://javafx.com/javafx" styleClass="mainPane">
     <stylesheets>
         <URL value="@../css/menu.css"/>
     </stylesheets>
 
     <top>
-
+        <VBox styleClass="topBox" alignment="CENTER">
+            <Label alignment="CENTER" text="Join a game" styleClass="menuTitle"/>
+        </VBox>
     </top>
 
     <center>
-        <VBox alignment="CENTER">
-            <Label text="Enter your username:" styleClass="label"/>
-            <TextField id="usernameField"/>
+        <VBox styleClass="centerBox" alignment="CENTER">
+            <Label text="Enter your username:" styleClass="menuLabel"/>
+            <TextField id="usernameField" styleClass="menuTextField"/>
 
-            <Label text="Select the type of connection: " styleClass="label"/>
+            <Label text="Enter server address:" styleClass="menuLabel"/>
+            <TextField id="addressField" styleClass="menuTextField"/>
 
-            <Label text="Enter server address:" styleClass="label"/>
-            <TextField id="addressField"/>
-
-            <Label text="Enter server port:" styleClass="label"/>
-            <TextField id="portField"/>
+            <Label text="Enter server port:" styleClass="menuLabel"/>
+            <TextField id="portField" styleClass="menuTextField"/>
         </VBox>
     </center>
 
+    <bottom>
+        <VBox styleClass="botBox" alignment="CENTER">
+            <HBox styleClass="connectBox" alignment="CENTER">
+                <ImageView id="connectSocketButton" styleClass="button"/>
+                <ImageView id="connectRmiButton" styleClass="button"/>
+            </HBox>
+
+            <ImageView id="backButton" styleClass="button"/>
+        </VBox>
+    </bottom>
 </BorderPane>

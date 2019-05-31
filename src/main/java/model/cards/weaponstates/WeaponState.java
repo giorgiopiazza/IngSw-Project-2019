@@ -5,10 +5,12 @@ import model.cards.WeaponCard;
 import model.cards.effects.Effect;
 import network.message.EffectRequest;
 
+import java.io.Serializable;
+
 /**
  * Interface used to manage the state of a Weapon
  */
-public interface WeaponState {
+public interface WeaponState extends Serializable {
 
     /**
      * Returns if the WeaponState is charged or not

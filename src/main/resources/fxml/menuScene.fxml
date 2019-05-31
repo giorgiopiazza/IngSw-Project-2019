@@ -2,8 +2,8 @@
 
 <?import javafx.scene.layout.*?>
 <?import java.net.URL?>
-
 <?import javafx.scene.image.ImageView?>
+
 <VBox alignment="CENTER" xmlns="http://javafx.com/javafx" styleClass="mainPane">
     <stylesheets>
         <URL value="@../css/menu.css"/>
@@ -11,7 +11,7 @@
 
     <ImageView id="logoImage"/>
 
-    <ImageView id="startButton"/>
+    <ImageView id="startButton" styleClass="button"/>
 
-    <ImageView id="exitButton"/>
+    <ImageView id="exitButton" styleClass="button"/>
 </VBox>

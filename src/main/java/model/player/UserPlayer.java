@@ -230,7 +230,6 @@ public class UserPlayer extends Player {
         return "UserPlayer{" +
                 "weapons=" + weapons +
                 ", playerBoard=" + getPlayerBoard() +
-                ", powerups=" + powerups +
                 ", firstPlayer=" + firstPlayer +
                 ", color=" + color +
                 '}';

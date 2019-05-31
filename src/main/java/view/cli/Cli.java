@@ -1,46 +1,90 @@
 package view.cli;
 
-import enumerations.MessageContent;
-import enumerations.MessageStatus;
-import enumerations.PlayerColor;
+import enumerations.*;
+import exceptions.actions.PowerupCardsNotFoundException;
+import exceptions.player.PlayerNotFoundException;
 import model.GameSerialized;
+import model.cards.PowerupCard;
 import model.map.GameMap;
 import model.player.*;
-import network.client.Client;
-import network.client.ClientRMI;
-import network.client.ClientSocket;
-import network.message.ColorResponse;
-import network.message.ConnectionResponse;
-import network.message.Message;
-import network.message.Response;
+import network.client.*;
+import network.message.*;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import utility.LobbyTimer;
 import utility.MessageBuilder;
+import utility.ServerAddressValidator;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class Cli {
+public class Cli implements ClientUpdateListener {
+    private final Object lock = new Object();
+    private final Object waiter = new Object();
+
+    private Client client;
     private Scanner in;
     private AdrenalinePrintStream out;
     private String username;
     private PlayerColor playerColor;
-    private Client client;
+    private GameSerialized gameSerialized;
+    private int timerTime;
+
+    private Timer timer;
+    private TimerTask timerTask;
+    private ClientUpdater clientUpdater;
+
+    private boolean started;
+    private boolean finished;
+    private List<Player> winners;
+    private PossibleGameState gameState;
+    private Player firstPlayer;
+    private boolean isTerminator;
+    private boolean firstTurn;
+    private boolean yourTurn;
+
+    private UserPlayerState playerState;
 
     public Cli() {
-        in = new Scanner(System.in);
-        out = new AdrenalinePrintStream();
+        this.in = new Scanner(System.in);
+        this.out = new AdrenalinePrintStream();
+        this.timerTime = 0;
+        this.started = false;
+        this.finished = false;
+        this.firstTurn = true;
+        this.yourTurn = false;
     }
 
     /**
      * Starts the view.cli
      */
     public void start() {
+        printLogo();
+        askUsername();
+        askConnection();
+        askColor();
+        askLobbyJoin();
+
+        clientUpdater = new ClientUpdater(client, this, waiter);
+
+
+        timer = new Timer();
+        timerTask = new LobbyTimer(() -> {
+            synchronized (lock) {
+                if (!started) started = false;
+                else {
+                    timer.cancel();
+                    checkStartGame();
+                }
+            }
+        });
+        timer.schedule(timerTask, 1000, 1000);
 
         /* CLI DEBUGGING
-        GameSerialized gs = new GameSerialized();
+        GameSerialized gs = new GameSerialized("pippo");
         PlayerBoard pb = new PlayerBoard();
         UserPlayer p1 = new UserPlayer("Pippo", PlayerColor.BLUE, pb);
         UserPlayer p2 = new UserPlayer("Pluto", PlayerColor.GREEN, new PlayerBoard());
@@ -71,7 +115,7 @@ public class Cli {
         pb.addMark(p2, 2);
         pb.addMark(p4, 1);
 
-        ArrayList<Player> players = new ArrayList<>();
+        ArrayList<UserPlayer> players = new ArrayList<>();
         players.add(p1);
         players.add(p2);
         players.add(p3);
@@ -81,16 +125,20 @@ public class Cli {
         gs.setTerminator(p5);
         gs.setGameMap(new GameMap(GameMap.MAP_4));
 
-
-        printLogo();
-        askUsername();
-        askConnection();
-        askColor();
-        askLobbyJoin();
-
         //CliPrinter.printPlayerBoards(out, gs);
         CliPrinter.printMap(out, gs);
          */
+    }
+
+    private void checkStartGame() {
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                doSomething();
+            } catch (InterruptedException e) {
+                Logger.getGlobal().severe(e.getMessage());
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     private void printLogo() {
@@ -171,7 +219,9 @@ public class Cli {
         String address = askAddress();
         out.println("\nServer Address: " + address);
 
-        int port = askPort();
+        int port = askPort(connection);
+        out.println("\nServer Port: " + port);
+
         try {
             if (connection == 0) {
                 client = new ClientSocket(username, address, port);
@@ -199,7 +249,7 @@ public class Cli {
 
                 if (address.equals("")) {
                     return "localhost";
-                } else if (isAddressValid(address)) {
+                } else if (ServerAddressValidator.isAddressValid(address)) {
                     return address;
                 } else {
                     firstError = promptInputError(firstError, "Invalid address!");
@@ -211,47 +261,31 @@ public class Cli {
         } while (true);
     }
 
-    private boolean isAddressValid(String address) {
-        if (address == null || address.equals("localhost")) {
-            return true;
-        }
-
-        String[] groups = address.split("\\.");
-
-        if (groups.length != 4)
-            return false;
-
-        try {
-            return Arrays.stream(groups)
-                    .filter(s -> s.length() > 1 && s.startsWith("0"))
-                    .map(Integer::parseInt)
-                    .filter(i -> (i >= 0 && i <= 255))
-                    .count() == 4;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
-    private int askPort() {
+    private int askPort(int connection) {
         boolean firstError = true;
 
-        out.println("\nEnter the server port:");
+        int defaultPort = connection == 0 ? 2727 : 7272;
+        out.println("\nEnter the server port (default " + defaultPort + "):");
+        in.reset();
 
         do {
             out.print(">>> ");
 
-            if (in.hasNextInt()) {
-                int port = in.nextInt();
-                in.nextLine();
+            if (in.hasNextLine()) {
+                String line = in.nextLine();
 
-                if (port >= 1 && port <= 65535) {
-                    return port;
+                if (line.equals("")) {
+                    return defaultPort;
                 } else {
-                    firstError = promptInputError(firstError, "Invalid port!");
+                    if (ServerAddressValidator.isPortValid(line)) {
+                        return Integer.parseInt(line);
+                    } else {
+                        firstError = promptInputError(firstError, "Invalid Port!");
+                    }
                 }
             } else {
                 in.nextLine();
-                firstError = promptInputError(firstError, "Invalid integer!");
+                firstError = promptInputError(firstError, "Invalid string!");
             }
         } while (true);
     }
@@ -391,9 +425,9 @@ public class Cli {
     }
 
     private boolean promptInputError(boolean firstError, String errorMessage) {
-        out.print("\33[1A\33[2K");
+        out.print(AnsiCode.CLEAR_LINE);
         if (!firstError) {
-            out.print("\33[1A\33[2K");
+            out.print(AnsiCode.CLEAR_LINE);
         }
 
         out.println(errorMessage);
@@ -409,6 +443,265 @@ public class Cli {
             out.println("\nPress ENTER to exit");
             in.nextLine();
             System.exit(1);
+        }
+    }
+
+    private void doSomething() throws InterruptedException {
+        if (firstTurn) { // primo turno
+            if (firstPlayer.getUsername().equals(username)) { // primo giocatore che dovrà giocare
+                out.println("You are the first player");
+                yourTurn = true;
+            } else { // altri giocatori
+                out.println("The first player is: " + firstPlayer.getUsername());
+            }
+            firstTurn = false;
+        }
+
+        if (yourTurn) { // se è il tuo turno
+            playTurn();
+        } else {
+            out.println("Wait for your turn...");
+            out.println();
+            synchronized (waiter) {
+                waiter.wait();
+            }
+        }
+    }
+
+    private void playTurn() {
+        printPossibleMove(); // stampa a video le mosse che possono essere eseguite
+        boolean accepted = false;
+        boolean firstError = true;
+
+        int choose = -1;
+
+        do {
+            out.print(">>> ");
+            if (in.hasNextInt()) {
+                choose = in.nextInt();
+                if (choose >= 0 && choose <= 6) accepted = true;
+                else firstError = promptInputError(firstError, "Input not valid!");
+            } else {
+                firstError = promptInputError(firstError, "Invalid integer!");
+                in.nextLine();
+            }
+        } while (!accepted);
+
+        switchChooses(choose); // fa ciò che l'utente ha scelto
+    }
+
+    private void printPossibleMove() {
+        out.println("Choose your next move:");
+        out.println("\t0 - Print map");
+        out.println("\t1 - Print players board");
+        out.println("\t2 - Move");
+        out.println("\t3 - Shoot");
+        out.println("\t4 - Move and pickup power up or weapon");
+        out.println("\t5 - Spawn");
+        out.println("\t6 - Pass turn");
+        out.println();
+    }
+
+    private void switchChooses(int choose) {
+        Player player;
+        Message message;
+
+        switch (choose) {
+            case 0:
+                synchronized (lock) {
+                    CliPrinter.printMap(out, gameSerialized);
+                }
+                break;
+
+            case 1:
+                synchronized (lock) {
+                    CliPrinter.printPlayerBoards(out, gameSerialized);
+                }
+                break;
+
+            case 2:
+                synchronized (lock) {
+                    CliPrinter.printMap(out, gameSerialized);
+                }
+
+                player = getPlayer(username);
+
+                message = MessageBuilder.buildMoveRequest(client.getToken(), player, getCoordinates());
+
+                try {
+                    client.sendMessage(message);
+                } catch (IOException e) {
+                    promptError(e.getMessage(), true);
+                }
+                break;
+
+            case 3:
+                break;
+
+            case 4:
+                break;
+
+            case 5:
+                PowerupCard powerupCard = askPowerUpSpawn();
+                List<PowerupCard> powerupCards = getPowerUps();
+
+                try {
+                    client.sendMessage(MessageBuilder.buildDiscardPowerupRequest(client.getToken(), powerupCards, powerupCard, username));
+                } catch (IOException | PowerupCardsNotFoundException e) {
+                    promptError(e.getMessage(), true);
+                }
+                break;
+
+            case 6:
+                player = getPlayer(username);
+                try {
+                    client.sendMessage(MessageBuilder.buildPassTurnRequest(client.getToken(), (UserPlayer) player));
+                } catch (IOException e) {
+                    promptError(e.getMessage(), true);
+                }
+                break;
+        }
+    }
+
+    private List<PowerupCard> getPowerUps() {
+        synchronized (lock) {
+            return gameSerialized.getPowerUps();
+        }
+    }
+
+    private PowerupCard askPowerUpSpawn() {
+        List<PowerupCard> powerups = getPowerUps();
+
+        out.println();
+        out.println("Where do you want to re spawn?");
+        for (int i = 0; i < powerups.size(); i++) {
+            out.println("\t" + i + " - " + CliPrinter.toStringPowerUpCard(powerups.get(i)) + " (" + Ammo.toColor(powerups.get(i).getValue()) + " room)");
+        }
+
+        out.println();
+        boolean firstError = true;
+        int choose = 0;
+
+        do {
+            if (choose >= powerups.size() || choose < 0) {
+                firstError = promptInputError(firstError, "Value not valid");
+            }
+
+            out.print(">>> ");
+
+            if (in.hasNextInt()) {
+                choose = in.nextInt();
+            } else {
+                choose = -1;
+                in.nextLine();
+                firstError = promptInputError(firstError, "Value not valid");
+            }
+        } while (choose < 0 || choose >= powerups.size());
+
+        return powerups.get(choose);
+    }
+
+    @NotNull
+    @Contract(" -> new")
+    private PlayerPosition getCoordinates() {
+        boolean exit = false;
+        boolean firstError = true;
+
+        int x = -1;
+        int y = -1;
+
+        if (in.hasNextLine()) in.nextLine();
+
+        out.println("Write the new coordinates (0,1):");
+        do {
+            out.print(">>> ");
+
+            if (in.hasNextLine()) {
+                String[] split = in.nextLine().split(",");
+
+                if (split.length != 2)
+                    firstError = promptInputError(firstError, "Wrong input (must be like \"0,0\" or \"0, 0\")");
+                else {
+                    try {
+                        x = Integer.parseInt(split[0].trim());
+                        y = Integer.parseInt(split[1].trim());
+
+                        exit = true;
+                    } catch (NumberFormatException e) {
+                        firstError = promptInputError(firstError, "Wrong input (must be like \"0,0\" or \"0, 0\")");
+                    }
+                }
+            }
+        } while (!exit);
+
+        return new PlayerPosition(x, y);
+    }
+
+    @Override
+    public void onUpdate(List<Message> messages) {
+        for (Message message : messages) {
+            out.println(message);
+
+            switch (message.getContent()) {
+                case RESPONSE:
+                    Response response = (Response) message;
+                    if (response.getStatus().equals(MessageStatus.ERROR)) {
+                        // TODO: torno indietro con la macchina a stati
+                        // Sei uno stronzo
+                    } else {
+                        // TODO: vado avanti con la macchina a stati
+                    }
+                    break;
+
+                case GAME_STATE:
+                    GameStateMessage stateMessage = (GameStateMessage) message;
+                    out.println();
+                    synchronized (lock) {
+                        gameSerialized = stateMessage.getGameSerialized();
+                        CliPrinter.printMap(out, gameSerialized);
+                        out.println();
+                        CliPrinter.printPlayerBoards(out, gameSerialized);
+                    }
+                    break;
+
+                case READY:
+                    GameStartMessage gameStartMessage = (GameStartMessage) message;
+                    synchronized (lock) {
+                        firstPlayer = getPlayer(gameStartMessage.getFirstPlayer());
+                        isTerminator = gameSerialized.isTerminatorPresent();
+                        started = true;
+                    }
+                    break;
+
+                case LAST_RESPONSE:
+                    WinnersResponse winnersList = (WinnersResponse) message;
+                    synchronized (lock) {
+                        this.finished = true;
+                        this.winners = winnersList.getWinners();
+                    }
+                    break;
+
+                case DISCONNECTION:
+                    break;
+
+                default:
+            }
+
+            Logger.getGlobal().log(Level.INFO, "{0}", message);
+        }
+    }
+
+    private Terminator getTerminator() {
+        synchronized (lock) {
+            return gameSerialized.getTerminator();
+        }
+    }
+
+    private Player getPlayer(String username) {
+        synchronized (lock) {
+            Player player = gameSerialized.getPlayers().stream().filter(p -> p.getUsername().equals(username)).findFirst().orElse(null);
+            if (player == null) throw new PlayerNotFoundException("player not found, cannot continue with the game");
+            return player;
         }
     }
 }

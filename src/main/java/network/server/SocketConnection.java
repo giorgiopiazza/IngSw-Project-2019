@@ -88,9 +88,9 @@ class SocketConnection extends Connection implements Runnable {
         if (connected) {
             try {
                 out.writeObject(message);
-                out.flush();
                 out.reset();
             } catch (IOException e) {
+                e.printStackTrace();
                 disconnect();
             }
         }
