@@ -394,7 +394,7 @@
           "north":"SQUARE",
           "east":"WALL",
           "south":"WALL",
-          "west":"SQUARE"
+          "west":"DOOR"
         }
       ]
     ]

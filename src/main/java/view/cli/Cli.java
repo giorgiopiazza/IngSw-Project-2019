@@ -5,10 +5,8 @@ import exceptions.actions.PowerupCardsNotFoundException;
 import exceptions.player.PlayerNotFoundException;
 import model.GameSerialized;
 import model.cards.PowerupCard;
-import model.player.Player;
-import model.player.PlayerPosition;
-import model.player.Terminator;
-import model.player.UserPlayer;
+import model.map.GameMap;
+import model.player.*;
 import network.client.*;
 import network.message.*;
 import org.jetbrains.annotations.Contract;
@@ -84,6 +82,52 @@ public class Cli implements ClientUpdateListener {
             }
         });
         timer.schedule(timerTask, 1000, 1000);
+
+        /* CLI DEBUGGING
+        GameSerialized gs = new GameSerialized("pippo");
+        PlayerBoard pb = new PlayerBoard();
+        UserPlayer p1 = new UserPlayer("Pippo", PlayerColor.BLUE, pb);
+        UserPlayer p2 = new UserPlayer("Pluto", PlayerColor.GREEN, new PlayerBoard());
+        UserPlayer p3 = new UserPlayer("Topolino", PlayerColor.PURPLE, new PlayerBoard());
+        UserPlayer p4 = new UserPlayer("Minnie", PlayerColor.GREY, new PlayerBoard());
+        Terminator p5 = new Terminator(PlayerColor.YELLOW, new PlayerBoard());
+
+
+        p1.setPosition(new PlayerPosition(0,0));
+        p2.setPosition(new PlayerPosition(0,0));
+        p3.setPosition(new PlayerPosition(0,0));
+        p4.setPosition(new PlayerPosition(0,0));
+        p5.setPosition(new PlayerPosition(0,0));
+
+
+        p1.getPlayerBoard().addDamage(p2, 3);
+        p1.getPlayerBoard().addDamage(p4, 1);
+        p2.getPlayerBoard().addDamage(p1, 2);
+        p2.getPlayerBoard().addDamage(p4, 3);
+        p3.getPlayerBoard().addDamage(p4, 2);
+        p3.getPlayerBoard().addDamage(p1, 2);
+        p4.getPlayerBoard().addDamage(p2, 1);
+        p4.getPlayerBoard().addDamage(p3, 2);
+
+        pb.addMark(p2, 1);
+        pb.addMark(p3, 3);
+        pb.addMark(p4, 2);
+        pb.addMark(p2, 2);
+        pb.addMark(p4, 1);
+
+        ArrayList<UserPlayer> players = new ArrayList<>();
+        players.add(p1);
+        players.add(p2);
+        players.add(p3);
+        players.add(p4);
+
+        gs.setPlayers(players);
+        gs.setTerminator(p5);
+        gs.setGameMap(new GameMap(GameMap.MAP_4));
+
+        //CliPrinter.printPlayerBoards(out, gs);
+        CliPrinter.printMap(out, gs);
+         */
     }
 
     private void checkStartGame() {

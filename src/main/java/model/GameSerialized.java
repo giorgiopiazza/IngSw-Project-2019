@@ -12,6 +12,7 @@ import model.player.UserPlayer;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class GameSerialized implements Serializable  {
@@ -96,6 +97,31 @@ public class GameSerialized implements Serializable  {
 
     public Terminator getTerminator() {
         return terminator;
+    }
+
+    public ArrayList<Player> getAllPlayers() {
+        ArrayList<Player> allPlayers = new ArrayList<>(players);
+
+        if(terminatorPresent) {
+            allPlayers.add(terminator);
+            return allPlayers;
+        } else {
+            return allPlayers;
+        }
+    }
+
+    //utility methods for cli debugging
+    public void setTerminator(Terminator terminator) {
+        this.terminatorPresent = true;
+        this.terminator = terminator;
+    }
+
+    public void setPlayers(ArrayList<UserPlayer> userPlayers) {
+        this.players = userPlayers;
+    }
+
+    public void setGameMap(GameMap gameMap) {
+        this.gameMap = gameMap;
     }
 
     @Override
