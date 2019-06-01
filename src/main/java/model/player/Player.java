@@ -92,6 +92,16 @@ public abstract class Player implements Serializable, Comparable<Player> {
     }
 
     /**
+     * Method that returns true if the {@link Player Player} is dead, otherwise false.
+     * A {@link Player Player} is dead if and only if the damages on his {@link PlayerBoard PlayerBoard} are more than 10
+     *
+     * @return true if the {@link Player Player} is dead, otherwise false
+     */
+    public boolean isDead() {
+        return playerBoard.getDamageCount() > 10;
+    }
+
+    /**
      * Changes the position of a player throwing a runtime exception if the position is not in the map
      *
      * @param newX the new X where to move the player

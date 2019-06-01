@@ -4,15 +4,21 @@ import enumerations.PlayerColor;
 import network.message.GameSetupMessage;
 import network.message.LobbyMessage;
 
-import java.util.ArrayList;
+import java.util.*;
 
 public class GameLobby {
     private ArrayList<LobbyMessage> inLobbyPlayers;
     private ArrayList<GameSetupMessage> votedPlayers;
 
-    GameLobby () {
+    private boolean terminator;
+    private int skullNum;
+
+    GameLobby (boolean terminator, int skullNum) {
         this.inLobbyPlayers = new ArrayList<>();
         this.votedPlayers = new ArrayList<>();
+
+        this.terminator = terminator;
+        this.skullNum = skullNum;
     }
 
     void addPlayer(LobbyMessage inLobbyPlayer) {
@@ -32,32 +38,27 @@ public class GameLobby {
     }
 
     Integer getFavouriteMap() {
-        // TODO add lambda to get max occurrences
-        // if no one voted for the preference a default map is chosen
-        return 2;
+        if(!votedPlayers.isEmpty()) {
+            ArrayList<Integer> playersVotes = new ArrayList<>();
+
+            for(GameSetupMessage mapVote : votedPlayers) {
+                playersVotes.add(mapVote.getMapVote());
+            }
+
+            Map<Integer, Integer> map = new HashMap<>();
+            playersVotes.forEach(t -> map.compute(t, (k, i) -> i == null ? 1 : i + 1));
+            return map.entrySet().stream().max(Comparator.comparingInt(Map.Entry::getValue)).get().getKey();
+        } else {
+            return 2;
+        }
     }
 
     boolean getTerminatorPresence() {
-        int inFavorPlayers = 0;
-
-        for(GameSetupMessage setupMessage : votedPlayers) {
-            if(setupMessage.getTerminatorVote()) {
-                ++inFavorPlayers;
-            }
-        }
-
-        // tie decision is always in favor
-        if(inLobbyPlayers.size() == 5) {
-            return false;
-        } else {
-            return inFavorPlayers >= (inLobbyPlayers.size() % 2 + 1);
-        }
+        return this.terminator;
     }
 
-    Integer getFavouriteSkullsNum() {
-        // TODO add lambda to get max occurrences
-        // if no one voted for the preference a default number is chosen
-        return 5;
+    Integer getSkullNum() {
+        return this.skullNum;
     }
 
     ArrayList<PlayerColor> getUnusedColors() {
