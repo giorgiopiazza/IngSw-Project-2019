@@ -9,6 +9,7 @@ import java.util.Map;
 public abstract class Effect implements Serializable {
     private Map<String, String> properties;
     private TargetType[] targets;
+    private String description;
 
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
@@ -24,6 +25,14 @@ public abstract class Effect implements Serializable {
 
     public TargetType[] getTargets() {
         return this.targets;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return this.description;
     }
 
     /**

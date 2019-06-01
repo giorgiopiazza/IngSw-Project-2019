@@ -63,9 +63,11 @@ public class Server implements Runnable {
                             break;
                         case 'b':
                             terminator = Boolean.parseBoolean(args[i + 1]);
+                            ++i;
                             break;
                         case 's':
                             skullNum = Integer.parseInt(args[i + 1]);
+                            ++i;
                             break;
                         default:
                             break;

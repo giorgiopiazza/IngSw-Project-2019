@@ -13,10 +13,11 @@ import java.util.Map;
 public class WeaponBaseEffect extends Effect {
     private AmmoQuantity cost;
 
-    public WeaponBaseEffect(AmmoQuantity cost, Map<String, String> properties, TargetType[] targets) {
+    public WeaponBaseEffect(AmmoQuantity cost, Map<String, String> properties, TargetType[] targets, String description) {
         setCost(cost);
         setProperties(properties);
         setTargets(targets);
+        setDescription(description);
     }
 
     /**
