@@ -117,8 +117,11 @@ public class ClientRoundManager {
                 playerState = UserPlayerState.END;
                 break;
 
-            default:
+            case TERMINATOR_MOVE:
                 throw new ClientRoundManagerException("Error, ClientRoundManager cannot be in TERMINATOR_MOVE UserPlayerState");
+
+            case END:
+                throw new ClientRoundManagerException("Error, in the UserPlayerState.END state you must call the endRound() method");
         }
     }
 
