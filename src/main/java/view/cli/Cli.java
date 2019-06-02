@@ -4,16 +4,16 @@ import enumerations.*;
 import exceptions.actions.PowerupCardsNotFoundException;
 import exceptions.player.PlayerNotFoundException;
 import model.GameSerialized;
+import model.cards.Deck;
 import model.cards.PowerupCard;
+import model.cards.WeaponCard;
 import model.map.GameMap;
 import model.player.*;
 import network.client.*;
 import network.message.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import utility.LobbyTimer;
-import utility.MessageBuilder;
-import utility.ServerAddressValidator;
+import utility.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -127,6 +127,13 @@ public class Cli implements ClientUpdateListener {
 
         //CliPrinter.printPlayerBoards(out, gs);
         CliPrinter.printMap(out, gs);
+
+        Deck powerups = PowerupParser.parseCards();
+        PowerupCard[] printingPowerups = new PowerupCard[4];
+        for(int i = 0; i < 4; ++i) {
+            printingPowerups[i] = (PowerupCard) powerups.draw();
+        }
+        CliPrinter.printPowerups(out, printingPowerups);
          */
     }
 

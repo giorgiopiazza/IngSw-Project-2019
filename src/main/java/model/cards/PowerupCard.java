@@ -1,7 +1,6 @@
 package model.cards;
 
 import enumerations.Ammo;
-import exceptions.AdrenalinaException;
 import exceptions.cards.InvalidPowerupActionException;
 import exceptions.command.InvalidCommandException;
 import exceptions.player.EmptyHandException;

@@ -2,7 +2,7 @@
   "powerups": [
     {
       "title" : "TAGBACK GRENADE",
-      "description": "You may play this card when you receive damage from a player you can see. Give that player 1 mark.",
+      "description": "You may play this card when you receive damage from a player you can see. Give that player 1 mark.                                                                       ",
       "quantity": 2,
       "properties" : {
         "visible" : true,
@@ -34,7 +34,7 @@
     },
     {
       "title" : "NEWTON",
-      "description": "You may play this card on your turn before or after any action. Choose any other player's figure and move it 1 or 2 squares in one direction.",
+      "description": "You may play this card on your turn before or after any action. Choose any other player's figure and move it 1 or 2 squares in one direction.                           ",
       "quantity": 2,
       "properties" : {
         "moveInLine" : true,
@@ -49,7 +49,7 @@
     },
     {
       "title" : "TELEPORTER",
-      "description": "You may play this card on your turn before or after any action. Pick up your figure and set it down on any square of the board.",
+      "description": "You may play this card on your turn before or after any action. Pick up your figure and set it down on any square of the board.                                          ",
       "quantity": 2,
       "properties" : {
         "tp" : true,
