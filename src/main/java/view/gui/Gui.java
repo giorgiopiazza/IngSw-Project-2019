@@ -2,8 +2,6 @@ package view.gui;
 
 import enumerations.PlayerColor;
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -48,7 +46,6 @@ public class Gui extends Application {
         window.setScene(new Scene(new Pane()));
 
         setMainMenuLayout();
-        //setLobbyLayout();
 
         window.show();
     }
@@ -217,6 +214,9 @@ public class Gui extends Application {
     private void setLobbyLayout() {
         if (setLayout("fxml/lobbyScene.fxml")) {
             Scene scene = window.getScene();
+
+            ImageView backButton = (ImageView) scene.lookup("#backButton");
+            backButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> setConnectionLayout());
         }
     }
 
