@@ -3,6 +3,9 @@ package utility;
 import java.util.Arrays;
 
 public class ServerAddressValidator {
+    public static final int MAX_ADDRESS_LENGTH = 15;
+    public static final int MAX_PORT_LENGTH = 5;
+
     private ServerAddressValidator()  {
         throw new IllegalStateException("Utility class");
     }

@@ -2,6 +2,8 @@ package view.gui;
 
 import enumerations.PlayerColor;
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -17,6 +19,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import model.Game;
+import network.client.Client;
 import utility.ServerAddressValidator;
 
 import java.io.IOException;
@@ -25,7 +28,6 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 
 public class Gui extends Application {
-    private static final int MAX_USERNAME_LENGTH = 20;
     private final PseudoClass errorPseudo = PseudoClass.getPseudoClass("error");
 
     private Stage window;
@@ -78,14 +80,18 @@ public class Gui extends Application {
             connectRmiButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> tryStartConnection(1));
 
             TextField usernameField = (TextField) scene.lookup("#usernameField");
-            usernameField.setTextFormatter(new TextFormatter<String>(change -> {
-                if (change.getControlText().length() > MAX_USERNAME_LENGTH) {
-                    change.setRange(0, MAX_USERNAME_LENGTH - 1);
-                    change.setText(change.getControlNewText().substring(0, MAX_USERNAME_LENGTH));
+            usernameField.textProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue.length() > Client.MAX_USERNAME_LENGTH) {
+                    usernameField.setText(newValue.substring(0, Client.MAX_USERNAME_LENGTH));
                 }
+            });
 
-                return change;
-            }));
+            TextField addressField = (TextField) scene.lookup("#addressField");
+            addressField.textProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue.length() > ServerAddressValidator.MAX_ADDRESS_LENGTH) {
+                    addressField.setText(newValue.substring(0, ServerAddressValidator.MAX_ADDRESS_LENGTH));
+                }
+            });
 
             TextField portField = (TextField) scene.lookup("#portField");
             portField.setTextFormatter(new TextFormatter<String>(change -> {
@@ -97,8 +103,11 @@ public class Gui extends Application {
                 return null;
             }));
 
-
-            showDialog("Error", "Sei un pezzente!");
+            portField.textProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue.length() > ServerAddressValidator.MAX_PORT_LENGTH) {
+                    portField.setText(newValue.substring(0, ServerAddressValidator.MAX_PORT_LENGTH));
+                }
+            });
         }
     }
 
