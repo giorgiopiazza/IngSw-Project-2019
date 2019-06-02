@@ -34,10 +34,14 @@ public class MessageBuilder {
         return new ConnectionRequest(username);
     }
 
+    @NotNull
+    @Contract("_, _ -> new")
     public static ColorRequest buildColorRequest(String token, String username) {
         return new ColorRequest(username, token);
     }
 
+    @NotNull
+    @Contract("_, _, _ -> new")
     public static LobbyMessage buildGetInLobbyMessage(String token, String username, PlayerColor color) {
         return new LobbyMessage(username, token, MessageContent.GET_IN_LOBBY, color);
     }
@@ -52,7 +56,7 @@ public class MessageBuilder {
      * @throws PowerupCardsNotFoundException if the player does not have that {@code powerupCard}
      */
     @NotNull
-    @Contract("_, null, _ -> fail; _, !null, null -> fail")
+    @Contract("_, null, _, _ -> fail; _, !null, null, _ -> fail")
     public static DiscardPowerupRequest buildDiscardPowerupRequest(String token, List<PowerupCard> powerupCards, PowerupCard powerupCard, String username) throws PowerupCardsNotFoundException {
         if (powerupCards == null || powerupCard == null)
             throw new NullPointerException("player and powerupCard cannot be null");
@@ -79,7 +83,7 @@ public class MessageBuilder {
      * @throws PowerupCardsNotFoundException if the player does not have that {@code paymentsPowerups}
      */
     @NotNull
-    @Contract("null, _, _, _, _ -> fail; !null, null, _, _, _ -> fail; !null, !null, _, null, _ -> fail; !null, !null, null, !null, _ -> fail")
+    @Contract("_, null, _, _, _, _ -> fail; _, !null, null, _, _, _ -> fail; _, !null, !null, _, null, _ -> fail; _, !null, !null, null, !null, _ -> fail")
     public static MovePickRequest buildMovePickRequest(String token, UserPlayer player, PlayerPosition newPos, List<PowerupCard> paymentPowerups, WeaponCard addingWeapon, WeaponCard discardingWeapon) throws PowerupCardsNotFoundException {
         if (player == null || newPos == null || addingWeapon == null || paymentPowerups == null)
             throw new NullPointerException("player, newPos and addingWeapon cannot be null");
@@ -102,7 +106,7 @@ public class MessageBuilder {
      * @return the {@link MovePickRequest MovePickRequest} generated object
      */
     @NotNull
-    @Contract("null, _, _, _ -> fail; !null, null, _, _ -> fail; !null, !null, null, _ -> fail; !null, !null, !null, _ -> new")
+    @Contract("_, null, _, _, _ -> fail; _, !null, null, _, _ -> fail; _, !null, !null, null, _ -> fail; _, !null, !null, !null, _ -> new")
     public static MovePickRequest buildMovePickRequest(String token, UserPlayer player, PlayerPosition newPos, WeaponCard addingWeapon, WeaponCard discardingWeapon) {
         if (player == null || newPos == null || addingWeapon == null)
             throw new NullPointerException("player, newPos and addingWeapon cannot be null");
@@ -120,7 +124,6 @@ public class MessageBuilder {
      * @return the {@link MovePickRequest MovePickRequest} generated object
      */
     @NotNull
-    @Contract("null, _, _ -> fail; !null, null, _ -> fail; !null, !null, null -> fail")
     public static MovePickRequest buildMovePickRequest(String token, UserPlayer player, PlayerPosition newPos, WeaponCard addingWeapon) {
         return buildMovePickRequest(token, player, newPos, addingWeapon, null);
     }
@@ -137,13 +140,12 @@ public class MessageBuilder {
      * @throws PowerupCardsNotFoundException if the player does not have that {@code paymentsPowerups}
      */
     @NotNull
-    @Contract("null, _, _, _ -> fail; !null, null, _, _ -> fail; !null, !null, _, null -> fail; !null, !null, null, !null -> fail")
     public static MovePickRequest buildMovePickRequest(String token, UserPlayer player, PlayerPosition newPos, List<PowerupCard> paymentPowerups, WeaponCard addingWeapon) throws PowerupCardsNotFoundException {
         return buildMovePickRequest(token, player, newPos, paymentPowerups, addingWeapon, null);
     }
 
     @NotNull
-    @Contract("null, _ -> fail; !null, null -> fail; !null, !null -> new")
+    @Contract("_, null, _ -> fail; _, !null, null -> fail; _, !null, !null -> new")
     public static MoveRequest buildMoveRequest(String token, Player player, PlayerPosition newPos) {
         if (player == null || newPos == null) throw new NullPointerException("player, newPos cannot be null");
 
@@ -151,7 +153,7 @@ public class MessageBuilder {
     }
 
     @NotNull
-    @Contract("null -> fail; !null -> new")
+    @Contract("_, null -> fail; _, !null -> new")
     public static PassTurnRequest buildPassTurnRequest(String token, UserPlayer player) {
         if (player == null) throw new NullPointerException("player cannot be null");
 
@@ -159,7 +161,7 @@ public class MessageBuilder {
     }
 
     @NotNull
-    @Contract("null, _ -> fail; !null, null -> fail")
+    @Contract("_, null, _ -> fail; _, !null, null -> fail")
     public static PowerupRequest buildPowerupRequest(String token, UserPlayer player, ArrayList<PowerupCard> powerupCards) throws PowerupCardsNotFoundException {
         if (player == null || powerupCards == null)
             throw new NullPointerException("player and powerupCard cannot be null");
@@ -181,7 +183,7 @@ public class MessageBuilder {
     }
 
     @NotNull
-    @Contract("_, _, _, _, null -> fail; null, _, _, _, !null -> fail; !null, null, null, null, !null -> fail")
+    @Contract("_, _, _, _, _, null -> fail; _, null, _, _, _, !null -> fail")
     public static ReloadRequest buildReloadRequest(String token, UserPlayer player, WeaponCard weapon1, WeaponCard weapon2, WeaponCard weapon3, List<PowerupCard> paymentPowerups) throws PowerupCardsNotFoundException, WeaponCardsNotFoundException {
         if (paymentPowerups == null || player == null)
             throw new NullPointerException("player, paymentPowerups cannot be null");
@@ -198,19 +200,17 @@ public class MessageBuilder {
     }
 
     @NotNull
-    @Contract("_, _, null -> fail; null, _, !null -> fail; !null, null, !null -> fail")
     public static ReloadRequest buildReloadRequest(String token, UserPlayer player, WeaponCard weaponCard, List<PowerupCard> paymentsPowerups) throws PowerupCardsNotFoundException, WeaponCardsNotFoundException {
         return buildReloadRequest(token, player, weaponCard, null, null, paymentsPowerups);
     }
 
     @NotNull
-    @Contract("_, _, _, null -> fail; null, _, _, !null -> fail; !null, null, null, !null -> fail")
     public static ReloadRequest buildReloadRequest(String token, UserPlayer player, WeaponCard weapon1, WeaponCard weapon2, List<PowerupCard> paymentsPowerups) throws PowerupCardsNotFoundException, WeaponCardsNotFoundException {
         return buildReloadRequest(token, player, weapon1, weapon2, null, paymentsPowerups);
     }
 
     @NotNull
-    @Contract("null, _, _, _ -> fail; !null, null, null, null -> fail")
+    @Contract("_, null, _, _, _ -> fail")
     public static ReloadRequest buildReloadRequest(String token, UserPlayer player, WeaponCard weapon1, WeaponCard weapon2, WeaponCard weapon3) throws WeaponCardsNotFoundException {
         if (player == null) throw new NullPointerException("player cannot be null");
 
@@ -222,19 +222,18 @@ public class MessageBuilder {
     }
 
     @NotNull
-    @Contract("null, _ -> fail; !null, null -> fail")
     public static ReloadRequest buildReloadRequest(String token, UserPlayer player, WeaponCard weaponCard) throws WeaponCardsNotFoundException {
         return buildReloadRequest(token, player, weaponCard, null, (WeaponCard) null);
     }
 
     @NotNull
-    @Contract("null, _, _ -> fail")
     public static ReloadRequest buildReloadRequest(String token, UserPlayer player, WeaponCard weapon1, WeaponCard weapon2) throws WeaponCardsNotFoundException {
         return buildReloadRequest(token, player, weapon1, weapon2, (WeaponCard) null);
     }
 
+
     @NotNull
-    @Contract("null, _, _, _, _, _ -> fail; !null, null, _, _, _, _ -> fail; !null, !null, _, null, null, null -> fail")
+    @Contract("_, null, _, _, _, _, _ -> fail; _, !null, null, _, _, _, _ -> fail; _, !null, !null, _, null, null, null -> fail")
     public static ShootRequest buildShootRequest(String token, UserPlayer player, WeaponCard weaponCard, int effect, WeaponCard recharge1, WeaponCard recharge2, WeaponCard recharge3) throws WeaponCardsNotFoundException {
         if (player == null || weaponCard == null || (recharge1 == null && recharge2 == null && recharge3 == null))
             throw new NullPointerException();
@@ -256,19 +255,19 @@ public class MessageBuilder {
     }
 
     @NotNull
-    @Contract("null, _, _, _ -> fail; !null, null, _, _ -> fail; !null, !null, _, null -> fail")
+    @Contract("_, null, _, _, _ -> fail; _, !null, null, _, _ -> fail; _, !null, !null, _, null -> fail")
     public static ShootRequest buildShootRequest(String token, UserPlayer player, WeaponCard weaponCard, int effect, WeaponCard recharge) throws WeaponCardsNotFoundException {
         return buildShootRequest(token, player, weaponCard, effect, recharge, null, null);
     }
 
     @NotNull
-    @Contract("null, _, _, _, _ -> fail; !null, null, _, _, _ -> fail; !null, !null, _, null, null -> fail")
+    @Contract("_, null, _, _, _, _ -> fail; _, !null, null, _, _, _ -> fail; _, !null, !null, _, null, null -> fail")
     public static ShootRequest buildShootRequest(String token, UserPlayer player, WeaponCard weaponCard, int effect, WeaponCard recharge1, WeaponCard recharge2) throws WeaponCardsNotFoundException {
         return buildShootRequest(token, player, weaponCard, effect, recharge1, recharge2, null);
     }
 
     @NotNull
-    @Contract("null, _, _ -> fail; !null, null, _ -> fail")
+    @Contract("_, null, _, _ -> fail; _, !null, null, _ -> fail")
     public static ShootRequest buildShootRequest(String token, UserPlayer player, WeaponCard weaponCard, int effect) throws WeaponCardsNotFoundException {
         if (player == null || weaponCard == null)
             throw new NullPointerException("player and weaponCard cannot be null");
@@ -288,7 +287,7 @@ public class MessageBuilder {
     }
 
     @NotNull
-    @Contract("null, _ -> fail; !null, null -> fail; !null, !null -> new")
+    @Contract("_, null, _ -> fail; _, !null, null -> fail; _, !null, !null -> new")
     public static TerminatorSpawnRequest buildTerminatorSpawnRequest(String token, Terminator terminator, Square spawnSquare) {
         if (terminator == null || spawnSquare == null)
             throw new NullPointerException("terminator and spawnSquare cannot be null");
@@ -297,7 +296,7 @@ public class MessageBuilder {
     }
 
     @NotNull
-    @Contract("null, _, _ -> fail; !null, null, _ -> fail; !null, !null, null -> fail; !null, !null, !null -> new")
+    @Contract("_, null, _, _ -> fail; _, !null, null, _ -> fail; _, !null, !null, null -> fail; _, !null, !null, !null -> new")
     public static UseTerminatorRequest buildUseTerminatorRequest(String token, Terminator terminator, PlayerPosition newPos, UserPlayer target) {
         if (terminator == null || newPos == null || target == null)
             throw new NullPointerException("Terminator, newPos and target cannot be null");
