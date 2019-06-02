@@ -21,6 +21,8 @@ public class WeaponParser {
     private static final String COST = "cost";
     private static final String TARGET = "target";
     private static final String SUB_EFFECTS = "subEffects";
+    private static final String DESCRIPTION = "description";
+
 
     private WeaponParser() {
         throw new IllegalStateException("Utility class");
@@ -86,6 +88,8 @@ public class WeaponParser {
         Ammo[] cost = new Ammo[0];
         TargetType[] target = new TargetType[0];
 
+        String description = jsonEffect.get(DESCRIPTION).getAsString();
+
         if (jsonEffect.has(COST)) {
             cost = parseAmmoJsonArray(jsonEffect.getAsJsonArray(COST));
         }
@@ -104,7 +108,7 @@ public class WeaponParser {
             weaponProperties = getProperties(properties);
         }
 
-        Effect effect = new WeaponBaseEffect(new AmmoQuantity(cost), weaponProperties, target);
+        Effect effect = new WeaponBaseEffect(new AmmoQuantity(cost), weaponProperties, target, description);
 
         if (properties.get(TARGET).getAsJsonArray().size() == 1) {
             effect = decorateSingleEffect(effect, properties);

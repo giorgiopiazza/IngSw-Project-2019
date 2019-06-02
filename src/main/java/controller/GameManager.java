@@ -45,10 +45,10 @@ public class GameManager implements TimerRunListener {
      *
      * @param server the Server to be bind
      */
-    public GameManager(Server server) {
+    public GameManager(Server server, boolean terminator, int skullNum) {
         this.server = server;
         gameState = PossibleGameState.GAME_ROOM;
-        this.lobby = new GameLobby();
+        this.lobby = new GameLobby(terminator, skullNum);
         this.gameInstance = Game.getInstance();
         this.roundManager = new RoundManager(this);
 
@@ -457,7 +457,7 @@ public class GameManager implements TimerRunListener {
         }
 
         try {
-            gameInstance.setKillShotNum(lobby.getFavouriteSkullsNum());
+            gameInstance.setKillShotNum(lobby.getSkullNum());
         } catch (InvalidKillshotNumberException e) {
             // never reached here the lobby returns always a valid number
         }
@@ -508,7 +508,7 @@ public class GameManager implements TimerRunListener {
             if ((lobby.getTerminatorPresence() && inLobbyPlayers.size() < 4) ||
                     (!lobby.getTerminatorPresence() && inLobbyPlayers.size() < 5) &&
                             lobbyMessage.getChosenColor() != null && unusedColors.contains(lobbyMessage.getChosenColor())) {
-                inLobbyPlayers.add(lobbyMessage);
+                lobby.addPlayer(lobbyMessage);
                 Server.LOGGER.log(Level.INFO, "{0} joined the lobby", lobbyMessage.getSenderUsername());
                 timerCheck();
             } else {
@@ -600,8 +600,9 @@ public class GameManager implements TimerRunListener {
         ArrayList<GameSetupMessage> alreadyVotedPlayers = lobby.getVotedPlayers();
 
         for (LobbyMessage lobbyPlayer : inLobbyPlayers) {
-            if (lobbyPlayer.getSenderUsername().equals(setupMessage.getSenderUsername()) && !alreadyVotedPlayers.contains(setupMessage)) {
-                alreadyVotedPlayers.add(setupMessage);
+            if (lobbyPlayer.getSenderUsername().equals(setupMessage.getSenderUsername()) && !alreadyVotedPlayers.contains(setupMessage)
+                    && setupMessage.getMapVote() > 0 && setupMessage.getMapVote() < 5) {
+                lobby.addPlayerVote(setupMessage);
                 return new Response("Vote added", MessageStatus.OK);
             }
         }

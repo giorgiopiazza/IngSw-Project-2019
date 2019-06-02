@@ -250,7 +250,7 @@ public class Gui extends Application {
         dialog.initOwner(window);
         dialog.initStyle(StageStyle.UNDECORATED);
         dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.setResizable(false);
+        dialog.setAlwaysOnTop(true);
 
         dialogScene.lookup("#okButton").addEventHandler(MouseEvent.MOUSE_CLICKED, event -> dialog.close());
 

@@ -6,27 +6,15 @@ import java.util.Objects;
 
 public class GameSetupMessage extends Message {
     private int mapVote;
-    private boolean terminatorVote;
-    private int skullNumVote;
 
-    public GameSetupMessage(String username, String token, int mapVote, boolean terminatorVote, int skullNumVote) {
+    public GameSetupMessage(String username, String token, int mapVote) {
         super(username, token, MessageContent.GAME_SETUP);
 
         this.mapVote = mapVote;
-        this.terminatorVote = terminatorVote;
-        this.skullNumVote = skullNumVote;
     }
 
     public int getMapVote() {
         return mapVote;
-    }
-
-    public boolean getTerminatorVote() {
-        return terminatorVote;
-    }
-
-    public int getSkullNumVote() {
-        return skullNumVote;
     }
 
     @Override

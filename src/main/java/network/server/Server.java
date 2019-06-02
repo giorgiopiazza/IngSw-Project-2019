@@ -29,7 +29,7 @@ public class Server implements Runnable {
 
     public static final Logger LOGGER = Logger.getLogger("Server");
 
-    private Server() {
+    private Server(boolean terminator, int skullNum) {
         clients = new HashMap<>();
 
         SocketServer serverSocket = new SocketServer(this, SOCKET_PORT);
@@ -45,11 +45,46 @@ public class Server implements Runnable {
         Thread pinger = new Thread(this);
         pinger.start();
 
-        gameManager = new GameManager(this);
+        gameManager = new GameManager(this, terminator, skullNum);
     }
 
     public static void main(String[] args) {
-        new Server();
+        String confFilePath = "default/path";
+        boolean terminator = false;
+        int skullNum = 5;
+
+        if(args.length > 0 && args.length < 7) {
+            for(int i = 0; i < args.length; ++i) {
+                if(args[i].charAt(0) == '-' && args[i].length() == 2 && args.length >= i + 1 && args[i + 1].charAt(0) != '-') {
+                    switch (args[i].charAt(1)) {
+                        case 'l':
+                            confFilePath = args[i + 1];
+                            ++i;
+                            break;
+                        case 'b':
+                            terminator = Boolean.parseBoolean(args[i + 1]);
+                            ++i;
+                            break;
+                        case 's':
+                            skullNum = Integer.parseInt(args[i + 1]);
+                            ++i;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        } else {
+            new Server(terminator,  skullNum);
+        }
+
+        // if the passed value is correct it is used for the game, if not DEFAULT value is set back to 5
+        if(skullNum < 5 || skullNum > 8) {
+            skullNum = 5;
+        }
+
+        // TODO pass confFilePath as it can be parsed in the server and used to set parameters
+        new Server(terminator, skullNum);
     }
 
     /**
