@@ -19,20 +19,7 @@
         </VBox>
     </top>
 
-    <center>
-        <VBox alignment="CENTER">
-            <Label text="Enter your username:" styleClass="menuLabel"/>
-            <TextField id="usernameField" styleClass="menuTextField"/>
-
-            <Label text="Enter server address:" styleClass="menuLabel"/>
-            <TextField id="addressField" styleClass="menuTextField"/>
-
-            <Label text="Enter server port:" styleClass="menuLabel"/>
-            <TextField id="portField" styleClass="menuTextField"/>
-        </VBox>
-    </center>
-
-    <right>
+    <left>
         <VBox styleClass="voteBox" alignment="CENTER">
             <Label text="Vote the map you want to play with:" styleClass="menuLabel"/>
             <FlowPane styleClass="voteInnerBox" alignment="CENTER">
@@ -41,6 +28,18 @@
                 <ImageView fitHeight="179" fitWidth="234" id="map3" styleClass="button"/>
                 <ImageView fitHeight="179" fitWidth="234" id="map4" styleClass="button"/>
             </FlowPane>
+        </VBox>
+    </left>
+
+    <right>
+        <VBox styleClass="voteBox" alignment="CENTER">
+            <VBox styleClass="lobbyInnerBox">
+                <Label text="Pippo" styleClass="playerRow"/>
+                <Label text="Pluto" styleClass="playerRow"/>
+                <Label text="Topolino" styleClass="playerRow"/>
+                <Label text="Minnie" styleClass="playerRow"/>
+                <Label text="Paperino" styleClass="playerRow"/>
+            </VBox>
         </VBox>
     </right>
 

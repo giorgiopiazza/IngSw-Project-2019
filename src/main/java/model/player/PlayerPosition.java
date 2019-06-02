@@ -111,7 +111,7 @@ public class PlayerPosition implements Serializable {
 
     @Override
     public String toString() {
-        return "[" + coordX + ", " + coordY + "]";
+        return "(" + coordX + "," + coordY + ")";
     }
 
     public boolean canSee(PlayerPosition pos) {

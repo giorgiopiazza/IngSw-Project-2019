@@ -6,7 +6,6 @@ import enumerations.PossibleAction;
 import enumerations.UserPlayerState;
 import exceptions.player.ClientRoundManagerException;
 import model.player.UserPlayer;
-import model.player.PlayerBoard;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -187,7 +186,7 @@ public class ClientRoundManager {
     }
 
     private void normalActions(List<PossibleAction> actions) {
-        if (playerState != UserPlayerState.END) {
+        if (playerState != UserPlayerState.END && playerState != UserPlayerState.BEGIN) {
             if (terminatorCanMove && terminatorPresent) actions.add(PossibleAction.TERMINATOR_ACTION);
             actions.add(PossibleAction.MOVE);
             actions.add(PossibleAction.MOVE_AND_PICK);
@@ -197,7 +196,7 @@ public class ClientRoundManager {
     }
 
     private void firstAdrenalineActions(List<PossibleAction> actions) {
-        if (playerState != UserPlayerState.END) {
+        if (playerState != UserPlayerState.END && playerState != UserPlayerState.BEGIN) {
             if (terminatorCanMove && terminatorPresent) actions.add(PossibleAction.TERMINATOR_ACTION);
             actions.add(PossibleAction.MOVE);
             actions.add(PossibleAction.ADRENALINE_PICK);
@@ -207,7 +206,7 @@ public class ClientRoundManager {
     }
 
     private void secondAdrenalineActions(List<PossibleAction> actions) {
-        if (playerState != UserPlayerState.END) {
+        if (playerState != UserPlayerState.END && playerState != UserPlayerState.BEGIN) {
             if (terminatorCanMove && terminatorPresent) actions.add(PossibleAction.TERMINATOR_ACTION);
             actions.add(PossibleAction.MOVE);
             actions.add(PossibleAction.ADRENALINE_PICK);
@@ -245,5 +244,13 @@ public class ClientRoundManager {
      */
     public boolean terminatorMoved() {
         return !terminatorCanMove;
+    }
+
+    public boolean terminatorPresent() {
+        return terminatorPresent;
+    }
+
+    public boolean roundEnded() {
+        return UserPlayerState.BEGIN == playerState && !roundStarted;
     }
 }

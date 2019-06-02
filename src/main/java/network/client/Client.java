@@ -12,6 +12,8 @@ import java.util.List;
  * This class represents a Client
  */
 public abstract class Client extends UnicastRemoteObject {
+    public static final int MAX_USERNAME_LENGTH = 20;
+
     private final String username;
     private final String address;
     private final int port;

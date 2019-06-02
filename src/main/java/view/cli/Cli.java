@@ -1,13 +1,14 @@
 package view.cli;
 
+import controller.ClientRoundManager;
 import enumerations.*;
 import exceptions.actions.PowerupCardsNotFoundException;
+import exceptions.actions.WeaponCardsNotFoundException;
+import exceptions.player.ClientRoundManagerException;
 import exceptions.player.PlayerNotFoundException;
 import model.GameSerialized;
-import model.cards.Deck;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
-import model.map.GameMap;
 import model.player.*;
 import network.client.*;
 import network.message.*;
@@ -40,13 +41,15 @@ public class Cli implements ClientUpdateListener {
     private boolean started;
     private boolean finished;
     private List<Player> winners;
-    private PossibleGameState gameState;
-    private Player firstPlayer;
-    private boolean isTerminator;
-    private boolean firstTurn;
-    private boolean yourTurn;
+    private Player firstPlayer; //the first player to play
 
-    private UserPlayerState playerState;
+    private boolean isTerminator; //terminator in this game
+    private boolean terminatorMoved; //terminator already move in the current round
+    private boolean firstRound;
+    private boolean yourRound; //set to true when receive message that is my round
+
+    private ClientRoundManager roundManager; //manage the rounds of this client
+    private List<PossibleAction> possibleActions; //contains the possible actions for this round in a specific UserPlayerState
 
     public Cli() {
         this.in = new Scanner(System.in);
@@ -54,8 +57,9 @@ public class Cli implements ClientUpdateListener {
         this.timerTime = 0;
         this.started = false;
         this.finished = false;
-        this.firstTurn = true;
-        this.yourTurn = false;
+        this.firstRound = true;
+        this.yourRound = false;
+        this.terminatorMoved = false;
     }
 
     /**
@@ -73,71 +77,24 @@ public class Cli implements ClientUpdateListener {
 
         timer = new Timer();
         timerTask = new LobbyTimer(() -> {
+            boolean start;
+
             synchronized (lock) {
-                if (!started) started = false;
-                else {
-                    timer.cancel();
-                    checkStartGame();
-                }
+                start = this.started;
+            }
+
+            if (start) {
+                timer.cancel();
+                startGame();
             }
         });
         timer.schedule(timerTask, 1000, 1000);
-
-        /*CLI DEBUGGING
-        GameSerialized gs = new GameSerialized("pippo");
-        PlayerBoard pb = new PlayerBoard();
-        UserPlayer p1 = new UserPlayer("Pippo", PlayerColor.BLUE, pb);
-        UserPlayer p2 = new UserPlayer("Pluto", PlayerColor.GREEN, new PlayerBoard());
-        UserPlayer p3 = new UserPlayer("Topolino", PlayerColor.PURPLE, new PlayerBoard());
-        UserPlayer p4 = new UserPlayer("Minnie", PlayerColor.GREY, new PlayerBoard());
-        Terminator p5 = new Terminator(PlayerColor.YELLOW, new PlayerBoard());
-
-
-        p1.setPosition(new PlayerPosition(0,0));
-        p2.setPosition(new PlayerPosition(0,0));
-        p3.setPosition(new PlayerPosition(0,0));
-        p4.setPosition(new PlayerPosition(0,0));
-        p5.setPosition(new PlayerPosition(0,0));
-
-
-        p1.getPlayerBoard().addDamage(p2, 3);
-        p1.getPlayerBoard().addDamage(p4, 1);
-        p2.getPlayerBoard().addDamage(p1, 2);
-        p2.getPlayerBoard().addDamage(p4, 3);
-        p3.getPlayerBoard().addDamage(p4, 2);
-        p3.getPlayerBoard().addDamage(p1, 2);
-        p4.getPlayerBoard().addDamage(p2, 1);
-        p4.getPlayerBoard().addDamage(p3, 2);
-
-        pb.addMark(p2, 1);
-        pb.addMark(p3, 3);
-        pb.addMark(p4, 2);
-        pb.addMark(p2, 2);
-        pb.addMark(p4, 1);
-
-        ArrayList<UserPlayer> players = new ArrayList<>();
-        players.add(p1);
-        players.add(p2);
-        players.add(p3);
-        players.add(p4);
-
-        gs.setPlayers(players);
-        gs.setTerminator(p5);
-        gs.setGameMap(new GameMap(GameMap.MAP_2));
-
-        //CliPrinter.printPlayerBoards(out, gs);
-        CliPrinter.printMap(out, gs);
-
-        Deck powerups = PowerupParser.parseCards();
-        PowerupCard[] printingPowerups = new PowerupCard[4];
-        for(int i = 0; i < 4; ++i) {
-            printingPowerups[i] = (PowerupCard) powerups.draw();
-        }
-        CliPrinter.printPowerups(out, printingPowerups);
-         */
     }
 
-    private void checkStartGame() {
+    private void startGame() {
+        // TODO:  terminator present
+        roundManager = new ClientRoundManager((UserPlayer) getPlayer(username), false);
+
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 doSomething();
@@ -454,59 +411,268 @@ public class Cli implements ClientUpdateListener {
     }
 
     private void doSomething() throws InterruptedException {
-        if (firstTurn) { // primo turno
-            if (firstPlayer.getUsername().equals(username)) { // primo giocatore che dovrà giocare
+        if (firstRound) { // first round
+            if (firstPlayer.getUsername().equals(username)) { // first player to play
                 out.println("You are the first player");
-                yourTurn = true;
-            } else { // altri giocatori
+                yourRound = true;
+            } else { // other players
                 out.println("The first player is: " + firstPlayer.getUsername());
             }
-            firstTurn = false;
+            firstRound = false;
         }
 
-        if (yourTurn) { // se è il tuo turno
-            playTurn();
+        if (yourRound) { // if the first round
+            playRound();
         } else {
             out.println("Wait for your turn...");
             out.println();
+            // wait while ClientUpdater receive something
             synchronized (waiter) {
                 waiter.wait();
             }
         }
     }
 
-    private void playTurn() {
-        printPossibleMove(); // stampa a video le mosse che possono essere eseguite
-        boolean accepted = false;
-        boolean firstError = true;
-
-        int choose = -1;
-
+    /**
+     * Play the entire round of this player
+     */
+    private void playRound() {
         do {
-            out.print(">>> ");
-            if (in.hasNextInt()) {
-                choose = in.nextInt();
-                if (choose >= 0 && choose <= 6) accepted = true;
-                else firstError = promptInputError(firstError, "Input not valid!");
-            } else {
-                firstError = promptInputError(firstError, "Invalid integer!");
-                in.nextLine();
-            }
-        } while (!accepted);
-
-        switchChooses(choose); // fa ciò che l'utente ha scelto
+            makeMove();
+        } while (roundManager.roundEnded());
     }
 
-    private void printPossibleMove() {
-        out.println("Choose your next move:");
-        out.println("\t0 - Print map");
-        out.println("\t1 - Print players board");
-        out.println("\t2 - Move");
-        out.println("\t3 - Shoot");
-        out.println("\t4 - Move and pickup power up or weapon");
-        out.println("\t5 - Spawn");
-        out.println("\t6 - Pass turn");
-        out.println();
+    /**
+     *
+     */
+    private void makeMove() {
+        // TODO: player is dead
+        boolean reloaded;
+        boolean terminatorMove;
+        switch (roundManager.getPlayerState()) {
+            case BEGIN:
+                roundManager.beginRound((UserPlayer) getPlayer(username));
+
+                terminatorMove = askTerminator();
+                roundManager.nextMove((UserPlayer) getPlayer(username), false, terminatorMoved);
+                this.terminatorMoved = terminatorMove;
+                break;
+
+            case FIRST_MOVE:
+            case SECOND_MOVE:
+                reloaded = firstSecondMove();
+                terminatorMove = askTerminator();
+                roundManager.nextMove((UserPlayer) getPlayer(username), reloaded, terminatorMove);
+                break;
+
+            case TERMINATOR_MOVE:
+                // TODO: move of terminator
+                break;
+
+            case END:
+                // TODO: end round
+                terminatorMoved = false;
+                roundManager.endRound();
+                break;
+
+            default:
+                throw new ClientRoundManagerException("Cannot be here");
+        }
+    }
+
+    /**
+     * Causes the user to perform all the moves it can make in this stage of this round
+     *
+     * @return true if player reload his weapons, otherwise false
+     */
+    private boolean firstSecondMove() {
+        possibleActions = roundManager.possibleActions();
+        boolean reload = false;
+
+        switch (askActions(false)) {
+            case MOVE:
+                actionMove();
+                break;
+            case MOVE_AND_PICK:
+                actionMoveAndPick();
+                break;
+            case SHOOT:
+                actionShoot();
+                break;
+            case RELOAD:
+                actionReload();
+                reload = true;
+                break;
+            case ADRENALINE_PICK:
+                // TODO
+                break;
+            case ADRENALINE_SHOOT:
+                // TODO
+                break;
+            case FRENZY_MOVE:
+                // TODO
+                break;
+            case FRENZY_PICK:
+                // TODO
+                break;
+            case FRENZY_SHOOT:
+                // TODO
+                break;
+            case LIGHT_FRENZY_PICK:
+                // TODO
+                break;
+            case LIGHT_FRENZY_SHOOT:
+                // TODO
+                break;
+
+            default:
+                throw new ClientRoundManagerException("cannot be here");
+        }
+
+        if (reload) {
+            switch (askActions(true)) {
+                case MOVE:
+                    actionMove();
+                    break;
+                case MOVE_AND_PICK:
+                    actionMoveAndPick();
+                    break;
+                case SHOOT:
+                    actionShoot();
+                    break;
+                case ADRENALINE_PICK:
+                    // TODO
+                    break;
+                case ADRENALINE_SHOOT:
+                    // TODO
+                    break;
+                case FRENZY_MOVE:
+                    // TODO
+                    break;
+                case FRENZY_PICK:
+                    // TODO
+                    break;
+                case FRENZY_SHOOT:
+                    // TODO
+                    break;
+                case LIGHT_FRENZY_PICK:
+                    // TODO
+                    break;
+                case LIGHT_FRENZY_SHOOT:
+                    // TODO
+                    break;
+
+                default:
+                    throw new ClientRoundManagerException("cannot be here");
+            }
+        }
+
+        return reload;
+    }
+
+    private Message actionReload() {
+        Message message = null;
+
+        try {
+            message = MessageBuilder.buildReloadRequest(client.getToken(), (UserPlayer) getPlayer(username), askWeapon());
+            client.sendMessage(message);
+        } catch (IOException | WeaponCardsNotFoundException e) {
+            promptError(e.getMessage(), true);
+        }
+
+        return message;
+    }
+
+    private WeaponCard askWeapon() {
+        UserPlayer player = (UserPlayer) getPlayer(username);
+        WeaponCard[] weapons = player.getWeapons();
+        int choose;
+
+        do {
+            out.println("Choose the weapon:");
+            for (int i = 0; i< weapons.length; i++) {
+                out.println("\t" + (i + 1) + " - " + weapons[i].getName());
+            }
+            choose = readInt(1, weapons.length);
+        } while (choose <= 0 || choose > weapons.length);
+
+        return weapons[choose - 1];
+    }
+
+    private Message actionShoot() {
+        Message message = null;
+        printMap();
+
+        WeaponCard weapon = askWeapon();
+        int effect = askWeaponEffect(weapon);
+
+        try {
+            message = MessageBuilder.buildShootRequest(client.getToken(), (UserPlayer) getPlayer(username), weapon, effect);
+            client.sendMessage(message);
+        } catch (IOException | WeaponCardsNotFoundException e) {
+            promptError(e.getMessage(), true);
+        }
+
+        return message;
+    }
+
+    private int askWeaponEffect(WeaponCard weapon) {
+        // todo
+        return readInt();
+    }
+
+    private Message actionMoveAndPick() {
+        Message message;
+        printMap();
+
+        // todo: porco dio devo accattarmi se è una weapon, se può essere pagata con il mana e tutte ste menate... amen, se deve pickuppare un powerup o salcazzo cos'altro
+
+        return null;
+    }
+
+    private Message actionMove() {
+        Message message;
+        printMap();
+
+        message = MessageBuilder.buildMoveRequest(client.getToken(), getPlayer(username), getCoordinates());
+
+        try {
+            client.sendMessage(message);
+        } catch (IOException e) {
+            promptError(e.getMessage(), true);
+        }
+
+        return message;
+    }
+
+    private void printMap() {
+        synchronized (lock) {
+            CliPrinter.printMap(out, gameSerialized);
+        }
+    }
+
+    /**
+     * This method asks the user what move he wants to make in this stage of the round, he even asks him if he wants to print to video the map, the player boards, his weapons and his mana.
+     * This method returns the choice made by the user, if the choice is a print, the user is asked again what he wants to do until he chooses an action
+     *
+     * @param withoutReload if true, it removes the possibility of reload from the user's choices
+     * @return the PossibleAction chosen by the user
+     */
+    private PossibleAction askActions(boolean withoutReload) {
+        int choose;
+
+        if (withoutReload) possibleActions.remove(PossibleAction.RELOAD);
+
+        out.println("Choose the next move:");
+
+        for (int i = 0; i < possibleActions.size(); i++) {
+            out.println("\t" + (i + 1) + " - " + possibleActions.get(i));
+        }
+
+        // TODO: print map, print player boards, print weapons, print mana
+
+        choose = readInt(1, possibleActions.size());
+        return possibleActions.get(choose - 1);
     }
 
     private void switchChooses(int choose) {
@@ -619,7 +785,7 @@ public class Cli implements ClientUpdateListener {
 
         if (in.hasNextLine()) in.nextLine();
 
-        out.println("Write the new coordinates (0,1):");
+        out.println("Write the new coordinates " + (getPlayer(username).isDead() ? "(0,0)" : getPlayer(username).getPosition()) + ":");
         do {
             out.print(">>> ");
 
@@ -710,5 +876,41 @@ public class Cli implements ClientUpdateListener {
             if (player == null) throw new PlayerNotFoundException("player not found, cannot continue with the game");
             return player;
         }
+    }
+
+    private boolean askTerminator() {
+        if (roundManager.terminatorPresent() && !roundManager.terminatorMoved() && !terminatorMoved) {
+            if (!roundManager.getPlayerState().equals(UserPlayerState.SECOND_MOVE)) {
+                //TODO: do you want to move terminator now?
+            } else {
+                //TODO: you must move terminator the next move
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    private int readInt() {
+        return readInt(Integer.MIN_VALUE, Integer.MAX_VALUE);
+    }
+
+    private int readInt(int minVal, int maxVal) {
+        boolean firstError = true;
+        boolean accepted = false;
+        int choose = 0;
+        do {
+            out.print(">>> ");
+            if (in.hasNextInt()) {
+                choose = in.nextInt();
+                if (choose >= minVal && choose <= maxVal) accepted = true;
+                else firstError = promptInputError(firstError, "Input not valid!");
+            } else {
+                firstError = promptInputError(firstError, "Invalid integer!");
+                in.nextLine();
+            }
+        } while (!accepted);
+
+        return choose;
     }
 }
