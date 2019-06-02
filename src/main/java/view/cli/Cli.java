@@ -83,7 +83,7 @@ public class Cli implements ClientUpdateListener {
         });
         timer.schedule(timerTask, 1000, 1000);
 
-        /* CLI DEBUGGING
+        /*CLI DEBUGGING
         GameSerialized gs = new GameSerialized("pippo");
         PlayerBoard pb = new PlayerBoard();
         UserPlayer p1 = new UserPlayer("Pippo", PlayerColor.BLUE, pb);
@@ -123,7 +123,7 @@ public class Cli implements ClientUpdateListener {
 
         gs.setPlayers(players);
         gs.setTerminator(p5);
-        gs.setGameMap(new GameMap(GameMap.MAP_4));
+        gs.setGameMap(new GameMap(GameMap.MAP_2));
 
         //CliPrinter.printPlayerBoards(out, gs);
         CliPrinter.printMap(out, gs);

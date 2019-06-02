@@ -172,7 +172,7 @@ class CliPrinter {
         for (Square square : squareRow) {
             if (square != null) {
                 String roomColor = AnsiCode.getTextColorCodeByName(square.getRoomColor().name(), true) + AnsiCode.TEXT_BLACK;
-                row.append(roomColor).append(getTopLeft(square)).append(getTopMiddle(square)).append(getTopRight(square)).append(AnsiCode.RESET);
+                row.append(roomColor).append(getTopLeft(square)).append(getTopMiddle(square)).append(getTopRight(square)).append(AnsiCode.RESET).append(" ");
             } else {
                 row.append(AnsiCode.RESET).append("                ");
             }
@@ -182,12 +182,52 @@ class CliPrinter {
         return row.toString();
     }
 
+    private static String getTopLeft(Square square) {
+        String left;
+
+        if (square.getNorth() == SquareAdjacency.SQUARE) {
+            left = "╔    ";
+        } else if (square.getNorth() == SquareAdjacency.DOOR) {
+            left = "╔═══ ";
+        } else {
+            left = "╔════";
+        }
+
+        return left;
+    }
+
+    private static String getTopMiddle(Square square) {
+        String middle;
+
+        if (square.getNorth() == SquareAdjacency.WALL) {
+            middle = "═════";
+        } else {
+            middle = "     ";
+        }
+
+        return middle;
+    }
+
+    private static String getTopRight(Square square) {
+        String right;
+
+        if (square.getNorth() == SquareAdjacency.SQUARE) {
+            right = "    ╗";
+        } else if (square.getNorth() == SquareAdjacency.DOOR) {
+            right = " ═══╗";
+        } else {
+            right = "════╗";
+        }
+
+        return right;
+    }
+
     private static String getSquareTopDecoration(Square[] squareRow) {
         StringBuilder row = new StringBuilder();
 
         for (Square square : squareRow) {
             if (square != null) {
-                row.append(getFirstTopDecoration(square)).append("            ").append(getSecondTopDecoration(square));
+                row.append(getFirstTopDecoration(square)).append("             ").append(getSecondTopDecoration(square));
             } else {
                 row.append(AnsiCode.RESET).append("                ");
             }
@@ -199,12 +239,14 @@ class CliPrinter {
 
     private static StringBuilder getFirstTopDecoration(Square square) {
         StringBuilder tempRow = new StringBuilder();
+        String roomColor = AnsiCode.getTextColorCodeByName(square.getRoomColor().name(), true) + AnsiCode.TEXT_BLACK;
 
         if (square.getNorth() == SquareAdjacency.SQUARE && square.getWest() == SquareAdjacency.SQUARE) {
             tempRow.append(" ");
+        } else if (square.getWest() == SquareAdjacency.SQUARE) {
+            tempRow.append(roomColor).append("╝").append(AnsiCode.RESET);
         } else {
-            String roomColor = AnsiCode.getTextColorCodeByName(square.getRoomColor().name(), true) + AnsiCode.TEXT_BLACK;
-            tempRow.append(roomColor).append("╱").append(AnsiCode.RESET);
+            tempRow.append(roomColor).append("║").append(AnsiCode.RESET);
         }
 
         return tempRow;
@@ -215,54 +257,14 @@ class CliPrinter {
         String roomColor = AnsiCode.getTextColorCodeByName(square.getRoomColor().name(), true) + AnsiCode.TEXT_BLACK;
 
         if (square.getNorth() == SquareAdjacency.SQUARE && square.getEast() == SquareAdjacency.SQUARE) {
-            tempRow.append("   ");
+            tempRow.append("  ");
         } else if (square.getEast() == SquareAdjacency.SQUARE) {
-            tempRow.append(roomColor).append("╲__").append(AnsiCode.RESET);
+            tempRow.append(roomColor).append("╚═").append(AnsiCode.RESET);
         } else {
-            tempRow.append(roomColor).append("╲ ").append(AnsiCode.RESET).append(" ");
+            tempRow.append(roomColor).append("║").append(AnsiCode.RESET).append(" ");
         }
 
         return tempRow;
-    }
-
-    private static String getTopLeft(Square square) {
-        String left;
-
-        if (square.getNorth() == SquareAdjacency.SQUARE) {
-            left = " ╱   ";
-        } else if (square.getNorth() == SquareAdjacency.DOOR) {
-            left = " ╱‾‾ ";
-        } else {
-            left = " ╱‾‾‾";
-        }
-
-        return left;
-    }
-
-    private static String getTopMiddle(Square square) {
-        String middle;
-
-        if (square.getNorth() == SquareAdjacency.WALL) {
-            middle = "‾‾‾‾";
-        } else {
-            middle = "    ";
-        }
-
-        return middle;
-    }
-
-    private static String getTopRight(Square square) {
-        String right;
-
-        if (square.getNorth() == SquareAdjacency.SQUARE) {
-            right = "   ╲   ";
-        } else if (square.getNorth() == SquareAdjacency.DOOR) {
-            right = " ‾‾╲   ";
-        } else {
-            right = "‾‾‾╲   ";
-        }
-
-        return right;
     }
 
     private static String getSquareMidDecoration(Square[] squareRow) {
@@ -287,7 +289,7 @@ class CliPrinter {
             tempRow.append(" ");
         } else {
             String roomColor = AnsiCode.getTextColorCodeByName(square.getRoomColor().name(), true) + AnsiCode.TEXT_BLACK;
-            tempRow.append(roomColor).append("▏").append(AnsiCode.RESET);
+            tempRow.append(roomColor).append("║").append(AnsiCode.RESET);
         }
 
         return tempRow;
@@ -300,7 +302,7 @@ class CliPrinter {
             tempRow.append("  ");
         } else {
             String roomColor = AnsiCode.getTextColorCodeByName(square.getRoomColor().name(), true) + AnsiCode.TEXT_BLACK;
-            tempRow.append(roomColor).append("▏").append(AnsiCode.RESET).append(" ");
+            tempRow.append(roomColor).append("║").append(AnsiCode.RESET).append(" ");
         }
 
         return tempRow;
@@ -326,7 +328,7 @@ class CliPrinter {
 
         if (square.getWest() == SquareAdjacency.WALL) {
             String roomColor = AnsiCode.getTextColorCodeByName(square.getRoomColor().name(), true) + AnsiCode.TEXT_BLACK;
-            tempRow.append(roomColor).append("▏").append(AnsiCode.RESET).append("  ");
+            tempRow.append(roomColor).append("║").append(AnsiCode.RESET).append("  ");
         } else {
             tempRow.append("    ");
         }
@@ -362,7 +364,7 @@ class CliPrinter {
 
         if (square.getEast() == SquareAdjacency.WALL) {
             String roomColor = AnsiCode.getTextColorCodeByName(square.getRoomColor().name(), true) + AnsiCode.TEXT_BLACK;
-            tempRow.append("  ").append(roomColor).append("▏").append(AnsiCode.RESET).append(" ");
+            tempRow.append("  ").append(roomColor).append("║").append(AnsiCode.RESET).append(" ");
         } else {
             tempRow.append("   ");
         }
@@ -402,7 +404,7 @@ class CliPrinter {
 
         for(Square square : squareRow) {
             if(square != null) {
-                row.append(getFirstBotDecoration(square)).append("            ").append(getSecondBotDecoration(square));
+                row.append(getFirstBotDecoration(square)).append("             ").append(getSecondBotDecoration(square));
             } else {
                 row.append(AnsiCode.RESET).append("                ");
             }
@@ -414,12 +416,14 @@ class CliPrinter {
 
     private static StringBuilder getFirstBotDecoration(Square square) {
         StringBuilder tempRow = new StringBuilder();
+        String roomColor = AnsiCode.getTextColorCodeByName(square.getRoomColor().name(), true) + AnsiCode.TEXT_BLACK;
 
         if (square.getSouth() == SquareAdjacency.SQUARE && square.getWest() == SquareAdjacency.SQUARE) {
             tempRow.append("  ");
+        } else if(square.getWest() == SquareAdjacency.SQUARE) {
+            tempRow.append(roomColor).append("╗").append(AnsiCode.RESET);
         } else {
-            String roomColor = AnsiCode.getTextColorCodeByName(square.getRoomColor().name(), true) + AnsiCode.TEXT_BLACK;
-            tempRow.append(roomColor).append("╲").append(AnsiCode.RESET);
+            tempRow.append(roomColor).append("║").append(AnsiCode.RESET);
         }
 
         return tempRow;
@@ -430,11 +434,11 @@ class CliPrinter {
         String roomColor = AnsiCode.getTextColorCodeByName(square.getRoomColor().name(), true) + AnsiCode.TEXT_BLACK;
 
         if (square.getSouth() == SquareAdjacency.SQUARE && square.getEast() == SquareAdjacency.SQUARE) {
-            tempRow.append("  ");
+            tempRow.append(" ");
         } else if (square.getEast() == SquareAdjacency.SQUARE) {
-            tempRow.append(roomColor).append("╱‾‾").append(AnsiCode.RESET);
+            tempRow.append(roomColor).append("╔═").append(AnsiCode.RESET);
         } else {
-            tempRow.append(roomColor).append("╱ ").append(AnsiCode.RESET).append(" ");
+            tempRow.append(roomColor).append("║").append(AnsiCode.RESET).append(" ");
         }
 
         return tempRow;
@@ -446,7 +450,7 @@ class CliPrinter {
         for (Square square : squareRow) {
             if (square != null) {
                 String roomColor = AnsiCode.getTextColorCodeByName(square.getRoomColor().name(), true) + AnsiCode.TEXT_BLACK;
-                row.append(roomColor).append(getBotLeft(square)).append(getBotMiddle(square)).append(getBotRight(square)).append(AnsiCode.RESET);
+                row.append(roomColor).append(getBotLeft(square)).append(getBotMiddle(square)).append(getBotRight(square)).append(AnsiCode.RESET).append(" ");
             } else {
                 row.append(AnsiCode.RESET).append("                ");
             }
@@ -460,11 +464,11 @@ class CliPrinter {
         String left;
 
         if (square.getSouth() == SquareAdjacency.SQUARE) {
-            left = " ╲   ";
+            left = "╚    ";
         } else if (square.getSouth() == SquareAdjacency.DOOR) {
-            left = " ╲__ ";
+            left = "╚═══ ";
         } else {
-            left = " ╲___";
+            left = "╚════";
         }
 
         return left;
@@ -474,9 +478,9 @@ class CliPrinter {
         String middle;
 
         if (square.getSouth() == SquareAdjacency.WALL) {
-            middle = "____";
+            middle = "═════";
         } else {
-            middle = "    ";
+            middle = "     ";
         }
 
         return middle;
@@ -486,11 +490,11 @@ class CliPrinter {
         String right;
 
         if (square.getSouth() == SquareAdjacency.SQUARE) {
-            right = "   ╱   ";
+            right = "    ╝";
         } else if (square.getSouth() == SquareAdjacency.DOOR) {
-            right = " __╱   ";
+            right = " ═══╝";
         } else {
-            right = "___╱   ";
+            right = "════╝";
         }
 
         return right;
