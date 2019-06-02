@@ -68,6 +68,7 @@ public class PowerupParser {
      */
     private static List<PowerupCard> parseColor(JsonObject jsonObject) {
         String name = jsonObject.get("title").getAsString();
+        String description = jsonObject.get("description").getAsString();
         JsonArray values = jsonObject.getAsJsonArray("values");
         JsonObject properties = jsonObject.getAsJsonObject("properties");
 
@@ -85,9 +86,9 @@ public class PowerupParser {
         Effect effect;
 
         if (jsonObject.has("cost")) {
-            effect = new PowerupBaseEffect(jsonObject.get("cost").getAsBoolean(), powerupProperties, target);
+            effect = new PowerupBaseEffect(jsonObject.get("cost").getAsBoolean(), powerupProperties, target, description);
         } else {
-            effect = new PowerupBaseEffect(powerupProperties, target);
+            effect = new PowerupBaseEffect(powerupProperties, target, description);
         }
 
         effect = WeaponParser.decorateSingleEffect(effect, properties);

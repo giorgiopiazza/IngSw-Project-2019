@@ -76,6 +76,7 @@ public class Server implements Runnable {
             }
         } else {
             new Server(terminator,  skullNum);
+            return;
         }
 
         // if the passed value is correct it is used for the game, if not DEFAULT value is set back to 5

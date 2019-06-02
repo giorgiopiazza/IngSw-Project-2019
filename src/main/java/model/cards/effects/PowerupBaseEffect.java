@@ -13,16 +13,18 @@ import java.util.Map;
 public class PowerupBaseEffect extends Effect {
     private final boolean cost;
 
-    public PowerupBaseEffect(Map<String, String> properties, TargetType[] targets) {
+    public PowerupBaseEffect(Map<String, String> properties, TargetType[] targets, String description) {
         this.cost = false;
         setTargets(targets);
         setProperties(properties);
+        setDescription(description);
     }
 
-    public PowerupBaseEffect(boolean cost, Map<String, String> properties, TargetType[] targets) {
+    public PowerupBaseEffect(boolean cost, Map<String, String> properties, TargetType[] targets, String description) {
         this.cost = cost;
         setTargets(targets);
         setProperties(properties);
+        setDescription(description);
     }
 
     public boolean hasCost() {
