@@ -7,6 +7,8 @@ import enumerations.SquareType;
 import model.Game;
 import model.GameSerialized;
 import model.cards.PowerupCard;
+import model.cards.WeaponCard;
+import model.cards.effects.Effect;
 import model.player.Player;
 import model.map.*;
 import model.player.UserPlayer;
@@ -152,7 +154,7 @@ class CliPrinter {
         ArrayList<Player> inGamePlayers = gameSerialized.getAllPlayers();
 
         out.print(
-                        getSquareTopRow(squareRow) +
+                getSquareTopRow(squareRow) +
                         getSquareTopDecoration(squareRow) +
 
                         getSquareMidDecoration(squareRow) +
@@ -163,7 +165,7 @@ class CliPrinter {
 
                         getSquareBotDecoration(squareRow) +
                         getSquareBotRow(squareRow)
-                  );
+        );
     }
 
     private static String getSquareTopRow(Square[] squareRow) {
@@ -402,8 +404,8 @@ class CliPrinter {
     private static String getSquareBotDecoration(Square[] squareRow) {
         StringBuilder row = new StringBuilder();
 
-        for(Square square : squareRow) {
-            if(square != null) {
+        for (Square square : squareRow) {
+            if (square != null) {
                 row.append(getFirstBotDecoration(square)).append("             ").append(getSecondBotDecoration(square));
             } else {
                 row.append(AnsiCode.RESET).append("                ");
@@ -420,7 +422,7 @@ class CliPrinter {
 
         if (square.getSouth() == SquareAdjacency.SQUARE && square.getWest() == SquareAdjacency.SQUARE) {
             tempRow.append("  ");
-        } else if(square.getWest() == SquareAdjacency.SQUARE) {
+        } else if (square.getWest() == SquareAdjacency.SQUARE) {
             tempRow.append(roomColor).append("╗").append(AnsiCode.RESET);
         } else {
             tempRow.append(roomColor).append("║").append(AnsiCode.RESET);
@@ -498,6 +500,261 @@ class CliPrinter {
         }
 
         return right;
+    }
+
+    static void printWeapons(AdrenalinePrintStream out, WeaponCard[] weaponCards/* UserPlayer userPlayer */) {
+        // WeaponCard[] weaponCards = userPlayer.getWeapons();
+
+        if (weaponCards.length == 0) {
+            out.println("                    YOU HAVE NO WEAPONS                     ");
+        } else {
+            out.print(
+                                getWeapontTopRow(weaponCards) +
+                                addWeaponName(weaponCards) +
+                                addWeaponGrabCost(weaponCards, 1) +
+                                addWeaponGrabCost(weaponCards, 2) +
+                                addBaseEffect(weaponCards) +
+                                addEffectDescription(weaponCards, 0, 0, 33) +
+                                addEffectDescription(weaponCards, 0, 33, 66) +
+                                addEffectDescription(weaponCards, 0, 66, 99) +
+                                addLineSeparator(weaponCards) +
+                                addFirstEffect(weaponCards) +
+                                addEffectDescription(weaponCards, 1, 0, 33) +
+                                addEffectDescription(weaponCards, 1, 33, 66) +
+                                addEffectDescription(weaponCards, 1, 66, 99) +
+                                addLineSeparator(weaponCards) +
+                                addSecondEffect(weaponCards) +
+                                addEffectDescription(weaponCards, 2, 0, 33) +
+                                addEffectDescription(weaponCards, 2, 33, 66) +
+                                addEffectDescription(weaponCards, 2 , 66, 99) +
+                                addLineSeparator(weaponCards) +
+                                addComboEffect(weaponCards) +
+                                addEffectDescription(weaponCards, 3, 0, 33) +
+                                getWeaponBotRow(weaponCards)
+
+            );
+        }
+
+
+    }
+
+    private static String getWeapontTopRow(WeaponCard[] weapons) {
+        StringBuilder out = new StringBuilder();
+
+        for (WeaponCard weapon : weapons) {
+            if (weapon != null) {
+                out.append("╔═══════════════════════════════════╗     ");
+            } else {
+                out.append("                                          ");
+            }
+        }
+
+        out.append("\n");
+        return out.toString();
+    }
+
+    private static String addLineSeparator(WeaponCard[] weapons) {
+        StringBuilder out = new StringBuilder();
+
+        for (WeaponCard weapon : weapons) {
+            if (weapon != null) {
+                out.append("║                                   ║     ");
+            }  else {
+                out.append("                                          ");
+            }
+        }
+
+        out.append("\n");
+        return out.toString();
+    }
+
+    private static String addWeaponName(WeaponCard[] weapons) {
+        StringBuilder out = new StringBuilder();
+
+        for(int i = 0; i < weapons.length; ++i) {
+            if(weapons[i] != null) {
+                out.append("║ ").append(getWeaponMainDetails(weapons[i])).append("[").append(i).append("]").append("  ║     ");
+            } else {
+                out.append("                                          ");
+            }
+        }
+
+        out.append("\n");
+        return out.toString();
+    }
+
+    private static String getWeaponMainDetails(WeaponCard weapon) {
+        StringBuilder tempOut = new StringBuilder();
+        String weaponName = weapon.getName();
+        String weaponColor = AnsiCode.getTextColorCodeByName(weapon.getCost()[0].name(), true) + AnsiCode.TEXT_BLACK;
+
+        if(weapon.getCost().length > 1) {
+            tempOut.append(weaponColor).append("__").append(AnsiCode.RESET);
+        } else {
+            tempOut.append(weaponColor).append("  ").append(AnsiCode.RESET);
+        }
+
+        return tempOut.append(" ").append(weaponName).append(addMissingBlanks(weaponName)).toString();
+    }
+
+    private static StringBuilder addMissingBlanks(String weaponName) {
+        StringBuilder tempOut = new StringBuilder();
+        final int MAX_NAME_LENGTH = 26;
+        int missingBlanks = MAX_NAME_LENGTH - weaponName.length();
+
+        tempOut.append(" ".repeat(missingBlanks));
+
+        return tempOut;
+    }
+
+    private static String addWeaponGrabCost(WeaponCard[] weapons, int printAmmo) {
+        StringBuilder out = new StringBuilder();
+
+        for(WeaponCard weapon : weapons) {
+            if(weapon != null) {
+                out.append("║ ").append(addMissingCost(weapon.getCost(), printAmmo)).append("                                ║     ");
+            } else {
+                out.append("                                          ");
+            }
+        }
+
+        out.append("\n");
+        return out.toString();
+    }
+
+    private static String addMissingCost(Ammo[] missingCost, int printAmmo) {
+        StringBuilder tempOut = new StringBuilder();
+
+        if(missingCost.length > printAmmo) {
+            String weaponColor = AnsiCode.getTextColorCodeByName(missingCost[printAmmo].name(), true) + AnsiCode.TEXT_BLACK;
+            if(printAmmo == 1 && missingCost.length > 2) {
+                tempOut.append(weaponColor).append("__").append(AnsiCode.RESET);
+            } else {
+                tempOut.append(weaponColor).append("  ").append(AnsiCode.RESET);
+            }
+        } else {
+            tempOut.append("  ");
+        }
+
+        return tempOut.toString();
+    }
+
+    private static String addBaseEffect(WeaponCard[] weapons) {
+        StringBuilder out = new StringBuilder();
+
+        for(WeaponCard weapon : weapons) {
+            if(weapon != null) {
+                out.append("║           Base Effect:            ║     ");
+            } else {
+                out.append("                                          ");
+            }
+        }
+
+        out.append("\n");
+        return out.toString();
+    }
+
+    private static String addFirstEffect(WeaponCard[] weapons) {
+        StringBuilder out = new StringBuilder();
+
+        for(WeaponCard weapon : weapons) {
+            if(weapon != null) {
+                if(!weapon.getSecondaryEffects().isEmpty()) {
+                    out.append("║           First Effect:           ║     ");
+                } else {
+                    out.append("║                                   ║     ");
+                }
+            } else {
+                out.append("                                          ");
+            }
+        }
+
+        out.append("\n");
+        return out.toString();
+    }
+
+    private static String addSecondEffect(WeaponCard[] weapons) {
+        StringBuilder out = new StringBuilder();
+
+        for(WeaponCard weapon : weapons) {
+            if(weapon != null) {
+                if(weapon.getSecondaryEffects().size() > 1) {
+                    out.append("║           Second Effect:          ║     ");
+                } else {
+                    out.append("║                                   ║     ");
+                }
+            } else {
+                out.append("                                          ");
+            }
+        }
+
+        out.append("\n");
+        return out.toString();
+    }
+
+    private static String addComboEffect(WeaponCard[] weapons) {
+        StringBuilder out = new StringBuilder();
+
+        for(WeaponCard weapon : weapons) {
+            if(weapon != null) {
+                if(weapon.getSecondaryEffects().size() > 2) {
+                    out.append("║           Combo Effect:           ║     ");
+                } else {
+                    out.append("║    NO COMBO WITH THESE EFFECTS    ║     ");
+                }
+            } else {
+                out.append("                                          ");
+            }
+        }
+
+        out.append("\n");
+        return out.toString();
+    }
+
+    private static String addEffectDescription(WeaponCard[] weapons, int effect, int startIndex, int finishIndex) {
+        StringBuilder out = new StringBuilder();
+
+        for(WeaponCard weapon : weapons) {
+            if(weapon != null) {
+                String tempEffect;
+                if(effect == 0) {
+                    tempEffect = weapon.getBaseEffect().getDescription();
+                } else if (weapon.getSecondaryEffects().size() >= effect){
+                    tempEffect = weapon.getSecondaryEffects().get(effect - 1).getDescription();
+                } else {
+                    tempEffect = "                                 ";
+                }
+                out.append("║ ").append(addEffectChunk(tempEffect, startIndex, finishIndex)).append(" ║     ");
+            } else {
+                out.append("                                          ");
+            }
+        }
+
+        out.append("\n");
+        return out.toString();
+    }
+
+    private static String addEffectChunk(String description, int startIndex, int finishIndex) {
+        if(description.length() <= finishIndex - 1) {
+            return description;
+        }
+
+        return description.substring(startIndex, finishIndex);
+    }
+
+    private static String getWeaponBotRow(WeaponCard[] weapons) {
+        StringBuilder out = new StringBuilder();
+
+        for (WeaponCard weapon : weapons) {
+            if (weapon != null) {
+                out.append("╚═══════════════════════════════════╝     ");
+            } else {
+                out.append("                                          ");
+            }
+        }
+
+        out.append("\n");
+        return out.toString();
     }
 
     public static String toStringPowerUpCard(PowerupCard powerupCard) {

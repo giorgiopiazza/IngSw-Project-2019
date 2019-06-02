@@ -51,6 +51,20 @@ public class WeaponCard extends UsableCard {
     }
 
     /**
+     * @return the entire cost of the weapon
+     */
+    public Ammo[] getCost() {
+        return this.cost;
+    }
+
+    /**
+     * @return the secondary effects of the weapon
+     */
+    public ArrayList<Effect> getSecondaryEffects() {
+        return this.secondaryEffects;
+    }
+
+    /**
      * Return the cost to use the Weapon depending on it's state
      *
      * @return an array of Ammo which is the recharging Cost of the Weapon

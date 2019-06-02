@@ -7,7 +7,7 @@
       "effects": [
         {
           "id": 0,
-          "description": "Deal 2 damage and 1 mark to 1 target you can see.",
+          "description": "Deal 2 damage and 1 mark to 1 target you can see.                                                  ",
           "properties": {
             "visible": true,
 			"target": ["PLAYER"],
@@ -18,7 +18,7 @@
         },
         {
           "id": 1,
-          "description": "Deal 1 mark to a different target you can see.",
+          "description": "Deal 1 mark to a different target you can see.                                                     ",
 		  "cost": ["RED"],
           "properties": {
             "visible": true,
@@ -37,7 +37,7 @@
       "effects": [
         {
           "id": 0,
-          "description": "Choose 1 or 2 targets you can see and deal 1 damage to each.",
+          "description": "Choose 1 or 2 targets you can see and deal 1 damage to each.                                       ",
           "properties": {
             "visible": true,
 			"target": ["PLAYER"],
@@ -47,7 +47,7 @@
         },
         {
           "id": 1,
-          "description": "Deal 1 additional damage to one of those targets.",
+          "description": "Deal 1 additional damage to one of those targets.                                                  ",
 		  "cost": ["YELLOW"],
           "properties": {
             "visible": true,
@@ -58,7 +58,7 @@
         },
 		{
           "id": 2,
-          "description": "Deal 1 additional damage to the other of those targets and/or deal 1 damage to a different target you can see.",
+          "description": "Deal 1 more damage to the other of those targets and/or 1 damage to another visible target         ",
 		  "cost": ["BLUE"],
           "properties": {
             "visible": true,
@@ -69,7 +69,7 @@
         },
 		{
           "id": 3,
-          "description": "Combo between effects 1 and 2.",
+          "description": "Combo between effects 1 and 2.                                                                     ",
 		  "cost": ["YELLOW", "BLUE"],
           "properties": {
             "visible": true,
@@ -87,7 +87,7 @@
       "effects": [
         {
           "id": 0,
-          "description": "Deal 2 damage to 1 target you can see.",
+          "description": "Deal 2 damage to 1 target you can see.                                                             ",
           "properties": {
             "visible": true,
 			"target": ["PLAYER"],
@@ -97,7 +97,7 @@
         },
         {
           "id": 1,
-          "description": "Deal 1 damage to a second target that your first target can see.",
+          "description": "Deal 1 damage to a second target that your first target can see.                                   ",
 		  "cost": ["BLUE"],
           "properties": {
             "concatenatedVisible": true,
@@ -108,7 +108,7 @@
         },
 		{
           "id": 2,
-          "description": "Deal 2 damage to a third target that your second target can see. You cannot use this effect unless you first use the chain reaction.",
+          "description": "Deal 2 damage to a third target that your second target can see. Must use chain reaction first.     ",
 		  "cost": ["BLUE", "BLUE"],
           "properties": {
             "concatenatedVisible": true,
@@ -126,7 +126,7 @@
       "effects": [
         {
           "id": 0,
-          "description": "Deal 2 damage to 1 target you can see.",
+          "description": "Deal 2 damage to 1 target you can see.                                                             ",
           "properties": {
             "visible": true,
 			"target": ["PLAYER"],
@@ -136,7 +136,7 @@
         },
         {
           "id": 1,
-          "description": "Move 1 or 2 squares. This effect can be used either before or after the basic effect.",
+          "description": "Move 1 or 2 squares. This effect can be used either before or after the basic effect.              ",
           "properties": {
             "visible": true,
 			"target": ["PLAYER"],
@@ -147,7 +147,7 @@
         },
 		{
           "id": 2,
-          "description": "Deal 1 additional damage to your target.",
+          "description": "Deal 1 additional damage to your target.                                                            ",
 		  "cost": ["BLUE"],
           "properties": {
             "visible": true,
@@ -158,7 +158,7 @@
         },
 		{
           "id": 3,
-          "description": "Combo between effect 1 and 2.",
+          "description": "Combo between effect 1 and 2.                                                                      ",
 		  "cost": ["BLUE"],
           "properties": {
             "visible": true,
@@ -177,7 +177,7 @@
       "effects": [
         {
           "id": 0,
-          "description": "Deal 3 damage and 1 mark to 1 target you can see. Your target must be at least 2 moves away from you.",
+          "description": "Deal 3 damage and 1 mark to 1 visible target. Your target must be at least 2 moves away from you.  ",
           "properties": {
             "visible": true,
 			"target": ["PLAYER"],
@@ -196,7 +196,7 @@
       "effects": [
         {
           "id": 0,
-          "description": "Deal 1 damage to every other player on your square.",
+          "description": "Deal 1 damage to every other player on your square.                                                ",
           "properties": {
             "visible": true,
             "target": ["SQUARE"],
@@ -207,7 +207,7 @@
         },
         {
           "id": 1,
-          "description": "Deal 2 damage to every other player on your square.",
+          "description": "Deal 2 damage to every other player on your square                                                 ",
 		  "cost": ["BLUE","RED"],
           "properties": {
             "visible": true,
@@ -226,7 +226,7 @@
       "effects": [
         {
           "id": 0,
-          "description": "Move a target 0, 1, or 2 squares to a square you can see, and give it 1 damage.",
+          "description": "Move a target 0, 1, or 2 squares to a square you can see, and give it 1 damage.                    ",
           "properties": {
             "visible": true,
 			"target": ["PLAYER"],
@@ -238,7 +238,7 @@
         },
         {
           "id": 1,
-          "description": "Choose a target 0, 1, or 2 moves away from you. Move the target to your square and deal 3 damage to it.",
+          "description": "Choose a target 0, 1, or 2 moves far from you. Move it to your square and deal 3 damage to it.     ",
 		  "cost": ["RED","YELLOW"],
           "properties": {
             "visible": true,
@@ -259,7 +259,7 @@
       "effects": [
         {
           "id": 0,
-          "description": "Choose a square you can see, but not your square. Call it \"the vortex\". Choose a target on the vortex or 1 move away from it. Move it onto the vortex and give it 2 damage.",
+          "description": "Choose a square you can see and deal 2 damage to a target on it or movable with distance 1.        ",
           "properties": {
             "visible": true,
 			"target": ["PLAYER"],
@@ -272,7 +272,7 @@
         },
         {
           "id": 1,
-          "description": "Choose up to 2 other targets on the vortex or 1 move away from it. Move them onto the vortex and give them each 1 damage.",
+          "description": "Choose up to 2 targets on the vortex or movable with distance 1 and give them each 1 damage.       ",
 		  "cost": ["RED"],
           "properties": {
             "visible": true,
@@ -293,7 +293,7 @@
       "effects": [
         {
           "id": 0,
-          "description": "Choose a room you can see, but not the room you are in. Deal 1 damage to everyone in that room.",
+          "description": "Choose a room you can see, but not the room you are in. Deal 1 damage to everyone in that room.    ",
           "properties": {
             "visible": true,
 			"target": ["ROOM"],
@@ -304,7 +304,7 @@
         },
         {
           "id": 1,
-          "description": "Choose a square exactly one move away. Deal 1 damage and 1 mark to everyone on that square.",
+          "description": "Choose a square exactly one move away. Deal 1 damage and 1 mark to everyone on that square.        ",
           "properties": {
             "visible": true,
 			"target": ["SQUARE"],
@@ -323,7 +323,7 @@
       "effects": [
         {
           "id": 0,
-          "description": "Choose 1 target you cannot see and deal 3 damage to it.",
+          "description": "Choose 1 target you cannot see and deal 3 damage to it.                                            ",
           "properties": {
             "visible": false,
 			"target": ["PLAYER"],
@@ -340,7 +340,7 @@
       "effects": [
         {
           "id": 0,
-          "description": "Deal 1 damage to 1 target you can see at least 1 move away. Then give 1 mark to that target and everyone else on that square.",
+          "description": "Deal 1 damage and mark to a visible target at least 1 move far, and mark the others on that square.",
           "properties": {
             "visible": true,
 			"target": ["PLAYER", "SQUARE"],
@@ -358,7 +358,7 @@
         },
 		{
           "id": 1,
-          "description": "Deal 1 damage to 1 target you can see at least 1 move away. Then give 2 marks to that target and everyone else on that square.",
+          "description": "Deal 1 damage to a visible target at least 1 move far, and 2 marks to everyone else on that square.",
           "cost": ["RED"],
           "properties": {
             "visible": true,
@@ -384,7 +384,7 @@
       "effects": [
         {
           "id": 0,
-          "description": "Choose a square 1 move away and possibly a second square 1 more move away in the same direction. On each square, you may choose 1 target and give it 1 damage.",
+          "description": "Choose up to 2 squares in the same direction. On each square, choose 1 target and give it 1 damage.",
           "properties": {
             "visible": true,
             "target": ["PLAYER"],
@@ -396,7 +396,7 @@
         },
         {
           "id": 1,
-          "description": "Choose 2 squares as above. Deal 2 damage to everyone on the first square and 1 damage to everyone on the second square.",
+          "description": "Choose 2 squares as above. Everyone on the first square take 2 damage, on the second 1.            ",
           "cost": ["YELLOW", "YELLOW"],
           "properties": {
             "visible": true,
@@ -416,7 +416,7 @@
       "effects": [
         {
           "id": 0,
-          "description": "Deal 1 damage to 1 target you can see. Then you may move the target 1 square.",
+          "description": "Deal 1 damage to 1 target you can see. Then you may move the target 1 square.                      ",
           "properties": {
             "visible": true,
             "target": ["PLAYER"],
@@ -428,7 +428,7 @@
         },
         {
           "id": 1,
-          "description": "Deal 1 damage to every player on a square you can see. You can use this before or after the basic effect's move.",
+          "description": "Deal 1 damage to everyone on a visible square. This can be used before or after the move.          ",
           "cost": ["RED"],
           "properties": {
             "visible": true,
@@ -453,7 +453,7 @@
       "effects": [
         {
           "id": 0,
-          "description": "Deal 2 damage to 1 target you can see that is not on your square. Then you may move the target 1 square.",
+          "description": "Deal 2 damage to 1 visible target not on your square. Then you may move the target 1 square.       ",
           "properties": {
             "visible": true,
             "target": ["PLAYER"],
@@ -466,7 +466,7 @@
         },
         {
           "id": 1,
-          "description": "Move 1 or 2 squares. This effect can be used either before or after the basic effect.",
+          "description": "Move 1 or 2 squares. This effect can be used either before or after the basic effect.               ",
           "cost": ["BLUE"],
           "properties": {
             "visible": true,
@@ -481,7 +481,7 @@
         },
         {
           "id": 2,
-          "description": "During the basic effect, deal 1 damage to every player on your target's original square – including the target, even if you move it.",
+          "description": "During the basic effect, deal 1 damage to every player on your target's original square.           ",
           "cost": ["YELLOW"],
           "properties": {
             "visible": true,
@@ -502,7 +502,7 @@
         },
         {
           "id": 3,
-          "description": "Combo between effects 1 and 2.",
+          "description": "Combo between effects 1 and 2.                                                                     ",
           "cost": ["BLUE","YELLOW"],
           "properties": {
             "visible": true,
@@ -531,7 +531,7 @@
       "effects": [
         {
           "id": 0,
-          "description": "Choose a cardinal direction and 1 target in that direction. Deal 3 damage to it.",
+          "description": "Choose a cardinal direction and 1 target in that direction. Deal 3 damage to it.                   ",
           "properties": {
             "target": ["PLAYER"],
             "targetNum": 1,
@@ -541,7 +541,7 @@
         },
         {
           "id": 1,
-          "description": "Choose a cardinal direction and 1 or 2 targets in that direction. Deal 2 damage to each.",
+          "description": "Choose a cardinal direction and 1 or 2 targets in that direction. Deal 2 damage to each.           ",
           "properties": {
             "target": ["PLAYER"],
             "maxTargetNum": 2,
@@ -558,7 +558,7 @@
       "effects": [
         {
           "id": 0,
-          "description": "Deal 2 damage to 1 target on your square.",
+          "description": "Deal 2 damage to 1 target on your square.                                                           ",
           "properties": {
             "visible": true,
             "target": ["PLAYER"],
@@ -569,7 +569,7 @@
         },
         {
           "id": 1,
-          "description": "Move 1 square before or after the basic effect.",
+          "description": "Move 1 square before or after the basic effect.                                                    ",
           "properties": {
             "visible": true,
             "target": ["PLAYER"],
@@ -581,7 +581,7 @@
         },
         {
           "id": 2,
-          "description": "Deal 2 damage to a different target on your square. The shadowstep may be used before or after this effect.",
+          "description": "Deal 2 damage to another target on your square. The move may be used before or after this effect.  ",
           "cost": ["YELLOW"],
           "properties": {
             "visible": true,
@@ -593,7 +593,7 @@
         },
         {
           "id": 3,
-          "description": "Combo between effects 0+1 and 2.",
+          "description": "Combo between effects 0+1 and 2.                                                                   ",
           "cost": ["YELLOW"],
           "properties": {
             "visible": true,
@@ -613,7 +613,7 @@
       "effects": [
         {
           "id": 0,
-          "description": "Deal 1 damage and 2 marks to 1 target you can see.",
+          "description": "Deal 1 damage and 2 marks to 1 target you can see.                                                 ",
           "properties": {
             "visible": true,
             "target": ["PLAYER"],
@@ -624,7 +624,7 @@
         },
         {
           "id": 1,
-          "description": "Choose up to 3 targets you can see and deal 1 mark to each.",
+          "description": "Choose up to 3 targets you can see and deal 1 mark to each.                                        ",
           "properties": {
             "visible": true,
             "target": ["PLAYER"],
@@ -641,7 +641,7 @@
       "effects": [
         {
           "id": 0,
-          "description": "Deal 3 damage to 1 target on your square. If you want, you may then move the target 1 square.",
+          "description": "Deal 3 damage to 1 target on your square. If you want, you may then move the target 1 square.      ",
           "properties": {
             "visible": true,
             "target": ["PLAYER"],
@@ -654,7 +654,7 @@
         },
         {
           "id": 1,
-          "description": "Deal 2 damage to 1 target on any square exactly one move away.",
+          "description": "Deal 2 damage to 1 target on any square exactly one move away.                                     ",
           "properties": {
             "visible": true,
             "target": ["PLAYER"],
@@ -672,7 +672,7 @@
       "effects": [
         {
           "id": 0,
-          "description": "Choose 1 target on any square exactly 1 move away. Move onto that square and give the target 1 damage and 2 marks.",
+          "description": "Choose 1 target 1 move far. Move onto that square and give the target 1 damage and 2 marks.        ",
           "properties": {
             "visible": true,
             "target": ["PLAYER"],
@@ -685,7 +685,7 @@
         },
         {
           "id": 1,
-          "description": "Choose a square exactly 1 move away. Move onto that square. You may deal 2 damage to 1 target there. If you want, you may move 1 more square in that same direction (but only if it is a legal move). You may deal 2 damage to 1 target there, as well.",
+          "description": "REPEAT ONE: move to a square exactly 1 move far. You may deal 2 damage to 1 target there.          ",
           "properties": {
             "visible": true,
             "target": ["PLAYER"],
@@ -705,7 +705,7 @@
       "effects": [
         {
           "id": 0,
-          "description": "Choose up to 3 targets on different squares, each exactly 1 move away. Deal 1 damage to each target.",
+          "description": "Choose up to 3 targets (1 move far) on different squares. Deal 1 damage to each target.            ",
           "properties": {
             "visible": true,
             "target": ["PLAYER"],
@@ -716,7 +716,7 @@
         },
         {
           "id": 1,
-          "description": "Deal 1 damage to all targets that are exactly 1 move away.",
+          "description": "Deal 1 damage to all targets that are exactly 1 move away.                                         ",
           "cost": ["YELLOW"],
           "properties": {
             "visible": true,
@@ -735,7 +735,7 @@
       "effects": [
         {
           "id": 0,
-          "description": "Deal 2 damage to 1 target on your square.",
+          "description": "Deal 2 damage to 1 target on your square.                                                          ",
           "properties": {
             "visible": true,
             "target": ["PLAYER"],
@@ -746,7 +746,7 @@
         },
         {
           "id": 1,
-          "description": "Deal 3 damage to 1 target on your square, then move that target 0, 1, or 2 squares in one direction.",
+          "description": "Deal 3 damage to 1 target on your square, then move it 0, 1, or 2 squares in one direction.        ",
           "cost": ["RED"],
           "properties": {
             "visible": true,

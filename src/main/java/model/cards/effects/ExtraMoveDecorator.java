@@ -13,6 +13,7 @@ public class ExtraMoveDecorator extends ExtraEffectDecorator {
 
     public ExtraMoveDecorator(Effect effect, MoveTarget moveTarget) {
         this.effect = effect;
+        super.setDescription(effect.getDescription());
         this.moveTarget = moveTarget;
     }
 
