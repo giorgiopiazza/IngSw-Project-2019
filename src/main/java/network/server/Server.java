@@ -5,6 +5,7 @@ import enumerations.MessageContent;
 import enumerations.MessageStatus;
 import model.Game;
 import network.message.*;
+import utility.persistency.SaveGame;
 
 import java.io.IOException;
 import java.util.*;
@@ -48,10 +49,31 @@ public class Server implements Runnable {
         gameManager = new GameManager(this, terminator, skullNum);
     }
 
+    private Server() {
+        SocketServer serverSocket = new SocketServer(this, SOCKET_PORT);
+        serverSocket.startServer();
+
+        LOGGER.info("Socket Server Started");
+
+        RMIServer rmiServer = new RMIServer(this, RMI_PORT);
+        rmiServer.startServer();
+
+        LOGGER.info("RMI Server Started");
+
+        Thread pinger = new Thread(this);
+        pinger.start();
+
+        gameManager = SaveGame.loadGame(this);
+    }
+
     public static void main(String[] args) {
         String confFilePath = "default/path";
         boolean terminator = false;
         int skullNum = 5;
+        boolean reloadGame = false;
+
+        // normal complete Server launch should have the following parameters: -l "confFilePath.txt" -b true/false -s #skulls
+        // normal complete Server launch with game Reload should have the following parameter: -l "confFilePath.txt" -r
 
         if(args.length > 0 && args.length < 7) {
             for(int i = 0; i < args.length; ++i) {
@@ -69,6 +91,9 @@ public class Server implements Runnable {
                             skullNum = Integer.parseInt(args[i + 1]);
                             ++i;
                             break;
+                        case 'r':
+                            reloadGame = true;
+                            break;
                         default:
                             break;
                     }
@@ -76,6 +101,12 @@ public class Server implements Runnable {
             }
         } else {
             new Server(terminator,  skullNum);
+            return;
+        }
+
+        // if the starting command contains -r it means that a game is going to be reloaded
+        if(reloadGame) {
+            new Server();
             return;
         }
 

@@ -17,13 +17,15 @@ import model.cards.PowerupCard;
 import model.map.Square;
 import model.player.UserPlayer;
 import network.message.*;
+import utility.persistency.SaveGame;
 
+import java.io.Serializable;
 import java.util.*;
 
 /**
  * This class contains all the methods needed to handle entirely the Round of a player's turn
  */
-class RoundManager {
+public class RoundManager {
     private static final String TAGBACK_GRANADE = "TAGBACK_GRANADE";
     private static final String TELEPORTER = "TELEPORTER";
     private static final String NEWTON = "NEWTON";
@@ -51,10 +53,14 @@ class RoundManager {
         this.turnManager = new TurnManager(gameInstance.getPlayers());
     }
 
+    public void initTurnManager(TurnManager otherTurnManager) {
+        this.turnManager = new TurnManager(otherTurnManager);
+    }
+
     /**
      * @return the {@link TurnManager TurnManager} for the started {@link Game Game}
      */
-    TurnManager getTurnManager() {
+    public TurnManager getTurnManager() {
         return this.turnManager;
     }
 
@@ -260,7 +266,6 @@ class RoundManager {
             afterTerminatorActionHandler(gameState);
         }
 
-        gameManager.sendPrivateUpdates();
         return buildPositiveResponse("Terminator action used");
     }
 
@@ -926,12 +931,16 @@ class RoundManager {
 
     /**
      * Method that builds a Positive {@link Response Response}, that has {@link MessageStatus MessageStatus.OK}
+     * For real this method is the most important one of this Class, infact, it also:
+     *          (i) send the new Game status to each player
+     *          (ii) saves the Game status to have persistency
      *
      * @param reason the reason why the {@link Response Response} is Positive
      * @return the Positive {@link Response Response} built
      */
     private Response buildPositiveResponse(String reason) {
         gameManager.sendPrivateUpdates();
+        SaveGame.saveGame(gameManager);
         return new Response(reason, MessageStatus.OK);
     }
 

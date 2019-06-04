@@ -17,6 +17,7 @@ import network.server.Server;
 import utility.LobbyTimer;
 import utility.TimerRunListener;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -25,20 +26,20 @@ import java.util.stream.Collectors;
 /**
  * This Class is the Controller that receives Messages, validates them and moves the Game State to make the game evolve
  */
-public class GameManager implements TimerRunListener {
+public class GameManager implements TimerRunListener, Serializable {
     private static final int MIN_PLAYERS = 3;
     private static final int MAX_PLAYERS = 5;
 
-    private final Server server;
+    private final transient Server server;
     private PossibleGameState gameState;
     private final Game gameInstance;
-    private GameLobby lobby;
-    private RoundManager roundManager;
+    private transient GameLobby lobby;
+    private transient RoundManager roundManager;
     private ShootParameters shootParameters;
 
-    private int lobbyTimeoutTime;
-    private Timer lobbyTimer;
-    private boolean lobbyTimerRunning = false;
+    private transient int lobbyTimeoutTime;
+    private transient Timer lobbyTimer;
+    private transient boolean lobbyTimerRunning = false;
 
     /**
      * Creates an instance of {@link GameManager GameManager} binding the server tha will send messages to him
@@ -47,12 +48,44 @@ public class GameManager implements TimerRunListener {
      */
     public GameManager(Server server, boolean terminator, int skullNum) {
         this.server = server;
-        gameState = PossibleGameState.GAME_ROOM;
+        this.gameState = PossibleGameState.GAME_ROOM;
         this.lobby = new GameLobby(terminator, skullNum);
         this.gameInstance = Game.getInstance();
         this.roundManager = new RoundManager(this);
 
         lobbyTimeoutTime = 10000;
+    }
+
+    /**
+     * Creates an instance of {@link GameManager GameManager} binding the new server and the GameManager of the game
+     * that is going to be reloaded
+     *
+     * @param server the Server to be bind
+     * @param savedGameManager the saved {@link GameManager GameManager} from which the {@link Game Game} is going to restart
+     */
+    public GameManager(Server server, GameManager savedGameManager) {
+        this.server = server;
+        this.gameState = savedGameManager.gameState;
+        this.lobby = null; // TODO add lobby settings if needed for players login: should be filled with messages containing the names of the players in the game
+        this.gameInstance = Game.getInstance();
+        this.roundManager = new RoundManager(savedGameManager);
+        this.shootParameters = savedGameManager.shootParameters;
+
+        lobbyTimeoutTime = 10000;
+    }
+
+    /**
+     * @return the instance of the {@link Game Game} instance present in the saved {@link GameManager GameManager}
+     */
+    public Game getGameInstance() {
+        return this.gameInstance;
+    }
+
+    /**
+     * @return the instance of the {@link RoundManager RoundManager}
+     */
+    public RoundManager getRoundManager() {
+        return this.roundManager;
     }
 
     /**
@@ -941,9 +974,9 @@ public class GameManager implements TimerRunListener {
     /**
      * Utility Class Used to manage needed parameters when a Shooter wants to use the TARGETING SCOPE
      */
-    class ShootParameters {
+    class ShootParameters implements Serializable {
         ShootRequest shootRequest;
-        boolean secondAction;
+        Boolean secondAction;
 
         /**
          * Creates an instance of {@link ShootParameters ShootParameters} saving the previous {@link ShootRequest ShootRequest}

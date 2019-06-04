@@ -2,7 +2,6 @@ package model;
 
 import enumerations.GameState;
 import model.cards.PowerupCard;
-import model.cards.WeaponCard;
 import model.map.GameMap;
 import model.player.KillShot;
 import model.player.Player;
@@ -12,7 +11,6 @@ import model.player.UserPlayer;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class GameSerialized implements Serializable  {
