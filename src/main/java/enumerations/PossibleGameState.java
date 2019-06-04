@@ -8,7 +8,6 @@ public enum PossibleGameState {
     /**
      * Game started
      */
-    GAME_READY,
     GAME_STARTED,
     FINAL_FRENZY,
     SECOND_ACTION,

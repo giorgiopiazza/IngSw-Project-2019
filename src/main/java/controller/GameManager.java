@@ -60,7 +60,7 @@ public class GameManager implements TimerRunListener, Serializable {
      * Creates an instance of {@link GameManager GameManager} binding the new server and the GameManager of the game
      * that is going to be reloaded
      *
-     * @param server the Server to be bind
+     * @param server           the Server to be bind
      * @param savedGameManager the saved {@link GameManager GameManager} from which the {@link Game Game} is going to restart
      */
     public GameManager(Server server, GameManager savedGameManager) {
@@ -130,6 +130,11 @@ public class GameManager implements TimerRunListener, Serializable {
                 return new Response("Message from a player that is not his turn!", MessageStatus.ERROR);
             }
 
+            // very first round handling
+            if(roundManager.getTurnManager().getTurnOwner().getPlayerState() != PossiblePlayerState.PLAYING) {
+                return veryFirstRoundHandler(receivedMessage);
+            }
+
             // SPECIAL STATES handling
             tempResponse = specialStatesHandler(receivedMessage);
 
@@ -138,10 +143,6 @@ public class GameManager implements TimerRunListener, Serializable {
             } // else no special States are affected
 
             switch (receivedMessage.getContent()) {
-                case TERMINATOR_SPAWN:
-                    return terminatorSpawnCheckState(receivedMessage);
-                case DISCARD_POWERUP:
-                    return discardPowerupCheckState(receivedMessage);
                 case TERMINATOR:
                     return terminatorCheckState(receivedMessage);
                 case POWERUP:
@@ -190,6 +191,25 @@ public class GameManager implements TimerRunListener, Serializable {
                 return handleTerminatorAsLastAction(receivedMessage);
             default:
                 return new Response("Utility Response", MessageStatus.NO_RESPONSE);
+        }
+    }
+
+    /**
+     * This method handles the very first round of a {@link Game Game}; in this state {@link UserPlayer players}, need
+     * to spawn before starting acting. Remember that if the {@link Terminator Terminator} is present, the first
+     * {@link UserPlayer UserPlayer} is the one who spawns it and this must be done before spawning itself
+     *
+     * @param receivedMessage the {@link Message Message} received
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
+    private Response veryFirstRoundHandler(Message receivedMessage) {
+        switch (receivedMessage.getContent()) {
+            case TERMINATOR_SPAWN:
+                return terminatorSpawnCheckState(receivedMessage);
+            case DISCARD_POWERUP:
+                return discardPowerupCheckState(receivedMessage);
+            default:
+                throw new InvalidGameStateException();
         }
     }
 
@@ -317,7 +337,7 @@ public class GameManager implements TimerRunListener, Serializable {
      * @return a positive or negative {@link Response Response} handled by the server
      */
     private Response terminatorSpawnCheckState(Message receivedMessage) {
-        if (gameState == PossibleGameState.GAME_READY) {
+        if (gameState == PossibleGameState.GAME_STARTED && roundManager.getTurnManager().getTurnOwner().getPlayerState() == PossiblePlayerState.SPAWN_TERMINATOR) {
             // remember a player must see the powerups he has drawn before spawning the terminator!
             return roundManager.handleTerminatorFirstSpawn((TerminatorSpawnRequest) receivedMessage);
         } else {
@@ -333,7 +353,7 @@ public class GameManager implements TimerRunListener, Serializable {
      * @return a positive or negative {@link Response Response} handled by the server
      */
     private Response discardPowerupCheckState(Message receivedMessage) {
-        if (gameState == PossibleGameState.GAME_READY) {
+        if (gameState == PossibleGameState.GAME_STARTED && roundManager.getTurnManager().getTurnOwner().getPlayerState() == PossiblePlayerState.FIRST_SPAWN) {
             return roundManager.handleFirstSpawn((DiscardPowerupRequest) receivedMessage);
         } else {
             return buildInvalidResponse();
@@ -347,9 +367,7 @@ public class GameManager implements TimerRunListener, Serializable {
      * @return a positive or negative {@link Response Response} handled by the server
      */
     private Response terminatorCheckState(Message receivedMessage) {
-        if (gameState == PossibleGameState.GAME_READY) {
-            return roundManager.handleTerminatorAction((UseTerminatorRequest) receivedMessage, gameState);
-        } else if (gameState == PossibleGameState.GAME_STARTED) {
+        if (gameState == PossibleGameState.GAME_STARTED) {
             return roundManager.handleTerminatorAction((UseTerminatorRequest) receivedMessage, gameState);
         } else {
             return buildInvalidResponse();
@@ -510,7 +528,7 @@ public class GameManager implements TimerRunListener, Serializable {
         // first I start the game, the turnManager and set the state of the game
         gameInstance.startGame();
         roundManager.initTurnManager();
-        changeState(PossibleGameState.GAME_READY);
+        changeState(PossibleGameState.GAME_STARTED);
 
         UserPlayer firstPlayer = roundManager.getTurnManager().getTurnOwner();
 
@@ -966,9 +984,18 @@ public class GameManager implements TimerRunListener, Serializable {
     void sendPrivateUpdates() {
         List<UserPlayer> players = gameInstance.getPlayers();
 
-        for(UserPlayer player : players) {
+        for (UserPlayer player : players) {
             server.sendMessage(player.getUsername(), new GameStateMessage(player.getUsername()));
         }
+    }
+
+    /**
+     * Utility method to send a broadcast message to all the Clients
+     *
+     * @param message the {@link Message Message} to be sent
+     */
+    void sendBroadcastMessage(Message message) {
+        server.sendMessageToAll(message);
     }
 
     /**

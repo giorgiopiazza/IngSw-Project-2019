@@ -22,6 +22,7 @@ public class TurnManager implements Serializable {
     private ArrayList<UserPlayer> damagedPlayers;
     private ArrayList<UserPlayer> deathPlayers;
 
+    private boolean firstTurn;
     private boolean secondAction;
 
     private ArrayList<UserPlayer> afterFrenzy;
@@ -40,6 +41,7 @@ public class TurnManager implements Serializable {
      */
     TurnManager(List<UserPlayer> players) {
         this.players = new ArrayList<>(players);
+        this.firstTurn = true;
         this.lastRoundPlayer = players.get(players.size() - 1);
         this.turnOwner = players.get(count);
         this.afterFrenzy = new ArrayList<>();
@@ -61,6 +63,7 @@ public class TurnManager implements Serializable {
         this.damagedPlayers = other.damagedPlayers;
         this.deathPlayers = other.deathPlayers;
 
+        this.firstTurn = other.firstTurn;
         this.secondAction = other.secondAction;
 
         this.afterFrenzy = other.afterFrenzy;
@@ -141,6 +144,20 @@ public class TurnManager implements Serializable {
      */
     boolean isSecondAction() {
         return this.secondAction;
+    }
+
+    /**
+     * Method used to know when the first turn has ended
+     */
+    void endOfFirstTurn() {
+        this.firstTurn = false;
+    }
+
+    /**
+     * @return if the turn of the turnOwner is its very first one or not
+     */
+    boolean isFirstTurn() {
+        return this.firstTurn;
     }
 
     /**
