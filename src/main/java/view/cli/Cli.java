@@ -450,8 +450,14 @@ public class Cli implements ClientUpdateListener {
         boolean reloaded;
         boolean terminatorMove;
         switch (roundManager.getPlayerState()) {
-            case BEGIN:
+            case SPAWN:
                 roundManager.beginRound((UserPlayer) getPlayer(username));
+                spawn();
+                roundManager.nextMove((UserPlayer) getPlayer(username), false, terminatorMoved);
+
+                break;
+
+            case BEGIN:
 
                 terminatorMove = askTerminator();
                 roundManager.nextMove((UserPlayer) getPlayer(username), false, terminatorMoved);
@@ -590,7 +596,7 @@ public class Cli implements ClientUpdateListener {
 
         do {
             out.println("Choose the weapon:");
-            for (int i = 0; i< weapons.length; i++) {
+            for (int i = 0; i < weapons.length; i++) {
                 out.println("\t" + (i + 1) + " - " + weapons[i].getName());
             }
             choose = readInt(1, weapons.length);
@@ -645,9 +651,29 @@ public class Cli implements ClientUpdateListener {
         return message;
     }
 
+    private void spawn() {
+        printPowerUps();
+
+        PowerupCard powerupCard = askPowerUpSpawn();
+        List<PowerupCard> powerupCards = getPowerUps();
+
+        try {
+            client.sendMessage(MessageBuilder.buildDiscardPowerupRequest(client.getToken(), powerupCards, powerupCard, username));
+        } catch (IOException | PowerupCardsNotFoundException e) {
+            promptError(e.getMessage(), true);
+        }
+
+    }
+
     private void printMap() {
         synchronized (lock) {
             CliPrinter.printMap(out, gameSerialized);
+        }
+    }
+
+    private void printPowerUps() {
+        synchronized (lock) {
+            CliPrinter.printPowerups(out, getPowerUps().toArray(PowerupCard[]::new));
         }
     }
 
@@ -675,67 +701,6 @@ public class Cli implements ClientUpdateListener {
         return possibleActions.get(choose - 1);
     }
 
-    private void switchChooses(int choose) {
-        Player player;
-        Message message;
-
-        switch (choose) {
-            case 0:
-                synchronized (lock) {
-                    CliPrinter.printMap(out, gameSerialized);
-                }
-                break;
-
-            case 1:
-                synchronized (lock) {
-                    CliPrinter.printPlayerBoards(out, gameSerialized);
-                }
-                break;
-
-            case 2:
-                synchronized (lock) {
-                    CliPrinter.printMap(out, gameSerialized);
-                }
-
-                player = getPlayer(username);
-
-                message = MessageBuilder.buildMoveRequest(client.getToken(), player, getCoordinates());
-
-                try {
-                    client.sendMessage(message);
-                } catch (IOException e) {
-                    promptError(e.getMessage(), true);
-                }
-                break;
-
-            case 3:
-                break;
-
-            case 4:
-                break;
-
-            case 5:
-                PowerupCard powerupCard = askPowerUpSpawn();
-                List<PowerupCard> powerupCards = getPowerUps();
-
-                try {
-                    client.sendMessage(MessageBuilder.buildDiscardPowerupRequest(client.getToken(), powerupCards, powerupCard, username));
-                } catch (IOException | PowerupCardsNotFoundException e) {
-                    promptError(e.getMessage(), true);
-                }
-                break;
-
-            case 6:
-                player = getPlayer(username);
-                try {
-                    client.sendMessage(MessageBuilder.buildPassTurnRequest(client.getToken(), (UserPlayer) player));
-                } catch (IOException e) {
-                    promptError(e.getMessage(), true);
-                }
-                break;
-        }
-    }
-
     private List<PowerupCard> getPowerUps() {
         synchronized (lock) {
             return gameSerialized.getPowerUps();
@@ -746,7 +711,7 @@ public class Cli implements ClientUpdateListener {
         List<PowerupCard> powerups = getPowerUps();
 
         out.println();
-        out.println("Where do you want to re spawn?");
+        out.println("Where do you want to spawn?");
         for (int i = 0; i < powerups.size(); i++) {
             out.println("\t" + i + " - " + CliPrinter.toStringPowerUpCard(powerups.get(i)) + " (" + Ammo.toColor(powerups.get(i).getValue()) + " room)");
         }
@@ -830,6 +795,7 @@ public class Cli implements ClientUpdateListener {
                     GameStateMessage stateMessage = (GameStateMessage) message;
                     out.println();
                     synchronized (lock) {
+                        // TODO: CONTROLLO CAMBIO TURN OWNER
                         gameSerialized = stateMessage.getGameSerialized();
                         CliPrinter.printMap(out, gameSerialized);
                         out.println();
