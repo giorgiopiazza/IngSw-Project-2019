@@ -13,6 +13,8 @@ import java.util.EnumSet;
 import java.util.List;
 
 public class NotTransientPlayer implements Serializable {
+    private static final long serialVersionUID = -9213961725005653060L;
+
     private String userName;
 
     private int points;

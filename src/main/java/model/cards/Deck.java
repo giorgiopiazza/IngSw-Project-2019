@@ -6,6 +6,8 @@ import java.util.Arrays;
 import java.util.Collections;
 
 public class Deck implements Serializable {
+    private static final long serialVersionUID = -3053418734560184556L;
+
     private ArrayList<Card> cardsDeck;
     private Boolean garbage;
     private ArrayList<Card> discard;

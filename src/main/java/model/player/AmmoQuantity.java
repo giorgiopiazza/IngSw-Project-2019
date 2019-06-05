@@ -7,6 +7,8 @@ import java.io.Serializable;
 import java.util.*;
 
 public class AmmoQuantity implements Serializable {
+    private static final long serialVersionUID = 2053666639366008779L;
+
     private int redAmmo;
     private int blueAmmo;
     private int yellowAmmo;

@@ -7,6 +7,8 @@ import enumerations.SquareType;
 import java.io.Serializable;
 
 public abstract class Square implements Serializable {
+    private static final long serialVersionUID = -8637653604689361415L;
+
     private final RoomColor color;
     private final SquareType squareType;
     private final SquareAdjacency north;

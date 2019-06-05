@@ -61,6 +61,8 @@ public class GameMap implements Serializable {
      */
     public static final int MAP_4 = 4;
 
+    private static final long serialVersionUID = 1887000392810101907L;
+
     private Square[][] rooms;
 
     public GameMap(int mapType) {

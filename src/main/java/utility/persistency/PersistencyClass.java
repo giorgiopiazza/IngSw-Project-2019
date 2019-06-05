@@ -10,6 +10,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class PersistencyClass implements Serializable {
+    private static final long serialVersionUID = 2545891111714662670L;
+
     private GameManager gameManager;
     private TurnManager turnManager;
     private ArrayList<NotTransientPlayer> playersCopy;

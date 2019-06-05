@@ -7,6 +7,8 @@ import java.io.Serializable;
 import java.util.Map;
 
 public abstract class Effect implements Serializable {
+    private static final long serialVersionUID = 992667210434983695L;
+
     private Map<String, String> properties;
     private TargetType[] targets;
     private String description;

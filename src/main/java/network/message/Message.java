@@ -5,6 +5,8 @@ import enumerations.MessageContent;
 import java.io.Serializable;
 
 public abstract class Message implements Serializable {
+    private static final long serialVersionUID = -5411382756213360684L;
+
     private final String senderUsername;
     private final String token;
     private final MessageContent content;

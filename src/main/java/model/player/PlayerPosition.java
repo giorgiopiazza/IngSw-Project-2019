@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class PlayerPosition implements Serializable {
+    private static final long serialVersionUID = 358503478548284014L;
 
     private int coordX;
     private int coordY;

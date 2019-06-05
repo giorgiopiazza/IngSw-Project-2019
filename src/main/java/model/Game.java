@@ -29,6 +29,7 @@ public class Game implements Serializable {
     public static final String TERMINATOR_USERNAME = "bot";
     public static final String GOD = "god";
     private static final int MAX_KILLSHOT = 8;
+    private static final long serialVersionUID = -7643292361816314018L;
 
     private static Game instance;
 

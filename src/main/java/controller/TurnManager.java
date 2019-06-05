@@ -14,6 +14,8 @@ import java.util.Objects;
  * {@link #nextTurn() nextTurn}
  */
 public class TurnManager implements Serializable {
+    private static final long serialVersionUID = -6048602661465079910L;
+
     private UserPlayer turnOwner;
     private UserPlayer lastPlayer;
     private final UserPlayer lastRoundPlayer;

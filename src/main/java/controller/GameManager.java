@@ -1002,6 +1002,8 @@ public class GameManager implements TimerRunListener, Serializable {
      * Utility Class Used to manage needed parameters when a Shooter wants to use the TARGETING SCOPE
      */
     class ShootParameters implements Serializable {
+        private static final long serialVersionUID = 6251659361269907424L;
+
         ShootRequest shootRequest;
         Boolean secondAction;
 

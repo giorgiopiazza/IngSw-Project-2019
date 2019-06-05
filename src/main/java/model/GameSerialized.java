@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class GameSerialized implements Serializable  {
+    private static final long serialVersionUID = 526685006552543525L;
 
     private GameState currentState;
     private GameMap gameMap;

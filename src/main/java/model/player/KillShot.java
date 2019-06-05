@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 public class KillShot implements Serializable {
+    private static final long serialVersionUID = 7176239169510722056L;
 
     private final String killer;
     private final int points;
