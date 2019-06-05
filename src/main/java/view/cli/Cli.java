@@ -23,8 +23,8 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class Cli implements ClientUpdateListener {
-    private final Object lock = new Object();
-    private final Object waiter = new Object();
+    private final Object gameSerializedLock = new Object();       // serve per gestire il parallelismo sull'oggetto gameSerialized
+    private final Object waiter = new Object();     // need to wait for action
 
     private Client client;
     private Scanner in;
@@ -79,7 +79,7 @@ public class Cli implements ClientUpdateListener {
         timerTask = new LobbyTimer(() -> {
             boolean start;
 
-            synchronized (lock) {
+            synchronized (gameSerializedLock) {
                 start = this.started;
             }
 
@@ -97,7 +97,26 @@ public class Cli implements ClientUpdateListener {
 
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                doSomething();
+                if (firstRound) { // first round
+                    if (firstPlayer.getUsername().equals(username)) { // first player to play
+                        out.println("You are the first player");
+                        yourRound = true;
+                    } else { // other players
+                        out.println("The first player is: " + firstPlayer.getUsername());
+                    }
+                    firstRound = false;
+                }
+
+                if (yourRound) { // if the first round
+                    playRound();
+                } else {
+                    out.println("Wait for your turn...");
+                    out.println();
+                    // wait while ClientUpdater receive something
+                    synchronized (waiter) {
+                        waiter.wait();
+                    }
+                }
             } catch (InterruptedException e) {
                 Logger.getGlobal().severe(e.getMessage());
                 Thread.currentThread().interrupt();
@@ -288,7 +307,7 @@ public class Cli implements ClientUpdateListener {
         boolean validColor = false;
         boolean firstError = true;
 
-        PlayerColor playerColor = null;
+        PlayerColor playercolor = null;
         List<PlayerColor> availableColors = getUnusedColors();
 
 
@@ -310,13 +329,13 @@ public class Cli implements ClientUpdateListener {
 
 
                 try {
-                    playerColor = PlayerColor.valueOf(color.toUpperCase());
+                    playercolor = PlayerColor.valueOf(color.toUpperCase());
                 } catch (IllegalArgumentException e) {
                     firstError = promptInputError(firstError, "Invalid color!");
                     continue;
                 }
 
-                if (availableColors.contains(playerColor)) {
+                if (availableColors.contains(playercolor)) {
                     validColor = true;
                 } else {
                     firstError = promptInputError(firstError, "Invalid color!");
@@ -327,8 +346,8 @@ public class Cli implements ClientUpdateListener {
             }
         } while (!validColor);
 
-        out.printf("%nYou picked %s color.%n", playerColor.name());
-        this.playerColor = playerColor;
+        out.printf("%nYou picked %s color.%n", playercolor.name());
+        this.playerColor = playercolor;
     }
 
     private List<PlayerColor> getUnusedColors() {
@@ -411,32 +430,14 @@ public class Cli implements ClientUpdateListener {
     }
 
     private void doSomething() throws InterruptedException {
-        if (firstRound) { // first round
-            if (firstPlayer.getUsername().equals(username)) { // first player to play
-                out.println("You are the first player");
-                yourRound = true;
-            } else { // other players
-                out.println("The first player is: " + firstPlayer.getUsername());
-            }
-            firstRound = false;
-        }
 
-        if (yourRound) { // if the first round
-            playRound();
-        } else {
-            out.println("Wait for your turn...");
-            out.println();
-            // wait while ClientUpdater receive something
-            synchronized (waiter) {
-                waiter.wait();
-            }
-        }
     }
 
     /**
      * Play the entire round of this player
      */
     private void playRound() {
+        // todo: spawn/respawn
         do {
             makeMove();
         } while (roundManager.roundEnded());
@@ -454,7 +455,7 @@ public class Cli implements ClientUpdateListener {
                 roundManager.beginRound((UserPlayer) getPlayer(username));
 
                 terminatorMove = askTerminator();
-                roundManager.nextMove((UserPlayer) getPlayer(username), false, terminatorMoved);
+                roundManager.nextMove((UserPlayer) getPlayer(username), false, terminatorMove);
                 this.terminatorMoved = terminatorMove;
                 break;
 
@@ -646,7 +647,7 @@ public class Cli implements ClientUpdateListener {
     }
 
     private void printMap() {
-        synchronized (lock) {
+        synchronized (gameSerializedLock) {
             CliPrinter.printMap(out, gameSerialized);
         }
     }
@@ -681,19 +682,19 @@ public class Cli implements ClientUpdateListener {
 
         switch (choose) {
             case 0:
-                synchronized (lock) {
+                synchronized (gameSerializedLock) {
                     CliPrinter.printMap(out, gameSerialized);
                 }
                 break;
 
             case 1:
-                synchronized (lock) {
+                synchronized (gameSerializedLock) {
                     CliPrinter.printPlayerBoards(out, gameSerialized);
                 }
                 break;
 
             case 2:
-                synchronized (lock) {
+                synchronized (gameSerializedLock) {
                     CliPrinter.printMap(out, gameSerialized);
                 }
 
@@ -737,7 +738,7 @@ public class Cli implements ClientUpdateListener {
     }
 
     private List<PowerupCard> getPowerUps() {
-        synchronized (lock) {
+        synchronized (gameSerializedLock) {
             return gameSerialized.getPowerUps();
         }
     }
@@ -829,7 +830,7 @@ public class Cli implements ClientUpdateListener {
                 case GAME_STATE:
                     GameStateMessage stateMessage = (GameStateMessage) message;
                     out.println();
-                    synchronized (lock) {
+                    synchronized (gameSerializedLock) {
                         gameSerialized = stateMessage.getGameSerialized();
                         CliPrinter.printMap(out, gameSerialized);
                         out.println();
@@ -839,7 +840,7 @@ public class Cli implements ClientUpdateListener {
 
                 case READY:
                     GameStartMessage gameStartMessage = (GameStartMessage) message;
-                    synchronized (lock) {
+                    synchronized (gameSerializedLock) {
                         firstPlayer = getPlayer(gameStartMessage.getFirstPlayer());
                         isTerminator = gameSerialized.isTerminatorPresent();
                         started = true;
@@ -848,7 +849,7 @@ public class Cli implements ClientUpdateListener {
 
                 case LAST_RESPONSE:
                     WinnersResponse winnersList = (WinnersResponse) message;
-                    synchronized (lock) {
+                    synchronized (gameSerializedLock) {
                         this.finished = true;
                         this.winners = winnersList.getWinners();
                     }
@@ -865,13 +866,13 @@ public class Cli implements ClientUpdateListener {
     }
 
     private Terminator getTerminator() {
-        synchronized (lock) {
+        synchronized (gameSerializedLock) {
             return gameSerialized.getTerminator();
         }
     }
 
     private Player getPlayer(String username) {
-        synchronized (lock) {
+        synchronized (gameSerializedLock) {
             Player player = gameSerialized.getPlayers().stream().filter(p -> p.getUsername().equals(username)).findFirst().orElse(null);
             if (player == null) throw new PlayerNotFoundException("player not found, cannot continue with the game");
             return player;
