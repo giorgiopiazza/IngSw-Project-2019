@@ -33,7 +33,7 @@ public class ClientRoundManager {
         this.terminatorPresent = terminatorPresent;
         this.terminatorCanMove = true;
 
-        this.playerState = UserPlayerState.BEGIN;
+        this.playerState = UserPlayerState.SPAWN;
         this.boardState = PlayerBoardState.NORMAL;
         this.gameClientState = GameClientState.NORMAL;
 
@@ -79,6 +79,10 @@ public class ClientRoundManager {
         this.terminatorCanMove = terminatorMove;
 
         switch (playerState) {
+            case SPAWN:
+                playerState = UserPlayerState.BEGIN;
+                break;
+
             case BEGIN:
                 if (terminatorCanMove && terminatorPresent) {
                     playerState = UserPlayerState.TERMINATOR_FIRST;

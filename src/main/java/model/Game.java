@@ -17,13 +17,15 @@ import model.player.*;
 import utility.AmmoTileParser;
 import utility.PowerupParser;
 import utility.WeaponParser;
+import utility.persistency.NotTransientPlayer;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-public class Game {
+public class Game implements Serializable {
     public static final String TERMINATOR_USERNAME = "bot";
     public static final String GOD = "god";
     private static final int MAX_KILLSHOT = 8;
@@ -42,6 +44,7 @@ public class Game {
     private ArrayList<KillShot> finalFrenzyKillShots;
     private final List<Integer> trackerPoints = new ArrayList<>(Arrays.asList(8, 6, 4, 2, 1, 1));
 
+    // TODO if does not work for persistency create new classes to contain decks and other parameters
     private Deck weaponsCardsDeck;
     private Deck powerupCardsDeck;
     private Deck ammoTileDeck;
@@ -72,6 +75,62 @@ public class Game {
         powerupCardsDeck = null;
         ammoTileDeck = null;
         gameMap = null;
+    }
+
+    /**
+     * Game load initialization
+     */
+    public void loadGame(Game savedGame, ArrayList<NotTransientPlayer> notTransientPlayers) {
+        currentState = savedGame.currentState;
+        gameStarted = savedGame.gameStarted;
+        players = savedGame.players;
+        loadTransientPlayers(notTransientPlayers);
+        terminatorPresent = savedGame.terminatorPresent;
+        if(terminatorPresent) {
+            terminator = savedGame.terminator;
+            loadTransientTerminator(notTransientPlayers);
+        }
+        killShotNum = savedGame.killShotNum;
+        killShotsTrack = savedGame.killShotsTrack;
+        finalFrenzyKillShots = savedGame.finalFrenzyKillShots;
+
+        weaponsCardsDeck = savedGame.weaponsCardsDeck;
+        powerupCardsDeck = savedGame.powerupCardsDeck;
+        ammoTileDeck = savedGame.ammoTileDeck;
+
+        gameMap = savedGame.gameMap;
+    }
+
+    /**
+     * Method that reloads all the transient attributes of each player in the saved {@link Game Game}
+     *
+     * @param notTransientPlayers ArrayList of objects containing all the needed information to reset each {@link UserPlayer player} old state
+     */
+    private void loadTransientPlayers(ArrayList<NotTransientPlayer> notTransientPlayers) {
+        for(UserPlayer player : players) {
+            for(NotTransientPlayer notTransientPlayer : notTransientPlayers) {
+                if(player.getUsername().equals(notTransientPlayer.getUserName())) {
+                    player.setPoints(notTransientPlayer.getPoints());
+                    player.setPossibleActions(notTransientPlayer.getPossibleActions());
+                    player.setPlayerState(notTransientPlayer.getPlayerState());
+                    player.setPowerups(notTransientPlayer.getPowerups());
+                    player.setSpawningCard(notTransientPlayer.getSpawningCard());
+                }
+            }
+        }
+    }
+
+    /**
+     * Method that reloads the only transient attribute of the {@link model.player.Terminator Terminator} that are his points
+     *
+     * @param notTransientPlayers ArrayList of objects containing also the information for the {@link model.player.Terminator Terminator}'s old state
+     */
+    private void loadTransientTerminator(ArrayList<NotTransientPlayer> notTransientPlayers) {
+        for(NotTransientPlayer notTransientPlayer : notTransientPlayers) {
+            if(notTransientPlayer.getUserName().equals(Game.TERMINATOR_USERNAME)) {
+                terminator.setPoints(notTransientPlayer.getPoints());
+            }
+        }
     }
 
     /**

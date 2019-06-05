@@ -3,6 +3,7 @@ package controller;
 import enumerations.PossibleGameState;
 import model.player.UserPlayer;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -12,15 +13,16 @@ import java.util.Objects;
  * game, using specific parameters when the Turn Assignment does not follow the standard one performed with the method
  * {@link #nextTurn() nextTurn}
  */
-class TurnManager {
+public class TurnManager implements Serializable {
     private UserPlayer turnOwner;
     private UserPlayer lastPlayer;
     private final UserPlayer lastRoundPlayer;
 
-    private List<UserPlayer> players;
+    private ArrayList<UserPlayer> players;
     private ArrayList<UserPlayer> damagedPlayers;
     private ArrayList<UserPlayer> deathPlayers;
 
+    private boolean firstTurn;
     private boolean secondAction;
 
     private ArrayList<UserPlayer> afterFrenzy;
@@ -38,12 +40,39 @@ class TurnManager {
      * @param players the List of {@link UserPlayer UserPlayers} in the {@link model.Game Game}
      */
     TurnManager(List<UserPlayer> players) {
-        this.players = players;
+        this.players = new ArrayList<>(players);
+        this.firstTurn = true;
         this.lastRoundPlayer = players.get(players.size() - 1);
         this.turnOwner = players.get(count);
         this.afterFrenzy = new ArrayList<>();
         this.beforeFrenzy = new ArrayList<>();
 
+    }
+
+    /**
+     * Creates an Instance of {@link TurnManager TurnManager} from an already existing one used to reload a started {@link model.Game Game}
+     *
+     * @param other the other {@link TurnManager TurnManager}
+     */
+    TurnManager(TurnManager other) {
+        this.turnOwner = other.turnOwner;
+        this.lastPlayer = other.lastPlayer;
+        this.lastRoundPlayer = other.lastRoundPlayer;
+
+        this.players = other.players;
+        this.damagedPlayers = other.damagedPlayers;
+        this.deathPlayers = other.deathPlayers;
+
+        this.firstTurn = other.firstTurn;
+        this.secondAction = other.secondAction;
+
+        this.afterFrenzy = other.afterFrenzy;
+        this.beforeFrenzy = other.beforeFrenzy;
+
+        this.arrivingGameState = other.arrivingGameState;
+
+        this.count = other.count;
+        this.turnCount = other.turnCount;
     }
 
     /**
@@ -115,6 +144,20 @@ class TurnManager {
      */
     boolean isSecondAction() {
         return this.secondAction;
+    }
+
+    /**
+     * Method used to know when the first turn has ended
+     */
+    void endOfFirstTurn() {
+        this.firstTurn = false;
+    }
+
+    /**
+     * @return if the turn of the turnOwner is its very first one or not
+     */
+    boolean isFirstTurn() {
+        return this.firstTurn;
     }
 
     /**

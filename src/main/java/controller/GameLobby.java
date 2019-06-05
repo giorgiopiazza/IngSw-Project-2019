@@ -4,9 +4,10 @@ import enumerations.PlayerColor;
 import network.message.GameSetupMessage;
 import network.message.LobbyMessage;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class GameLobby {
+public class GameLobby implements Serializable {
     private ArrayList<LobbyMessage> inLobbyPlayers;
     private ArrayList<GameSetupMessage> votedPlayers;
 

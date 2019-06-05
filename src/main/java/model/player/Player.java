@@ -128,6 +128,13 @@ public abstract class Player implements Serializable, Comparable<Player> {
         points = this.points + pointsGained;
     }
 
+    /**
+     * @param savedPoints setting points to reload the game
+     */
+    public void setPoints(int savedPoints) {
+        this.points = savedPoints;
+    }
+
     public boolean canSee(Player other) {
         if (this.samePosition(other)) return true;
 

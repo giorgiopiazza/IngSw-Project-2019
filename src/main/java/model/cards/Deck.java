@@ -1,12 +1,13 @@
 package model.cards;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
-public class Deck {
+public class Deck implements Serializable {
     private ArrayList<Card> cardsDeck;
-    private boolean garbage;
+    private Boolean garbage;
     private ArrayList<Card> discard;
 
     /**
