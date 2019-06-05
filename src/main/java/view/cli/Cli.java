@@ -453,7 +453,7 @@ public class Cli implements ClientUpdateListener {
             case SPAWN:
                 roundManager.beginRound((UserPlayer) getPlayer(username));
                 spawn();
-                roundManager.nextMove((UserPlayer) getPlayer(username), false, terminatorMoved);
+                roundManager.nextMove((UserPlayer) getPlayer(username), false);
 
                 break;
 
@@ -672,7 +672,7 @@ public class Cli implements ClientUpdateListener {
     }
 
     private void printPowerUps() {
-        synchronized (lock) {
+        synchronized (gameSerializedLock) {
             CliPrinter.printPowerups(out, getPowerUps().toArray(PowerupCard[]::new));
         }
     }
