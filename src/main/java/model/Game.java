@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Random;
 
 public class Game implements Serializable {
-    public static final String TERMINATOR_USERNAME = "bot";
+    public static final String BOT = "bot";
     public static final String GOD = "god";
     private static final int MAX_KILLSHOT = 8;
     private static final long serialVersionUID = -7643292361816314018L;
@@ -122,13 +122,13 @@ public class Game implements Serializable {
     }
 
     /**
-     * Method that reloads the only transient attribute of the {@link model.player.Terminator Terminator} that are his points
+     * Method that reloads the only transient attribute of the {@link Bot Terminator} that are his points
      *
-     * @param notTransientPlayers ArrayList of objects containing also the information for the {@link model.player.Terminator Terminator}'s old state
+     * @param notTransientPlayers ArrayList of objects containing also the information for the {@link Bot Terminator}'s old state
      */
     private void loadTransientTerminator(ArrayList<NotTransientPlayer> notTransientPlayers) {
         for(NotTransientPlayer notTransientPlayer : notTransientPlayers) {
-            if(notTransientPlayer.getUserName().equals(Game.TERMINATOR_USERNAME)) {
+            if(notTransientPlayer.getUserName().equals(Game.BOT)) {
                 terminator.setPoints(notTransientPlayer.getPoints());
             }
         }
@@ -386,7 +386,7 @@ public class Game implements Serializable {
      * Method to spawn the terminator, separated as it can be spawned after the spawn of the players
      */
     public void buildTerminator() {
-        this.terminator = new Terminator(firstColorUnused(), new PlayerBoard());
+        this.terminator = new Bot(firstColorUnused(), new PlayerBoard());
     }
 
     /**

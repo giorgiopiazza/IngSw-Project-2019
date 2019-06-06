@@ -15,11 +15,11 @@ import model.actions.*;
 import model.cards.PowerupCard;
 
 import model.map.Square;
+import model.player.Bot;
 import model.player.UserPlayer;
 import network.message.*;
 import utility.persistency.SaveGame;
 
-import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -85,7 +85,7 @@ public class RoundManager {
     }
 
     /**
-     * Method that handles the FirstSpawn of the {@link model.player.Terminator Terminator}, performed by the First
+     * Method that handles the FirstSpawn of the {@link Bot Terminator}, performed by the First
      * {@link UserPlayer Player} that starts the {@link Game Game}
      *
      * @param spawnRequest the {@link TerminatorSpawnRequest TerminatorSpawnRequest} received
@@ -742,7 +742,7 @@ public class RoundManager {
     }
 
     /**
-     * Method that handles the Respawn of the {@link model.player.Terminator Terminatore} performed by the TurnOwner
+     * Method that handles the Respawn of the {@link Bot Terminatore} performed by the TurnOwner
      *
      * @param respawnRequest the {@link TerminatorSpawnRequest TerminatorRespawnRequest} received
      * @return a positive or negative {@link Response Response} handled by the server

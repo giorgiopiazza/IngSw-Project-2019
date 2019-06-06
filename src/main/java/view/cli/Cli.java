@@ -1,11 +1,9 @@
 package view.cli;
 
-import controller.ClientRoundManager;
+import controller.ClientGameManager;
 import enumerations.*;
 import exceptions.actions.PowerupCardsNotFoundException;
 import exceptions.actions.WeaponCardsNotFoundException;
-import exceptions.player.ClientRoundManagerException;
-import exceptions.player.PlayerNotFoundException;
 import model.GameSerialized;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
@@ -18,48 +16,17 @@ import utility.*;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class Cli implements ClientUpdateListener {
-    private final Object gameSerializedLock = new Object();       // serve per gestire il parallelismo sull'oggetto gameSerialized
-    private final Object waiter = new Object();     // need to wait for action
-
+public class Cli extends ClientGameManager {
     private Client client;
     private Scanner in;
     private AdrenalinePrintStream out;
-    private String username;
-    private PlayerColor playerColor;
-    private GameSerialized gameSerialized;
-    private int timerTime;
-
-    private Timer timer;
-    private TimerTask timerTask;
-    private ClientUpdater clientUpdater;
-
-    private boolean started;
-    private boolean finished;
-    private List<Player> winners;
-    private Player firstPlayer; //the first player to play
-
-    private boolean isTerminator; //terminator in this game
-    private boolean terminatorMoved; //terminator already move in the current round
-    private boolean firstRound;
-    private boolean yourRound; //set to true when receive message that is my round
-
-    private ClientRoundManager roundManager; //manage the rounds of this client
-    private List<PossibleAction> possibleActions; //contains the possible actions for this round in a specific UserPlayerState
 
     public Cli() {
+        super();
         this.in = new Scanner(System.in);
         this.out = new AdrenalinePrintStream();
-        this.timerTime = 0;
-        this.started = false;
-        this.finished = false;
-        this.firstRound = true;
-        this.yourRound = false;
-        this.terminatorMoved = false;
     }
 
     /**
@@ -72,58 +39,12 @@ public class Cli implements ClientUpdateListener {
         askColor();
         askLobbyJoin();
 
-        clientUpdater = new ClientUpdater(client, this, waiter);
-
-
-        timer = new Timer();
-        timerTask = new LobbyTimer(() -> {
-            boolean start;
-
-            synchronized (gameSerializedLock) {
-                start = this.started;
-            }
-
-            if (start) {
-                timer.cancel();
-                startGame();
-            }
-        });
-        timer.schedule(timerTask, 1000, 1000);
+        startWaiter(client, this);
     }
 
-    private void startGame() {
-        // TODO:  terminator present
-        roundManager = new ClientRoundManager((UserPlayer) getPlayer(username), false);
-
-        while (!Thread.currentThread().isInterrupted()) {
-            try {
-                if (firstRound) { // first round
-                    if (firstPlayer.getUsername().equals(username)) { // first player to play
-                        out.println("You are the first player");
-                        yourRound = true;
-                    } else { // other players
-                        out.println("The first player is: " + firstPlayer.getUsername());
-                    }
-                    firstRound = false;
-                }
-
-                if (yourRound) { // if the first round
-                    playRound();
-                } else {
-                    out.println("Wait for your turn...");
-                    out.println();
-                    // wait while ClientUpdater receive something
-                    synchronized (waiter) {
-                        waiter.wait();
-                    }
-                }
-            } catch (InterruptedException e) {
-                Logger.getGlobal().severe(e.getMessage());
-                Thread.currentThread().interrupt();
-            }
-        }
-    }
-
+    /**
+     * Prints Adrenaline Logo
+     */
     private void printLogo() {
         String adrenalineLogo = "             _____   _____   _______ _   _            _       _  _   _  _______\n" +
                 "      /\\    |  __ \\ |  __ \\ |  ____/| \\ | |    /\\    | |     | || \\ | ||  ____/\n" +
@@ -137,6 +58,9 @@ public class Cli implements ClientUpdateListener {
         out.println(adrenalineLogo);
     }
 
+    /**
+     * Asks the username
+     */
     private void askUsername() {
         boolean validUsername = false;
         boolean firstError = true;
@@ -147,11 +71,11 @@ public class Cli implements ClientUpdateListener {
             out.print(">>> ");
 
             if (in.hasNextLine()) {
-                username = in.nextLine();
+                setUsername(in.nextLine());
 
-                if (username.equals("") ||
-                        username.equalsIgnoreCase("god") ||
-                        username.equalsIgnoreCase("bot")) {
+                if (getUsername().equals("") ||
+                        getUsername().equalsIgnoreCase("god") ||
+                        getUsername().equalsIgnoreCase("bot")) {
                     firstError = promptInputError(firstError, "Invalid username!");
                 } else {
                     validUsername = true;
@@ -162,15 +86,18 @@ public class Cli implements ClientUpdateListener {
             }
         } while (!validUsername);
 
-        clearConsole();
+        CliPrinter.clearConsole(out);
     }
 
+    /**
+     * Asks the connection tpye
+     */
     private void askConnection() {
         boolean validConnection = false;
         boolean firstError = true;
         int connection = -1;
 
-        out.printf("Hi %s!%n", username);
+        out.printf("Hi %s!%n", getUsername());
         out.println("\nEnter the connection type (0 = Sockets or 1 = RMI):");
 
         do {
@@ -191,7 +118,7 @@ public class Cli implements ClientUpdateListener {
             }
         } while (!validConnection);
 
-        clearConsole();
+        CliPrinter.clearConsole(out);
 
         if (connection == 0) {
             out.println("You chose Socket connection\n");
@@ -207,9 +134,9 @@ public class Cli implements ClientUpdateListener {
 
         try {
             if (connection == 0) {
-                client = new ClientSocket(username, address, port);
+                client = new ClientSocket(getUsername(), address, port);
             } else {
-                client = new ClientRMI(username, address, port);
+                client = new ClientRMI(getUsername(), address, port);
             }
 
             startConnection();
@@ -218,6 +145,11 @@ public class Cli implements ClientUpdateListener {
         }
     }
 
+    /**
+     * Asks and verify the address
+     *
+     * @return a verified address
+     */
     private String askAddress() {
         String address;
         boolean firstError = true;
@@ -244,6 +176,12 @@ public class Cli implements ClientUpdateListener {
         } while (true);
     }
 
+    /**
+     * Asks and verify the port
+     *
+     * @param connection type to set the default port
+     * @return a verified port
+     */
     private int askPort(int connection) {
         boolean firstError = true;
 
@@ -273,8 +211,13 @@ public class Cli implements ClientUpdateListener {
         } while (true);
     }
 
+    /**
+     * Starts a connection with the server
+     *
+     * @throws Exception if communication with server fails
+     */
     private void startConnection() throws Exception {
-        clearConsole();
+        CliPrinter.clearConsole(out);
         client.startConnection();
         List<Message> messages;
 
@@ -293,7 +236,7 @@ public class Cli implements ClientUpdateListener {
                     out.println();
                     break;
                 } else {
-                    out.println("Connected to " + client.getAddress() + ":" + client.getPort() + " with username " + username);
+                    out.println("Connected to " + client.getAddress() + ":" + client.getPort() + " with username " + getUsername());
                     client.setToken(response.getNewToken());
                     connected = true;
                 }
@@ -303,6 +246,9 @@ public class Cli implements ClientUpdateListener {
         if (!connected) askUsername();
     }
 
+    /**
+     * Asks a color
+     */
     private void askColor() {
         boolean validColor = false;
         boolean firstError = true;
@@ -347,9 +293,12 @@ public class Cli implements ClientUpdateListener {
         } while (!validColor);
 
         out.printf("%nYou picked %s color.%n", playercolor.name());
-        this.playerColor = playercolor;
+        setPlayerColor(playercolor);
     }
 
+    /**
+     * @return the list of unused colors
+     */
     private List<PlayerColor> getUnusedColors() {
         List<Message> messages;
         List<PlayerColor> availableColors = new ArrayList<>();
@@ -375,11 +324,14 @@ public class Cli implements ClientUpdateListener {
         return availableColors;
     }
 
+    /**
+     * Asks to the server the join to the lobby
+     */
     private void askLobbyJoin() {
         List<Message> messages;
 
         try {
-            client.sendMessage(MessageBuilder.buildGetInLobbyMessage(client.getToken(), username, playerColor));
+            client.sendMessage(MessageBuilder.buildGetInLobbyMessage(client.getToken(), getUsername(), getPlayerColor()));
         } catch (IOException e) {
             promptError(e.getMessage(), true);
         }
@@ -392,7 +344,7 @@ public class Cli implements ClientUpdateListener {
             if (message.getContent().equals(MessageContent.RESPONSE)) {
                 Response response = (Response) message;
 
-                clearConsole();
+                CliPrinter.clearConsole(out);
                 out.println(response.getMessage());
                 if (response.getStatus() == MessageStatus.ERROR) {
                     out.println();
@@ -402,11 +354,13 @@ public class Cli implements ClientUpdateListener {
         }
     }
 
-    private void clearConsole() {
-        out.print("\033[H\033[2J");
-        out.flush();
-    }
-
+    /**
+     * Prompts an input error
+     *
+     * @param firstError   {@code true} if it's the first error made
+     * @param errorMessage the error message
+     * @return {@code false} meaning that this isn't the first error
+     */
     private boolean promptInputError(boolean firstError, String errorMessage) {
         out.print(AnsiCode.CLEAR_LINE);
         if (!firstError) {
@@ -417,10 +371,16 @@ public class Cli implements ClientUpdateListener {
         return false;
     }
 
-    private void promptError(String error, boolean close) {
-        clearConsole();
+    /**
+     * Prompts a generic error
+     *
+     * @param errorMessage the error message
+     * @param close        {@code true} if you want to close the shell
+     */
+    private void promptError(String errorMessage, boolean close) {
+        CliPrinter.clearConsole(out);
 
-        out.println("ERROR: " + error);
+        out.println("ERROR: " + errorMessage);
 
         if (close) {
             out.println("\nPress ENTER to exit");
@@ -429,168 +389,17 @@ public class Cli implements ClientUpdateListener {
         }
     }
 
-    private void doSomething() throws InterruptedException {
-
-    }
-
-    /**
-     * Play the entire round of this player
-     */
-    private void playRound() {
-        do {
-            makeMove();
-        } while (roundManager.roundEnded());
-    }
-
-    /**
-     *
-     */
-    private void makeMove() {
-        // TODO: player is dead
-        boolean reloaded;
-        boolean terminatorMove;
-        switch (roundManager.getPlayerState()) {
-            case SPAWN:
-                roundManager.beginRound((UserPlayer) getPlayer(username));
-                spawn();
-                roundManager.nextMove((UserPlayer) getPlayer(username), false);
-
-                break;
-
-            case BEGIN:
-
-                terminatorMove = askTerminator();
-                roundManager.nextMove((UserPlayer) getPlayer(username), false, terminatorMove);
-                this.terminatorMoved = terminatorMove;
-                break;
-
-            case FIRST_MOVE:
-            case SECOND_MOVE:
-                reloaded = firstSecondMove();
-                terminatorMove = askTerminator();
-                roundManager.nextMove((UserPlayer) getPlayer(username), reloaded, terminatorMove);
-                break;
-
-            case TERMINATOR_MOVE:
-                // TODO: move of terminator
-                break;
-
-            case END:
-                // TODO: end round
-                terminatorMoved = false;
-                roundManager.endRound();
-                break;
-
-            default:
-                throw new ClientRoundManagerException("Cannot be here");
-        }
-    }
-
-    /**
-     * Causes the user to perform all the moves it can make in this stage of this round
-     *
-     * @return true if player reload his weapons, otherwise false
-     */
-    private boolean firstSecondMove() {
-        possibleActions = roundManager.possibleActions();
-        boolean reload = false;
-
-        switch (askActions(false)) {
-            case MOVE:
-                actionMove();
-                break;
-            case MOVE_AND_PICK:
-                actionMoveAndPick();
-                break;
-            case SHOOT:
-                actionShoot();
-                break;
-            case RELOAD:
-                actionReload();
-                reload = true;
-                break;
-            case ADRENALINE_PICK:
-                // TODO
-                break;
-            case ADRENALINE_SHOOT:
-                // TODO
-                break;
-            case FRENZY_MOVE:
-                // TODO
-                break;
-            case FRENZY_PICK:
-                // TODO
-                break;
-            case FRENZY_SHOOT:
-                // TODO
-                break;
-            case LIGHT_FRENZY_PICK:
-                // TODO
-                break;
-            case LIGHT_FRENZY_SHOOT:
-                // TODO
-                break;
-
-            default:
-                throw new ClientRoundManagerException("cannot be here");
-        }
-
-        if (reload) {
-            switch (askActions(true)) {
-                case MOVE:
-                    actionMove();
-                    break;
-                case MOVE_AND_PICK:
-                    actionMoveAndPick();
-                    break;
-                case SHOOT:
-                    actionShoot();
-                    break;
-                case ADRENALINE_PICK:
-                    // TODO
-                    break;
-                case ADRENALINE_SHOOT:
-                    // TODO
-                    break;
-                case FRENZY_MOVE:
-                    // TODO
-                    break;
-                case FRENZY_PICK:
-                    // TODO
-                    break;
-                case FRENZY_SHOOT:
-                    // TODO
-                    break;
-                case LIGHT_FRENZY_PICK:
-                    // TODO
-                    break;
-                case LIGHT_FRENZY_SHOOT:
-                    // TODO
-                    break;
-
-                default:
-                    throw new ClientRoundManagerException("cannot be here");
-            }
-        }
-
-        return reload;
-    }
-
-    private Message actionReload() {
-        Message message = null;
-
+    @Override
+    public void reload() {
         try {
-            message = MessageBuilder.buildReloadRequest(client.getToken(), (UserPlayer) getPlayer(username), askWeapon());
-            client.sendMessage(message);
+            client.sendMessage(MessageBuilder.buildReloadRequest(client.getToken(), getPlayer(), askWeapon()));
         } catch (IOException | WeaponCardsNotFoundException e) {
             promptError(e.getMessage(), true);
         }
-
-        return message;
     }
 
     private WeaponCard askWeapon() {
-        UserPlayer player = (UserPlayer) getPlayer(username);
+        UserPlayer player = getPlayer();
         WeaponCard[] weapons = player.getWeapons();
         int choose;
 
@@ -605,21 +414,51 @@ public class Cli implements ClientUpdateListener {
         return weapons[choose - 1];
     }
 
-    private Message actionShoot() {
-        Message message = null;
+    @Override
+    public void shoot() {
         printMap();
 
         WeaponCard weapon = askWeapon();
         int effect = askWeaponEffect(weapon);
 
         try {
-            message = MessageBuilder.buildShootRequest(client.getToken(), (UserPlayer) getPlayer(username), weapon, effect);
-            client.sendMessage(message);
+            client.sendMessage(MessageBuilder.buildShootRequest(client.getToken(), getPlayer(), weapon, effect));
         } catch (IOException | WeaponCardsNotFoundException e) {
             promptError(e.getMessage(), true);
         }
+    }
 
-        return message;
+    @Override
+    public void moveAndPick() {
+        printMap();
+
+        // todo: porco dio devo accattarmi se è una weapon, se può essere pagata con il mana e tutte ste menate... amen, se deve pickuppare un powerup o salcazzo cos'altro
+    }
+
+    @Override
+    public void move() {
+        printMap();
+
+        try {
+            client.sendMessage(MessageBuilder.buildMoveRequest(client.getToken(), getPlayer(), getCoordinates()));
+        } catch (IOException e) {
+            promptError(e.getMessage(), true);
+        }
+    }
+
+    @Override
+    public void spawn() {
+        printPowerups();
+
+        PowerupCard powerupCard = askPowerupSpawn();
+        List<PowerupCard> powerupCards = getPowerups();
+
+        try {
+            client.sendMessage(MessageBuilder.buildDiscardPowerupRequest(client.getToken(), powerupCards, powerupCard, getUsername()));
+        } catch (IOException | PowerupCardsNotFoundException e) {
+            promptError(e.getMessage(), true);
+        }
+
     }
 
     private int askWeaponEffect(WeaponCard weapon) {
@@ -627,67 +466,38 @@ public class Cli implements ClientUpdateListener {
         return readInt();
     }
 
-    private Message actionMoveAndPick() {
-        Message message;
+    @Override
+    public void firstPlayerCommunication(String username) {
+        if (username.equals(getUsername())) {
+            out.println("You are the first player");
+        } else {
+            out.println("The first player is: " + getFirstPlayer().getUsername());
+        }
+    }
+
+    @Override
+    public void waitTurn() {
+        out.println("Wait for your turn...");
+        out.println();
+    }
+
+    @Override
+    public void gameStateUpdate(GameSerialized gameSerialized) {
         printMap();
-
-        // todo: porco dio devo accattarmi se è una weapon, se può essere pagata con il mana e tutte ste menate... amen, se deve pickuppare un powerup o salcazzo cos'altro
-
-        return null;
-    }
-
-    private Message actionMove() {
-        Message message;
-        printMap();
-
-        message = MessageBuilder.buildMoveRequest(client.getToken(), getPlayer(username), getCoordinates());
-
-        try {
-            client.sendMessage(message);
-        } catch (IOException e) {
-            promptError(e.getMessage(), true);
-        }
-
-        return message;
-    }
-
-    private void spawn() {
-        printPowerUps();
-
-        PowerupCard powerupCard = askPowerUpSpawn();
-        List<PowerupCard> powerupCards = getPowerUps();
-
-        try {
-            client.sendMessage(MessageBuilder.buildDiscardPowerupRequest(client.getToken(), powerupCards, powerupCard, username));
-        } catch (IOException | PowerupCardsNotFoundException e) {
-            promptError(e.getMessage(), true);
-        }
-
-    }
-
-    private void printMap() {
-        synchronized (gameSerializedLock) {
-            CliPrinter.printMap(out, gameSerialized);
-        }
-    }
-
-    private void printPowerUps() {
-        synchronized (gameSerializedLock) {
-            CliPrinter.printPowerups(out, getPowerUps().toArray(PowerupCard[]::new));
-        }
+        out.println();
+        printPlayerBoard();
     }
 
     /**
      * This method asks the user what move he wants to make in this stage of the round, he even asks him if he wants to print to video the map, the player boards, his weapons and his mana.
      * This method returns the choice made by the user, if the choice is a print, the user is asked again what he wants to do until he chooses an action
      *
-     * @param withoutReload if true, it removes the possibility of reload from the user's choices
      * @return the PossibleAction chosen by the user
      */
-    private PossibleAction askActions(boolean withoutReload) {
+    @Override
+    public PossibleAction askAction() {
         int choose;
-
-        if (withoutReload) possibleActions.remove(PossibleAction.RELOAD);
+        List<PossibleAction> possibleActions = getPossibleActions();
 
         out.println("Choose the next move:");
 
@@ -701,14 +511,8 @@ public class Cli implements ClientUpdateListener {
         return possibleActions.get(choose - 1);
     }
 
-    private List<PowerupCard> getPowerUps() {
-        synchronized (gameSerializedLock) {
-            return gameSerialized.getPowerUps();
-        }
-    }
-
-    private PowerupCard askPowerUpSpawn() {
-        List<PowerupCard> powerups = getPowerUps();
+    private PowerupCard askPowerupSpawn() {
+        List<PowerupCard> powerups = getPowerups();
 
         out.println();
         out.println("Where do you want to spawn?");
@@ -750,7 +554,7 @@ public class Cli implements ClientUpdateListener {
 
         if (in.hasNextLine()) in.nextLine();
 
-        out.println("Write the new coordinates " + (getPlayer(username).isDead() ? "(0,0)" : getPlayer(username).getPosition()) + ":");
+        out.println("Write the new coordinates " + (getPlayer().isDead() ? "(0,0)" : getPlayer().getPosition()) + ":");
         do {
             out.print(">>> ");
 
@@ -776,85 +580,37 @@ public class Cli implements ClientUpdateListener {
     }
 
     @Override
-    public void onUpdate(List<Message> messages) {
-        for (Message message : messages) {
-            out.println(message);
-
-            switch (message.getContent()) {
-                case RESPONSE:
-                    Response response = (Response) message;
-                    if (response.getStatus().equals(MessageStatus.ERROR)) {
-                        // TODO: torno indietro con la macchina a stati
-                        // Sei uno stronzo
-                    } else {
-                        // TODO: vado avanti con la macchina a stati
-                    }
-                    break;
-
-                case GAME_STATE:
-                    GameStateMessage stateMessage = (GameStateMessage) message;
-                    out.println();
-                    synchronized (gameSerializedLock) {
-                        // TODO: CONTROLLO CAMBIO TURN OWNER
-                        gameSerialized = stateMessage.getGameSerialized();
-                        CliPrinter.printMap(out, gameSerialized);
-                        out.println();
-                        CliPrinter.printPlayerBoards(out, gameSerialized);
-                    }
-                    break;
-
-                case READY:
-                    GameStartMessage gameStartMessage = (GameStartMessage) message;
-                    synchronized (gameSerializedLock) {
-                        firstPlayer = getPlayer(gameStartMessage.getFirstPlayer());
-                        isTerminator = gameSerialized.isTerminatorPresent();
-                        started = true;
-                    }
-                    break;
-
-                case LAST_RESPONSE:
-                    WinnersResponse winnersList = (WinnersResponse) message;
-                    synchronized (gameSerializedLock) {
-                        this.finished = true;
-                        this.winners = winnersList.getWinners();
-                    }
-                    break;
-
-                case DISCONNECTION:
-                    break;
-
-                default:
-            }
-
-            Logger.getGlobal().log(Level.INFO, "{0}", message);
+    public boolean askBotMove() {
+        if (!getUserPlayerState().equals(UserPlayerState.SECOND_ACTION)) {
+            //TODO: do you want to move terminator now?
+        } else {
+            //TODO: you must move terminator the next move
         }
+
+        return true;
     }
 
-    private Terminator getTerminator() {
-        synchronized (gameSerializedLock) {
-            return gameSerialized.getTerminator();
-        }
-    }
-
-    private Player getPlayer(String username) {
-        synchronized (gameSerializedLock) {
-            Player player = gameSerialized.getPlayers().stream().filter(p -> p.getUsername().equals(username)).findFirst().orElse(null);
-            if (player == null) throw new PlayerNotFoundException("player not found, cannot continue with the game");
-            return player;
-        }
-    }
-
-    private boolean askTerminator() {
-        if (roundManager.terminatorPresent() && !roundManager.terminatorMoved() && !terminatorMoved) {
-            if (!roundManager.getPlayerState().equals(UserPlayerState.SECOND_MOVE)) {
-                //TODO: do you want to move terminator now?
-            } else {
-                //TODO: you must move terminator the next move
-            }
-            return true;
-        }
-
+    @Override
+    public boolean askReload() {
         return false;
+    }
+
+    @Override
+    public void botMove() {
+        // TODO
+    }
+
+    private void printMap() {
+        CliPrinter.clearConsole(out);
+        CliPrinter.printMap(out, getGameSerialized());
+    }
+
+    private void printPowerups() {
+        CliPrinter.printPowerups(out, getPowerups().toArray(PowerupCard[]::new));
+    }
+
+    private void printPlayerBoard() {
+        CliPrinter.printPlayerBoards(out, getGameSerialized());
     }
 
     private int readInt() {

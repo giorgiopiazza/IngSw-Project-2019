@@ -921,4 +921,12 @@ class CliPrinter {
 
         return name + " " + color;
     }
+
+    /**
+     * Clears the console
+     */
+    public static void clearConsole(AdrenalinePrintStream out) {
+        out.print("\033[H\033[2J");
+        out.flush();
+    }
 }

@@ -288,20 +288,20 @@ public class MessageBuilder {
 
     @NotNull
     @Contract("_, null, _ -> fail; _, !null, null -> fail; _, !null, !null -> new")
-    public static TerminatorSpawnRequest buildTerminatorSpawnRequest(String token, Terminator terminator, Square spawnSquare) {
-        if (terminator == null || spawnSquare == null)
+    public static TerminatorSpawnRequest buildTerminatorSpawnRequest(String token, Bot bot, Square spawnSquare) {
+        if (bot == null || spawnSquare == null)
             throw new NullPointerException("terminator and spawnSquare cannot be null");
 
-        return new TerminatorSpawnRequest(terminator.getUsername(), token, spawnSquare.getRoomColor());
+        return new TerminatorSpawnRequest(bot.getUsername(), token, spawnSquare.getRoomColor());
     }
 
     @NotNull
     @Contract("_, null, _, _ -> fail; _, !null, null, _ -> fail; _, !null, !null, null -> fail; _, !null, !null, !null -> new")
-    public static UseTerminatorRequest buildUseTerminatorRequest(String token, Terminator terminator, PlayerPosition newPos, UserPlayer target) {
-        if (terminator == null || newPos == null || target == null)
+    public static UseTerminatorRequest buildUseTerminatorRequest(String token, Bot bot, PlayerPosition newPos, UserPlayer target) {
+        if (bot == null || newPos == null || target == null)
             throw new NullPointerException("Terminator, newPos and target cannot be null");
 
-        return new UseTerminatorRequest(terminator.getUsername(), token, newPos, target.getUsername());
+        return new UseTerminatorRequest(bot.getUsername(), token, newPos, target.getUsername());
     }
 
     private static List<Integer> powerupListToIndexes(@NotNull UserPlayer player, List<PowerupCard> powerupCards) {

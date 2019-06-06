@@ -10,7 +10,7 @@ import model.cards.PowerupCard;
 import model.player.KillShot;
 import model.player.Player;
 import model.player.PlayerBoard;
-import model.player.Terminator;
+import model.player.Bot;
 import model.player.UserPlayer;
 import network.message.*;
 import network.server.Server;
@@ -169,7 +169,7 @@ public class GameManager implements TimerRunListener, Serializable {
 
     /**
      * This method handles both the extemporary usage of a powerup like: TAGBACK GRANADE or TARGETING SCOPE and the
-     * Respawn actions of the {@link Terminator Terminator} and {@link UserPlayer UserPlayer}
+     * Respawn actions of the {@link Bot Terminator} and {@link UserPlayer UserPlayer}
      *
      * @param receivedMessage the {@link Message Message} received
      * @return a positive or negative {@link Response Response} in case that one of the cases is matched; default case
@@ -196,7 +196,7 @@ public class GameManager implements TimerRunListener, Serializable {
 
     /**
      * This method handles the very first round of a {@link Game Game}; in this state {@link UserPlayer players}, need
-     * to spawn before starting acting. Remember that if the {@link Terminator Terminator} is present, the first
+     * to spawn before starting acting. Remember that if the {@link Bot Terminator} is present, the first
      * {@link UserPlayer UserPlayer} is the one who spawns it and this must be done before spawning itself
      *
      * @param receivedMessage the {@link Message Message} received
@@ -266,7 +266,7 @@ public class GameManager implements TimerRunListener, Serializable {
     }
 
     /**
-     * Method that checks and execute the methods related to the Respawn of the {@link Terminator Terminator}
+     * Method that checks and execute the methods related to the Respawn of the {@link Bot Terminator}
      *
      * @param receivedMessage the {@link Message Message} received
      * @return a positive or negative {@link Response Response} handled by the server
@@ -331,7 +331,7 @@ public class GameManager implements TimerRunListener, Serializable {
     }
 
     /**
-     * Method that checks and executes the FirstSpawn of the {@link Terminator Terminator}
+     * Method that checks and executes the FirstSpawn of the {@link Bot Terminator}
      *
      * @param receivedMessage the {@link Message Message} received
      * @return a positive or negative {@link Response Response} handled by the server
@@ -727,7 +727,7 @@ public class GameManager implements TimerRunListener, Serializable {
 
     /**
      * Method that flips all the PlayerBoards in the FinalFrenzy if needed to all {@link UserPlayer UserPlayers} and also
-     * {@link Terminator Terminator}
+     * {@link Bot Terminator}
      */
     private void finalFrenzySetup() {
         // boards flipping setup
@@ -817,11 +817,11 @@ public class GameManager implements TimerRunListener, Serializable {
      */
     private void handleLastPointsDistribution() {
         List<UserPlayer> players = gameInstance.getPlayers();
-        Terminator terminator = (Terminator) gameInstance.getTerminator();
+        Bot bot = (Bot) gameInstance.getTerminator();
 
-        if (gameInstance.isTerminatorPresent() && terminator.getPlayerBoard().getDamageCount() > 0) {
+        if (gameInstance.isTerminatorPresent() && bot.getPlayerBoard().getDamageCount() > 0) {
             // in the last distribution each damaged player counts as a dead one to calculate points
-            distributePoints(terminator);
+            distributePoints(bot);
         }
 
         for (UserPlayer player : players) {

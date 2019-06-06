@@ -3,7 +3,7 @@ package utility.persistency;
 import controller.GameManager;
 import controller.TurnManager;
 import model.Game;
-import model.player.Terminator;
+import model.player.Bot;
 import model.player.UserPlayer;
 
 import java.io.Serializable;
@@ -44,7 +44,7 @@ public class PersistencyClass implements Serializable {
         }
 
         if(gameSaved.isTerminatorPresent()) {
-            notTransientPlayers.add(new NotTransientPlayer((Terminator) gameSaved.getTerminator()));
+            notTransientPlayers.add(new NotTransientPlayer((Bot) gameSaved.getTerminator()));
         }
 
         return notTransientPlayers;

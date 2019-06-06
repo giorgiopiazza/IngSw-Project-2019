@@ -22,7 +22,7 @@ public class Server implements Runnable {
     private static final int RMI_PORT = 7272;
 
     private static final int MAX_CLIENT = 5;
-    private static final String[] FORBIDDEN_USERNAME = {Game.GOD, Game.TERMINATOR_USERNAME};
+    private static final String[] FORBIDDEN_USERNAME = {Game.GOD, Game.BOT};
 
     private Map<String, Connection> clients;
 

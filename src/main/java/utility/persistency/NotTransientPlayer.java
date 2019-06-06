@@ -3,7 +3,7 @@ package utility.persistency;
 import enumerations.PossibleAction;
 import enumerations.PossiblePlayerState;
 import model.cards.PowerupCard;
-import model.player.Terminator;
+import model.player.Bot;
 import model.player.UserPlayer;
 
 import java.io.Serializable;
@@ -33,9 +33,9 @@ public class NotTransientPlayer implements Serializable {
         this.spawningCard = userPlayer.getSpawningCard();
     }
 
-    public NotTransientPlayer(Terminator terminator) {
-        this.userName = terminator.getUsername();
-        this.points = terminator.getPoints();
+    public NotTransientPlayer(Bot bot) {
+        this.userName = bot.getUsername();
+        this.points = bot.getPoints();
     }
 
     public String getUserName() {

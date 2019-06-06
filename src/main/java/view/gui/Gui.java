@@ -116,7 +116,7 @@ public class Gui extends Application {
         TextField portField = (TextField) scene.lookup("#portField");
 
         boolean isUsernameValid = !usernameField.getText().equalsIgnoreCase(Game.GOD) &&
-                !usernameField.getText().equalsIgnoreCase(Game.TERMINATOR_USERNAME) &&
+                !usernameField.getText().equalsIgnoreCase(Game.BOT) &&
                 !usernameField.getText().equals("");
 
         boolean isAddressValid = ServerAddressValidator.isAddressValid(addressField.getText());
