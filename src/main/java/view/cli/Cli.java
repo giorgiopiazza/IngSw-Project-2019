@@ -331,7 +331,7 @@ public class Cli extends ClientGameManager {
         List<Message> messages;
 
         try {
-            client.sendMessage(MessageBuilder.buildGetInLobbyMessage(client.getToken(), getUsername(), getPlayerColor()));
+            client.sendMessage(MessageBuilder.buildGetInLobbyMessage(client.getToken(), getUsername(), getPlayerColor(), false));
         } catch (IOException e) {
             promptError(e.getMessage(), true);
         }

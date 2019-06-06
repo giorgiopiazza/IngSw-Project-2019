@@ -42,8 +42,8 @@ public class MessageBuilder {
 
     @NotNull
     @Contract("_, _, _ -> new")
-    public static LobbyMessage buildGetInLobbyMessage(String token, String username, PlayerColor color) {
-        return new LobbyMessage(username, token, MessageContent.GET_IN_LOBBY, color);
+    public static LobbyMessage buildGetInLobbyMessage(String token, String username, PlayerColor color, boolean disconnection) {
+        return new LobbyMessage(username, token, color, disconnection);
     }
 
     /**

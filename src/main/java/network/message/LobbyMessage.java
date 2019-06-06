@@ -7,16 +7,21 @@ import java.util.Objects;
 
 public class LobbyMessage extends Message {
     private PlayerColor chosenColor;
+    private boolean disconnection;
 
-    public LobbyMessage(String username, String token, MessageContent messageContent, PlayerColor chosenColor) {
-        // message content can only be GET_IN_LOBBY or DISCONNECTION
-        super(username, token, messageContent);
+    public LobbyMessage(String username, String token, PlayerColor chosenColor, boolean disconnection) {
+        super(username, token, MessageContent.GET_IN_LOBBY);
 
         this.chosenColor = chosenColor;
+        this.disconnection = disconnection;
     }
 
     public PlayerColor getChosenColor() {
         return chosenColor;
+    }
+
+    public boolean isDisconnection() {
+        return this.disconnection;
     }
 
     // a Lobby message is equal to an other (in our case) if its the same message or if it has the same user sender name
