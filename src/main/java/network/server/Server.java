@@ -149,6 +149,7 @@ public class Server implements Runnable {
                 }
             } else {
                 if (clients.keySet().size() == MAX_CLIENT) { // Max players
+                    // TODO FIX THIS
                     connection.sendMessage(
                             new ConnectionResponse("Max number of player reached", null, MessageStatus.ERROR)
                     );

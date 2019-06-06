@@ -16,83 +16,43 @@ import network.client.Client;
 import network.client.ClientUpdateListener;
 import network.client.ClientUpdater;
 import network.message.*;
-import utility.LobbyTimer;
 
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public abstract class ClientGameManager implements ClientGameManagerListener, ClientUpdateListener {
+public abstract class ClientGameManager implements ClientGameManagerListener, ClientUpdateListener, Runnable {
+    private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
+
     private final Object gameSerializedLock = new Object(); // handles GameSerialized parallelism
-    private final Object waiter = new Object();     // need to wait for action
 
     private ClientRoundManager roundManager; //manage the rounds of this client
-
     private GameSerialized gameSerialized;
-
 
     private String username;
     private PlayerColor playerColor;
 
     private boolean started;
-    private boolean finished;
-    private List<Player> winners;
-    private Player firstPlayer; //the first player to play
+
+    private Player firstPlayer;
     private boolean firstRound;
-    private boolean yourRound; //set to true when receive message that is my round
-    private boolean botPresent;
+    private boolean yourRound;
+
+    private boolean isBotPresent;
+    private boolean wantMoveBot;
 
     public ClientGameManager() {
         this.firstRound = true;
+        new Thread(this).start();
     }
 
-    public void startWaiter(Client client, ClientUpdateListener clientUpdateListener) {
-        new ClientUpdater(client, clientUpdateListener, waiter);
-
-
-        Timer timer = new Timer();
-        TimerTask timerTask = new LobbyTimer(() -> {
-            boolean start;
-
-            synchronized (gameSerializedLock) {
-                start = this.started;
-            }
-
-            if (start) {
-                timer.cancel();
-                startGame();
-            }
-        });
-        timer.schedule(timerTask, 1000, 1000);
-    }
-
-    private void startGame() {
-        // TODO:  terminator present
-        roundManager = new ClientRoundManager(getPlayer(), false);
-
+    @Override
+    public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                if (firstRound) { // first round
-                    if (firstPlayer.getUsername().equals(username)) { // first player to play
-                        yourRound = true;
-                    }
-
-                    firstPlayerCommunication(firstPlayer.getUsername());
-                    firstRound = false;
-                }
-
-                if (yourRound) { // if the first round
-                    playRound();
-                } else {
-                    waitTurn();
-
-                    // wait while ClientUpdater receive something
-                    synchronized (waiter) {
-                        waiter.wait();
-                    }
-                }
+                queue.take().run();
             } catch (InterruptedException e) {
                 Logger.getGlobal().severe(e.getMessage());
                 Thread.currentThread().interrupt();
@@ -100,13 +60,28 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
     }
 
-    /**
-     * Play the entire round of this player
-     */
-    private void playRound() {
-        do {
+    public void startUpdater(Client client) {
+        new ClientUpdater(client, this);
+    }
+
+    private void startGame() {
+        // TODO:  terminator present
+        roundManager = new ClientRoundManager(getPlayer(), false);
+
+        if (firstRound) { // first round
+            if (firstPlayer.getUsername().equals(username)) { // first player to play
+                yourRound = true;
+            }
+
+            firstPlayerCommunication(firstPlayer.getUsername());
+            firstRound = false;
+        }
+
+        if (yourRound) {
             makeMove();
-        } while (roundManager.roundEnded());
+        } else {
+            notYourTurn();
+        }
     }
 
     private void makeMove() {
@@ -115,27 +90,29 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             case SPAWN:
                 roundManager.beginRound();
                 spawn();
-                handleNextAction();
+                botMoveRequest();
                 break;
 
             case BEGIN:
-                handleNextAction();
+                roundManager.beginRound();
+                botMoveRequest();
                 break;
 
             case FIRST_ACTION:
             case SECOND_ACTION:
                 firstSecondAction();
-                handleNextAction();
+                botMoveRequest();
                 break;
 
             case TERMINATOR_ACTION:
                 // TODO: move of terminator
-                handleNextAction();
+                botMoveRequest();
+
                 break;
 
             case RELOAD:
                 // TODO: Ask Reload
-                handleNextAction();
+                botMoveRequest();
                 break;
             case END:
                 // TODO: end round
@@ -197,62 +174,62 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
     }
 
-    private void handleNextAction() {
+    private void botMoveRequest() {
         if (roundManager.isBotPresent() && !roundManager.hasBotMoved()) {
-            roundManager.nextMove(askBotMove());
+            wantMoveBot = askBotMove();
         } else {
-            roundManager.nextMove();
+            wantMoveBot = false;
         }
     }
 
     @Override
-    public void onUpdate(List<Message> messages) {
-        for (Message message : messages) {
-            switch (message.getContent()) {
-                case RESPONSE:
-                    Response response = (Response) message;
-                    if (response.getStatus().equals(MessageStatus.ERROR)) {
-                        // TODO: torno indietro con la macchina a stati
-                        // Sei uno stronzo
-                    } else {
-                        // TODO: vado avanti con la macchina a stati
-                    }
-                    break;
+    public void onUpdate(Message message) {
+        switch (message.getContent()) {
+            case RESPONSE:
+                Response response = (Response) message;
+                if (response.getStatus().equals(MessageStatus.ERROR)) {
+                    responseError(response.getMessage());
+                } else {
+                    roundManager.nextMove(wantMoveBot);
+                }
 
-                case GAME_STATE:
-                    GameStateMessage stateMessage = (GameStateMessage) message;
-                    synchronized (gameSerializedLock) {
-                        // TODO: CONTROLLO CAMBIO TURN OWNER
-                        gameSerialized = stateMessage.getGameSerialized();
-                        gameStateUpdate(gameSerialized);
-                    }
-                    break;
+                queue.add(this::makeMove);
+                break;
 
-                case READY:
-                    GameStartMessage gameStartMessage = (GameStartMessage) message;
-                    synchronized (gameSerializedLock) {
-                        firstPlayer = getPlayerByName(gameStartMessage.getFirstPlayer());
-                        botPresent = gameSerialized.isBotPresent();
-                        started = true;
-                    }
-                    break;
+            case GAME_STATE:
+                GameStateMessage stateMessage = (GameStateMessage) message;
+                synchronized (gameSerializedLock) {
+                    // TODO: CONTROLLO CAMBIO TURN OWNER
+                    gameSerialized = stateMessage.getGameSerialized();
 
-                case LAST_RESPONSE:
-                    WinnersResponse winnersList = (WinnersResponse) message;
-                    synchronized (gameSerializedLock) {
-                        this.finished = true;
-                        this.winners = winnersList.getWinners();
-                    }
-                    break;
+                    queue.add(() -> gameStateUpdate(gameSerialized));
+                }
+                break;
 
-                case DISCONNECTION:
-                    break;
+            case READY:
+                GameStartMessage gameStartMessage = (GameStartMessage) message;
+                synchronized (gameSerializedLock) {
+                    firstPlayer = getPlayerByName(gameStartMessage.getFirstPlayer());
+                    isBotPresent = gameSerialized.isBotPresent();
 
-                default:
-            }
+                    queue.add(this::startGame);
+                }
+                break;
 
-            Logger.getGlobal().log(Level.INFO, "{0}", message);
+            case LAST_RESPONSE:
+                WinnersResponse winnersList = (WinnersResponse) message;
+                synchronized (gameSerializedLock) {
+                    queue.add(() -> notifyGameEnd(winnersList.getWinners()));
+                }
+                break;
+
+            case DISCONNECTION:
+                break;
+
+            default:
         }
+
+        Logger.getGlobal().log(Level.INFO, "{0}", message);
     }
 
     public UserPlayerState getUserPlayerState() {
@@ -290,7 +267,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             Player player;
 
             if (username.equals(Game.BOT)) {
-                if (botPresent) {
+                if (isBotPresent) {
                     return gameSerialized.getBot();
                 } else {
                     player = null;

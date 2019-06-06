@@ -84,13 +84,6 @@ public class ClientSocket extends Client implements Runnable {
             } catch (ClassNotFoundException e) {
                 // Discard Message
             }
-
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                disconnect();
-            }
         }
     }
 

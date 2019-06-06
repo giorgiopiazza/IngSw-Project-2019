@@ -56,9 +56,6 @@ public class ClientRoundManager {
 
         switch (playerState) {
             case SPAWN:
-                playerState = UserPlayerState.BEGIN;
-                break;
-
             case BEGIN:
                 handleBegin();
                 break;
@@ -98,7 +95,6 @@ public class ClientRoundManager {
     private void handleBegin() {
         if (botPresent && botCanMove) {
             playerState = UserPlayerState.TERMINATOR_FIRST;
-            botCanMove = false;
         } else {
             playerState = UserPlayerState.FIRST_ACTION;
         }

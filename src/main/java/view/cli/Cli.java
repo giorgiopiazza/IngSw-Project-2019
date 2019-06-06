@@ -39,7 +39,7 @@ public class Cli extends ClientGameManager {
         askColor();
         askLobbyJoin();
 
-        startWaiter(client, this);
+        startUpdater(client);
     }
 
     /**
@@ -476,7 +476,7 @@ public class Cli extends ClientGameManager {
     }
 
     @Override
-    public void waitTurn() {
+    public void notYourTurn() {
         out.println("Wait for your turn...");
         out.println();
     }
@@ -486,6 +486,16 @@ public class Cli extends ClientGameManager {
         printMap();
         out.println();
         printPlayerBoard();
+    }
+
+    @Override
+    public void responseError(String error) {
+        promptError(error, false);
+    }
+
+    @Override
+    public void notifyGameEnd(List<Player> winners) {
+        // TODO
     }
 
     /**
