@@ -9,8 +9,8 @@ public class LobbyMessage extends Message {
     private PlayerColor chosenColor;
     private boolean disconnection;
 
-    public LobbyMessage(String username, String token, MessageContent messageContent, PlayerColor chosenColor, boolean disconnection) {
-        super(username, token, messageContent);
+    public LobbyMessage(String username, String token, PlayerColor chosenColor, boolean disconnection) {
+        super(username, token, MessageContent.GET_IN_LOBBY);
 
         this.chosenColor = chosenColor;
         this.disconnection = disconnection;

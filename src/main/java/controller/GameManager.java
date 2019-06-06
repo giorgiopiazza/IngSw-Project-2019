@@ -985,7 +985,7 @@ public class GameManager implements TimerRunListener, Serializable {
         List<UserPlayer> players = gameInstance.getPlayers();
 
         for (UserPlayer player : players) {
-            server.sendMessage(player.getUsername(), new GameStateMessage(player.getUsername()));
+            server.sendMessage(player.getUsername(), new GameStateMessage(player.getUsername(), roundManager.getTurnManager().getTurnOwner().getUsername()));
         }
     }
 
