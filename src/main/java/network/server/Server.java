@@ -228,7 +228,7 @@ public class Server implements Runnable {
 
         if (username != null) {
             sendMessageToAll(new DisconnectionMessage(username));
-            gameManager.onMessage(new LobbyMessage(username, null, MessageContent.DISCONNECTION, null));
+            gameManager.onMessage(new LobbyMessage(username, null, MessageContent.GET_IN_LOBBY, null, true));
             LOGGER.log(Level.INFO, "{0} disconnected from server!", username);
         }
     }

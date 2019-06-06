@@ -514,7 +514,7 @@ public class GameManager implements TimerRunListener, Serializable {
         }
 
         // at this point gme should always be ready to start
-        if (gameInstance.isGameReadyToStart()) {
+        if (gameInstance.isGameReadyToStart()) {    // TODO add here control that before 10s ended someone disconnected from the lobby ?
             startingStateHandler();
         }
         // nothing to do here as we said game should always be ready to start at this point
@@ -555,7 +555,7 @@ public class GameManager implements TimerRunListener, Serializable {
         ArrayList<PlayerColor> unusedColors = lobby.getUnusedColors();
 
         // here time expiration has to be verified
-        if (lobbyMessage.getContent() == MessageContent.GET_IN_LOBBY && !inLobbyPlayers.contains(lobbyMessage)) {
+        if (lobbyMessage.getContent() == MessageContent.GET_IN_LOBBY && !inLobbyPlayers.contains(lobbyMessage) && !lobbyMessage.isDisconnection()) {
             if ((lobby.getTerminatorPresence() && inLobbyPlayers.size() < 4) ||
                     (!lobby.getTerminatorPresence() && inLobbyPlayers.size() < 5) &&
                             lobbyMessage.getChosenColor() != null && unusedColors.contains(lobbyMessage.getChosenColor())) {
@@ -565,7 +565,7 @@ public class GameManager implements TimerRunListener, Serializable {
             } else {
                 return buildInvalidResponse();
             }
-        } else if (lobbyMessage.getContent() == MessageContent.DISCONNECTION && inLobbyPlayers.contains(lobbyMessage)) {
+        } else if (lobbyMessage.getContent() == MessageContent.GET_IN_LOBBY && inLobbyPlayers.contains(lobbyMessage) && lobbyMessage.isDisconnection()) {
             inLobbyPlayers.remove(lobbyMessage);
             removeVote(lobbyMessage.getSenderUsername());
             Server.LOGGER.log(Level.INFO, "{0} left the lobby", lobbyMessage.getSenderUsername());
