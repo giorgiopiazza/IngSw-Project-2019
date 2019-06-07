@@ -38,6 +38,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
     private String firstPlayer;
     private String turnOwner;
+    private boolean turnOwnerChanged = false;
 
     private boolean firstTurn;
     private boolean yourTurn;
@@ -199,6 +200,13 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 }
 
                 queue.add(this::makeMove);
+
+                if (yourTurn && turnOwnerChanged) { // Use to wait the response before calling newTurn()
+                    turnOwnerChanged = false;
+                    yourTurn = false;
+
+                    queue.add(this::newTurn);
+                }
                 break;
 
             case GAME_STATE:
@@ -209,12 +217,21 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                     queue.add(() -> gameStateUpdate(gameSerialized));
                 }
 
-                if (!firstTurn && !stateMessage.getTurnOwner().equals(turnOwner)) {
-                    turnOwner = stateMessage.getTurnOwner();
-                    if (turnOwner.equals(username)) {
-                        yourTurn = true;
+                if (!firstTurn) {
+                    if (!stateMessage.getTurnOwner().equals(turnOwner)) {
+                        turnOwner = stateMessage.getTurnOwner();
+                        turnOwnerChanged = true;
                     }
-                    queue.add(this::makeMove);
+
+                    if (!yourTurn) { // If you are not the turn owner you don't need to wait a response
+                        turnOwnerChanged = false;
+
+                        if (turnOwner.equals(username)) {
+                            yourTurn = true;
+                        }
+
+                        queue.add(this::newTurn);
+                    }
                 }
                 break;
 
