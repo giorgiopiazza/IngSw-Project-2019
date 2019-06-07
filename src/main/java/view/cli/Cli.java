@@ -403,6 +403,8 @@ public class Cli extends ClientGameManager {
         WeaponCard[] weapons = player.getWeapons();
         int choose;
 
+        printWeapons(player);
+
         do {
             out.println("Choose the weapon:");
             for (int i = 0; i < weapons.length; i++) {
@@ -419,7 +421,11 @@ public class Cli extends ClientGameManager {
         printMap();
 
         WeaponCard weapon = askWeapon();
+        // TODO Print weapons
+
         int effect = askWeaponEffect(weapon);
+
+        // TODO
 
         try {
             client.sendMessage(MessageBuilder.buildShootRequest(client.getToken(), getPlayer(), weapon, effect));
@@ -471,7 +477,7 @@ public class Cli extends ClientGameManager {
         if (username.equals(getUsername())) {
             out.println("You are the first player");
         } else {
-            out.println("The first player is: " + getFirstPlayer().getUsername());
+            out.println("The first player is: " + getFirstPlayer());
         }
     }
 
@@ -617,6 +623,10 @@ public class Cli extends ClientGameManager {
 
     private void printPowerups() {
         CliPrinter.printPowerups(out, getPowerups().toArray(PowerupCard[]::new));
+    }
+
+    private void printWeapons(UserPlayer userPlayer) {
+        CliPrinter.printWeapons(out, userPlayer);
     }
 
     private void printPlayerBoard() {

@@ -36,15 +36,17 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
     private boolean started;
 
-    private Player firstPlayer;
-    private boolean firstRound;
-    private boolean yourRound;
+    private String firstPlayer;
+    private String turnOwner;
+
+    private boolean firstTurn;
+    private boolean yourTurn;
 
     private boolean isBotPresent;
     private boolean wantMoveBot;
 
     public ClientGameManager() {
-        this.firstRound = true;
+        this.firstTurn = true;
         new Thread(this).start();
     }
 
@@ -68,16 +70,20 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         // TODO:  terminator present
         roundManager = new ClientRoundManager(getPlayer(), false);
 
-        if (firstRound) { // first round
-            if (firstPlayer.getUsername().equals(username)) { // first player to play
-                yourRound = true;
+        if (firstTurn) { // first round
+            if (firstPlayer.equals(username)) { // first player to play
+                yourTurn = true;
             }
 
-            firstPlayerCommunication(firstPlayer.getUsername());
-            firstRound = false;
+            firstPlayerCommunication(firstPlayer);
+            firstTurn = false;
         }
 
-        if (yourRound) {
+        newTurn();
+    }
+
+    private void newTurn() {
+        if (yourTurn) {
             makeMove();
         } else {
             notYourTurn();
@@ -199,17 +205,27 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             case GAME_STATE:
                 GameStateMessage stateMessage = (GameStateMessage) message;
                 synchronized (gameSerializedLock) {
-                    // TODO: CONTROLLO CAMBIO TURN OWNER
                     gameSerialized = stateMessage.getGameSerialized();
 
                     queue.add(() -> gameStateUpdate(gameSerialized));
+                }
+
+                if (!firstTurn && !stateMessage.getTurnOwner().equals(turnOwner)) {
+                    turnOwner = stateMessage.getTurnOwner();
+                    if (turnOwner.equals(username)) {
+                        yourTurn = true;
+                    }
+
+                    queue.add(this::newTurn);
                 }
                 break;
 
             case READY:
                 GameStartMessage gameStartMessage = (GameStartMessage) message;
                 synchronized (gameSerializedLock) {
-                    firstPlayer = getPlayerByName(gameStartMessage.getFirstPlayer());
+                    firstPlayer = gameStartMessage.getFirstPlayer();
+                    turnOwner = gameStartMessage.getFirstPlayer();
+
                     isBotPresent = gameSerialized.isBotPresent();
 
                     queue.add(this::startGame);
@@ -297,7 +313,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         this.playerColor = playerColor;
     }
 
-    public Player getFirstPlayer() {
+    public String getFirstPlayer() {
         return firstPlayer;
     }
 }
