@@ -120,6 +120,10 @@ public class GameSerialized implements Serializable  {
         }
     }
 
+    public GameState getCurrentState() {
+        return currentState;
+    }
+
     //utility methods for cli debugging
     public void setBot(Bot bot) {
         this.botPresent = true;

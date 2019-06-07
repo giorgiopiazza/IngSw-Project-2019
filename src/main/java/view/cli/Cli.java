@@ -690,7 +690,6 @@ public class Cli extends ClientGameManager {
     @Override
     public void notYourTurn() {
         out.println("Wait for your turn...");
-        out.println();
     }
 
     @Override
@@ -724,7 +723,7 @@ public class Cli extends ClientGameManager {
         out.println("Choose the next move:");
 
         for (int i = 0; i < possibleActions.size(); i++) {
-            out.println("\t" + (i + 1) + " - " + possibleActions.get(i));
+            out.println("\t" + (i + 1) + " - " + possibleActions.get(i).getDescription());
         }
 
         // TODO: print map, print player boards, print weapons, print mana
@@ -817,8 +816,14 @@ public class Cli extends ClientGameManager {
     }
 
     @Override
-    public boolean askReload() {
-        return false;
+    public void askReload() {
+        // TODO Wanna reload? if YES send reload request
+
+        try {
+            client.sendMessage(MessageBuilder.buildPassTurnRequest(client.getToken(), getPlayer()));
+        } catch (IOException e) {
+            promptError(e.getMessage(), true);
+        }
     }
 
     @Override

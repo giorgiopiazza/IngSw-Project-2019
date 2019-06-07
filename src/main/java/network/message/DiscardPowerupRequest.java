@@ -3,7 +3,8 @@ package network.message;
 import enumerations.MessageContent;
 
 public class DiscardPowerupRequest extends Message {
-    // indexes must be given starting from 0 !
+    private static final long serialVersionUID = -6885404447987158413L;
+
     private final int powerup;
 
     public DiscardPowerupRequest(String username, String token, int powerup) {

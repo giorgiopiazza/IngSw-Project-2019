@@ -7,6 +7,8 @@ import model.player.PlayerPosition;
 import java.util.ArrayList;
 
 public class ShootRequest extends EffectRequest {
+    private static final long serialVersionUID = -9183566520524697764L;
+
     private final int weaponID;
     private final int effect;
 

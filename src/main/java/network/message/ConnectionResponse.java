@@ -5,6 +5,8 @@ import enumerations.MessageStatus;
 import model.Game;
 
 public class ConnectionResponse extends Message {
+    private static final long serialVersionUID = 8971780730242420173L;
+
     private final String newToken;
     private final String message;
     private final MessageStatus status;

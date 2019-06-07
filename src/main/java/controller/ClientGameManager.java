@@ -1,9 +1,6 @@
 package controller;
 
-import enumerations.MessageStatus;
-import enumerations.PlayerColor;
-import enumerations.PossibleAction;
-import enumerations.UserPlayerState;
+import enumerations.*;
 import exceptions.player.ClientRoundManagerException;
 import exceptions.player.PlayerNotFoundException;
 import model.Game;
@@ -17,11 +14,13 @@ import network.client.ClientUpdateListener;
 import network.client.ClientUpdater;
 import network.message.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public abstract class ClientGameManager implements ClientGameManagerListener, ClientUpdateListener, Runnable {
     private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
@@ -34,10 +33,11 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     private String username;
     private PlayerColor playerColor;
 
-    private boolean started;
-
     private String firstPlayer;
     private String turnOwner;
+    private boolean turnOwnerChanged = false;
+
+    private String frenzyActivator = null;
 
     private boolean firstTurn;
     private boolean yourTurn;
@@ -62,7 +62,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
     }
 
-    public void startUpdater(Client client) {
+    protected void startUpdater(Client client) {
         new ClientUpdater(client, this);
     }
 
@@ -110,15 +110,12 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 botMoveRequest();
                 break;
 
-            case TERMINATOR_ACTION:
+            case BOT_ACTION:
                 // TODO: move of terminator
-                botMoveRequest();
-
                 break;
 
             case RELOAD:
-                // TODO: Ask Reload
-                botMoveRequest();
+                askReload();
                 break;
             case END:
                 // TODO: end round
@@ -133,7 +130,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     /**
      * Causes the user to perform all the moves it can make in this stage of this round
      */
-    public void firstSecondAction() {
+    private void firstSecondAction() {
         switch (askAction()) {
             case MOVE:
                 move();
@@ -200,24 +197,27 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 }
 
                 queue.add(this::makeMove);
+
+                if (yourTurn && turnOwnerChanged) { // Use to wait the response before calling newTurn()
+                    turnOwnerChanged = false;
+                    yourTurn = false;
+
+                    queue.add(this::newTurn);
+                }
                 break;
 
             case GAME_STATE:
                 GameStateMessage stateMessage = (GameStateMessage) message;
+
+                checkFrenzyMode(stateMessage);
+
                 synchronized (gameSerializedLock) {
                     gameSerialized = stateMessage.getGameSerialized();
 
                     queue.add(() -> gameStateUpdate(gameSerialized));
                 }
 
-                if (!firstTurn && !stateMessage.getTurnOwner().equals(turnOwner)) {
-                    turnOwner = stateMessage.getTurnOwner();
-                    if (turnOwner.equals(username)) {
-                        yourTurn = true;
-                    }
-
-                    queue.add(this::newTurn);
-                }
+                checkTurnChange(stateMessage);
                 break;
 
             case READY:
@@ -248,15 +248,54 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         Logger.getGlobal().log(Level.INFO, "{0}", message);
     }
 
-    public UserPlayerState getUserPlayerState() {
+    private void checkTurnChange(GameStateMessage stateMessage) {
+        if (!firstTurn) {
+            if (!stateMessage.getTurnOwner().equals(turnOwner)) {
+                turnOwner = stateMessage.getTurnOwner();
+                turnOwnerChanged = true;
+            }
+
+            if (!yourTurn) { // If you are not the turn owner you don't need to wait a response
+                turnOwnerChanged = false;
+
+                if (turnOwner.equals(username)) {
+                    yourTurn = true;
+                }
+
+                queue.add(this::newTurn);
+            }
+        }
+    }
+
+    private void checkFrenzyMode(GameStateMessage stateMessage) {
+        if (frenzyActivator == null && stateMessage.getGameSerialized().getCurrentState() == GameState.FINAL_FRENZY) {
+            frenzyActivator = stateMessage.getTurnOwner();
+        }
+    }
+
+    protected UserPlayerState getUserPlayerState() {
         return roundManager.getUserPlayerState();
     }
 
-    public List<PossibleAction> getPossibleActions() {
-        return roundManager.possibleActions();
+    protected List<PossibleAction> getPossibleActions() {
+        if (roundManager.getGameClientState() == GameClientState.NORMAL)
+            return roundManager.possibleActions();
+        else {
+            return roundManager.possibleFinalFrenzyActions(getPlayers().stream().map(Player::getUsername).collect(Collectors.toList()), frenzyActivator);
+        }
     }
 
-    public GameSerialized getGameSerialized() {
+    private List<Player> getPlayers() {
+        List<Player> players;
+
+        synchronized (gameSerializedLock) {
+            players = new ArrayList<>(gameSerialized.getPlayers());
+        }
+
+        return players;
+    }
+
+    protected GameSerialized getGameSerialized() {
         synchronized (gameSerializedLock) {
             return gameSerialized;
         }
@@ -305,11 +344,11 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         this.username = username;
     }
 
-    public PlayerColor getPlayerColor() {
+    protected PlayerColor getPlayerColor() {
         return playerColor;
     }
 
-    public void setPlayerColor(PlayerColor playerColor) {
+    protected void setPlayerColor(PlayerColor playerColor) {
         this.playerColor = playerColor;
     }
 

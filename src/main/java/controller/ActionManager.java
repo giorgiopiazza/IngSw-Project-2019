@@ -24,7 +24,7 @@ public class ActionManager {
         if (player.isFirstPlayer() && isTerminatorPresent) {
             player.setActions(EnumSet.of(PossibleAction.SPAWN_TERMINATOR, PossibleAction.CHOOSE_SPAWN));
         } else if (isTerminatorPresent) {
-            player.setActions(EnumSet.of(PossibleAction.CHOOSE_SPAWN, PossibleAction.TERMINATOR_ACTION));
+            player.setActions(EnumSet.of(PossibleAction.CHOOSE_SPAWN, PossibleAction.BOT_ACTION));
         } else {
             player.setActions(EnumSet.of(PossibleAction.CHOOSE_SPAWN));
         }
@@ -49,7 +49,7 @@ public class ActionManager {
         }
 
         if (Game.getInstance().isTerminatorPresent()) {
-            player.addAction(PossibleAction.TERMINATOR_ACTION);
+            player.addAction(PossibleAction.BOT_ACTION);
         }
     }
 
@@ -67,7 +67,7 @@ public class ActionManager {
         }
 
         if (Game.getInstance().isTerminatorPresent()) {
-            player.addAction(PossibleAction.TERMINATOR_ACTION);
+            player.addAction(PossibleAction.BOT_ACTION);
         }
     }
 }

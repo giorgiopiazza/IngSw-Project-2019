@@ -5,7 +5,9 @@ import model.Game;
 import model.cards.PowerupCard;
 
 public class BroadcastSpawningPowerup extends Message {
-    private PowerupCard powerupCard;
+    private static final long serialVersionUID = 8037294570203660769L;
+
+    private final PowerupCard powerupCard;
 
     public BroadcastSpawningPowerup(PowerupCard powerupCard) {
         super(Game.GOD, null, MessageContent.DISCARD_POWERUP);

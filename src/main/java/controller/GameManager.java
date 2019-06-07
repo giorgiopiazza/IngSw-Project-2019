@@ -592,7 +592,7 @@ public class GameManager implements TimerRunListener, Serializable {
             if (inLobbyPlayers.size() >= MIN_PLAYERS) {
                 lobbyTimer = new Timer();
                 lobbyTimer.schedule(new LobbyTimer(this), lobbyTimeoutTime);
-                Server.LOGGER.info("Lobby timer started (" + lobbyTimeoutTime / 1000 + " s)");
+                Server.LOGGER.log(Level.INFO, "Lobby timer started ({0} s)", lobbyTimeoutTime / 1000);
                 lobbyTimerRunning = true;
             }
         }

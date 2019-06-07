@@ -5,9 +5,10 @@ import model.Game;
 import model.GameSerialized;
 
 public class GameStateMessage extends Message {
+    private static final long serialVersionUID = 2725986184174583892L;
 
-    private GameSerialized gameSerialized;
-    private String turnOwner;
+    private final GameSerialized gameSerialized;
+    private final String turnOwner;
 
     public GameStateMessage(String userName, String turnOwner) {
         super (Game.GOD, null, MessageContent.GAME_STATE);

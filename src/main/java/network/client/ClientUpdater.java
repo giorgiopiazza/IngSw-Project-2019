@@ -1,9 +1,7 @@
 package network.client;
 
-import enumerations.MessageContent;
 import network.message.Message;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,30 +23,12 @@ public class ClientUpdater implements Runnable {
         while (!Thread.currentThread().isInterrupted()) {
             synchronized (client) {
                 List<Message> messages;
-                List<Message> responses = new ArrayList<>();
 
                 do {
                     messages = client.receiveMessages();
                 } while (messages.isEmpty());
 
-                for (Message message : messages) {
-                    if (message.getContent() != MessageContent.RESPONSE) {
-                        updateListener.onUpdate(message);
-                    } else {
-                        responses.add(message);
-                    }
-                }
-
-                if (responses.size() > 1) {
-                    // TODO Better exception
-                    throw new RuntimeException("You can't reiceve two repsonses at the same time");
-                }
-
-                for (Message response : responses) {
-                    updateListener.onUpdate(response);
-                }
-
-
+                messages.forEach(updateListener::onUpdate);
             }
 
             try {

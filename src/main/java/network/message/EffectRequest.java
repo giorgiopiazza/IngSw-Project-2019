@@ -8,7 +8,9 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public abstract class EffectRequest extends ActionRequest {
-    private final ArrayList<String> targetPlayersUsernames;
+    private static final long serialVersionUID = 2808691785528480885L;
+
+    private final ArrayList<String> targetPlayersUsername;
     private final ArrayList<PlayerPosition> targetPositions;
     private final RoomColor targetRoomColor;
     private final ArrayList<PlayerPosition> targetPlayersMovePositions;
@@ -16,14 +18,14 @@ public abstract class EffectRequest extends ActionRequest {
     public EffectRequest(EffectRequestBuilder builder) {
         super(builder.username, builder.token, builder.content, builder.senderMovePosition, builder.paymentPowerups);
 
-        this.targetPlayersUsernames = Objects.requireNonNullElse(builder.targetPlayersUsernames, new ArrayList<>());
+        this.targetPlayersUsername = Objects.requireNonNullElse(builder.targetPlayersUsernames, new ArrayList<>());
         this.targetPositions = Objects.requireNonNullElse(builder.targetPositions, new ArrayList<>());
         this.targetRoomColor = builder.targetRoomColor;
         this.targetPlayersMovePositions = Objects.requireNonNullElse(builder.targetPlayersMovePositions, new ArrayList<>());
     }
 
-    public ArrayList<String> getTargetPlayersUsernames() {
-        return targetPlayersUsernames;
+    public ArrayList<String> getTargetPlayersUsername() {
+        return targetPlayersUsername;
     }
 
     public ArrayList<PlayerPosition> getTargetPositions() {

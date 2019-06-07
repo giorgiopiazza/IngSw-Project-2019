@@ -8,6 +8,8 @@ import model.player.PlayerPosition;
 import java.util.ArrayList;
 
 public class PowerupRequest extends EffectRequest {
+    private static final long serialVersionUID = 8674157231024320484L;
+
     private final ArrayList<Integer> powerup;
     private final Ammo ammoColor;
 
