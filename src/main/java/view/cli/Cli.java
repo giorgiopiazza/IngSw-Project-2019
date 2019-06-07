@@ -517,7 +517,7 @@ public class Cli extends ClientGameManager {
         out.println("Choose the next move:");
 
         for (int i = 0; i < possibleActions.size(); i++) {
-            out.println("\t" + (i + 1) + " - " + possibleActions.get(i));
+            out.println("\t" + (i + 1) + " - " + possibleActions.get(i).getDescription());
         }
 
         // TODO: print map, print player boards, print weapons, print mana
@@ -607,7 +607,7 @@ public class Cli extends ClientGameManager {
 
     @Override
     public void askReload() {
-        // TODO Wanna reload?
+        // TODO Wanna reload? if YES send reload request
 
         try {
             client.sendMessage(MessageBuilder.buildPassTurnRequest(client.getToken(), getPlayer()));

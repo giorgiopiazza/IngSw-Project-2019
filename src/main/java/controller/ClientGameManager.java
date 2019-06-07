@@ -20,6 +20,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public abstract class ClientGameManager implements ClientGameManagerListener, ClientUpdateListener, Runnable {
     private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
@@ -35,6 +36,8 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     private String firstPlayer;
     private String turnOwner;
     private boolean turnOwnerChanged = false;
+
+    private String frenzyActivator = null;
 
     private boolean firstTurn;
     private boolean yourTurn;
@@ -205,6 +208,9 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
             case GAME_STATE:
                 GameStateMessage stateMessage = (GameStateMessage) message;
+
+                checkFrenzyMode(stateMessage);
+
                 synchronized (gameSerializedLock) {
                     gameSerialized = stateMessage.getGameSerialized();
 
@@ -261,6 +267,12 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
     }
 
+    private void checkFrenzyMode(GameStateMessage stateMessage) {
+        if (frenzyActivator == null && stateMessage.getGameSerialized().getCurrentState() == GameState.FINAL_FRENZY) {
+            frenzyActivator = stateMessage.getTurnOwner();
+        }
+    }
+
     protected UserPlayerState getUserPlayerState() {
         return roundManager.getUserPlayerState();
     }
@@ -269,20 +281,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         if (roundManager.getGameClientState() == GameClientState.NORMAL)
             return roundManager.possibleActions();
         else {
-            Player nextToPlay = null;
-            List<Player> players = getPlayers();
-
-            for (int i = 0; i < players.size(); i++) {
-                if (players.get(i).getUsername().equals(turnOwner)) {
-                    if (i + 1 == players.size()) {
-                        nextToPlay = players.get(0);
-                    } else {
-                        nextToPlay = players.get(i + 1);
-                    }
-                }
-            }
-
-            return roundManager.possibleFinalFrenzyActions(players, nextToPlay);
+            return roundManager.possibleFinalFrenzyActions(getPlayers().stream().map(Player::getUsername).collect(Collectors.toList()), frenzyActivator);
         }
     }
 
