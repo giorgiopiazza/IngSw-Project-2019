@@ -5,6 +5,7 @@ import enumerations.PlayerColor;
 import enumerations.PossibleAction;
 import enumerations.UserPlayerState;
 import exceptions.player.ClientRoundManagerException;
+import exceptions.player.FinalFrenzyException;
 import exceptions.player.PlayerNotFoundException;
 import model.Game;
 import model.GameSerialized;
@@ -17,6 +18,7 @@ import network.client.ClientUpdateListener;
 import network.client.ClientUpdater;
 import network.message.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -268,7 +270,34 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     }
 
     public List<PossibleAction> getPossibleActions() {
-        return roundManager.possibleActions();
+        try {
+            return roundManager.possibleActions();
+        } catch (FinalFrenzyException e) {
+            Player nextToPlay = null;
+            List<Player> players = getPlayers();
+
+            for (int i = 0; i < players.size(); i++) {
+                if (players.get(i).getUsername().equals(turnOwner)) {
+                    if (i + 1 == players.size()) {
+                        nextToPlay = players.get(0);
+                    } else {
+                        nextToPlay = players.get(i + 1);
+                    }
+                }
+            }
+
+            return roundManager.finalFrenzyActions(players, nextToPlay);
+        }
+    }
+
+    private List<Player> getPlayers() {
+        List<Player> players;
+
+        synchronized (gameSerializedLock) {
+            players = new ArrayList<>(gameSerialized.getPlayers());
+        }
+
+        return players;
     }
 
     public GameSerialized getGameSerialized() {

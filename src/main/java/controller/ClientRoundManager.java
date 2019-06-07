@@ -5,6 +5,9 @@ import enumerations.PlayerBoardState;
 import enumerations.PossibleAction;
 import enumerations.UserPlayerState;
 import exceptions.player.ClientRoundManagerException;
+import exceptions.player.FinalFrenzyException;
+import model.GameSerialized;
+import model.player.Player;
 import model.player.UserPlayer;
 
 import java.util.ArrayList;
@@ -142,7 +145,7 @@ public class ClientRoundManager {
      *
      * @return a list with the possible actions that the player can perform in this round
      */
-    public List<PossibleAction> possibleActions() {
+    public List<PossibleAction> possibleActions() throws FinalFrenzyException {
         List<PossibleAction> actions = new ArrayList<>();
         boardState = that.getPlayerBoard().getBoardState();
 
@@ -161,7 +164,58 @@ public class ClientRoundManager {
                     break;
             }
         } else {
-            finalFrenzyActions(actions);
+            throw new FinalFrenzyException("final frenzy action");
+        }
+
+        return actions;
+    }
+
+    /**
+     * That method calculate the order of the final frenzy round, if {@code that} player play round
+     * after the first player (or if is the first player) you are in final frenzy mode, otherwise
+     * you are in the light final frenzy mode
+     *
+     * @param players the list of in game player (from gameSerialized)
+     * @param nextToPlay the next players to play round
+     * @return the list of possible finalFrenzyActions for {@code that} player
+     */
+    public List<PossibleAction> finalFrenzyActions(List<Player> players, Player nextToPlay) {
+        List<Player> playersOrder = new ArrayList<>();
+        List<PossibleAction> actions = new ArrayList<>();
+        Player firstPlayer = players.get(0);
+
+        int nextPlayerIndex = -1;
+        int myIndex = -1;
+
+        for (int i = 0; i < players.size(); i++) {
+            if (nextToPlay.getUsername().equals(players.get(i).getUsername())) nextPlayerIndex = i;
+            if (nextPlayerIndex >= 0) playersOrder.add(players.get(i));
+        }
+
+        for (int i = 0; i < nextPlayerIndex; i++) {
+            playersOrder.add(players.get(i));
+        }
+
+        for (int i = 0; i < playersOrder.size(); i++) {
+            if (that.getUsername().equals(playersOrder.get(i))) {
+                myIndex = i;
+                break;
+            }
+        }
+
+        for (int i = 0; i < playersOrder.size(); i++) {
+            if (firstPlayer.getUsername().equals(playersOrder.get(i).getUsername())) {
+                if (i > myIndex) {
+                    actions.add(PossibleAction.FRENZY_MOVE);
+                    actions.add(PossibleAction.FRENZY_SHOOT);
+                    actions.add(PossibleAction.FRENZY_PICK);
+                } else {
+                    actions.add(PossibleAction.LIGHT_FRENZY_SHOOT);
+                    actions.add(PossibleAction.LIGHT_FRENZY_PICK);
+                }
+
+                break;
+            }
         }
 
         return actions;
@@ -200,10 +254,6 @@ public class ClientRoundManager {
             actions.add(PossibleAction.ADRENALINE_PICK);
             actions.add(PossibleAction.ADRENALINE_SHOOT);
         }
-    }
-
-    private void finalFrenzyActions(List<PossibleAction> actions) {
-        // TODO
     }
 
     /**
