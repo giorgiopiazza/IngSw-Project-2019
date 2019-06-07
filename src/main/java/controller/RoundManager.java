@@ -70,9 +70,11 @@ public class RoundManager {
      * {@link GameState GameState}
      */
     private void setInitialActions() {
-        if (gameInstance.getState() == GameState.NORMAL) {
+        if(gameInstance.getState() == GameState.NORMAL && turnManager.getTurnOwner().getPlayerState() == PossiblePlayerState.FIRST_SPAWN) {
+            ActionManager.setStartingPossibleActions(turnManager.getTurnOwner(), gameInstance.isTerminatorPresent());
+        } else if (gameInstance.getState() == GameState.NORMAL && turnManager.getTurnOwner().getPlayerState() == PossiblePlayerState.PLAYING) {
             ActionManager.setPossibleActions(turnManager.getTurnOwner());
-        } else if (gameInstance.getState() == GameState.FINAL_FRENZY) {
+        } else if (gameInstance.getState() == GameState.FINAL_FRENZY && turnManager.getTurnOwner().getPlayerState() == PossiblePlayerState.PLAYING) {
             ActionManager.setFrenzyPossibleActions(turnManager.getTurnOwner(), turnManager);
         }
     }
