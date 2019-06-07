@@ -163,7 +163,7 @@ public class RoundManager {
     private void afterTerminatorActionHandler(PossibleGameState gameState) {
         if (gameState == PossibleGameState.GAME_STARTED) {
             // if terminator action is done before the 2 actions the game state does not change, otherwise it must be done before passing the turn
-            turnManager.getTurnOwner().removeAction(PossibleAction.TERMINATOR_ACTION);
+            turnManager.getTurnOwner().removeAction(PossibleAction.BOT_ACTION);
         } else if (gameState == PossibleGameState.MISSING_TERMINATOR_ACTION) {
             if (gameInstance.getState().equals(GameState.NORMAL)) {
                 setReloadAction();
@@ -203,7 +203,7 @@ public class RoundManager {
     Response handleTerminatorAction(UseTerminatorRequest terminatorRequest, PossibleGameState gameState) {
         TerminatorAction terminatorAction;
 
-        if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.TERMINATOR_ACTION)) {
+        if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.BOT_ACTION)) {
             terminatorAction = new TerminatorAction(turnManager.getTurnOwner(), gameInstance.getUserPlayerByUsername(terminatorRequest.getTargetPlayer()), terminatorRequest.getMovingPosition());
             try {
                 if (terminatorAction.validate()) {
@@ -849,7 +849,7 @@ public class RoundManager {
         if (!secondAction) {
             return PossibleGameState.SECOND_ACTION;
         } else {
-            if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.TERMINATOR_ACTION)) {
+            if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.BOT_ACTION)) {
                 return PossibleGameState.MISSING_TERMINATOR_ACTION;
             } else {
                 if (gameInstance.getState().equals(GameState.NORMAL)) {

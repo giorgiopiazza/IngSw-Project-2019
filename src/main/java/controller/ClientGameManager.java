@@ -1,11 +1,7 @@
 package controller;
 
-import enumerations.MessageStatus;
-import enumerations.PlayerColor;
-import enumerations.PossibleAction;
-import enumerations.UserPlayerState;
+import enumerations.*;
 import exceptions.player.ClientRoundManagerException;
-import exceptions.player.FinalFrenzyException;
 import exceptions.player.PlayerNotFoundException;
 import model.Game;
 import model.GameSerialized;
@@ -36,8 +32,6 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     private String username;
     private PlayerColor playerColor;
 
-    private boolean started;
-
     private String firstPlayer;
     private String turnOwner;
     private boolean turnOwnerChanged = false;
@@ -65,7 +59,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
     }
 
-    public void startUpdater(Client client) {
+    protected void startUpdater(Client client) {
         new ClientUpdater(client, this);
     }
 
@@ -113,13 +107,11 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 botMoveRequest();
                 break;
 
-            case TERMINATOR_ACTION:
+            case BOT_ACTION:
                 // TODO: move of terminator
-
                 break;
 
             case RELOAD:
-                // TODO: Ask Reload
                 askReload();
                 break;
             case END:
@@ -135,7 +127,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     /**
      * Causes the user to perform all the moves it can make in this stage of this round
      */
-    public void firstSecondAction() {
+    private void firstSecondAction() {
         switch (askAction()) {
             case MOVE:
                 move();
@@ -219,22 +211,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                     queue.add(() -> gameStateUpdate(gameSerialized));
                 }
 
-                if (!firstTurn) {
-                    if (!stateMessage.getTurnOwner().equals(turnOwner)) {
-                        turnOwner = stateMessage.getTurnOwner();
-                        turnOwnerChanged = true;
-                    }
-
-                    if (!yourTurn) { // If you are not the turn owner you don't need to wait a response
-                        turnOwnerChanged = false;
-
-                        if (turnOwner.equals(username)) {
-                            yourTurn = true;
-                        }
-
-                        queue.add(this::newTurn);
-                    }
-                }
+                checkTurnChange(stateMessage);
                 break;
 
             case READY:
@@ -265,14 +242,33 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         Logger.getGlobal().log(Level.INFO, "{0}", message);
     }
 
-    public UserPlayerState getUserPlayerState() {
+    private void checkTurnChange(GameStateMessage stateMessage) {
+        if (!firstTurn) {
+            if (!stateMessage.getTurnOwner().equals(turnOwner)) {
+                turnOwner = stateMessage.getTurnOwner();
+                turnOwnerChanged = true;
+            }
+
+            if (!yourTurn) { // If you are not the turn owner you don't need to wait a response
+                turnOwnerChanged = false;
+
+                if (turnOwner.equals(username)) {
+                    yourTurn = true;
+                }
+
+                queue.add(this::newTurn);
+            }
+        }
+    }
+
+    protected UserPlayerState getUserPlayerState() {
         return roundManager.getUserPlayerState();
     }
 
-    public List<PossibleAction> getPossibleActions() {
-        try {
+    protected List<PossibleAction> getPossibleActions() {
+        if (roundManager.getGameClientState() == GameClientState.NORMAL)
             return roundManager.possibleActions();
-        } catch (FinalFrenzyException e) {
+        else {
             Player nextToPlay = null;
             List<Player> players = getPlayers();
 
@@ -286,7 +282,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 }
             }
 
-            return roundManager.finalFrenzyActions(players, nextToPlay);
+            return roundManager.possibleFinalFrenzyActions(players, nextToPlay);
         }
     }
 
@@ -300,7 +296,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         return players;
     }
 
-    public GameSerialized getGameSerialized() {
+    protected GameSerialized getGameSerialized() {
         synchronized (gameSerializedLock) {
             return gameSerialized;
         }
@@ -349,11 +345,11 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         this.username = username;
     }
 
-    public PlayerColor getPlayerColor() {
+    protected PlayerColor getPlayerColor() {
         return playerColor;
     }
 
-    public void setPlayerColor(PlayerColor playerColor) {
+    protected void setPlayerColor(PlayerColor playerColor) {
         this.playerColor = playerColor;
     }
 
