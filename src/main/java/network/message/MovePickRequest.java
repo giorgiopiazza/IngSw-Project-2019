@@ -7,8 +7,8 @@ import model.player.PlayerPosition;
 import java.util.ArrayList;
 
 public class MovePickRequest extends ActionRequest {
-    private WeaponCard addingWeapon;
-    private WeaponCard discardingWeapon;
+    private final WeaponCard addingWeapon;
+    private final WeaponCard discardingWeapon;
 
     public MovePickRequest(String username, String token, PlayerPosition senderMovePosition, ArrayList<Integer> paymentPowerups, WeaponCard addingWeapon, WeaponCard discardingWeapon) {
         super(username, token, MessageContent.MOVE_PICK, senderMovePosition, paymentPowerups);

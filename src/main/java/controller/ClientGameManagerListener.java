@@ -20,7 +20,7 @@ interface ClientGameManagerListener {
     void shoot();
 
     boolean askBotMove();
-    boolean askReload();
+    void askReload();
 
     void botMove();
     void reload();

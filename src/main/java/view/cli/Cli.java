@@ -484,7 +484,6 @@ public class Cli extends ClientGameManager {
     @Override
     public void notYourTurn() {
         out.println("Wait for your turn...");
-        out.println();
     }
 
     @Override
@@ -607,8 +606,14 @@ public class Cli extends ClientGameManager {
     }
 
     @Override
-    public boolean askReload() {
-        return false;
+    public void askReload() {
+        // TODO Wanna reload?
+
+        try {
+            client.sendMessage(MessageBuilder.buildPassTurnRequest(client.getToken(), getPlayer()));
+        } catch (IOException e) {
+            promptError(e.getMessage(), true);
+        }
     }
 
     @Override

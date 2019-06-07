@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class GameMap implements Serializable {
@@ -276,20 +275,38 @@ public class GameMap implements Serializable {
         for (int i = 0; i < MAX_ROWS; ++i) {
             for (int j = 0; j < MAX_COLUMNS; ++j) {
                 Square tempSquare = getSquare(i, j);
-                if (tempSquare.getSquareType() == SquareType.TILE) {
-                    if (!((CardSquare) tempSquare).isAmmoTilePresent()) {
-                        ((CardSquare) tempSquare).setAmmoTile((AmmoTile) Game.getInstance().getAmmoTileDeck().draw());
-                    }
-                } else if (tempSquare.getSquareType() == SquareType.SPAWN) {
-                    if (((SpawnSquare) tempSquare).getWeapons().length < 3) {
-                        addMissingWeapons((SpawnSquare) tempSquare);
-                    }
-                } else {
-                    throw new NullPointerException("A Square must always have a type!");
+
+                if (tempSquare == null) {
+                    continue;
+                }
+
+                switch (tempSquare.getSquareType()) {
+                    case TILE:
+                        fillWithAmmoTile(tempSquare);
+                        break;
+                    case SPAWN:
+                        fillWithWeapon(tempSquare);
+                        break;
+                    default:
+                        throw new NullPointerException("A Square must always have a type!");
                 }
             }
         }
     }
+
+    private void fillWithAmmoTile(Square tempSquare) {
+        if (!((CardSquare) tempSquare).isAmmoTilePresent()) {
+            ((CardSquare) tempSquare).setAmmoTile((AmmoTile) Game.getInstance().getAmmoTileDeck().draw());
+        }
+    }
+
+    private void fillWithWeapon(Square tempSquare) {
+        if (((SpawnSquare) tempSquare).getWeapons().length < 3) {
+            addMissingWeapons((SpawnSquare) tempSquare);
+        }
+    }
+
+
 
     /**
      * Method used to reduce cognitive complexity when we need to add more than just one missing card to a Spawn Square

@@ -5,7 +5,7 @@ import enumerations.MessageContent;
 import java.util.Objects;
 
 public class GameSetupMessage extends Message {
-    private int mapVote;
+    private final int mapVote;
 
     public GameSetupMessage(String username, String token, int mapVote) {
         super(username, token, MessageContent.GAME_SETUP);

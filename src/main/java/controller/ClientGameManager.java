@@ -112,13 +112,12 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
             case TERMINATOR_ACTION:
                 // TODO: move of terminator
-                botMoveRequest();
 
                 break;
 
             case RELOAD:
                 // TODO: Ask Reload
-                botMoveRequest();
+                askReload();
                 break;
             case END:
                 // TODO: end round
@@ -215,8 +214,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                     if (turnOwner.equals(username)) {
                         yourTurn = true;
                     }
-
-                    queue.add(this::newTurn);
+                    queue.add(this::startGame);
                 }
                 break;
 

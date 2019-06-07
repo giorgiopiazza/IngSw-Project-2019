@@ -6,8 +6,8 @@ import enumerations.PlayerColor;
 import java.util.Objects;
 
 public class LobbyMessage extends Message {
-    private PlayerColor chosenColor;
-    private boolean disconnection;
+    private final PlayerColor chosenColor;
+    private final boolean disconnection;
 
     public LobbyMessage(String username, String token, PlayerColor chosenColor, boolean disconnection) {
         super(username, token, MessageContent.GET_IN_LOBBY);

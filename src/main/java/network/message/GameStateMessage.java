@@ -5,9 +5,8 @@ import model.Game;
 import model.GameSerialized;
 
 public class GameStateMessage extends Message {
-
-    private GameSerialized gameSerialized;
-    private String turnOwner;
+    private final GameSerialized gameSerialized;
+    private final String turnOwner;
 
     public GameStateMessage(String userName, String turnOwner) {
         super (Game.GOD, null, MessageContent.GAME_STATE);

@@ -7,7 +7,7 @@ import model.player.Player;
 import java.util.ArrayList;
 
 public class WinnersResponse extends Message {
-    private ArrayList<Player> winners;
+    private final ArrayList<Player> winners;
 
     public WinnersResponse(ArrayList<Player> winners) {
         super(Game.GOD, null,MessageContent.LAST_RESPONSE);
