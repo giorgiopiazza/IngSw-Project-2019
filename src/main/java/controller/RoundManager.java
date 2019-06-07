@@ -895,7 +895,6 @@ public class RoundManager {
         } else if (arrivingState == PossibleGameState.PASS_FRENZY_TURN) {
             gameManager.changeState(PossibleGameState.FINAL_FRENZY);
             return buildPositiveResponse("Turn Passed");
-
         } else {
             throw new InvalidGameStateException();
         }

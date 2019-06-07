@@ -4,9 +4,12 @@ import controller.ClientGameManager;
 import enumerations.*;
 import exceptions.actions.PowerupCardsNotFoundException;
 import exceptions.actions.WeaponCardsNotFoundException;
+import exceptions.game.InexistentColorException;
+import exceptions.utility.InvalidPropertiesException;
 import model.GameSerialized;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
+import model.cards.effects.Effect;
 import model.player.*;
 import network.client.*;
 import network.message.*;
@@ -22,6 +25,13 @@ public class Cli extends ClientGameManager {
     private Client client;
     private Scanner in;
     private AdrenalinePrintStream out;
+
+    private static final String TARGET_NUM = "targetNum";
+    private static final String MAX_TARGET_NUM = "maxTargetNum";
+    private static final String MOVE = "move";
+    private static final String MOVE_TARGET = "moveTarget";
+    private static final String MAX_MOVE_TARGET = "maxMoveTarget";
+    private static final String MOVE_TARGET_BEFORE = "moveTargetBefore";
 
     public Cli() {
         super();
@@ -392,44 +402,245 @@ public class Cli extends ClientGameManager {
     @Override
     public void reload() {
         try {
-            client.sendMessage(MessageBuilder.buildReloadRequest(client.getToken(), getPlayer(), askWeapon()));
+            client.sendMessage(MessageBuilder.buildReloadRequest(client.getToken(), getPlayer(), getPlayer().getWeapons()[askWeapon()]));
         } catch (IOException | WeaponCardsNotFoundException e) {
             promptError(e.getMessage(), true);
         }
     }
 
-    private WeaponCard askWeapon() {
+    private int askWeapon() {
         UserPlayer player = getPlayer();
         WeaponCard[] weapons = player.getWeapons();
         int choose;
 
-        printWeapons(player);
+        printWeapons(player.getWeapons());
 
         do {
             out.println("Choose the weapon:");
-            for (int i = 0; i < weapons.length; i++) {
-                out.println("\t" + (i + 1) + " - " + weapons[i].getName());
-            }
-            choose = readInt(1, weapons.length);
-        } while (choose <= 0 || choose > weapons.length);
+            choose = readInt(0, weapons.length - 1);
+        } while (choose < 0 || choose > weapons.length - 1);
 
-        return weapons[choose - 1];
+        return choose;
     }
+
+    private int askWeaponEffect(WeaponCard weapon) {
+        WeaponCard[] chosenWeapon = new WeaponCard[]{weapon};
+        int choose;
+
+        printWeapons(chosenWeapon);
+        do {
+            out.println("Choose the weapon's effect:");
+            choose = readInt(0, weapon.getSecondaryEffects().size());
+        } while (choose < 0 || choose > weapon.getSecondaryEffects().size());
+
+        return readInt();
+    }
+
+    private ArrayList<Integer> askPaymentPowerups() {
+        UserPlayer player = getPlayer();
+        ArrayList<Integer> paymentPowerups = new ArrayList<>();
+        int tempChoose;
+
+        printPowerups();
+
+        do {
+            out.println("Choose the powerups you want to pay with (-1 to stop choosing):");
+            tempChoose = readInt(-1, player.getPowerups().length);
+            if (tempChoose == -1) break;
+            paymentPowerups.add(tempChoose);
+        } while (paymentPowerups.size() < player.getPowerups().length);
+
+        return paymentPowerups;
+    }
+
+    private void buildFireRequest(Effect chosenEffect, ShootRequest.FireRequestBuilder fireRequestBuilding) {
+        Map<String, String> effectProperties = chosenEffect.getProperties();
+        TargetType[] targets = chosenEffect.getTargets();
+        ArrayList<String> targetsChosen = new ArrayList<>();
+
+        // targets input ask
+        for (TargetType target : targets) {
+            switch (target) {
+                case PLAYER:
+                    targetsChosen = askTargetsUsernames(effectProperties);
+                    fireRequestBuilding.targetPlayersUsernames(targetsChosen);
+                    break;
+                case SQUARE:
+                    fireRequestBuilding.targetPositions(askTargetSquaresPositions(effectProperties));
+                    break;
+                case ROOM:
+                    fireRequestBuilding.targetRoomColor(askTargetRoomColor(effectProperties));
+                    break;
+                default:
+                    throw new InvalidPropertiesException();
+            }
+        }
+
+        // now that I have the targets we need to handle the possible move decisions
+        if(effectProperties.containsKey(MOVE)) {
+            // move is always permitted both before and after, decision is then always asked
+            fireRequestBuilding.senderMovePosition(askMovePositionInShoot());
+            fireRequestBuilding.moveSenderFirst(askBeforeAfterMove());
+        }
+
+        // now that I have handled the Turn Owner movement I have to handle the targets ones
+        if(effectProperties.containsKey(MOVE_TARGET) || effectProperties.containsKey(MAX_MOVE_TARGET)) {
+            fireRequestBuilding.targetPlayersMovePositions(askTargetsMovePositions(targetsChosen));
+        }
+
+        // in the end if the targets movement can be done before or after the shoot action I ask when to the shooter
+        if(effectProperties.containsKey(MOVE_TARGET_BEFORE)) {
+            fireRequestBuilding.moveTargetsFirst(Boolean.parseBoolean(effectProperties.get(MOVE_TARGET_BEFORE)));
+        } else {
+            fireRequestBuilding.moveTargetsFirst(askBeforeAfterMove());
+        }
+    }
+
+    private ArrayList<String> askTargetsUsernames(Map<String, String> effectProperties) {
+        ArrayList<String> targetsUsernames;
+
+        if (effectProperties.containsKey(TARGET_NUM)) {
+            targetsUsernames = askExactTargets(effectProperties.get(TARGET_NUM));
+        } else if (effectProperties.containsKey(MAX_TARGET_NUM)) {
+            targetsUsernames = askMaxTargets(effectProperties.get(MAX_TARGET_NUM));
+        } else {
+            throw new InvalidPropertiesException();
+        }
+
+        return targetsUsernames;
+    }
+
+    private ArrayList<String> askExactTargets(String exactStringNum) {
+        int exactIntNum = Integer.parseInt(exactStringNum);
+        ArrayList<String> chosenTargets = new ArrayList<>();
+
+        do {
+            out.println("Choose exactly " + exactIntNum + " target/s for your shoot action:");
+            chosenTargets.add(readTargetUsername(getGameSerialized().getPlayers(), false));
+        } while (chosenTargets.size() < exactIntNum);
+
+        return chosenTargets;
+    }
+
+    private ArrayList<String> askMaxTargets(String maxStringNum) {
+        int maxIntNum = Integer.parseInt(maxStringNum);
+        ArrayList<String> chosenTargets = new ArrayList<>();
+
+        do {
+            String tempTarget;
+            out.println("Choose up to " + maxIntNum + " target/s for your shoot action (-1 to stop choosing):");
+            tempTarget = readTargetUsername(getGameSerialized().getPlayers(), true);
+            if (tempTarget.equals("-1") && chosenTargets.size() > 1) return chosenTargets;
+            chosenTargets.add(tempTarget);
+        } while (chosenTargets.size() < maxIntNum);
+
+        return chosenTargets;
+    }
+
+    private ArrayList<PlayerPosition> askTargetSquaresPositions(Map<String, String> effectProperties) {
+        ArrayList<PlayerPosition> targetSquaresPositions;
+
+        if (effectProperties.containsKey(TARGET_NUM)) {
+            targetSquaresPositions = askExactSquares(effectProperties.get(TARGET_NUM));
+        } else if (effectProperties.containsKey(MAX_TARGET_NUM)) {
+            targetSquaresPositions = askMaxSquares(effectProperties.get(MAX_TARGET_NUM));
+        } else {
+            throw new InvalidPropertiesException();
+        }
+
+        return targetSquaresPositions;
+    }
+
+    private ArrayList<PlayerPosition> askExactSquares(String exactStringNum) {
+        int exactIntNum = Integer.parseInt(exactStringNum);
+        ArrayList<PlayerPosition> chosenSquares = new ArrayList<>();
+
+        do {
+            out.println("Choose exactly " + exactIntNum + " target/s squares for your shoot action:");
+            chosenSquares.add(getCoordinates());
+        } while (chosenSquares.size() < exactIntNum);
+
+        return chosenSquares;
+    }
+
+    private ArrayList<PlayerPosition> askMaxSquares(String maxStringNum) {
+        int maxIntNum = Integer.parseInt(maxStringNum);
+        ArrayList<PlayerPosition> chosenSquares = new ArrayList<>();
+
+        do {
+            PlayerPosition tempPos;
+            out.println("Choose up to " + maxIntNum + " target/s squares for your shoot action (-1 to stop choosing):");
+            tempPos = getCoordinates();
+            if (tempPos.getCoordX() == -1 && chosenSquares.size() > 1) return chosenSquares;
+            chosenSquares.add(tempPos);
+        } while (chosenSquares.size() < maxIntNum);
+
+        return chosenSquares;
+    }
+
+    private RoomColor askTargetRoomColor(Map<String, String> effectProperties) {
+        // remember that a room target is always 1, infact we just need to verify that the property is present, then we are sure its going to be one
+        if (effectProperties.containsKey(TARGET_NUM)) {
+            out.println("Choose the color of the target room for your shoot action:");
+
+            return readRoomColor();
+        } else {
+            throw new InvalidPropertiesException();
+        }
+    }
+
+    private PlayerPosition askMovePositionInShoot() {
+        out.println("Choose the moving position for your shoot action:");
+        return getCoordinates();
+    }
+
+    private boolean askBeforeAfterMove() {
+        out.println("Choose if you want to move 'before' or 'after' shooting:");
+        return readMoveDecision();
+    }
+
+    private ArrayList<PlayerPosition> askTargetsMovePositions(ArrayList<String> targetsChosen) {
+        ArrayList<PlayerPosition> targetsMovePositions = new ArrayList<>();
+
+        out.println("Choose each targets' moving position!");
+
+        for(String target : targetsChosen) {
+            out.println("Choose " + target + " moving position:");
+            targetsMovePositions.add(getCoordinates());
+        }
+
+        return targetsMovePositions;
+    }
+
 
     @Override
     public void shoot() {
+        ShootRequest.FireRequestBuilder fireRequestBuilder;
+        ArrayList<Integer> paymentPowerups = new ArrayList<>();
+        Effect chosenEffect;
+
         printMap();
 
-        WeaponCard weapon = askWeapon();
-        // TODO Print weapons
+        int weapon = askWeapon();
+        int effect = askWeaponEffect(getPlayer().getWeapons()[weapon]);
+        if (getPlayer().getPowerups().length != 0) {
+            paymentPowerups = askPaymentPowerups();
+        }
 
-        int effect = askWeaponEffect(weapon);
+        // normal shoot does not require recharging weapons
+        fireRequestBuilder = new ShootRequest.FireRequestBuilder(client.getUsername(), client.getToken(), weapon, effect, null).paymentPowerups(paymentPowerups);
 
-        // TODO
+        // now we can build the fireRequest specific to each chosen weapon
+        if (effect == 0) {
+            chosenEffect = getPlayer().getWeapons()[weapon].getBaseEffect();
+        } else {
+            chosenEffect = getPlayer().getWeapons()[weapon].getSecondaryEffects().get(effect - 1);
+        }
+        buildFireRequest(chosenEffect, fireRequestBuilder);
 
         try {
-            client.sendMessage(MessageBuilder.buildShootRequest(client.getToken(), getPlayer(), weapon, effect));
-        } catch (IOException | WeaponCardsNotFoundException e) {
+            client.sendMessage(MessageBuilder.buildShootRequest(fireRequestBuilder));
+        } catch (IOException e) {
             promptError(e.getMessage(), true);
         }
     }
@@ -465,11 +676,6 @@ public class Cli extends ClientGameManager {
             promptError(e.getMessage(), true);
         }
 
-    }
-
-    private int askWeaponEffect(WeaponCard weapon) {
-        // todo
-        return readInt();
     }
 
     @Override
@@ -568,9 +774,13 @@ public class Cli extends ClientGameManager {
         int x = -1;
         int y = -1;
 
-        if (in.hasNextLine()) in.nextLine();
+        if (in.hasNextLine()) {
+            String checkStop = in.nextLine();
+            if (checkStop.equals("-1")) return new PlayerPosition(x, y);
+        }
 
-        out.println("Write the new coordinates " + (getPlayer().isDead() ? "(0,0)" : getPlayer().getPosition()) + ":");
+        // a target is meant both as: target for a moving action or for choosing a target square
+        out.println("Write the target moving coordinates " + (getPlayer().isDead() ? "(0,0)" : getPlayer().getPosition()) + ":");
         do {
             out.print(">>> ");
 
@@ -625,8 +835,8 @@ public class Cli extends ClientGameManager {
         CliPrinter.printPowerups(out, getPowerups().toArray(PowerupCard[]::new));
     }
 
-    private void printWeapons(UserPlayer userPlayer) {
-        CliPrinter.printWeapons(out, userPlayer);
+    private void printWeapons(WeaponCard[] weapons) {
+        CliPrinter.printWeapons(out, weapons);
     }
 
     private void printPlayerBoard() {
@@ -654,5 +864,77 @@ public class Cli extends ClientGameManager {
         } while (!accepted);
 
         return choose;
+    }
+
+    private String readTargetUsername(ArrayList<UserPlayer> inGamePlayers, boolean stoppable) {
+        boolean firstError = true;
+        boolean accepted = false;
+        boolean isTerminatorPresent = getGameSerialized().isBotPresent();
+
+        String chosenTarget;
+        do {
+            out.print(">>> ");
+            chosenTarget = in.nextLine();
+            if (stoppable && chosenTarget.equals("-1")) return chosenTarget;
+            if (isTerminatorPresent && chosenTarget.equals("bot")) {
+                accepted = true;
+            } else if (!chosenTarget.equals(getPlayer().getUsername())) {
+                for (UserPlayer player : inGamePlayers) {
+                    if (player.getUsername().equals(chosenTarget)) {
+                        accepted = true;
+                        break;
+                    }
+                }
+            } else {
+                firstError = promptInputError(firstError, "Target Not Valid");
+            }
+        } while (!accepted);
+
+        return chosenTarget;
+    }
+
+    private RoomColor readRoomColor() {
+        boolean firstError = true;
+        boolean accepted = false;
+        String stringColor;
+        RoomColor roomColor = null;
+
+        do {
+            out.print(">>> ");
+            stringColor = in.nextLine();
+            try {
+                roomColor = RoomColor.getColor(stringColor);
+                accepted = true;
+            } catch (InexistentColorException e) {
+                firstError = promptInputError(firstError, "Invalid Room Color");
+            }
+        } while (!accepted);
+
+        return roomColor;
+    }
+
+    private boolean readMoveDecision() {
+        boolean firstError = true;
+        boolean accepted = false;
+        final String BEFORE = "before";
+        final String AFTER = "after";
+        String stringDecision;
+        Boolean finalDecision = null;
+
+        do {
+            out.print(">>> ");
+            stringDecision = in.nextLine();
+            if(stringDecision.equalsIgnoreCase(BEFORE)) {
+                finalDecision = true;
+                accepted = true;
+            } else if (stringDecision.equalsIgnoreCase(AFTER)) {
+                finalDecision = false;
+                accepted = true;
+            } else {
+                firstError = promptInputError(firstError, "Invalid input");
+            }
+        } while (!accepted);
+
+        return finalDecision;
     }
 }

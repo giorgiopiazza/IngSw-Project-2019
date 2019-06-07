@@ -1,6 +1,5 @@
 package utility;
 
-import enumerations.MessageContent;
 import enumerations.PlayerColor;
 import exceptions.actions.PowerupCardsNotFoundException;
 import exceptions.actions.WeaponCardsNotFoundException;
@@ -268,22 +267,17 @@ public class MessageBuilder {
 
     @NotNull
     @Contract("_, null, _, _ -> fail; _, !null, null, _ -> fail")
-    public static ShootRequest buildShootRequest(String token, UserPlayer player, WeaponCard weaponCard, int effect) throws WeaponCardsNotFoundException {
-        if (player == null || weaponCard == null)
-            throw new NullPointerException("player and weaponCard cannot be null");
+    public static ShootRequest buildShootRequest(ShootRequest.FireRequestBuilder fireRequestBuilt) {
+        if (fireRequestBuilt.getUsername() == null)
+            throw new NullPointerException("player userName can not be null");
 
-        int index = -1;
+        if(fireRequestBuilt.getWeaponID() < 0 || fireRequestBuilt.getWeaponID() > 3)
+            throw new IndexOutOfBoundsException("Invalid index for maximum number of weapons allowed in hand");
 
-        for (int i = 0; i < player.getWeapons().length; i++) {
-            if (weaponCard.equals(player.getWeapons()[i])) {
-                index = i;
-                break;
-            }
-        }
+        if(fireRequestBuilt.getEffect() < 0 || fireRequestBuilt.getEffect() > 3)
+            throw new IndexOutOfBoundsException("Invalid index for maximum number od powerups allowed in hand!");
 
-        if (index < 0) throw new WeaponCardsNotFoundException();
-
-        return new ShootRequest(new ShootRequest.FireRequestBuilder(player.getUsername(), token, index, effect, null));
+        return fireRequestBuilt.build();
     }
 
     @NotNull

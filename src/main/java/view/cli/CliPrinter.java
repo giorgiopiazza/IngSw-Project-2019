@@ -504,11 +504,9 @@ class CliPrinter {
      * Prints the weapons in a {@link UserPlayer UserPlayer's} hand
      *
      * @param out        printStream where to print
-     * @param userPlayer the {@link UserPlayer UserPlayer} whose {@link WeaponCard Weapons} need to be printed
+     * @param weaponCards Array of {@link WeaponCard weapons} to be printed
      */
-    static void printWeapons(AdrenalinePrintStream out, UserPlayer userPlayer) {
-        WeaponCard[] weaponCards = userPlayer.getWeapons();
-
+    static void printWeapons(AdrenalinePrintStream out, WeaponCard[] weaponCards) {
         if (weaponCards.length == 0) {
             out.println("                    YOU HAVE NO WEAPONS                     ");
         } else {
@@ -646,7 +644,7 @@ class CliPrinter {
 
         for (WeaponCard weapon : weapons) {
             if (weapon != null) {
-                out.append("║           Base Effect:            ║     ");
+                out.append("║         Base Effect: [0]          ║     ");
             } else {
                 out.append("                                          ");
             }
@@ -662,7 +660,7 @@ class CliPrinter {
         for (WeaponCard weapon : weapons) {
             if (weapon != null) {
                 if (!weapon.getSecondaryEffects().isEmpty()) {
-                    out.append("║           First Effect:           ║     ");
+                    out.append("║         First Effect: [1]         ║     ");
                 } else {
                     out.append("║                                   ║     ");
                 }
@@ -681,7 +679,7 @@ class CliPrinter {
         for (WeaponCard weapon : weapons) {
             if (weapon != null) {
                 if (weapon.getSecondaryEffects().size() > 1) {
-                    out.append("║           Second Effect:          ║     ");
+                    out.append("║         Second Effect: [2]        ║     ");
                 } else {
                     out.append("║                                   ║     ");
                 }
@@ -700,7 +698,7 @@ class CliPrinter {
         for (WeaponCard weapon : weapons) {
             if (weapon != null) {
                 if (weapon.getSecondaryEffects().size() > 2) {
-                    out.append("║           Combo Effect:           ║     ");
+                    out.append("║         Combo Effect: [3]         ║     ");
                 } else {
                     out.append("║    NO COMBO WITH THESE EFFECTS    ║     ");
                 }
