@@ -4,6 +4,8 @@ import enumerations.MessageContent;
 import model.Game;
 
 public class DisconnectionMessage extends Message {
+    private static final long serialVersionUID = -8073712986535222650L;
+
     private final String username;
 
     public DisconnectionMessage(String username) {

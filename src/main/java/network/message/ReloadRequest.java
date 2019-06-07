@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class ReloadRequest extends ActionRequest {
+    private static final long serialVersionUID = -2207568671961041647L;
+
     private final ArrayList<Integer> weapons;
 
     public ReloadRequest(String username, String token, ArrayList<Integer> weapons, ArrayList<Integer> paymentPowerups) {

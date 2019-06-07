@@ -35,7 +35,7 @@ public class ExtraMarkDecorator extends ExtraEffectDecorator {
 
         switch (targetType) {
             case PLAYER:
-                targetsUsername = request.getTargetPlayersUsernames();
+                targetsUsername = request.getTargetPlayersUsername();
                 for (int i = 0; i < targetsUsername.size(); ++i) {
                     Game.getInstance().getUserPlayerByUsername(targetsUsername.get(i)).getPlayerBoard().addMark(shooter, markDistribution[i]);
                 }

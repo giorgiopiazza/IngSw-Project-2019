@@ -293,7 +293,7 @@ public class RoundManager {
         PowerupRequest tempRequest;
         List<Integer> powerupsIndexes = scopeMessage.getPowerup();
         List<Integer> paymentPowerups = scopeMessage.getPaymentPowerups();
-        List<String> targets = scopeMessage.getTargetPlayersUsernames();
+        List<String> targets = scopeMessage.getTargetPlayersUsername();
         int sizeDifference = powerupsIndexes.size() - targets.size();
 
         for (Integer index : powerupsIndexes) {

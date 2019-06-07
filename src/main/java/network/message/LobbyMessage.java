@@ -6,6 +6,8 @@ import enumerations.PlayerColor;
 import java.util.Objects;
 
 public class LobbyMessage extends Message {
+    private static final long serialVersionUID = -8420070827032848314L;
+
     private final PlayerColor chosenColor;
     private final boolean disconnection;
 

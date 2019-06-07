@@ -4,6 +4,8 @@ import enumerations.MessageContent;
 import model.player.PlayerPosition;
 
 public class UseTerminatorRequest extends Message {
+    private static final long serialVersionUID = -2468038742086444870L;
+
     private final PlayerPosition movingPosition;
     private final String targetPlayer;
 

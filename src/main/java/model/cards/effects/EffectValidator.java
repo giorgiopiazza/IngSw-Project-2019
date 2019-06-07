@@ -303,7 +303,7 @@ class EffectValidator {
         }
 
         // Target move validation
-        List<String> targetsUsername = request.getTargetPlayersUsernames();
+        List<String> targetsUsername = request.getTargetPlayersUsername();
         List<PlayerPosition> movingPos = request.getTargetPlayersMovePositions();
         int moveDistance;
 
@@ -421,7 +421,7 @@ class EffectValidator {
 
         switch (targetType) {
             case PLAYER:
-                targets = getPlayersByUsername(request.getTargetPlayersUsernames());
+                targets = getPlayersByUsername(request.getTargetPlayersUsername());
                 squares = new ArrayList<>();
 
                 for (Player targetPlayer : targets) {
@@ -459,7 +459,7 @@ class EffectValidator {
 
         switch (targetType) {
             case PLAYER:
-                if (request.getTargetPlayersUsernames().isEmpty()) {
+                if (request.getTargetPlayersUsername().isEmpty()) {
                     return false;
                 } else {
                     if (hasAutoShoot(request)) {
@@ -482,7 +482,7 @@ class EffectValidator {
     }
 
     private static boolean hasAutoShoot(EffectRequest request) {
-        for (String username : request.getTargetPlayersUsernames()) {
+        for (String username : request.getTargetPlayersUsername()) {
             if (username.equals(request.getSenderUsername())) {
                 return true;
             }
@@ -509,7 +509,7 @@ class EffectValidator {
 
         switch (targetType) {
             case PLAYER:
-                List<String> targetUsernames = request.getTargetPlayersUsernames();
+                List<String> targetUsernames = request.getTargetPlayersUsername();
 
                 targetNum = targetUsernames.size();
                 break;

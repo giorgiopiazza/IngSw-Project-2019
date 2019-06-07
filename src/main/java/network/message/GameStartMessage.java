@@ -4,6 +4,8 @@ import enumerations.MessageContent;
 import model.Game;
 
 public class GameStartMessage extends Message {
+    private static final long serialVersionUID = -5671092105322763783L;
+
     private final String firstPlayer;
 
     public GameStartMessage(String firstPlayer) {

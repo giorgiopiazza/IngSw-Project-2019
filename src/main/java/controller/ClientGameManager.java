@@ -214,7 +214,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                     if (turnOwner.equals(username)) {
                         yourTurn = true;
                     }
-                    queue.add(this::startGame);
+                    queue.add(this::makeMove);
                 }
                 break;
 

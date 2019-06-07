@@ -7,6 +7,8 @@ import model.player.PlayerPosition;
 import java.util.ArrayList;
 
 public class MovePickRequest extends ActionRequest {
+    private static final long serialVersionUID = 8063700627094470135L;
+
     private final WeaponCard addingWeapon;
     private final WeaponCard discardingWeapon;
 
