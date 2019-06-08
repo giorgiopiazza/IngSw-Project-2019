@@ -21,6 +21,7 @@ interface ClientGameManagerListener {
 
     boolean askBotMove();
     void askReload();
+    void askPowerup();
 
     void botMove();
     void reload();
