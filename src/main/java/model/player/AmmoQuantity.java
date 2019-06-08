@@ -81,6 +81,10 @@ public class AmmoQuantity implements Serializable {
         }
     }
 
+    public boolean noAmmo() {
+        return redAmmo == 0 && blueAmmo == 0 && yellowAmmo == 0;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

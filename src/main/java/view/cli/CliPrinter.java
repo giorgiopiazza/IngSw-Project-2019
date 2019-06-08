@@ -1,12 +1,10 @@
 package view.cli;
 
-import enumerations.Ammo;
-import enumerations.PlayerColor;
-import enumerations.SquareAdjacency;
-import enumerations.SquareType;
+import enumerations.*;
 import model.GameSerialized;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
+import model.player.AmmoQuantity;
 import model.player.Player;
 import model.map.*;
 import model.player.UserPlayer;
@@ -828,7 +826,7 @@ class CliPrinter {
 
     private static StringBuilder addSecondMissingBlanks(String powerupName) {
         StringBuilder tempOut = new StringBuilder();
-        final int MAX_POWERUP_LENGTH = 19;
+        final int MAX_POWERUP_LENGTH = 18;
         int missingBlanks = (MAX_POWERUP_LENGTH - powerupName.length()) / 2;
 
         if (powerupName.length() % 2 != 0) ++missingBlanks;
@@ -918,6 +916,27 @@ class CliPrinter {
         String name = powerupCard.getName();
 
         return name + " " + color;
+    }
+
+    static void printAmmo(AdrenalinePrintStream out, AmmoQuantity ammo) {
+        if(ammo.noAmmo()) {
+            out.println("                    NO AMMO POOR BOY                    ");
+        } else {
+            out.print(
+                            printColorAmmos(ammo.getRedAmmo(), "Red") + "\n\n" +
+                            printColorAmmos(ammo.getBlueAmmo(), "Blue") + "\n\n" +
+                            printColorAmmos(ammo.getYellowAmmo(), "Yellow") + "\n\n"
+            );
+        }
+    }
+
+    private static String printColorAmmos(int ammoInt, String color) {
+        StringBuilder tempOut = new StringBuilder();
+        String ammoColor = AnsiCode.getTextColorCodeByName(color, true);
+
+        tempOut.append(color).append(" Ammo: ");
+
+        return tempOut.append(ammoColor).append("  ").append(AnsiCode.RESET).append(" ").toString().repeat(ammoInt);
     }
 
     /**

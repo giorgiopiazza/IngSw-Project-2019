@@ -401,7 +401,7 @@ public class Cli extends ClientGameManager {
 
     @Override
     public void reload() {
-        // TODO
+        
     }
 
     private int askWeapon() {
@@ -616,6 +616,8 @@ public class Cli extends ClientGameManager {
         Effect chosenEffect;
 
         printMap();
+        out.println("Care your Ammo before choosing to shoot: ");
+        printAmmo();
 
         int weapon = askWeapon();
         if (weapon == -1) return;
@@ -685,7 +687,8 @@ public class Cli extends ClientGameManager {
         printWeapons(weaponSquare.getWeapons());
 
         do {
-            out.println("Choose the weapon:");
+            out.println("Choose the weapon, your Ammo are:");
+            printAmmo();
             choose = readInt(0, weapons.length - 1);
         } while (choose < 0 || choose > weapons.length - 1);
 
@@ -702,6 +705,8 @@ public class Cli extends ClientGameManager {
         newPos = getCoordinates();
 
         if (getGameSerialized().getGameMap().getSquare(newPos.getCoordX(), newPos.getCoordY()).getSquareType() == SquareType.TILE) {
+            out.println("You picked a TILE! Your new Ammo (check also your powerups) are:");
+            printAmmo();
             if (!sendRequest(MessageBuilder.buildMovePickRequest(client.getToken(), getPlayer(), newPos))) {
                 promptError("Error while sending the request", true);
             }
@@ -922,6 +927,10 @@ public class Cli extends ClientGameManager {
 
     private void printPlayerBoard() {
         CliPrinter.printPlayerBoards(out, getGameSerialized());
+    }
+
+    private void printAmmo() {
+        CliPrinter.printAmmo(out, getPlayer().getPlayerBoard().getAmmo());
     }
 
     private int readInt() {
