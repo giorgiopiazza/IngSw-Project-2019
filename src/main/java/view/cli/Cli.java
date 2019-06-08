@@ -44,10 +44,8 @@ public class Cli extends ClientGameManager {
      */
     public void start() {
         printLogo();
-        askUsername();
-        askConnection();
-        askColor();
-        askLobbyJoin();
+        doConnection();
+        doLobbyJoin();
 
         startUpdater(client);
     }
@@ -253,7 +251,16 @@ public class Cli extends ClientGameManager {
             }
         }
 
-        if (!connected) askUsername();
+        if (!connected) {
+            client.close();
+            client = null;
+            doConnection();
+        }
+    }
+
+    private void doConnection() {
+        askUsername();
+        askConnection();
     }
 
     /**
@@ -282,7 +289,6 @@ public class Cli extends ClientGameManager {
 
             if (in.hasNextLine()) {
                 String color = in.nextLine();
-
 
                 try {
                     playercolor = PlayerColor.valueOf(color.toUpperCase());
@@ -358,10 +364,15 @@ public class Cli extends ClientGameManager {
                 out.println(response.getMessage());
                 if (response.getStatus() == MessageStatus.ERROR) {
                     out.println();
-                    askColor();
+                    doLobbyJoin();
                 }
             }
         }
+    }
+
+    private void doLobbyJoin() {
+        askColor();
+        askLobbyJoin();
     }
 
     /**
