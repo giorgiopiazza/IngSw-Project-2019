@@ -143,9 +143,9 @@ public class GameManager implements TimerRunListener, Serializable {
             } // else no special States are affected
 
             switch (receivedMessage.getContent()) {
-                case TERMINATOR:
+                case BOT_ACTION:
                     return terminatorCheckState(receivedMessage);
-                case POWERUP:
+                case POWERUP_USAGE:
                     return powerupCheckState(receivedMessage);
                 case MOVE:
                     return moveCheckState(receivedMessage);
@@ -204,7 +204,7 @@ public class GameManager implements TimerRunListener, Serializable {
      */
     private Response veryFirstRoundHandler(Message receivedMessage) {
         switch (receivedMessage.getContent()) {
-            case TERMINATOR_SPAWN:
+            case BOT_SPAWN:
                 return terminatorSpawnCheckState(receivedMessage);
             case DISCARD_POWERUP:
                 return discardPowerupCheckState(receivedMessage);
@@ -224,9 +224,9 @@ public class GameManager implements TimerRunListener, Serializable {
     private Response handleTerminatorAsLastAction(Message receivedMessage) {
         // only messages to use the terminator action and a powerup can be used!
         switch (receivedMessage.getContent()) {
-            case TERMINATOR:
+            case BOT_ACTION:
                 return roundManager.handleTerminatorAction((UseTerminatorRequest) receivedMessage, PossibleGameState.MISSING_TERMINATOR_ACTION);
-            case POWERUP:
+            case POWERUP_USAGE:
                 return roundManager.handlePowerupAction((PowerupRequest) receivedMessage);
             default:
                 return buildInvalidResponse();
@@ -240,7 +240,7 @@ public class GameManager implements TimerRunListener, Serializable {
      * @return a positive or negative {@link Response Response} handled by the server
      */
     private Response granadeCheckContent(Message receivedMessage) {
-        if (receivedMessage.getContent() == MessageContent.POWERUP) {
+        if (receivedMessage.getContent() == MessageContent.POWERUP_USAGE) {
             return onGranadeMessage(receivedMessage);
         } else {
             return buildInvalidResponse();
@@ -254,7 +254,7 @@ public class GameManager implements TimerRunListener, Serializable {
      * @return a positive or negative {@link Response Response} handled by the server
      */
     private Response scopeCheckContent(Message receivedMessage) {
-        if (receivedMessage.getContent() == MessageContent.POWERUP) {
+        if (receivedMessage.getContent() == MessageContent.POWERUP_USAGE) {
             if (!((PowerupRequest) receivedMessage).getPowerup().isEmpty()) {
                 return roundManager.handleShootAction(shootParameters.shootRequest, (PowerupRequest) receivedMessage, shootParameters.secondAction);
             } else {
@@ -273,7 +273,7 @@ public class GameManager implements TimerRunListener, Serializable {
      */
     private Response checkTerminatorRespawn(Message receivedMessage) {
         Response tempResponse;
-        if (receivedMessage.getContent() == MessageContent.TERMINATOR_SPAWN) {
+        if (receivedMessage.getContent() == MessageContent.BOT_SPAWN) {
             tempResponse = roundManager.handleTerminatorRespawn((TerminatorSpawnRequest) receivedMessage);
             if (tempResponse.getStatus() == MessageStatus.OK) {
                 // if the Respawn message is validated I can distribute the points of the terminator's playerboard, move the skull from the tracker and then reset his playerboard
@@ -670,7 +670,7 @@ public class GameManager implements TimerRunListener, Serializable {
      */
     private Response onGranadeMessage(Message receivedMessage) {
         switch (receivedMessage.getContent()) {
-            case POWERUP:
+            case POWERUP_USAGE:
                 return roundManager.handleGranadeUsage((PowerupRequest) receivedMessage);
             case PASS_TURN:     // this is a "false" PASS_TURN, turn goes to the next damaged player by the "real" turnOwner
                 // implementation then goes directly here

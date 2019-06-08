@@ -10,7 +10,7 @@ public class UseTerminatorRequest extends Message {
     private final String targetPlayer;
 
     public UseTerminatorRequest(String username, String token, PlayerPosition movingPosition, String targetPlayer) {
-        super(username, token, MessageContent.TERMINATOR);
+        super(username, token, MessageContent.BOT_ACTION);
         this.movingPosition = movingPosition;
         this.targetPlayer = targetPlayer;
     }

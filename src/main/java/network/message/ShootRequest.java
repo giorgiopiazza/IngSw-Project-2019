@@ -17,7 +17,7 @@ public class ShootRequest extends EffectRequest {
 
     private ArrayList<Integer> rechargingWeapons;
 
-    public ShootRequest(FireRequestBuilder builder) {
+    public ShootRequest(ShootRequestBuilder builder) {
         super(
                 new EffectRequestBuilder(builder.username, builder.token, MessageContent.SHOOT)
                         .targetPlayersUsernames(builder.targetPlayersUsernames)
@@ -55,7 +55,7 @@ public class ShootRequest extends EffectRequest {
         return rechargingWeapons;
     }
 
-    public static class FireRequestBuilder {
+    public static class ShootRequestBuilder {
         private String username;
         private String token;
         private int weaponID;
@@ -74,7 +74,7 @@ public class ShootRequest extends EffectRequest {
         private ArrayList<Integer> paymentPowerups;
         private ArrayList<Integer> rechargingWeapons;
 
-        public FireRequestBuilder(String username, String token, int weaponID, int effect, ArrayList<Integer> rechargingWeapons) {
+        public ShootRequestBuilder(String username, String token, int weaponID, int effect, ArrayList<Integer> rechargingWeapons) {
             this.username = username;
             this.token = token;
             this.weaponID = weaponID;
@@ -102,42 +102,42 @@ public class ShootRequest extends EffectRequest {
             return this.rechargingWeapons;
         }
 
-        public FireRequestBuilder targetPlayersUsernames(ArrayList<String> targetPlayersUsernames) {
+        public ShootRequestBuilder targetPlayersUsernames(ArrayList<String> targetPlayersUsernames) {
             this.targetPlayersUsernames = targetPlayersUsernames;
             return this;
         }
 
-        public FireRequestBuilder targetPositions(ArrayList<PlayerPosition> targetPositions) {
+        public ShootRequestBuilder targetPositions(ArrayList<PlayerPosition> targetPositions) {
             this.targetPositions = targetPositions;
             return this;
         }
 
-        public FireRequestBuilder targetRoomColor(RoomColor targetRoomColor) {
+        public ShootRequestBuilder targetRoomColor(RoomColor targetRoomColor) {
             this.targetRoomColor = targetRoomColor;
             return this;
         }
 
-        public FireRequestBuilder senderMovePosition(PlayerPosition senderMovePosition) {
+        public ShootRequestBuilder senderMovePosition(PlayerPosition senderMovePosition) {
             this.senderMovePosition = senderMovePosition;
             return this;
         }
 
-        public FireRequestBuilder targetPlayersMovePositions(ArrayList<PlayerPosition> targetPlayersMovePositions) {
+        public ShootRequestBuilder targetPlayersMovePositions(ArrayList<PlayerPosition> targetPlayersMovePositions) {
             this.targetPlayersMovePositions = targetPlayersMovePositions;
             return this;
         }
 
-        public FireRequestBuilder moveSenderFirst(boolean moveSenderFirst) {
+        public ShootRequestBuilder moveSenderFirst(boolean moveSenderFirst) {
             this.moveSenderFirst = moveSenderFirst;
             return this;
         }
 
-        public FireRequestBuilder moveTargetsFirst(boolean moveTargetsFirst) {
+        public ShootRequestBuilder moveTargetsFirst(boolean moveTargetsFirst) {
             this.moveTargetsFirst = moveTargetsFirst;
             return this;
         }
 
-        public FireRequestBuilder paymentPowerups(ArrayList<Integer> paymentPowerups) {
+        public ShootRequestBuilder paymentPowerups(ArrayList<Integer> paymentPowerups) {
             this.paymentPowerups = paymentPowerups;
             return this;
         }

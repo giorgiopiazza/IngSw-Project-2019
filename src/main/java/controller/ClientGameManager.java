@@ -14,7 +14,9 @@ import network.client.ClientUpdateListener;
 import network.client.ClientUpdater;
 import network.message.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -32,7 +34,8 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
     private final Object gameSerializedLock = new Object(); // handles GameSerialized parallelism
 
-    private ClientRoundManager roundManager; //manage the rounds of this client
+    private Client client;
+    private ClientRoundManager roundManager; // manage the rounds of this client
     private GameSerialized gameSerialized;
 
     private String username;
@@ -42,16 +45,16 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     private String turnOwner;
     private boolean turnOwnerChanged = false;
 
-    private String frenzyActivator = null;
-
     private boolean firstTurn;
     private boolean yourTurn;
 
     private boolean isBotPresent;
-    private boolean wantMoveBot;
+
+    private boolean noChangeStateRequest; // Identify a request that doesn't have to change the player state
 
     public ClientGameManager() {
         this.firstTurn = true;
+        this.noChangeStateRequest = false;
         new Thread(this).start();
     }
 
@@ -68,16 +71,21 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     }
 
     protected void startUpdater(Client client) {
+        this.client = client;
+
         new ClientUpdater(client, this);
     }
 
     private void startGame() {
-        // TODO:  terminator present
-        roundManager = new ClientRoundManager(getPlayer(), false);
+        roundManager = new ClientRoundManager(isBotPresent);
 
-        if (firstTurn) { // first round
-            if (firstPlayer.equals(username)) { // first player to play
+        if (firstTurn) { // First round
+            if (firstPlayer.equals(username)) { // First player to play
                 yourTurn = true;
+
+                if (isBotPresent) {
+                    roundManager.botSpawn();
+                }
             }
 
             firstPlayerCommunication(firstPlayer);
@@ -89,56 +97,31 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
     private void newTurn() {
         if (yourTurn) {
+            roundManager.beginRound();
             makeMove();
         } else {
             notYourTurn();
         }
     }
 
-    private void makeMove() {
-        // TODO: player is dead
-        switch (roundManager.getUserPlayerState()) {
-            case SPAWN:
-                roundManager.beginRound();
-                spawn();
-                botMoveRequest();
-                break;
-
-            case BEGIN:
-                roundManager.beginRound();
-                botMoveRequest();
-                break;
-
-            case FIRST_ACTION:
-            case SECOND_ACTION:
-                askPowerup();
-                firstSecondAction();
-                botMoveRequest();
-                break;
-
-            case BOT_ACTION:
-                // TODO: move of terminator
-                break;
-
-            case RELOAD:
-                askReload();
-                break;
-            case END:
-                // TODO: end round
-                askPowerup();
-                roundManager.endRound();
-                break;
-
-            default:
-                throw new ClientRoundManagerException("Cannot be here");
-        }
-    }
-
     /**
      * Causes the user to perform all the moves it can make in this stage of this round
      */
-    private void firstSecondAction() {
+    private void makeMove() {
         switch (askAction()) {
+            case SPAWN_BOT:
+                // TODO
+                break;
+
+            case CHOOSE_SPAWN:
+            case CHOOSE_RESPAWN:
+                spawn();
+                break;
+
+            case POWER_UP:
+                powerup();
+                break;
+
             case MOVE:
                 move();
                 break;
@@ -179,16 +162,20 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 // TODO
                 break;
 
+            case BOT_ACTION:
+                botAction();
+                break;
+
+            case RELOAD:
+                reload();
+                break;
+
+            case PASS_TURN:
+                // TODO
+                break;
+
             default:
                 throw new ClientRoundManagerException("cannot be here");
-        }
-    }
-
-    private void botMoveRequest() {
-        if (roundManager.isBotPresent() && !roundManager.hasBotMoved()) {
-            wantMoveBot = askBotMove();
-        } else {
-            wantMoveBot = false;
         }
     }
 
@@ -200,10 +187,19 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 if (response.getStatus().equals(MessageStatus.ERROR)) {
                     responseError(response.getMessage());
                 } else {
-                    roundManager.nextMove(wantMoveBot);
+
+                    if (noChangeStateRequest) {
+                        noChangeStateRequest = false;
+                    } else {
+                        roundManager.nextState();
+                    }
                 }
 
-                queue.add(this::makeMove);
+                if (roundManager.getUserPlayerState() != UserPlayerState.END) {
+                    queue.add(this::makeMove);
+                } else {
+                    queue.add(roundManager::endRound);
+                }
 
                 if (yourTurn && turnOwnerChanged) { // Use to wait the response before calling newTurn()
                     turnOwnerChanged = false;
@@ -269,27 +265,147 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                     yourTurn = true;
                 }
 
+                checkDeath();
+
                 queue.add(this::newTurn);
             }
         }
     }
 
-    private void checkFrenzyMode(GameStateMessage stateMessage) {
-        if (frenzyActivator == null && stateMessage.getGameSerialized().getCurrentState() == GameState.FINAL_FRENZY) {
-            frenzyActivator = stateMessage.getTurnOwner();
+    private void checkDeath() {
+        if (getPlayer().isDead()) {
+            roundManager.death();
         }
     }
 
-    protected UserPlayerState getUserPlayerState() {
-        return roundManager.getUserPlayerState();
+    private void checkFrenzyMode(GameStateMessage stateMessage) {
+        if (stateMessage.getGameSerialized().getCurrentState() == GameState.FINAL_FRENZY
+                && roundManager.getGameClientState() != GameClientState.FINAL_FRENZY) {
+
+            roundManager.setFinalFrenzy();
+
+            List<String> players = getPlayers().stream().map(Player::getUsername).collect(Collectors.toList());
+
+            int activatorIndex = players.indexOf(stateMessage.getTurnOwner());
+            int playerIndex = players.indexOf(getUsername());
+
+            roundManager.setSecondFrenzyAction(playerIndex > activatorIndex);
+        }
     }
 
     protected List<PossibleAction> getPossibleActions() {
-        if (roundManager.getGameClientState() == GameClientState.NORMAL)
-            return roundManager.possibleActions();
-        else {
-            return roundManager.possibleFinalFrenzyActions(getPlayers().stream().map(Player::getUsername).collect(Collectors.toList()), frenzyActivator);
+        switch (roundManager.getUserPlayerState()) {
+            case BOT_SPAWN:
+                return List.of(PossibleAction.SPAWN_BOT);
+
+            case SPAWN:
+                return List.of(PossibleAction.CHOOSE_SPAWN);
+
+            case FIRST_ACTION:
+            case SECOND_ACTION:
+            case FIRST_FRENZY_ACTION:
+            case SECOND_FRENZY_ACTION:
+                return getGameActions();
+
+            case BOT_ACTION:
+                return List.of(PossibleAction.BOT_ACTION);
+
+            case ENDING_PHASE:
+                return getEndingActions();
+
+            case DEAD:
+                return List.of(PossibleAction.CHOOSE_RESPAWN);
+
+            default:
+                throw new ClientRoundManagerException("Cannot be here: " + roundManager.getUserPlayerState().name());
         }
+    }
+
+    private List<PossibleAction> getGameActions() {
+        List<PossibleAction> actions;
+
+        if (roundManager.getGameClientState() == GameClientState.NORMAL)
+            actions = possibleActions();
+        else {
+            actions = possibleFinalFrenzyActions();
+        }
+
+        if (getPowerups().stream().anyMatch(p -> p.getName().equals(TELEPORTER) || p.getName().equals(NEWTON))) {
+            actions.add(PossibleAction.POWER_UP);
+        }
+
+        if (roundManager.isBotPresent() && !roundManager.hasBotMoved()) {
+            actions.add(PossibleAction.BOT_ACTION);
+        }
+
+        return actions;
+    }
+
+    /**
+     * This method return the possible actions that the player can be in this round.
+     * If in the list is present the PossibleAction.RELOAD, this action is not counted and another can be performed.
+     * If in the list is present the PossibleAction.BOT_ACTION, means that the next move can be the terminator one,
+     * if the round is in the UserPlayerState.SECOND_ACTION state, then the next move is necessarily the terminator one.
+     *
+     * @return a list with the possible actions that the player can perform in this round
+     */
+    private List<PossibleAction> possibleActions() {
+        List<PossibleAction> actions = new ArrayList<>();
+        PlayerBoardState boardState = getPlayer().getPlayerBoard().getBoardState();
+
+        actions.add(PossibleAction.MOVE);
+
+        switch (boardState) {
+            case NORMAL:
+                actions.add(PossibleAction.MOVE_AND_PICK);
+                actions.add(PossibleAction.SHOOT);
+                break;
+
+            case FIRST_ADRENALINE:
+                actions.add(PossibleAction.ADRENALINE_PICK);
+                actions.add(PossibleAction.SHOOT);
+                break;
+
+            case SECOND_ADRENALINE:
+                actions.add(PossibleAction.ADRENALINE_PICK);
+                actions.add(PossibleAction.ADRENALINE_SHOOT);
+                break;
+        }
+
+        return actions;
+    }
+
+    /**
+     * Returns the final frenzy actions based on who activated the frenzy mode and the position of the player
+     * in the game turn
+     *
+     * @return the list of possible possibleFinalFrenzyActions for {@code that} player
+     */
+    private List<PossibleAction> possibleFinalFrenzyActions() {
+        List<PossibleAction> actions = new ArrayList<>();
+
+        if (roundManager.isDoubleActionFrenzy()) {
+            actions.add(PossibleAction.FRENZY_MOVE);
+            actions.add(PossibleAction.FRENZY_SHOOT);
+            actions.add(PossibleAction.FRENZY_PICK);
+        } else {
+            actions.add(PossibleAction.LIGHT_FRENZY_SHOOT);
+            actions.add(PossibleAction.LIGHT_FRENZY_PICK);
+        }
+
+        return actions;
+    }
+
+    private List<PossibleAction> getEndingActions() {
+        List<PossibleAction> actions = new ArrayList<>();
+
+        if (getPowerups().stream().anyMatch(p -> p.getName().equals(TELEPORTER) || p.getName().equals(NEWTON))) {
+            actions.add(PossibleAction.POWER_UP);
+        }
+        actions.add(PossibleAction.RELOAD);
+        actions.add(PossibleAction.PASS_TURN);
+
+        return actions;
     }
 
     private List<Player> getPlayers() {
@@ -361,5 +477,23 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
     public String getFirstPlayer() {
         return firstPlayer;
+    }
+
+    protected boolean sendRequest(Message message) {
+        checkChangeStateRequest(message);
+
+        try {
+            client.sendMessage(message);
+        } catch (IOException e) {
+            Logger.getGlobal().severe(e.getMessage());
+            return false;
+        }
+
+        return true;
+    }
+
+    private void checkChangeStateRequest(Message message) {
+        noChangeStateRequest = (roundManager.getUserPlayerState() != UserPlayerState.BOT_ACTION && message.getContent() == MessageContent.BOT_ACTION) ||
+                message.getContent() == MessageContent.POWERUP_USAGE;
     }
 }

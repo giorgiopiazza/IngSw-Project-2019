@@ -1,7 +1,7 @@
 package enumerations;
 
 public enum PossibleAction {
-    SPAWN_TERMINATOR("Spawn terminator"),                                       // possible actions a player must do even before the waiting to play state
+    SPAWN_BOT("Spawn bot"),                                       // possible actions a player must do even before the waiting to play state
     CHOOSE_SPAWN("Choose spawn point"),
     CHOOSE_RESPAWN("Choose respawn point"),
     POWER_UP("Use a powerup"),
@@ -16,7 +16,8 @@ public enum PossibleAction {
     FRENZY_SHOOT("TODO Frenzy move shoot"),
     LIGHT_FRENZY_PICK("TODO Frenzy move pick"),                                 // possible x1 final frenzy actions
     LIGHT_FRENZY_SHOOT("TODO Frenzy move shot"),
-    BOT_ACTION("Do the bot action");
+    BOT_ACTION("Do the bot action"),
+    PASS_TURN("Pass the turn");
 
     private String description;
 

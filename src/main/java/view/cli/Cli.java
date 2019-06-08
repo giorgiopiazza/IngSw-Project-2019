@@ -3,14 +3,12 @@ package view.cli;
 import controller.ClientGameManager;
 import enumerations.*;
 import exceptions.actions.PowerupCardsNotFoundException;
-import exceptions.actions.WeaponCardsNotFoundException;
 import exceptions.game.InexistentColorException;
 import exceptions.utility.InvalidPropertiesException;
 import model.GameSerialized;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
 import model.cards.effects.Effect;
-import model.cards.effects.PowerupBaseEffect;
 import model.player.*;
 import network.client.*;
 import network.message.*;
@@ -402,11 +400,7 @@ public class Cli extends ClientGameManager {
 
     @Override
     public void reload() {
-        try {
-            client.sendMessage(MessageBuilder.buildReloadRequest(client.getToken(), getPlayer(), getPlayer().getWeapons()[askWeapon()]));
-        } catch (IOException | WeaponCardsNotFoundException e) {
-            promptError(e.getMessage(), true);
-        }
+        // TODO
     }
 
     private int askWeapon() {
@@ -454,7 +448,7 @@ public class Cli extends ClientGameManager {
         return paymentPowerups;
     }
 
-    private void buildFireRequest(Effect chosenEffect, ShootRequest.FireRequestBuilder fireRequestBuilding) {
+    private void buildShootRequest(Effect chosenEffect, ShootRequest.ShootRequestBuilder fireRequestBuilding) {
         Map<String, String> effectProperties = chosenEffect.getProperties();
         TargetType[] targets = chosenEffect.getTargets();
         ArrayList<String> targetsChosen = new ArrayList<>();
@@ -478,19 +472,19 @@ public class Cli extends ClientGameManager {
         }
 
         // now that I have the targets we need to handle the possible move decisions
-        if(effectProperties.containsKey(MOVE)) {
+        if (effectProperties.containsKey(MOVE)) {
             // move is always permitted both before and after, decision is then always asked
             fireRequestBuilding.senderMovePosition(askMovePositionInShoot());
             fireRequestBuilding.moveSenderFirst(askBeforeAfterMove());
         }
 
         // now that I have handled the Turn Owner movement I have to handle the targets ones
-        if(effectProperties.containsKey(MOVE_TARGET) || effectProperties.containsKey(MAX_MOVE_TARGET)) {
+        if (effectProperties.containsKey(MOVE_TARGET) || effectProperties.containsKey(MAX_MOVE_TARGET)) {
             fireRequestBuilding.targetPlayersMovePositions(askTargetsMovePositions(targetsChosen));
         }
 
         // in the end if the targets movement can be done before or after the shoot action I ask when to the shooter
-        if(effectProperties.containsKey(MOVE_TARGET_BEFORE)) {
+        if (effectProperties.containsKey(MOVE_TARGET_BEFORE)) {
             fireRequestBuilding.moveTargetsFirst(Boolean.parseBoolean(effectProperties.get(MOVE_TARGET_BEFORE)));
         } else {
             fireRequestBuilding.moveTargetsFirst(askBeforeAfterMove());
@@ -605,7 +599,7 @@ public class Cli extends ClientGameManager {
 
         out.println("Choose each targets' moving position!");
 
-        for(String target : targetsChosen) {
+        for (String target : targetsChosen) {
             out.println("Choose " + target + " moving position:");
             targetsMovePositions.add(getCoordinates());
         }
@@ -616,7 +610,7 @@ public class Cli extends ClientGameManager {
 
     @Override
     public void shoot() {
-        ShootRequest.FireRequestBuilder fireRequestBuilder;
+        ShootRequest.ShootRequestBuilder shootRequestBuilder;
         ArrayList<Integer> paymentPowerups = new ArrayList<>();
         Effect chosenEffect;
 
@@ -629,7 +623,7 @@ public class Cli extends ClientGameManager {
         }
 
         // normal shoot does not require recharging weapons
-        fireRequestBuilder = new ShootRequest.FireRequestBuilder(client.getUsername(), client.getToken(), weapon, effect, null).paymentPowerups(paymentPowerups);
+        shootRequestBuilder = new ShootRequest.ShootRequestBuilder(client.getUsername(), client.getToken(), weapon, effect, null).paymentPowerups(paymentPowerups);
 
         // now we can build the fireRequest specific to each chosen weapon
         if (effect == 0) {
@@ -637,12 +631,10 @@ public class Cli extends ClientGameManager {
         } else {
             chosenEffect = getPlayer().getWeapons()[weapon].getSecondaryEffects().get(effect - 1);
         }
-        buildFireRequest(chosenEffect, fireRequestBuilder);
+        buildShootRequest(chosenEffect, shootRequestBuilder);
 
-        try {
-            client.sendMessage(MessageBuilder.buildShootRequest(fireRequestBuilder));
-        } catch (IOException e) {
-            promptError(e.getMessage(), true);
+        if (!sendRequest(MessageBuilder.buildShootRequest(shootRequestBuilder))) {
+            promptError("Error while sending the request", true);
         }
     }
 
@@ -657,10 +649,9 @@ public class Cli extends ClientGameManager {
     public void move() {
         printMap();
 
-        try {
-            client.sendMessage(MessageBuilder.buildMoveRequest(client.getToken(), getPlayer(), getCoordinates()));
-        } catch (IOException e) {
-            promptError(e.getMessage(), true);
+
+        if (!sendRequest(MessageBuilder.buildMoveRequest(client.getToken(), getPlayer(), getCoordinates()))) {
+            promptError("Error while sending the request", true);
         }
     }
 
@@ -672,11 +663,12 @@ public class Cli extends ClientGameManager {
         List<PowerupCard> powerupCards = getPowerups();
 
         try {
-            client.sendMessage(MessageBuilder.buildDiscardPowerupRequest(client.getToken(), powerupCards, powerupCard, getUsername()));
-        } catch (IOException | PowerupCardsNotFoundException e) {
+            if (!sendRequest(MessageBuilder.buildDiscardPowerupRequest(client.getToken(), powerupCards, powerupCard, getUsername()))) {
+                promptError("Error while sending the request", true);
+            }
+        } catch (PowerupCardsNotFoundException e) {
             promptError(e.getMessage(), true);
         }
-
     }
 
     @Override
@@ -813,57 +805,22 @@ public class Cli extends ClientGameManager {
     }
 
     @Override
-    public boolean askBotMove() {
-        if (!getUserPlayerState().equals(UserPlayerState.SECOND_ACTION)) {
-            //TODO: do you want to move terminator now?
-        } else {
-            //TODO: you must move terminator the next move
-        }
-
-        return true;
-    }
-
-    @Override
-    public void askReload() {
-        // TODO Wanna reload? if YES send reload request
-
-        try {
-            client.sendMessage(MessageBuilder.buildPassTurnRequest(client.getToken(), getPlayer()));
-        } catch (IOException e) {
-            promptError(e.getMessage(), true);
-        }
-    }
-
-    @Override
-    public void askPowerup() {
+    public void powerup() {
         printPowerups();
 
-        out.println("Do you want to use a power up now? (Y / N) default N");
+        PowerupCard powerupCard = askPowerupCli();
+        ArrayList<PowerupCard> powerups = new ArrayList<>();
 
-        String input = "";
-        boolean firstError = true;
+        powerups.add(powerupCard);
 
-        do {
-            input = readString();
-
-            if (!input.equals("Y") && !input.equals("N") && !input.equals("")) {
-                firstError = promptInputError(firstError, "Wrong input, only Y or N strings accepted");
+        try {
+            if (!sendRequest(MessageBuilder.buildPowerupRequest(client.getToken(), getUsername(), new ArrayList<>(getPowerups()), powerups))) {
+                promptError("Error while sending the request", true);
             }
-
-        } while (!input.equals("Y") && !input.equals("N") && !input.equals(""));
-
-        if (input.equals("Y")) {
-            PowerupCard powerupCard = askPowerupCli();
-            ArrayList<PowerupCard> powerups = new ArrayList<>();
-
-            powerups.add(powerupCard);
-
-            try {
-                client.sendMessage(MessageBuilder.buildPowerupRequest(client.getToken(), getUsername(), (ArrayList) getPowerups(), powerups));
-            } catch (IOException | PowerupCardsNotFoundException e) {
-                promptError(e.getMessage(), true);
-            }
+        } catch (PowerupCardsNotFoundException e) {
+            promptError(e.getMessage(), true);
         }
+
     }
 
     private String readString() {
@@ -882,7 +839,7 @@ public class Cli extends ClientGameManager {
     }
 
     @Override
-    public void botMove() {
+    public void botAction() {
         // TODO
     }
 
@@ -984,7 +941,7 @@ public class Cli extends ClientGameManager {
         do {
             out.print(">>> ");
             stringDecision = in.nextLine();
-            if(stringDecision.equalsIgnoreCase(BEFORE)) {
+            if (stringDecision.equalsIgnoreCase(BEFORE)) {
                 finalDecision = true;
                 accepted = true;
             } else if (stringDecision.equalsIgnoreCase(AFTER)) {

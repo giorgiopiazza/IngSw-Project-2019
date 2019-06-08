@@ -15,7 +15,7 @@ public class PowerupRequest extends EffectRequest {
 
     public PowerupRequest(PowerupRequestBuilder builder) {
         super(
-                new EffectRequestBuilder(builder.username, builder.token, MessageContent.POWERUP)
+                new EffectRequestBuilder(builder.username, builder.token, MessageContent.POWERUP_USAGE)
                         .targetPlayersUsernames(builder.targetPlayersUsernames)
                         .targetPositions(builder.targetPositions)
                         .targetRoomColor(builder.targetRoomColor)

@@ -9,7 +9,7 @@ public class TerminatorSpawnRequest extends Message {
     private final RoomColor spawnColor;
 
     public TerminatorSpawnRequest(String username, String token, RoomColor spawnColor) {
-        super(username, token, MessageContent.TERMINATOR_SPAWN);
+        super(username, token, MessageContent.BOT_SPAWN);
 
         this.spawnColor = spawnColor;
     }

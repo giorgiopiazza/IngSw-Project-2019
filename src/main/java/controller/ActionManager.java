@@ -22,7 +22,7 @@ public class ActionManager {
      */
     public static void setStartingPossibleActions(UserPlayer player, boolean isTerminatorPresent) {
         if (player.isFirstPlayer() && isTerminatorPresent) {
-            player.setActions(EnumSet.of(PossibleAction.SPAWN_TERMINATOR, PossibleAction.CHOOSE_SPAWN));
+            player.setActions(EnumSet.of(PossibleAction.SPAWN_BOT, PossibleAction.CHOOSE_SPAWN));
         } else if (isTerminatorPresent) {
             player.setActions(EnumSet.of(PossibleAction.CHOOSE_SPAWN, PossibleAction.BOT_ACTION));
         } else {

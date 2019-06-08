@@ -176,7 +176,7 @@ public class UserPlayer extends Player {
      * @return the array of powerups
      */
     public PowerupCard[] getPowerups() {
-        return powerups.toArray(new PowerupCard[0]);
+        return powerups.toArray(PowerupCard[]::new);
     }
 
     /**

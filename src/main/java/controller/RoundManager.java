@@ -94,7 +94,7 @@ public class RoundManager {
      * @return a positive or negative {@link Response Response} handled by the server
      */
     Response handleTerminatorFirstSpawn(TerminatorSpawnRequest spawnRequest) {
-        if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.SPAWN_TERMINATOR)) {
+        if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.SPAWN_BOT)) {
             // terminator does not still exist!
             try {
                 gameInstance.buildTerminator();

@@ -250,7 +250,7 @@ public class MessageBuilder {
 
         if (index < 0 || rechargingWeapons.isEmpty()) throw new WeaponCardsNotFoundException();
 
-        return new ShootRequest(new ShootRequest.FireRequestBuilder(player.getUsername(), token, index, effect, (ArrayList<Integer>) rechargingWeapons));
+        return new ShootRequest(new ShootRequest.ShootRequestBuilder(player.getUsername(), token, index, effect, (ArrayList<Integer>) rechargingWeapons));
     }
 
     @NotNull
@@ -267,7 +267,7 @@ public class MessageBuilder {
 
     @NotNull
     @Contract("_, null, _, _ -> fail; _, !null, null, _ -> fail")
-    public static ShootRequest buildShootRequest(ShootRequest.FireRequestBuilder fireRequestBuilt) {
+    public static ShootRequest buildShootRequest(ShootRequest.ShootRequestBuilder fireRequestBuilt) {
         if (fireRequestBuilt.getUsername() == null)
             throw new NullPointerException("player userName can not be null");
 

@@ -19,12 +19,9 @@ interface ClientGameManagerListener {
     void moveAndPick();
     void shoot();
 
-    boolean askBotMove();
-    void askReload();
-    void askPowerup();
-
-    void botMove();
+    void botAction();
     void reload();
+    void powerup();
 
     void notifyGameEnd(List<Player> winners);
 }
