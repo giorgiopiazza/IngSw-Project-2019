@@ -58,7 +58,7 @@ public class PickAction implements Action {
     @Override
     public boolean validate() throws InvalidActionException {
         // check that the built position has a valid X coordinate
-        if (movingPos.getCoordX() < 0 || movingPos.getCoordY() > 2) {
+        if (movingPos.getCoordX() < 0 || movingPos.getCoordX() > 2) {
             throw new InvalidActionException();
         }
 

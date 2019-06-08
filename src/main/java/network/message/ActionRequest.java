@@ -23,6 +23,7 @@ public abstract class ActionRequest extends Message {
     }
 
     public ArrayList<Integer> getPaymentPowerups() {
-        return paymentPowerups;
+        if(paymentPowerups == null) return new ArrayList<>();
+        else return paymentPowerups;
     }
 }
