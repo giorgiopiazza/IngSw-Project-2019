@@ -171,7 +171,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 break;
 
             case PASS_TURN:
-                // TODO
+                passTurn();
                 break;
 
             default:
@@ -243,6 +243,9 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 break;
 
             case DISCONNECTION:
+                DisconnectionMessage disconnectionMessage = (DisconnectionMessage) message;
+
+                onPlayerDisconnect(disconnectionMessage.getUsername());
                 break;
 
             default:

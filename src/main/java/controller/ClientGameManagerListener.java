@@ -22,6 +22,8 @@ interface ClientGameManagerListener {
     void botAction();
     void reload();
     void powerup();
+    void passTurn();
 
+    void onPlayerDisconnect(String username);
     void notifyGameEnd(List<Player> winners);
 }

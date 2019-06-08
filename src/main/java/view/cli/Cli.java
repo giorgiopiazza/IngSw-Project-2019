@@ -415,6 +415,13 @@ public class Cli extends ClientGameManager {
         // TODO
     }
 
+    @Override
+    public void passTurn() {
+        if(!sendRequest(MessageBuilder.buildPassTurnRequest(client.getToken(), getPlayer()))) {
+            promptError("Error while sending the request", true);
+        }
+    }
+
     private int askWeapon() {
         UserPlayer player = getPlayer();
         WeaponCard[] weapons = player.getWeapons();
@@ -916,6 +923,11 @@ public class Cli extends ClientGameManager {
     @Override
     public void botAction() {
         // TODO
+    }
+
+    @Override
+    public void onPlayerDisconnect(String username) {
+        out.println("Player " + username + " DISCONNECTED from the game!");
     }
 
     private void printMap() {
