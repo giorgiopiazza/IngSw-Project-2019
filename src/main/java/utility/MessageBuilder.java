@@ -74,7 +74,7 @@ public class MessageBuilder {
             throw new NullPointerException("player and newPos cannot be null");
         }
 
-        return new MovePickRequest(player.getUsername(), token, newPos, null,null,null);
+        return new MovePickRequest(player.getUsername(), token, newPos, new ArrayList<>(),null,null);
     }
 
     /**
@@ -93,7 +93,7 @@ public class MessageBuilder {
         if (player == null || newPos == null || addingWeapon == null)
             throw new NullPointerException("player, newPos and addingWeapon cannot be null");
 
-        return new MovePickRequest(player.getUsername(), token, newPos, null, addingWeapon, discardingWeapon);
+        return new MovePickRequest(player.getUsername(), token, newPos, new ArrayList<>(), addingWeapon, discardingWeapon);
     }
 
     /**

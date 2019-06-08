@@ -805,9 +805,9 @@ class CliPrinter {
     private static String addPowerupName(PowerupCard[] powerups) {
         StringBuilder out = new StringBuilder();
 
-        for (PowerupCard powerup : powerups) {
-            if (powerup != null) {
-                out.append("║ ").append(addFirstMissingBlanks(powerup.getName())).append(powerup.getName()).append(addSecondMissingBlanks(powerup.getName())).append(" ║     ");
+        for (int i = 0; i < powerups.length; ++i) {
+            if (powerups[i] != null) {
+                out.append("║ ").append(addFirstMissingBlanks(powerups[i].getName())).append(powerups[i].getName()).append(" [").append(i).append("]").append(addSecondMissingBlanks(powerups[i].getName())).append(" ║     ");
             } else {
                 out.append("                                 ");
             }
@@ -819,7 +819,7 @@ class CliPrinter {
 
     private static StringBuilder addFirstMissingBlanks(String powerupName) {
         StringBuilder tempOut = new StringBuilder();
-        final int MAX_POWERUP_LENGTH = 24;
+        final int MAX_POWERUP_LENGTH = 22;
         int missingBlanks = (MAX_POWERUP_LENGTH - powerupName.length()) / 2;
 
         tempOut.append(" ".repeat(missingBlanks));
@@ -828,7 +828,7 @@ class CliPrinter {
 
     private static StringBuilder addSecondMissingBlanks(String powerupName) {
         StringBuilder tempOut = new StringBuilder();
-        final int MAX_POWERUP_LENGTH = 24;
+        final int MAX_POWERUP_LENGTH = 19;
         int missingBlanks = (MAX_POWERUP_LENGTH - powerupName.length()) / 2;
 
         if (powerupName.length() % 2 != 0) ++missingBlanks;
