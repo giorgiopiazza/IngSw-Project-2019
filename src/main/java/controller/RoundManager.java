@@ -545,10 +545,10 @@ public class RoundManager {
             if (pickAction.validate()) {
                 pickAction.execute();
             } else {
-                return buildNegativeResponse("Invalid Pick Action");
+                return buildNegativeResponse("Invalid Pick Action 1");
             }
         } catch (InvalidActionException e) {
-            return buildNegativeResponse("Invalid Pick Action");
+            return buildNegativeResponse("Invalid Pick Action 2");
         }
 
         gameManager.changeState(handleAfterActionState(secondAction));
@@ -826,7 +826,7 @@ public class RoundManager {
                 turnManager.setLastPlayer();
                 return handleNextTurn(PossibleGameState.PASS_FRENZY_TURN);
             } else {
-                return handleNextTurn(turnManager.getArrivingGameState());
+                return handleNextTurn(PossibleGameState.PASS_NORMAL_TURN);
             }
         }
 
@@ -878,6 +878,7 @@ public class RoundManager {
         // if it is the first turn of the last player I set the first turn to false as no more powerups would be picked
         if (turnManager.isFirstTurn() && turnManager.endOfRound()) {
             turnManager.endOfFirstTurn();
+            pickTwoPowerups();
         }
 
         // then if I am in the very first round of the game I also need to pick the two powerups for the next spawning player

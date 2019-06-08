@@ -69,29 +69,12 @@ public class MessageBuilder {
         throw new PowerupCardsNotFoundException("powerupCard not found in " + powerupCards);
     }
 
-    /**
-     * Create a {@link MovePickRequest MovePickupRequest} object from the actual {@code player},
-     * his {@code newPos}, {@code paymentPowerups}, {@code addingWeapon} and {@code discardingWeapon}
-     *
-     * @param player           the actual player
-     * @param newPos           the new position where pick up something ({@link PowerupCard PowerupCard} or {@link WeaponCard WeaponCard})
-     * @param paymentPowerups  the powerUps to pay the {@link WeaponCard WeaponCard}
-     * @param addingWeapon     the {@link WeaponCard WeaponCard} to add to the player's {@link model.player.PlayerBoard PlayerBoard}
-     * @param discardingWeapon the {@link WeaponCard WeaponCard} to remove to the player's {@link model.player.PlayerBoard PlayerBoard}
-     * @return the {@link MovePickRequest MovePickRequest} generated object
-     * @throws PowerupCardsNotFoundException if the player does not have that {@code paymentsPowerups}
-     */
-    @NotNull
-    @Contract("_, null, _, _, _, _ -> fail; _, !null, null, _, _, _ -> fail; _, !null, !null, _, null, _ -> fail; _, !null, !null, null, !null, _ -> fail")
-    public static MovePickRequest buildMovePickRequest(String token, UserPlayer player, PlayerPosition newPos, List<PowerupCard> paymentPowerups, WeaponCard addingWeapon, WeaponCard discardingWeapon) throws PowerupCardsNotFoundException {
-        if (player == null || newPos == null || addingWeapon == null || paymentPowerups == null)
-            throw new NullPointerException("player, newPos and addingWeapon cannot be null");
+    public static MovePickRequest buildMovePickRequest(String token, UserPlayer player, PlayerPosition newPos) {
+        if(player == null || newPos == null) {
+            throw new NullPointerException("player and newPos cannot be null");
+        }
 
-        List<Integer> powerupIndexes = powerupListToIndexes(player, paymentPowerups);
-
-        if (powerupIndexes.isEmpty()) throw new PowerupCardsNotFoundException();
-
-        return new MovePickRequest(player.getUsername(), token, newPos, (ArrayList<Integer>) powerupIndexes, addingWeapon, discardingWeapon);
+        return new MovePickRequest(player.getUsername(), token, newPos, null,null,null);
     }
 
     /**
@@ -115,32 +98,25 @@ public class MessageBuilder {
 
     /**
      * Create a {@link MovePickRequest MovePickupRequest} object from the actual {@code player},
-     * his {@code newPos} and {@code addingWeapon}
+     * his {@code newPos}, {@code paymentPowerups}, {@code addingWeapon} and {@code discardingWeapon}
      *
-     * @param player       the actual player
-     * @param newPos       the new position where pick up something ({@link PowerupCard PowerupCard} or {@link WeaponCard WeaponCard})
-     * @param addingWeapon the {@link WeaponCard WeaponCard} to add to the player's {@link model.player.PlayerBoard PlayerBoard}
-     * @return the {@link MovePickRequest MovePickRequest} generated object
-     */
-    @NotNull
-    public static MovePickRequest buildMovePickRequest(String token, UserPlayer player, PlayerPosition newPos, WeaponCard addingWeapon) {
-        return buildMovePickRequest(token, player, newPos, addingWeapon, null);
-    }
-
-    /**
-     * Create a {@link MovePickRequest MovePickupRequest} object from the actual {@code player},
-     * his {@code newPos}, {@code paymentPowerups} and {@code addingWeapon}
-     *
-     * @param player          the actual player
-     * @param newPos          the new position where pick up something ({@link PowerupCard PowerupCard} or {@link WeaponCard WeaponCard})
-     * @param paymentPowerups the powerUps to pay the {@link WeaponCard WeaponCard}
-     * @param addingWeapon    the {@link WeaponCard WeaponCard} to add to the player's {@link model.player.PlayerBoard PlayerBoard}
+     * @param player           the actual player
+     * @param newPos           the new position where pick up something ({@link PowerupCard PowerupCard} or {@link WeaponCard WeaponCard})
+     * @param paymentPowerups  the powerUps to pay the {@link WeaponCard WeaponCard}
+     * @param addingWeapon     the {@link WeaponCard WeaponCard} to add to the player's {@link model.player.PlayerBoard PlayerBoard}
+     * @param discardingWeapon the {@link WeaponCard WeaponCard} to remove to the player's {@link model.player.PlayerBoard PlayerBoard}
      * @return the {@link MovePickRequest MovePickRequest} generated object
      * @throws PowerupCardsNotFoundException if the player does not have that {@code paymentsPowerups}
      */
     @NotNull
-    public static MovePickRequest buildMovePickRequest(String token, UserPlayer player, PlayerPosition newPos, List<PowerupCard> paymentPowerups, WeaponCard addingWeapon) throws PowerupCardsNotFoundException {
-        return buildMovePickRequest(token, player, newPos, paymentPowerups, addingWeapon, null);
+    @Contract("_, null, _, _, _, _ -> fail; _, !null, null, _, _, _ -> fail; _, !null, !null, _, null, _ -> fail; _, !null, !null, null, !null, _ -> fail")
+    public static MovePickRequest buildMovePickRequest(String token, UserPlayer player, PlayerPosition newPos, ArrayList<Integer> paymentPowerups, WeaponCard addingWeapon, WeaponCard discardingWeapon) throws PowerupCardsNotFoundException {
+        if (player == null || newPos == null || addingWeapon == null)
+            throw new NullPointerException("player and newPos cannot be null");
+
+        if(paymentPowerups.size() > 3) throw new PowerupCardsNotFoundException();
+
+        return new MovePickRequest(player.getUsername(), token, newPos, paymentPowerups, addingWeapon, discardingWeapon);
     }
 
     @NotNull
@@ -167,6 +143,7 @@ public class MessageBuilder {
 
         ArrayList<Integer> powerupsIndexes = new ArrayList<>();
 
+        // TODO qua da nullpointer sicuro player.getPOwerups non funge sto player è quello stronzo serializzato
         for (int i = 0; i < player.getPowerups().length; i++) {
             for (PowerupCard powerupCard : powerupCards) {
                 if (player.getPowerups()[i].equals(powerupCard)) {

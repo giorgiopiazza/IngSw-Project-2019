@@ -10,6 +10,8 @@ import model.GameSerialized;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
 import model.cards.effects.Effect;
+import model.map.SpawnSquare;
+import model.map.Square;
 import model.player.*;
 import network.client.*;
 import network.message.*;
@@ -414,6 +416,7 @@ public class Cli extends ClientGameManager {
         int choose;
 
         printWeapons(player.getWeapons());
+        if(weapons.length == 0) return -1;
 
         do {
             out.println("Choose the weapon:");
@@ -437,7 +440,6 @@ public class Cli extends ClientGameManager {
     }
 
     private ArrayList<Integer> askPaymentPowerups() {
-        UserPlayer player = getPlayer();
         ArrayList<Integer> paymentPowerups = new ArrayList<>();
         int tempChoose;
 
@@ -445,10 +447,10 @@ public class Cli extends ClientGameManager {
 
         do {
             out.println("Choose the powerups you want to pay with (-1 to stop choosing):");
-            tempChoose = readInt(-1, player.getPowerups().length);
-            if (tempChoose == -1) break;
+            tempChoose = readInt(-1, getPowerups().size());
+            if (tempChoose == -1) return paymentPowerups;
             paymentPowerups.add(tempChoose);
-        } while (paymentPowerups.size() < player.getPowerups().length);
+        } while (paymentPowerups.size() < getPowerups().size());
 
         return paymentPowerups;
     }
@@ -622,8 +624,9 @@ public class Cli extends ClientGameManager {
         printMap();
 
         int weapon = askWeapon();
+        if(weapon == -1) return;
         int effect = askWeaponEffect(getPlayer().getWeapons()[weapon]);
-        if (getPlayer().getPowerups().length != 0) {
+        if (!getPowerups().isEmpty()) {
             paymentPowerups = askPaymentPowerups();
         }
 
@@ -645,11 +648,72 @@ public class Cli extends ClientGameManager {
         }
     }
 
+    private void buildPickWeaponRequest(PlayerPosition newPos) {
+        SpawnSquare weaponSquare = (SpawnSquare) getGameSerialized().getGameMap().getSquare(newPos);
+        ArrayList<Integer> paymentPowerups = new ArrayList<>();
+        WeaponCard pickingWeapon;
+        WeaponCard discardingCard = null;
+
+        if(weaponSquare.getWeapons().length == 0) { // very particular case in which a spawn square has no powerups
+            // pick action not allowed
+            return;
+        }
+
+        pickingWeapon = askPickWeapon(weaponSquare);
+        if(!getPowerups().isEmpty()) {
+            paymentPowerups = askPaymentPowerups();
+        }
+
+        // now that we know the WeaponCard the acting player wants to pick, if he has already 3 cards in his hand we ask him which one to discard
+        if(getPlayer().getWeapons().length == 3) {
+            out.println("You already have 3 weapons in your hand, choose one and discard it!");
+            discardingCard = getPlayer().getWeapons()[askWeapon()];
+        }
+
+        try {
+            if(!paymentPowerups.isEmpty()) {
+                client.sendMessage(MessageBuilder.buildMovePickRequest(client.getToken(), getPlayer(), newPos, paymentPowerups, pickingWeapon, discardingCard));
+            } else {
+                client.sendMessage(MessageBuilder.buildMovePickRequest(client.getToken(), getPlayer(), newPos, pickingWeapon, discardingCard));
+            }
+        } catch (IOException | PowerupCardsNotFoundException e) {
+            promptError(e.getMessage(), true);
+        }
+    }
+
+    private WeaponCard askPickWeapon(SpawnSquare weaponSquare) {
+        WeaponCard[] weapons = weaponSquare.getWeapons();
+        int choose;
+
+        out.println("Weapons on your moving spawn square are:");
+        printWeapons(weaponSquare.getWeapons());
+
+        do {
+            out.println("Choose the weapon:");
+            choose = readInt(0, weapons.length - 1);
+        } while (choose < 0 || choose > weapons.length - 1);
+
+        return weapons[choose];
+    }
+
     @Override
     public void moveAndPick() {
+        PlayerPosition newPos;
+
         printMap();
 
-        // todo: porco dio devo accattarmi se è una weapon, se può essere pagata con il mana e tutte ste menate... amen, se deve pickuppare un powerup o salcazzo cos'altro
+        out.println("Choose the moving square for your pick action (same position not to move):");
+        newPos = getCoordinates();
+
+        if(getGameSerialized().getGameMap().getSquare(newPos.getCoordX(), newPos.getCoordY()).getSquareType() == SquareType.TILE) {
+            try {
+                client.sendMessage(MessageBuilder.buildMovePickRequest(client.getToken(), getPlayer(), newPos));
+            } catch (IOException e) {
+                promptError(e.getMessage(), true);
+            }
+        } else {
+            buildPickWeaponRequest(newPos);
+        }
     }
 
     @Override
