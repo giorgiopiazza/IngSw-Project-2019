@@ -14,10 +14,20 @@ interface ClientGameManagerListener {
 
     PossibleAction askAction();
 
+    void botSpawn();
     void spawn();
     void move();
     void moveAndPick();
     void shoot();
+
+    void adrenalinePick();
+    void adrenalineShoot();
+
+    void frenzyMove();
+    void frenzyPick();
+    void frenzyShoot();
+    void lightFrenzyPick();
+    void lightFrenzyShoot();
 
     void botAction();
     void reload();

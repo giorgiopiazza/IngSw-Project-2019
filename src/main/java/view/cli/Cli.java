@@ -442,7 +442,7 @@ public class Cli extends ClientGameManager {
                 }
             }
         } catch (WeaponCardsNotFoundException | PowerupCardsNotFoundException e) {
-            promptError(e.getMessage(), true);
+            promptError(e.getMessage(), false);
         }
     }
 
@@ -658,6 +658,45 @@ public class Cli extends ClientGameManager {
         return targetsMovePositions;
     }
 
+    @Override
+    public void botSpawn() {
+        // TODO
+    }
+
+    @Override
+    public void adrenalinePick() {
+        // TODO
+    }
+
+    @Override
+    public void adrenalineShoot() {
+        // TODO
+    }
+
+    @Override
+    public void frenzyMove() {
+        // TODO
+    }
+
+    @Override
+    public void frenzyPick() {
+        // TODO
+    }
+
+    @Override
+    public void frenzyShoot() {
+        // TODO
+    }
+
+    @Override
+    public void lightFrenzyPick() {
+        // TODO
+    }
+
+    @Override
+    public void lightFrenzyShoot() {
+        // TODO
+    }
 
     @Override
     public void shoot() {
@@ -809,7 +848,6 @@ public class Cli extends ClientGameManager {
     public void gameStateUpdate(GameSerialized gameSerialized) {
         printMap();
         out.println();
-        printPlayerBoard();
     }
 
     @Override
@@ -836,13 +874,11 @@ public class Cli extends ClientGameManager {
         out.println("Choose the next move:");
 
         for (int i = 0; i < possibleActions.size(); i++) {
-            out.println("\t" + (i + 1) + " - " + possibleActions.get(i).getDescription());
+            out.println("\t" + (i) + " - " + possibleActions.get(i).getDescription());
         }
 
-        // TODO: print map, print player boards, print weapons, print mana
-
-        choose = readInt(1, possibleActions.size());
-        return possibleActions.get(choose - 1);
+        choose = readInt(0, possibleActions.size() - 1);
+        return possibleActions.get(choose);
     }
 
     private PowerupCard askPowerupCli() {

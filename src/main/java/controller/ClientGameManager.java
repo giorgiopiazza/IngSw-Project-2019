@@ -110,7 +110,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     private void makeMove() {
         switch (askAction()) {
             case SPAWN_BOT:
-                // TODO
+                botSpawn();
                 break;
 
             case CHOOSE_SPAWN:
@@ -135,31 +135,31 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 break;
 
             case ADRENALINE_PICK:
-                // TODO
+                adrenalinePick();
                 break;
 
             case ADRENALINE_SHOOT:
-                // TODO
+                adrenalineShoot();
                 break;
 
             case FRENZY_MOVE:
-                // TODO
+                frenzyMove();
                 break;
 
             case FRENZY_PICK:
-                // TODO
+                frenzyPick();
                 break;
 
             case FRENZY_SHOOT:
-                // TODO
+                frenzyShoot();
                 break;
 
             case LIGHT_FRENZY_PICK:
-                // TODO
+                lightFrenzyPick();
                 break;
 
             case LIGHT_FRENZY_SHOOT:
-                // TODO
+                lightFrenzyShoot();
                 break;
 
             case BOT_ACTION:
@@ -251,7 +251,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             default:
         }
 
-        Logger.getGlobal().log(Level.INFO, "{0}", message);
+        //Logger.getGlobal().log(Level.INFO, "{0}", message);
     }
 
     private void checkTurnChange(GameStateMessage stateMessage) {
