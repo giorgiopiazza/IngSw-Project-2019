@@ -12,6 +12,7 @@ import model.cards.WeaponCard;
 import model.cards.effects.Effect;
 import model.map.SpawnSquare;
 import model.map.Square;
+import model.cards.effects.PowerupBaseEffect;
 import model.player.*;
 import network.client.*;
 import network.message.*;
@@ -440,6 +441,7 @@ public class Cli extends ClientGameManager {
     }
 
     private ArrayList<Integer> askPaymentPowerups() {
+        UserPlayer player = getPlayer();
         ArrayList<Integer> paymentPowerups = new ArrayList<>();
         int tempChoose;
 
@@ -796,34 +798,41 @@ public class Cli extends ClientGameManager {
         return possibleActions.get(choose - 1);
     }
 
+    private PowerupCard askPowerupCli() {
+        List<PowerupCard> powerups = getPowerups();
+        List<PowerupCard> newList = new ArrayList<>();
+
+        for (PowerupCard powerup : powerups) {
+            if (powerup.getName().equals(ClientGameManager.NEWTON) || powerup.getName().equals(ClientGameManager.TELEPORTER)) {
+                newList.add(powerup);
+            }
+        }
+
+        out.println();
+        out.println("Which power up do you want to use?");
+
+        for (int i = 0; i < newList.size(); i++) {
+            out.println("\t" + i + 1 + " - " + CliPrinter.toStringPowerUpCard(newList.get(i)) + " (" + Ammo.toColor(newList.get(i).getValue()) + " room)");
+        }
+
+        out.println();
+
+        return powerups.get(readInt(1, powerups.size()) - 1);
+    }
+
     private PowerupCard askPowerupSpawn() {
         List<PowerupCard> powerups = getPowerups();
 
         out.println();
         out.println("Where do you want to spawn?");
+
         for (int i = 0; i < powerups.size(); i++) {
             out.println("\t" + i + " - " + CliPrinter.toStringPowerUpCard(powerups.get(i)) + " (" + Ammo.toColor(powerups.get(i).getValue()) + " room)");
         }
 
         out.println();
-        boolean firstError = true;
-        int choose = 0;
 
-        do {
-            if (choose >= powerups.size() || choose < 0) {
-                firstError = promptInputError(firstError, "Value not valid");
-            }
-
-            out.print(">>> ");
-
-            if (in.hasNextInt()) {
-                choose = in.nextInt();
-            } else {
-                choose = -1;
-                in.nextLine();
-                firstError = promptInputError(firstError, "Value not valid");
-            }
-        } while (choose < 0 || choose >= powerups.size());
+        int choose = readInt(0, powerups.size() - 1);
 
         return powerups.get(choose);
     }
@@ -888,6 +897,53 @@ public class Cli extends ClientGameManager {
         } catch (IOException e) {
             promptError(e.getMessage(), true);
         }
+    }
+
+    @Override
+    public void askPowerup() {
+        printPowerups();
+
+        out.println("Do you want to use a power up now? (Y / N) default N");
+
+        String input = "";
+        boolean firstError = true;
+
+        do {
+            input = readString();
+
+            if (!input.equals("Y") && !input.equals("N") && !input.equals("")) {
+                firstError = promptInputError(firstError, "Wrong input, only Y or N strings accepted");
+            }
+
+        } while (!input.equals("Y") && !input.equals("N") && !input.equals(""));
+
+        if (input.equals("Y")) {
+            PowerupCard powerupCard = askPowerupCli();
+            ArrayList<PowerupCard> powerups = new ArrayList<>();
+
+            powerups.add(powerupCard);
+
+            try {
+                client.sendMessage(MessageBuilder.buildPowerupRequest(client.getToken(), getUsername(), (ArrayList) getPowerups(), powerups));
+            } catch (IOException | PowerupCardsNotFoundException e) {
+                promptError(e.getMessage(), true);
+            }
+        }
+    }
+
+    private String readString() {
+        return readString("");
+    }
+
+    private String readString(String defVal) {
+        String readString;
+
+        out.print(">>> ");
+        readString = in.nextLine();
+
+        if (readString.equals("")) return defVal;
+
+        return readString;
     }
 
     @Override

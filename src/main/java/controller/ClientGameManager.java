@@ -23,6 +23,11 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public abstract class ClientGameManager implements ClientGameManagerListener, ClientUpdateListener, Runnable {
+    public static final String TAGBACK_GRANADE = "TAGBACK_GRANADE";
+    public static final String TELEPORTER = "TELEPORTER";
+    public static final String NEWTON = "NEWTON";
+    public static final String TARGETING_SCOPE = "TARGETING_SCOPE";
+
     private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
 
     private final Object gameSerializedLock = new Object(); // handles GameSerialized parallelism
@@ -106,6 +111,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
             case FIRST_ACTION:
             case SECOND_ACTION:
+                askPowerup();
                 firstSecondAction();
                 botMoveRequest();
                 break;
@@ -119,6 +125,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 break;
             case END:
                 // TODO: end round
+                askPowerup();
                 roundManager.endRound();
                 break;
 

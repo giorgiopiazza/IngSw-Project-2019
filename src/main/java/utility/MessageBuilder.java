@@ -137,16 +137,15 @@ public class MessageBuilder {
 
     @NotNull
     @Contract("_, null, _ -> fail; _, !null, null -> fail")
-    public static PowerupRequest buildPowerupRequest(String token, UserPlayer player, ArrayList<PowerupCard> powerupCards) throws PowerupCardsNotFoundException {
-        if (player == null || powerupCards == null)
+    public static PowerupRequest buildPowerupRequest(String token, String username,  ArrayList<PowerupCard> playerPowerups, ArrayList<PowerupCard> toUse) throws PowerupCardsNotFoundException {
+        if (playerPowerups == null || toUse == null)
             throw new NullPointerException("player and powerupCard cannot be null");
 
         ArrayList<Integer> powerupsIndexes = new ArrayList<>();
 
-        // TODO qua da nullpointer sicuro player.getPOwerups non funge sto player è quello stronzo serializzato
-        for (int i = 0; i < player.getPowerups().length; i++) {
-            for (PowerupCard powerupCard : powerupCards) {
-                if (player.getPowerups()[i].equals(powerupCard)) {
+        for (int i = 0; i < playerPowerups.size(); i++) {
+            for (PowerupCard powerupCard : toUse) {
+                if (playerPowerups.get(i).equals(powerupCard)) {
                     powerupsIndexes.add(i);
                 }
             }
@@ -155,7 +154,7 @@ public class MessageBuilder {
 
         if (powerupsIndexes.isEmpty()) throw new PowerupCardsNotFoundException();
 
-        return new PowerupRequest(new PowerupRequest.PowerupRequestBuilder(player.getUsername(), token, powerupsIndexes));
+        return new PowerupRequest(new PowerupRequest.PowerupRequestBuilder(username, token, powerupsIndexes));
     }
 
     @NotNull
