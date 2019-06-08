@@ -3,6 +3,8 @@ package view.cli;
 import controller.ClientGameManager;
 import enumerations.*;
 import exceptions.actions.PowerupCardsNotFoundException;
+import exceptions.actions.WeaponCardsNotFoundException;
+import exceptions.cards.WeaponNotChargedException;
 import exceptions.game.InexistentColorException;
 import exceptions.utility.InvalidPropertiesException;
 import model.GameSerialized;
@@ -26,6 +28,7 @@ public class Cli extends ClientGameManager {
     private Scanner in;
     private AdrenalinePrintStream out;
 
+    private static final String SEND_ERROR = "Error while sending the request";
     private static final String TARGET_NUM = "targetNum";
     private static final String MAX_TARGET_NUM = "maxTargetNum";
     private static final String MOVE = "move";
@@ -401,10 +404,38 @@ public class Cli extends ClientGameManager {
 
     @Override
     public void reload() {
-        
+        WeaponCard[] playersWeapons = getPlayer().getWeapons();
+        ArrayList<Integer> rechargingWeapons = new ArrayList<>();
+        ArrayList<Integer> paymentPowerups = new ArrayList<>();
+
+        printWeapons(playersWeapons);
+        out.println("Choose the weapons you want to reload (-1 to stop choosing)");
+        for(int i = 0; i < playersWeapons.length; ++i) {
+            int tempChoose = askWeapon(-1);
+            if(tempChoose == -1) break;
+            else rechargingWeapons.add(tempChoose);
+        }
+
+        if(!getPowerups().isEmpty()) {
+            paymentPowerups = askPaymentPowerups();
+        }
+
+        try {
+            if(paymentPowerups.isEmpty()) {
+                if(!sendRequest(MessageBuilder.buildReloadRequest(client.getToken(), getPlayer(), rechargingWeapons))) {
+                    promptError(SEND_ERROR, true);
+                }
+            } else {
+                if(!sendRequest(MessageBuilder.buildReloadRequest(client.getToken(), getPlayer(), rechargingWeapons, paymentPowerups))) {
+                    promptError(SEND_ERROR, true);
+                }
+            }
+        } catch (WeaponCardsNotFoundException | PowerupCardsNotFoundException e) {
+            promptError(e.getMessage(), true);
+        }
     }
 
-    private int askWeapon() {
+    private int askWeapon(int minVal) {
         UserPlayer player = getPlayer();
         WeaponCard[] weapons = player.getWeapons();
         int choose;
@@ -414,8 +445,8 @@ public class Cli extends ClientGameManager {
 
         do {
             out.println("Choose the weapon:");
-            choose = readInt(0, weapons.length - 1);
-        } while (choose < 0 || choose > weapons.length - 1);
+            choose = readInt(minVal, weapons.length - 1);
+        } while (choose < minVal || choose > weapons.length - 1);
 
         return choose;
     }
@@ -619,7 +650,7 @@ public class Cli extends ClientGameManager {
         out.println("Care your Ammo before choosing to shoot: ");
         printAmmo();
 
-        int weapon = askWeapon();
+        int weapon = askWeapon(0);
         if (weapon == -1) return;
         int effect = askWeaponEffect(getPlayer().getWeapons()[weapon]);
         if (!getPowerups().isEmpty()) {
@@ -638,7 +669,7 @@ public class Cli extends ClientGameManager {
         buildShootRequest(chosenEffect, shootRequestBuilder);
 
         if (!sendRequest(MessageBuilder.buildShootRequest(shootRequestBuilder))) {
-            promptError("Error while sending the request", true);
+            promptError(SEND_ERROR, true);
         }
     }
 
@@ -661,17 +692,17 @@ public class Cli extends ClientGameManager {
         // now that we know the WeaponCard the acting player wants to pick, if he has already 3 cards in his hand we ask him which one to discard
         if (getPlayer().getWeapons().length == 3) {
             out.println("You already have 3 weapons in your hand, choose one and discard it!");
-            discardingCard = getPlayer().getWeapons()[askWeapon()];
+            discardingCard = getPlayer().getWeapons()[askWeapon(0)];
         }
 
         try {
             if (!paymentPowerups.isEmpty()) {
                 if (!sendRequest(MessageBuilder.buildMovePickRequest(client.getToken(), getPlayer(), newPos, paymentPowerups, pickingWeapon, discardingCard))) {
-                    promptError("Error while sending the request", true);
+                    promptError(SEND_ERROR, true);
                 }
             } else {
                 if (!sendRequest(MessageBuilder.buildMovePickRequest(client.getToken(), getPlayer(), newPos, pickingWeapon, discardingCard))) {
-                    promptError("Error while sending the request", true);
+                    promptError(SEND_ERROR, true);
                 }
             }
         } catch (PowerupCardsNotFoundException e) {
@@ -708,7 +739,7 @@ public class Cli extends ClientGameManager {
             out.println("You picked a TILE! Your new Ammo (check also your powerups) are:");
             printAmmo();
             if (!sendRequest(MessageBuilder.buildMovePickRequest(client.getToken(), getPlayer(), newPos))) {
-                promptError("Error while sending the request", true);
+                promptError(SEND_ERROR, true);
             }
         } else {
             buildPickWeaponRequest(newPos);
