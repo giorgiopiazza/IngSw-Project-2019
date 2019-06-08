@@ -29,10 +29,8 @@ public abstract class UsableCard extends Card {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
         UsableCard that = (UsableCard) o;
-        return Objects.equals(name, that.name) &&
-                Objects.equals(baseEffect, that.baseEffect);
+        return Objects.equals(name, that.name);
     }
 
     @Override

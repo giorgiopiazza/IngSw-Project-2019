@@ -74,7 +74,7 @@ public class MessageBuilder {
             throw new NullPointerException("player and newPos cannot be null");
         }
 
-        return new MovePickRequest(player.getUsername(), token, newPos, null,null,null);
+        return new MovePickRequest(player.getUsername(), token, newPos, new ArrayList<>(),null,null);
     }
 
     /**
@@ -93,7 +93,7 @@ public class MessageBuilder {
         if (player == null || newPos == null || addingWeapon == null)
             throw new NullPointerException("player, newPos and addingWeapon cannot be null");
 
-        return new MovePickRequest(player.getUsername(), token, newPos, null, addingWeapon, discardingWeapon);
+        return new MovePickRequest(player.getUsername(), token, newPos, new ArrayList<>(), addingWeapon, discardingWeapon);
     }
 
     /**
@@ -159,53 +159,25 @@ public class MessageBuilder {
 
     @NotNull
     @Contract("_, _, _, _, _, null -> fail; _, null, _, _, _, !null -> fail")
-    public static ReloadRequest buildReloadRequest(String token, UserPlayer player, WeaponCard weapon1, WeaponCard weapon2, WeaponCard weapon3, List<PowerupCard> paymentPowerups) throws PowerupCardsNotFoundException, WeaponCardsNotFoundException {
+    public static ReloadRequest buildReloadRequest(String token, UserPlayer player, ArrayList<Integer> reloadingWeapons, ArrayList<Integer> paymentPowerups) throws PowerupCardsNotFoundException, WeaponCardsNotFoundException {
         if (paymentPowerups == null || player == null)
             throw new NullPointerException("player, paymentPowerups cannot be null");
 
-        List<Integer> powerupIndexes = powerupListToIndexes(player, paymentPowerups);
+        if(reloadingWeapons.isEmpty() || reloadingWeapons.size() > 3) throw new WeaponCardsNotFoundException();
+        if(paymentPowerups.size() > 3) throw new PowerupCardsNotFoundException();
 
-        if (powerupIndexes.isEmpty()) throw new PowerupCardsNotFoundException();
-
-        List<Integer> weaponIndexes = weaponsToIndexes(player, weapon1, weapon2, weapon3);
-
-        if (weaponIndexes.isEmpty()) throw new WeaponCardsNotFoundException();
-
-        return new ReloadRequest(player.getUsername(), token, (ArrayList<Integer>) weaponIndexes, (ArrayList<Integer>) powerupIndexes);
-    }
-
-    @NotNull
-    public static ReloadRequest buildReloadRequest(String token, UserPlayer player, WeaponCard weaponCard, List<PowerupCard> paymentsPowerups) throws PowerupCardsNotFoundException, WeaponCardsNotFoundException {
-        return buildReloadRequest(token, player, weaponCard, null, null, paymentsPowerups);
-    }
-
-    @NotNull
-    public static ReloadRequest buildReloadRequest(String token, UserPlayer player, WeaponCard weapon1, WeaponCard weapon2, List<PowerupCard> paymentsPowerups) throws PowerupCardsNotFoundException, WeaponCardsNotFoundException {
-        return buildReloadRequest(token, player, weapon1, weapon2, null, paymentsPowerups);
+        return new ReloadRequest(player.getUsername(), token, reloadingWeapons, paymentPowerups);
     }
 
     @NotNull
     @Contract("_, null, _, _, _ -> fail")
-    public static ReloadRequest buildReloadRequest(String token, UserPlayer player, WeaponCard weapon1, WeaponCard weapon2, WeaponCard weapon3) throws WeaponCardsNotFoundException {
+    public static ReloadRequest buildReloadRequest(String token, UserPlayer player, ArrayList<Integer> reloadingWeapons) throws WeaponCardsNotFoundException {
         if (player == null) throw new NullPointerException("player cannot be null");
 
-        List<Integer> weaponIndexes = weaponsToIndexes(player, weapon1, weapon2, weapon3);
+        if(reloadingWeapons.isEmpty() || reloadingWeapons.size() > 3) throw new WeaponCardsNotFoundException();
 
-        if (weaponIndexes.isEmpty()) throw new WeaponCardsNotFoundException();
-
-        return new ReloadRequest(player.getUsername(), token, (ArrayList<Integer>) weaponIndexes, null);
+        return new ReloadRequest(player.getUsername(), token, reloadingWeapons, null);
     }
-
-    @NotNull
-    public static ReloadRequest buildReloadRequest(String token, UserPlayer player, WeaponCard weaponCard) throws WeaponCardsNotFoundException {
-        return buildReloadRequest(token, player, weaponCard, null, (WeaponCard) null);
-    }
-
-    @NotNull
-    public static ReloadRequest buildReloadRequest(String token, UserPlayer player, WeaponCard weapon1, WeaponCard weapon2) throws WeaponCardsNotFoundException {
-        return buildReloadRequest(token, player, weapon1, weapon2, (WeaponCard) null);
-    }
-
 
     @NotNull
     @Contract("_, null, _, _, _, _, _ -> fail; _, !null, null, _, _, _, _ -> fail; _, !null, !null, _, null, null, null -> fail")
