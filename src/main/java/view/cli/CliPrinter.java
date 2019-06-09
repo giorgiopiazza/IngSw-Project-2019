@@ -925,7 +925,7 @@ class CliPrinter {
             out.print(
                             printColorAmmos(ammo.getRedAmmo(), "Red") + "\n\n" +
                             printColorAmmos(ammo.getBlueAmmo(), "Blue") + "\n\n" +
-                            printColorAmmos(ammo.getYellowAmmo(), "Yellow") + "\n\n"
+                            printColorAmmos(ammo.getYellowAmmo(), "Yellow") + "\n"
             );
         }
     }
@@ -936,7 +936,9 @@ class CliPrinter {
 
         tempOut.append(color).append(" Ammo: ");
 
-        return tempOut.append(ammoColor).append("  ").append(AnsiCode.RESET).append(" ").toString().repeat(ammoInt);
+        String ammoString = (ammoColor + "  " + AnsiCode.RESET + " ").repeat(ammoInt);
+
+        return tempOut.append(ammoString).toString();
     }
 
     /**

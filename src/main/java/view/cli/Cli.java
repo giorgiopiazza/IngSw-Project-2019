@@ -4,7 +4,6 @@ import controller.ClientGameManager;
 import enumerations.*;
 import exceptions.actions.PowerupCardsNotFoundException;
 import exceptions.actions.WeaponCardsNotFoundException;
-import exceptions.cards.WeaponNotChargedException;
 import exceptions.game.InexistentColorException;
 import exceptions.map.InvalidSpawnColorException;
 import exceptions.utility.InvalidPropertiesException;
@@ -366,10 +365,13 @@ public class Cli extends ClientGameManager {
                 Response response = (Response) message;
 
                 CliPrinter.clearConsole(out);
-                out.println(response.getMessage());
+
                 if (response.getStatus() == MessageStatus.ERROR) {
+                    out.println(response.getMessage());
                     out.println();
                     doLobbyJoin();
+                } else {
+                    out.println("You joined the lobby!\n\nWait for the game to start...");
                 }
             }
         }
@@ -421,7 +423,14 @@ public class Cli extends ClientGameManager {
         ArrayList<Integer> rechargingWeapons = new ArrayList<>();
         ArrayList<Integer> paymentPowerups = new ArrayList<>();
 
+        if (playersWeapons.length == 0) {
+            cancelAction("You have no weapon to recharge");
+            return;
+        }
+
+        CliPrinter.clearConsole(out);
         printWeapons(playersWeapons);
+
         out.println("Choose the weapons you want to reload (-1 to stop choosing)");
         for(int i = 0; i < playersWeapons.length; ++i) {
             int tempChoose = askWeapon(-1);
@@ -721,6 +730,12 @@ public class Cli extends ClientGameManager {
         ArrayList<Integer> paymentPowerups = new ArrayList<>();
         Effect chosenEffect;
 
+        WeaponCard[] weapons = getPlayer().getWeapons();
+        if (weapons.length == 0) {
+            cancelAction("You have no weapon to use");
+            return;
+        }
+
         printMap();
         out.println("Care your Ammo before choosing to shoot: ");
         printAmmo();
@@ -789,11 +804,12 @@ public class Cli extends ClientGameManager {
         WeaponCard[] weapons = weaponSquare.getWeapons();
         int choose;
 
+        CliPrinter.clearConsole(out);
         out.println("Weapons on your moving spawn square are:");
         printWeapons(weaponSquare.getWeapons());
 
         do {
-            out.println("Choose the weapon, your Ammo are:");
+            out.println("\nChoose the weapon. Your ammo are:\n");
             printAmmo();
             choose = readInt(0, weapons.length - 1);
         } while (choose < 0 || choose > weapons.length - 1);
@@ -807,12 +823,11 @@ public class Cli extends ClientGameManager {
 
         printMap();
 
-        out.println("Choose the moving square for your pick action (same position not to move):");
+        out.println("\nChoose the moving square for your pick action (same position not to move):");
         newPos = getCoordinates();
 
         if (getGameSerialized().getGameMap().getSquare(newPos.getCoordX(), newPos.getCoordY()).getSquareType() == SquareType.TILE) {
-            out.println("You picked a TILE! Your new Ammo (check also your powerups) are:");
-            printAmmo();
+            out.println("You picked a TILE!");
             if (!sendRequest(MessageBuilder.buildMovePickRequest(client.getToken(), getPlayer(), newPos))) {
                 promptError(SEND_ERROR, true);
             }
@@ -824,7 +839,7 @@ public class Cli extends ClientGameManager {
     @Override
     public void move() {
         printMap();
-
+        out.println();
 
         if (!sendRequest(MessageBuilder.buildMoveRequest(client.getToken(), getPlayer(), getCoordinates()))) {
             promptError(SEND_ERROR, true);
@@ -833,6 +848,8 @@ public class Cli extends ClientGameManager {
 
     @Override
     public void spawn() {
+        printMap();
+        out.println();
         printPowerups();
 
         PowerupCard powerupCard = askPowerupSpawn();
@@ -850,9 +867,9 @@ public class Cli extends ClientGameManager {
     @Override
     public void firstPlayerCommunication(String username) {
         if (username.equals(getUsername())) {
-            out.println("You are the first player");
+            out.println("You are the first player\n");
         } else {
-            out.println("The first player is: " + getFirstPlayer());
+            out.println("The first player is: " + getFirstPlayer() + "\n");
         }
     }
 
@@ -869,7 +886,7 @@ public class Cli extends ClientGameManager {
 
     @Override
     public void responseError(String error) {
-        promptError(error, false);
+        promptError(error + "\n", false);
     }
 
     @Override
@@ -888,6 +905,9 @@ public class Cli extends ClientGameManager {
         int choose;
         List<PossibleAction> possibleActions = getPossibleActions();
 
+        printAmmo();
+        out.println();
+        printPowerupsNum();
         out.println("Choose the next move:");
 
         for (int i = 0; i < possibleActions.size(); i++) {
@@ -896,6 +916,40 @@ public class Cli extends ClientGameManager {
 
         choose = readInt(0, possibleActions.size() - 1);
         return possibleActions.get(choose);
+    }
+
+    @Override
+    public void powerup() {
+        CliPrinter.clearConsole(out);
+        printPowerups();
+
+        PowerupCard powerupCard = askPowerupCli();
+        ArrayList<PowerupCard> powerups = new ArrayList<>();
+
+        powerups.add(powerupCard);
+
+        try {
+            if (!sendRequest(MessageBuilder.buildPowerupRequest(client.getToken(), getUsername(), new ArrayList<>(getPowerups()), powerups))) {
+                promptError(SEND_ERROR, true);
+            }
+        } catch (PowerupCardsNotFoundException e) {
+            promptError(e.getMessage(), false);
+        }
+    }
+
+    @Override
+    public void onPlayerDisconnect(String username) {
+        out.println("Player " + username + " DISCONNECTED from the game!");
+    }
+
+    private void cancelAction(String message) {
+        out.println(message);
+        cancelAction();
+    }
+
+    private void cancelAction() {
+        CliPrinter.clearConsole(out);
+        reAskAction();
     }
 
     private PowerupCard askPowerupCli() {
@@ -977,24 +1031,6 @@ public class Cli extends ClientGameManager {
         return new PlayerPosition(x, y);
     }
 
-    @Override
-    public void powerup() {
-        printPowerups();
-
-        PowerupCard powerupCard = askPowerupCli();
-        ArrayList<PowerupCard> powerups = new ArrayList<>();
-
-        powerups.add(powerupCard);
-
-        try {
-            if (!sendRequest(MessageBuilder.buildPowerupRequest(client.getToken(), getUsername(), new ArrayList<>(getPowerups()), powerups))) {
-                promptError(SEND_ERROR, true);
-            }
-        } catch (PowerupCardsNotFoundException e) {
-            promptError(e.getMessage(), true);
-        }
-    }
-
     private String readString() {
         return readString("");
     }
@@ -1028,11 +1064,6 @@ public class Cli extends ClientGameManager {
         }
     }
 
-    @Override
-    public void onPlayerDisconnect(String username) {
-        out.println("Player " + username + " DISCONNECTED from the game!");
-    }
-
     private void printMap() {
         CliPrinter.clearConsole(out);
         CliPrinter.printMap(out, getGameSerialized());
@@ -1040,6 +1071,10 @@ public class Cli extends ClientGameManager {
 
     private void printPowerups() {
         CliPrinter.printPowerups(out, getPowerups().toArray(PowerupCard[]::new));
+    }
+
+    private void printPowerupsNum() {
+        out.println("Powerups: " + getPowerups().size() + "\n");
     }
 
     private void printWeapons(WeaponCard[] weapons) {

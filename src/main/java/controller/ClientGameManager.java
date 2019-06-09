@@ -16,11 +16,9 @@ import network.message.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -296,6 +294,10 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
     }
 
+    protected void reAskAction() {
+        queue.add(this::makeMove);
+    }
+
     protected List<PossibleAction> getPossibleActions() {
         switch (roundManager.getUserPlayerState()) {
             case BOT_SPAWN:
@@ -361,17 +363,26 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         switch (boardState) {
             case NORMAL:
                 actions.add(PossibleAction.MOVE_AND_PICK);
-                actions.add(PossibleAction.SHOOT);
+
+                if (!getPlayerWeapons(username).isEmpty()) {
+                    actions.add(PossibleAction.SHOOT);
+                }
                 break;
 
             case FIRST_ADRENALINE:
                 actions.add(PossibleAction.ADRENALINE_PICK);
-                actions.add(PossibleAction.SHOOT);
+
+                if (!getPlayerWeapons(username).isEmpty()) {
+                    actions.add(PossibleAction.SHOOT);
+                }
                 break;
 
             case SECOND_ADRENALINE:
                 actions.add(PossibleAction.ADRENALINE_PICK);
-                actions.add(PossibleAction.ADRENALINE_SHOOT);
+
+                if (!getPlayerWeapons(username).isEmpty()) {
+                    actions.add(PossibleAction.ADRENALINE_SHOOT);
+                }
                 break;
         }
 
