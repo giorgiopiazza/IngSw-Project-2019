@@ -47,10 +47,8 @@ public class Cli extends ClientGameManager {
      */
     public void start() {
         printLogo();
-        askUsername();
-        askConnection();
-        askColor();
-        askLobbyJoin();
+        doConnection();
+        doLobbyJoin();
 
         startUpdater(client);
     }
@@ -256,7 +254,16 @@ public class Cli extends ClientGameManager {
             }
         }
 
-        if (!connected) askUsername();
+        if (!connected) {
+            client.close();
+            client = null;
+            doConnection();
+        }
+    }
+
+    private void doConnection() {
+        askUsername();
+        askConnection();
     }
 
     /**
@@ -285,7 +292,6 @@ public class Cli extends ClientGameManager {
 
             if (in.hasNextLine()) {
                 String color = in.nextLine();
-
 
                 try {
                     playercolor = PlayerColor.valueOf(color.toUpperCase());
@@ -361,10 +367,15 @@ public class Cli extends ClientGameManager {
                 out.println(response.getMessage());
                 if (response.getStatus() == MessageStatus.ERROR) {
                     out.println();
-                    askColor();
+                    doLobbyJoin();
                 }
             }
         }
+    }
+
+    private void doLobbyJoin() {
+        askColor();
+        askLobbyJoin();
     }
 
     /**
@@ -431,9 +442,17 @@ public class Cli extends ClientGameManager {
                 }
             }
         } catch (WeaponCardsNotFoundException | PowerupCardsNotFoundException e) {
-            promptError(e.getMessage(), true);
+            promptError(e.getMessage(), false);
         }
     }
+
+    @Override
+    public void passTurn() {
+        if(!sendRequest(MessageBuilder.buildPassTurnRequest(client.getToken(), getPlayer()))) {
+            promptError(SEND_ERROR, true);
+        }
+    }
+
 
     private int askWeapon(int minVal) {
         UserPlayer player = getPlayer();
@@ -639,6 +658,45 @@ public class Cli extends ClientGameManager {
         return targetsMovePositions;
     }
 
+    @Override
+    public void botSpawn() {
+        // TODO
+    }
+
+    @Override
+    public void adrenalinePick() {
+        // TODO
+    }
+
+    @Override
+    public void adrenalineShoot() {
+        // TODO
+    }
+
+    @Override
+    public void frenzyMove() {
+        // TODO
+    }
+
+    @Override
+    public void frenzyPick() {
+        // TODO
+    }
+
+    @Override
+    public void frenzyShoot() {
+        // TODO
+    }
+
+    @Override
+    public void lightFrenzyPick() {
+        // TODO
+    }
+
+    @Override
+    public void lightFrenzyShoot() {
+        // TODO
+    }
 
     @Override
     public void shoot() {
@@ -752,7 +810,7 @@ public class Cli extends ClientGameManager {
 
 
         if (!sendRequest(MessageBuilder.buildMoveRequest(client.getToken(), getPlayer(), getCoordinates()))) {
-            promptError("Error while sending the request", true);
+            promptError(SEND_ERROR, true);
         }
     }
 
@@ -765,7 +823,7 @@ public class Cli extends ClientGameManager {
 
         try {
             if (!sendRequest(MessageBuilder.buildDiscardPowerupRequest(client.getToken(), powerupCards, powerupCard, getUsername()))) {
-                promptError("Error while sending the request", true);
+                promptError(SEND_ERROR, true);
             }
         } catch (PowerupCardsNotFoundException e) {
             promptError(e.getMessage(), true);
@@ -790,7 +848,6 @@ public class Cli extends ClientGameManager {
     public void gameStateUpdate(GameSerialized gameSerialized) {
         printMap();
         out.println();
-        printPlayerBoard();
     }
 
     @Override
@@ -817,13 +874,11 @@ public class Cli extends ClientGameManager {
         out.println("Choose the next move:");
 
         for (int i = 0; i < possibleActions.size(); i++) {
-            out.println("\t" + (i + 1) + " - " + possibleActions.get(i).getDescription());
+            out.println("\t" + (i) + " - " + possibleActions.get(i).getDescription());
         }
 
-        // TODO: print map, print player boards, print weapons, print mana
-
-        choose = readInt(1, possibleActions.size());
-        return possibleActions.get(choose - 1);
+        choose = readInt(0, possibleActions.size() - 1);
+        return possibleActions.get(choose);
     }
 
     private PowerupCard askPowerupCli() {
@@ -916,7 +971,7 @@ public class Cli extends ClientGameManager {
 
         try {
             if (!sendRequest(MessageBuilder.buildPowerupRequest(client.getToken(), getUsername(), new ArrayList<>(getPowerups()), powerups))) {
-                promptError("Error while sending the request", true);
+                promptError(SEND_ERROR, true);
             }
         } catch (PowerupCardsNotFoundException e) {
             promptError(e.getMessage(), true);
@@ -941,6 +996,11 @@ public class Cli extends ClientGameManager {
     @Override
     public void botAction() {
         // TODO
+    }
+
+    @Override
+    public void onPlayerDisconnect(String username) {
+        out.println("Player " + username + " DISCONNECTED from the game!");
     }
 
     private void printMap() {

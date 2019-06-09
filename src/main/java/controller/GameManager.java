@@ -644,6 +644,7 @@ public class GameManager implements TimerRunListener, Serializable {
             if (inLobbyPlayers.size() < MIN_PLAYERS) {
                 lobbyTimer.cancel();
                 lobbyTimerRunning = false;
+                Server.LOGGER.info("Lobby timer stopped");
             }
         } else {
             if (inLobbyPlayers.size() >= MIN_PLAYERS) {
@@ -658,6 +659,7 @@ public class GameManager implements TimerRunListener, Serializable {
 
     @Override
     public void onTimerRun() {
+        Server.LOGGER.info("Lobby timer ended, game is starting");
         gameSetupHandler();
     }
 

@@ -65,7 +65,6 @@ public class ClientRMI extends Client implements RMIClientConnection {
      */
     @Override
     public void close() throws RemoteException, NotBoundException {
-        registry.unbind("AdrenalineServer");
         server = null;
     }
 
