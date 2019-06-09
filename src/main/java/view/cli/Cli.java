@@ -549,7 +549,7 @@ public class Cli extends ClientGameManager {
         // in the end if the targets movement can be done before or after the shoot action I ask when to the shooter
         if (effectProperties.containsKey(MOVE_TARGET_BEFORE)) {
             fireRequestBuilding.moveTargetsFirst(Boolean.parseBoolean(effectProperties.get(MOVE_TARGET_BEFORE)));
-        } else {
+        } else if (effectProperties.containsKey(MOVE_TARGET) || effectProperties.containsKey(MAX_MOVE_TARGET)){
             fireRequestBuilding.moveTargetsFirst(askBeforeAfterMove());
         }
 
@@ -1165,17 +1165,12 @@ public class Cli extends ClientGameManager {
     private int readInt(int minVal, int maxVal) {
         boolean firstError = true;
         boolean accepted = false;
-        int choose = 0;
+        int choose;
         do {
             out.print(">>> ");
-            if (in.hasNextInt()) {
-                choose = in.nextInt();
-                if (choose >= minVal && choose <= maxVal) accepted = true;
-                else firstError = promptInputError(firstError, "Input not valid!");
-            } else {
-                firstError = promptInputError(firstError, "Invalid integer!");
-                in.nextLine();
-            }
+            choose = Integer.valueOf(in.nextLine());
+            if (choose >= minVal && choose <= maxVal) accepted = true;
+            else firstError = promptInputError(firstError, "Not valid input!");
         } while (!accepted);
 
         return choose;
