@@ -31,6 +31,7 @@ public class Cli extends ClientGameManager {
     private AdrenalinePrintStream out;
 
     private static final String SEND_ERROR = "Error while sending the request";
+    private static final String INVALID_STRING = "Invalid String!";
     private static final String TARGET_NUM = "targetNum";
     private static final String MAX_TARGET_NUM = "maxTargetNum";
     private static final String MOVE = "move";
@@ -95,7 +96,7 @@ public class Cli extends ClientGameManager {
                 }
             } else {
                 in.nextLine();
-                firstError = promptInputError(firstError, "Invalid string!");
+                firstError = promptInputError(firstError, INVALID_STRING);
             }
         } while (!validUsername);
 
@@ -184,7 +185,7 @@ public class Cli extends ClientGameManager {
                 }
             } else {
                 in.nextLine();
-                firstError = promptInputError(firstError, "Invalid string!");
+                firstError = promptInputError(firstError, INVALID_STRING);
             }
         } while (true);
     }
@@ -219,7 +220,7 @@ public class Cli extends ClientGameManager {
                 }
             } else {
                 in.nextLine();
-                firstError = promptInputError(firstError, "Invalid string!");
+                firstError = promptInputError(firstError, INVALID_STRING);
             }
         } while (true);
     }
@@ -309,7 +310,7 @@ public class Cli extends ClientGameManager {
                 }
             } else {
                 in.nextLine();
-                firstError = promptInputError(firstError, "Invalid string!");
+                firstError = promptInputError(firstError, INVALID_STRING);
             }
         } while (!validColor);
 
@@ -510,7 +511,7 @@ public class Cli extends ClientGameManager {
         return paymentPowerups;
     }
 
-    private void buildShootRequest(Effect chosenEffect, ShootRequest.ShootRequestBuilder fireRequestBuilding) {
+    private ShootRequest.ShootRequestBuilder buildShootRequest(Effect chosenEffect, ShootRequest.ShootRequestBuilder fireRequestBuilding) {
         Map<String, String> effectProperties = chosenEffect.getProperties();
         TargetType[] targets = chosenEffect.getTargets();
         ArrayList<String> targetsChosen = new ArrayList<>();
@@ -551,6 +552,8 @@ public class Cli extends ClientGameManager {
         } else {
             fireRequestBuilding.moveTargetsFirst(askBeforeAfterMove());
         }
+
+        return fireRequestBuilding;
     }
 
     private ArrayList<String> askTargetsUsernames(Map<String, String> effectProperties) {
@@ -692,41 +695,103 @@ public class Cli extends ClientGameManager {
 
     @Override
     public void adrenalinePick() {
-        // TODO
+        out.println("ADRENALINE ACTION!\n");
+        moveAndPick();
     }
 
     @Override
     public void adrenalineShoot() {
-        // TODO
+        out.println("ADRENALINE ACTION!\n");
+        ShootRequest.ShootRequestBuilder shootRequestBuilt;
+        PlayerPosition adrenalineMovePosition;
+
+        out.println("Choose the moving square for your adrenaline shoot action (same position not to move):");
+        adrenalineMovePosition = getCoordinates();
+
+        // now that I also know the moving position needed for the adrenaline shoot action I can build the shoot request and send it
+        shootRequestBuilt = sharedShootBuilder();
+
+        if(shootRequestBuilt == null) {
+            return;
+        } else {
+            shootRequestBuilt.adrenalineMovePosition(adrenalineMovePosition);
+        }
+
+        if(!sendRequest(MessageBuilder.buildShootRequest(shootRequestBuilt))) {
+            promptError(SEND_ERROR, true);
+        }
     }
 
     @Override
     public void frenzyMove() {
-        // TODO
+        out.println("FRENZY ACTION! \n");   // succhiami il cazzo sonar ti owno aggiungendo uno spazio ad ogni stringa e stai muto
+        move();
     }
 
     @Override
     public void frenzyPick() {
-        // TODO
+        out.println("FRENZY ACTION!\n");
+        moveAndPick();
     }
 
     @Override
     public void frenzyShoot() {
-        // TODO
+        out.println("FRENZY ACTION!\n");
+        sharedFrenzyShoot();
     }
 
     @Override
     public void lightFrenzyPick() {
-        // TODO
+        out.println("LIGHT FRENZY ACTION");
+        moveAndPick();
     }
 
     @Override
     public void lightFrenzyShoot() {
-        // TODO
+        out.println("LIGHT FRENZY ACTION");
+        sharedFrenzyShoot();
+    }
+
+    private void sharedFrenzyShoot() {
+        ShootRequest.ShootRequestBuilder shootRequestBuilt;
+        PlayerPosition frenzyMovePosition;
+        ArrayList<Integer> rechargingWeapons = new ArrayList<>();
+
+        out.println("Choose the moving square for your frenzy shoot action (same position not to move):");
+        frenzyMovePosition = getCoordinates();
+
+        out.println("Do you want to recharge your weapons before shooting (-1 to stop choosing)?");
+        for(int i = 0; i < getPlayer().getWeapons().length; ++i) {
+            int tempChoose = askWeapon(-1);
+            if(tempChoose == -1) break;
+            rechargingWeapons.add(tempChoose);
+        }
+
+        // now that I have everything I need more for a frenzy shoot I build the normal shoot request, add these and send it
+        shootRequestBuilt = sharedShootBuilder();
+        if(shootRequestBuilt == null) {
+            return;
+        } else {
+            shootRequestBuilt.adrenalineMovePosition(frenzyMovePosition).rechargingWeapons(rechargingWeapons);
+        }
+
+        if(!sendRequest(MessageBuilder.buildShootRequest(shootRequestBuilt))) {
+            promptError(SEND_ERROR, true);
+        }
     }
 
     @Override
     public void shoot() {
+        ShootRequest.ShootRequestBuilder shootRequestBuilder = sharedShootBuilder();
+
+        if(shootRequestBuilder == null) return;
+
+        if (!sendRequest(MessageBuilder.buildShootRequest(shootRequestBuilder))) {
+            promptError(SEND_ERROR, true);
+        }
+    }
+
+    private ShootRequest.ShootRequestBuilder sharedShootBuilder() {
         ShootRequest.ShootRequestBuilder shootRequestBuilder;
         ArrayList<Integer> paymentPowerups = new ArrayList<>();
         Effect chosenEffect;
@@ -734,7 +799,7 @@ public class Cli extends ClientGameManager {
         WeaponCard[] weapons = getPlayer().getWeapons();
         if (weapons.length == 0) {
             cancelAction("You have no weapon to use");
-            return;
+            return null;
         }
 
         printMap();
@@ -742,7 +807,7 @@ public class Cli extends ClientGameManager {
         printAmmo();
 
         int weapon = askWeapon(0);
-        if (weapon == -1) return;
+        if (weapon == -1) return null;
         int effect = askWeaponEffect(getPlayer().getWeapons()[weapon]);
         if (!getPowerups().isEmpty()) {
             paymentPowerups = askPaymentPowerups();
@@ -757,11 +822,8 @@ public class Cli extends ClientGameManager {
         } else {
             chosenEffect = getPlayer().getWeapons()[weapon].getSecondaryEffects().get(effect - 1);
         }
-        buildShootRequest(chosenEffect, shootRequestBuilder);
 
-        if (!sendRequest(MessageBuilder.buildShootRequest(shootRequestBuilder))) {
-            promptError(SEND_ERROR, true);
-        }
+        return buildShootRequest(chosenEffect, shootRequestBuilder);
     }
 
     private void buildPickWeaponRequest(PlayerPosition newPos) {

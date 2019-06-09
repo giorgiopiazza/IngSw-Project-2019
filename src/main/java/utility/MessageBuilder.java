@@ -180,40 +180,6 @@ public class MessageBuilder {
     }
 
     @NotNull
-    @Contract("_, null, _, _, _, _, _ -> fail; _, !null, null, _, _, _, _ -> fail; _, !null, !null, _, null, null, null -> fail")
-    public static ShootRequest buildShootRequest(String token, UserPlayer player, WeaponCard weaponCard, int effect, WeaponCard recharge1, WeaponCard recharge2, WeaponCard recharge3) throws WeaponCardsNotFoundException {
-        if (player == null || weaponCard == null || (recharge1 == null && recharge2 == null && recharge3 == null))
-            throw new NullPointerException();
-
-        List<Integer> rechargingWeapons = weaponsToIndexes(player, recharge1, recharge2, recharge3);
-
-        int index = -1;
-
-        for (int i = 0; i < player.getWeapons().length; i++) {
-            if (player.getWeapons()[i].equals(weaponCard)) {
-                index = i;
-                break;
-            }
-        }
-
-        if (index < 0 || rechargingWeapons.isEmpty()) throw new WeaponCardsNotFoundException();
-
-        return new ShootRequest(new ShootRequest.ShootRequestBuilder(player.getUsername(), token, index, effect, (ArrayList<Integer>) rechargingWeapons));
-    }
-
-    @NotNull
-    @Contract("_, null, _, _, _ -> fail; _, !null, null, _, _ -> fail; _, !null, !null, _, null -> fail")
-    public static ShootRequest buildShootRequest(String token, UserPlayer player, WeaponCard weaponCard, int effect, WeaponCard recharge) throws WeaponCardsNotFoundException {
-        return buildShootRequest(token, player, weaponCard, effect, recharge, null, null);
-    }
-
-    @NotNull
-    @Contract("_, null, _, _, _, _ -> fail; _, !null, null, _, _, _ -> fail; _, !null, !null, _, null, null -> fail")
-    public static ShootRequest buildShootRequest(String token, UserPlayer player, WeaponCard weaponCard, int effect, WeaponCard recharge1, WeaponCard recharge2) throws WeaponCardsNotFoundException {
-        return buildShootRequest(token, player, weaponCard, effect, recharge1, recharge2, null);
-    }
-
-    @NotNull
     @Contract("_, null, _, _ -> fail; _, !null, null, _ -> fail")
     public static ShootRequest buildShootRequest(ShootRequest.ShootRequestBuilder fireRequestBuilt) {
         if (fireRequestBuilt.getUsername() == null)
@@ -224,6 +190,12 @@ public class MessageBuilder {
 
         if(fireRequestBuilt.getEffect() < 0 || fireRequestBuilt.getEffect() > 3)
             throw new IndexOutOfBoundsException("Invalid index for maximum number od powerups allowed in hand!");
+
+        if(fireRequestBuilt.getPaymentPowerups().size() > 3)
+            throw new IndexOutOfBoundsException("Invalid size for recharging powerups");
+
+        if(fireRequestBuilt.getRechargingWeapons().size() > 3)
+            throw new IndexOutOfBoundsException("Invalid size for recharging weapons");
 
         return fireRequestBuilt.build();
     }

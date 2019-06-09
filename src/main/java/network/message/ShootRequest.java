@@ -12,6 +12,8 @@ public class ShootRequest extends EffectRequest {
     private final int weaponID;
     private final int effect;
 
+    private PlayerPosition adrenalineMovePosition;
+
     private final boolean moveSenderFirst;
     private final boolean moveTargetsFirst;
 
@@ -30,6 +32,7 @@ public class ShootRequest extends EffectRequest {
 
         this.weaponID = builder.weaponID;
         this.effect = builder.effect;
+        this.adrenalineMovePosition = builder.addingMovePosition;
         this.moveSenderFirst = builder.moveSenderFirst;
         this.moveTargetsFirst = builder.moveTargetsFirst;
         this.rechargingWeapons = builder.rechargingWeapons;
@@ -41,6 +44,10 @@ public class ShootRequest extends EffectRequest {
 
     public int getEffect() {
         return effect;
+    }
+
+    public PlayerPosition getAdrenalineMovePosition() {
+        return this.adrenalineMovePosition;
     }
 
     public boolean isMoveSenderFirst() {
@@ -65,6 +72,7 @@ public class ShootRequest extends EffectRequest {
         private ArrayList<PlayerPosition> targetPositions;
         private RoomColor targetRoomColor;
 
+        private PlayerPosition addingMovePosition;
         private PlayerPosition senderMovePosition;
         private ArrayList<PlayerPosition> targetPlayersMovePositions;
 
@@ -98,6 +106,10 @@ public class ShootRequest extends EffectRequest {
             return this.effect;
         }
 
+        public ArrayList<Integer> getPaymentPowerups() {
+            return this.paymentPowerups;
+        }
+
         public ArrayList<Integer> getRechargingWeapons() {
             return this.rechargingWeapons;
         }
@@ -114,6 +126,11 @@ public class ShootRequest extends EffectRequest {
 
         public ShootRequestBuilder targetRoomColor(RoomColor targetRoomColor) {
             this.targetRoomColor = targetRoomColor;
+            return this;
+        }
+
+        public ShootRequestBuilder adrenalineMovePosition(PlayerPosition adrenalineMovePosition) {
+            this.addingMovePosition = adrenalineMovePosition;
             return this;
         }
 
@@ -139,6 +156,11 @@ public class ShootRequest extends EffectRequest {
 
         public ShootRequestBuilder paymentPowerups(ArrayList<Integer> paymentPowerups) {
             this.paymentPowerups = paymentPowerups;
+            return this;
+        }
+
+        public ShootRequestBuilder rechargingWeapons(ArrayList<Integer> rechargingWeapons) {
+            this.rechargingWeapons = rechargingWeapons;
             return this;
         }
 

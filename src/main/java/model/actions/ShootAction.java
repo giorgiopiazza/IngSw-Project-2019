@@ -30,7 +30,7 @@ public class ShootAction implements Action {
         this.actingPlayer = actingPlayer;
         this.shootingWeapon = actingPlayer.getWeapons()[shootRequest.getWeaponID()];
         this.actionChosen = actionChosen;
-        this.movingPos = shootRequest.getSenderMovePosition();
+        this.movingPos = shootRequest.getAdrenalineMovePosition();
         this.shootRequest = shootRequest;
 
         if(shootRequest.getRechargingWeapons() != null) {
