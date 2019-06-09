@@ -69,7 +69,7 @@ public class RoundManager {
      * depending on the {@link Game Game} state that can be: {@link GameState GameState.NORMAL} or
      * {@link GameState GameState}
      */
-    private void setInitialActions() {
+    void setInitialActions() {
         if(gameInstance.getState() == GameState.NORMAL && turnManager.getTurnOwner().getPlayerState() == PossiblePlayerState.FIRST_SPAWN) {
             ActionManager.setStartingPossibleActions(turnManager.getTurnOwner(), gameInstance.isTerminatorPresent());
         } else if (gameInstance.getState() == GameState.NORMAL && turnManager.getTurnOwner().getPlayerState() == PossiblePlayerState.PLAYING) {
@@ -872,19 +872,27 @@ public class RoundManager {
      * @return a positive or negative {@link Response Response} handled by the server
      */
     private Response handleNextTurn(PossibleGameState arrivingState) {
-        // first I set the turn to the next player and give him his possible actions
-        turnManager.nextTurn();
+        do {
+            // first I set the turn to the next player and give him his possible actions
+            turnManager.nextTurn();
 
-        // if it is the first turn of the last player I set the first turn to false as no more powerups would be picked
-        if (turnManager.isFirstTurn() && turnManager.endOfRound()) {
-            turnManager.endOfFirstTurn();
-            pickTwoPowerups();
-        }
+            // if it is the first turn of the last player I set the first turn to false as no more powerups would be picked
+            if (turnManager.isFirstTurn() && turnManager.endOfRound()) {
+                turnManager.endOfFirstTurn();
+                pickTwoPowerups();
+            }
 
-        // then if I am in the very first round of the game I also need to pick the two powerups for the next spawning player
-        if (turnManager.isFirstTurn()) {
-            pickTwoPowerups();
-        }
+            // then if I am in the very first round of the game I also need to pick the two powerups for the next spawning player
+            if (turnManager.isFirstTurn()) {
+                pickTwoPowerups();
+            }
+
+        } while (turnManager.getTurnOwner().getPlayerState() == PossiblePlayerState.DISCONNECTED);
+
+        /*  Initial actions are set only for the next connected Player, disconneted ones in fact when reconnected may have different
+            actions if the game state changed while they where not connected. These actions will be set as for all connected players
+            thanks for the reconnection
+         */
         setInitialActions();
 
         // then I reset the missing cards on the board
