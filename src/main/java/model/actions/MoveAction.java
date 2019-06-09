@@ -2,6 +2,7 @@ package model.actions;
 
 import enumerations.PossibleAction;
 import exceptions.actions.InvalidActionException;
+import model.Game;
 import model.map.GameMap;
 import model.player.PlayerPosition;
 import model.player.UserPlayer;
@@ -30,6 +31,10 @@ public class MoveAction implements Action {
 
         // check that the built position has a valid Y coordinate
         if(movingPos.getCoordY() < 0 || movingPos.getCoordY() > GameMap.MAX_COLUMNS - 1) {
+            throw new InvalidActionException();
+        }
+
+        if (Game.getInstance().getGameMap().getSquare(movingPos) == null) {
             throw new InvalidActionException();
         }
 
