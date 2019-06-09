@@ -545,10 +545,10 @@ public class RoundManager {
             if (pickAction.validate()) {
                 pickAction.execute();
             } else {
-                return buildNegativeResponse("Invalid Pick Action 1");
+                return buildNegativeResponse("Invalid Pick Action");
             }
         } catch (InvalidActionException e) {
-            return buildNegativeResponse("Invalid Pick Action 2");
+            return buildNegativeResponse("Invalid Pick Action");
         }
 
         gameManager.changeState(handleAfterActionState(secondAction));

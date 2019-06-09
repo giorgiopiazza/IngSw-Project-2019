@@ -835,7 +835,6 @@ public class Cli extends ClientGameManager {
         }
 
         if (square.getSquareType() == SquareType.TILE) {
-            out.println("You picked a TILE!");
             if (!sendRequest(MessageBuilder.buildMovePickRequest(client.getToken(), getPlayer(), newPos))) {
                 promptError(SEND_ERROR, true);
             }
