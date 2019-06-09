@@ -164,7 +164,64 @@ public class GameManager implements TimerRunListener, Serializable {
             Server.LOGGER.severe("Invalid cast of a message from " + receivedMessage.getSenderUsername());
             return buildInvalidResponse();
         }
+    }
 
+    /**
+     * Submethod of the class only used while during the game the {@link Server server} receives disconnection messages from
+     * the {@link UserPlayer userPLayers} in the game
+     *
+     * @param receivedConnectionMessage Message received by the server from a connectinf or disconnecting {@link UserPlayer UserPlayer}
+     * @return a {@link Message Message} which contains the result of the received message
+     */
+    public Message onConnectionMessage(Message receivedConnectionMessage) {
+        if(gameState != PossibleGameState.GAME_ROOM && receivedConnectionMessage.getContent() == MessageContent.GET_IN_LOBBY) {
+            if(((LobbyMessage) receivedConnectionMessage).isDisconnection()) {
+                return disconnectionHandler((LobbyMessage) receivedConnectionMessage);
+            } else {
+                return reconnectionHandler((LobbyMessage) receivedConnectionMessage);
+            }
+        } else {
+            throw new InvalidGameStateException();
+        }
+    }
+
+    private Message disconnectionHandler(LobbyMessage receivedConnectionMessage) {
+        ArrayList<LobbyMessage> inLobbyPlayers = lobby.getInLobbyPlayers();
+        boolean gameEnded;
+
+        if(inLobbyPlayers.contains(receivedConnectionMessage)) {
+            // if I receive a disconnection message I remove it from the lobby and set the corresponding player state to DISCONNECTED
+            inLobbyPlayers.remove(receivedConnectionMessage);
+            ((UserPlayer) gameInstance.getPlayerByName(receivedConnectionMessage.getSenderUsername())).setPlayerState(PossiblePlayerState.DISCONNECTED);
+
+            // then I check if in the lobby there are still enough players to continue the game, if not the game ends
+            gameEnded = checkStartedLobby();
+
+            if(gameEnded) {
+                return new Response("Player disconnected, game has now less then 3 players and then is ending...", MessageStatus.OK);
+            } else if (getRoundManager().getTurnManager().getTurnOwner().getUsername().equals(receivedConnectionMessage.getSenderUsername())){    // if game hasn't ended I check if the disconnected player is the turn owner, if so I change the state, otherwise nothing happens
+                roundManager.handlePassAction();
+                return new Response("Turn Owner disconnected, turn is passed to next Player", MessageStatus.OK);
+            } else {
+                return new Response("Player disconnected from the game", MessageStatus.OK);
+            }
+        } else {
+            return new Response("Disconnection Message from not in lobby Player", MessageStatus.ERROR);
+        }
+    }
+
+    private Message reconnectionHandler(LobbyMessage receivedConnectionMessage) {
+        ArrayList<LobbyMessage> inLobbyPlayers = lobby.getInLobbyPlayers();
+
+        if(!inLobbyPlayers.contains(receivedConnectionMessage)) {
+            // if I receive a reconnection message I add it to the lobby and set the corresponding player state to PLAYING
+            lobby.addPlayer(receivedConnectionMessage);
+            ((UserPlayer) gameInstance.getPlayerByName(receivedConnectionMessage.getSenderUsername())).setPlayerState(PossiblePlayerState.PLAYING);
+
+            return new Response("Player succesfully reconnected to the game", MessageStatus.OK);
+        } else {
+            return new Response("Reconnection message from already in lobby Player", MessageStatus.ERROR);
+        }
     }
 
     /**
@@ -514,7 +571,7 @@ public class GameManager implements TimerRunListener, Serializable {
         }
 
         // at this point gme should always be ready to start
-        if (gameInstance.isGameReadyToStart()) {    // TODO add here control that before 10s ended someone disconnected from the lobby ?
+        if (gameInstance.isGameReadyToStart() && (lobby.getInLobbyPlayers().size() >= MIN_PLAYERS || lobby.getInLobbyPlayers().size() >= MIN_PLAYERS && lobby.getTerminatorPresence())) {    // TODO add here control that before 10s ended someone disconnected from the lobby ?
             startingStateHandler();
         }
         // nothing to do here as we said game should always be ready to start at this point
@@ -621,6 +678,17 @@ public class GameManager implements TimerRunListener, Serializable {
             return new Response("Last player added to lobby, game is starting...", MessageStatus.OK);
         } else {
             return new Response("Player added to lobby", MessageStatus.OK);
+        }
+    }
+
+    private boolean checkStartedLobby() {
+        ArrayList<LobbyMessage> inLobbyPlayers = lobby.getInLobbyPlayers();
+
+        if(inLobbyPlayers.size() < MIN_PLAYERS) {       // TODO verify if terminator counts
+            endGame();
+            return true;
+        } else {
+            return false;
         }
     }
 
