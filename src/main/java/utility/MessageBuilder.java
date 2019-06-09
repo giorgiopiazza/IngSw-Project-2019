@@ -240,8 +240,8 @@ public class MessageBuilder {
     @NotNull
     @Contract("_, null, _, _ -> fail; _, !null, null, _ -> fail; _, !null, !null, null -> fail; _, !null, !null, !null -> new")
     public static UseTerminatorRequest buildUseTerminatorRequest(String token, Bot bot, PlayerPosition newPos, UserPlayer target) {
-        if (bot == null || newPos == null || target == null)
-            throw new NullPointerException("Terminator, newPos and target cannot be null");
+        if (bot == null || newPos == null)
+            throw new NullPointerException("Terminator and newPos cannot be null");
 
         return new UseTerminatorRequest(bot.getUsername(), token, newPos, target.getUsername());
     }

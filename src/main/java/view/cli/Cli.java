@@ -6,11 +6,13 @@ import exceptions.actions.PowerupCardsNotFoundException;
 import exceptions.actions.WeaponCardsNotFoundException;
 import exceptions.cards.WeaponNotChargedException;
 import exceptions.game.InexistentColorException;
+import exceptions.map.InvalidSpawnColorException;
 import exceptions.utility.InvalidPropertiesException;
 import model.GameSerialized;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
 import model.cards.effects.Effect;
+import model.map.GameMap;
 import model.map.SpawnSquare;
 import model.player.*;
 import network.client.*;
@@ -453,7 +455,6 @@ public class Cli extends ClientGameManager {
         }
     }
 
-
     private int askWeapon(int minVal) {
         UserPlayer player = getPlayer();
         WeaponCard[] weapons = player.getWeapons();
@@ -660,7 +661,23 @@ public class Cli extends ClientGameManager {
 
     @Override
     public void botSpawn() {
-        // TODO
+        GameMap gameMap = getGameSerialized().getGameMap();
+        PlayerPosition botSpawnPosition = null;
+        boolean correctColor;
+
+        out.println("Choose the Color of the square where to Spawn the bot:");
+        do {
+            try {
+                botSpawnPosition = gameMap.getSpawnSquare(readRoomColor());
+                correctColor = true;
+            } catch (InvalidSpawnColorException e) {
+                correctColor = false;
+            }
+        } while (!correctColor);
+
+        if(!sendRequest(MessageBuilder.buildTerminatorSpawnRequest(client.getToken(), getGameSerialized().getBot(), gameMap.getSquare(botSpawnPosition)))) {
+            promptError(SEND_ERROR, true);
+        }
     }
 
     @Override
@@ -995,7 +1012,20 @@ public class Cli extends ClientGameManager {
 
     @Override
     public void botAction() {
-        // TODO
+        PlayerPosition newPos;
+        String target;
+
+        printMap();
+
+        out.println("Choose the position for the bot action (same position not to move):");
+        newPos = getCoordinates();
+
+        out.println("Choose the target for the bot action (-1 not to shoot):");
+        target = readBotTarget(getGameSerialized().getPlayers());
+
+        if(!sendRequest(MessageBuilder.buildUseTerminatorRequest(client.getToken(), getGameSerialized().getBot(), newPos, (UserPlayer) getPlayerByName(target)))) {
+            promptError(SEND_ERROR, true);
+        }
     }
 
     @Override
@@ -1045,6 +1075,30 @@ public class Cli extends ClientGameManager {
         } while (!accepted);
 
         return choose;
+    }
+
+    private String readBotTarget(ArrayList<UserPlayer> inGamePlayers) {
+        boolean firstError = true;
+        boolean accepted = false;
+        String chosenTarget;
+
+        do {
+            out.print(">>> ");
+            chosenTarget = in.nextLine();
+            if(chosenTarget.equals("-1")) return null;
+            if(!chosenTarget.equals("bot")) {       // no one can shoot itself!
+                for(UserPlayer player : inGamePlayers) {
+                    if(player.getUsername().equals(chosenTarget)) {
+                        accepted = true;
+                        break;
+                    }
+                }
+            } else {
+                firstError = promptInputError(firstError, "Bot Target Not Valid");
+            }
+        } while (!accepted);
+
+        return chosenTarget;
     }
 
     private String readTargetUsername(ArrayList<UserPlayer> inGamePlayers, boolean stoppable) {
