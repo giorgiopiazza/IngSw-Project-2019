@@ -416,7 +416,11 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         if (getPowerups().stream().anyMatch(p -> p.getName().equals(TELEPORTER) || p.getName().equals(NEWTON))) {
             actions.add(PossibleAction.POWER_UP);
         }
-        actions.add(PossibleAction.RELOAD);
+
+        if (getPlayerWeapons(username).stream().anyMatch(w -> w.status() == 1)) {
+            actions.add(PossibleAction.RELOAD);
+        }
+
         actions.add(PossibleAction.PASS_TURN);
 
         return actions;

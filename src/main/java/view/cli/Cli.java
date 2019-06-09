@@ -12,6 +12,7 @@ import model.cards.PowerupCard;
 import model.cards.WeaponCard;
 import model.cards.effects.Effect;
 import model.map.SpawnSquare;
+import model.map.Square;
 import model.player.*;
 import network.client.*;
 import network.message.*;
@@ -809,7 +810,14 @@ public class Cli extends ClientGameManager {
         out.println("\nChoose the moving square for your pick action (same position not to move):");
         newPos = getCoordinates();
 
-        if (getGameSerialized().getGameMap().getSquare(newPos.getCoordX(), newPos.getCoordY()).getSquareType() == SquareType.TILE) {
+        Square square = getGameSerialized().getGameMap().getSquare(newPos.getCoordX(), newPos.getCoordY());
+
+        if (square == null) {
+            cancelAction("Position not valid");
+            return;
+        }
+
+        if (square.getSquareType() == SquareType.TILE) {
             out.println("You picked a TILE!");
             if (!sendRequest(MessageBuilder.buildMovePickRequest(client.getToken(), getPlayer(), newPos))) {
                 promptError(SEND_ERROR, true);
