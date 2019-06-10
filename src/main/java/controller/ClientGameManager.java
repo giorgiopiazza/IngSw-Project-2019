@@ -23,7 +23,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public abstract class ClientGameManager implements ClientGameManagerListener, ClientUpdateListener, Runnable {
-    public static final String TAGBACK_GRANADE = "TAGBACK_GRANADE";
+    public static final String TAGBACK_GRENADE = "TAGBACK_GRENADE";
     public static final String TELEPORTER = "TELEPORTER";
     public static final String NEWTON = "NEWTON";
     public static final String TARGETING_SCOPE = "TARGETING_SCOPE";

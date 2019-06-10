@@ -90,30 +90,6 @@ public class ShootRequest extends EffectRequest {
             this.rechargingWeapons = rechargingWeapons;
         }
 
-        public String getUsername() {
-            return this.username;
-        }
-
-        public String getToken() {
-            return this.token;
-        }
-
-        public int getWeaponID() {
-            return this.weaponID;
-        }
-
-        public int getEffect() {
-            return this.effect;
-        }
-
-        public ArrayList<Integer> getPaymentPowerups() {
-            return this.paymentPowerups;
-        }
-
-        public ArrayList<Integer> getRechargingWeapons() {
-            return this.rechargingWeapons;
-        }
-
         public ShootRequestBuilder targetPlayersUsernames(ArrayList<String> targetPlayersUsernames) {
             this.targetPlayersUsernames = targetPlayersUsernames;
             return this;

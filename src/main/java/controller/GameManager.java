@@ -298,7 +298,7 @@ public class GameManager implements TimerRunListener, Serializable {
      */
     private Response granadeCheckContent(Message receivedMessage) {
         if (receivedMessage.getContent() == MessageContent.POWERUP_USAGE) {
-            return onGranadeMessage(receivedMessage);
+            return onGrenadeMessage(receivedMessage);
         } else {
             return buildInvalidResponse();
         }
@@ -732,13 +732,13 @@ public class GameManager implements TimerRunListener, Serializable {
     }
 
     /**
-     * Method used to handle the decision of a player to use or not a TAGBACK GRANADE when damaged.
+     * Method used to handle the decision of a player to use or not a TAGBACK GRENADE when damaged.
      *
      * @param receivedMessage the {@link Message Message} received that can be handled if a {@link PowerupRequest PowerupRequest}
      *                        or a {@link PassTurnRequest PassTurnRequest}
      * @return a positive or negative {@link Response Response} handled by the server
      */
-    private Response onGranadeMessage(Message receivedMessage) {
+    private Response onGrenadeMessage(Message receivedMessage) {
         switch (receivedMessage.getContent()) {
             case POWERUP_USAGE:
                 return roundManager.handleGranadeUsage((PowerupRequest) receivedMessage);

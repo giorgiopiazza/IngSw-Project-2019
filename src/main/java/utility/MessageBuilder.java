@@ -137,24 +137,15 @@ public class MessageBuilder {
 
     @NotNull
     @Contract("_, null, _ -> fail; _, !null, null -> fail")
-    public static PowerupRequest buildPowerupRequest(String token, String username,  ArrayList<PowerupCard> playerPowerups, ArrayList<PowerupCard> toUse) throws PowerupCardsNotFoundException {
-        if (playerPowerups == null || toUse == null)
+    public static PowerupRequest buildPowerupRequest(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) throws PowerupCardsNotFoundException {
+        PowerupRequest powerupRequest = powerupRequestBuilder.build();
+
+        if (powerupRequest.getPowerup() == null)
             throw new NullPointerException("player and powerupCard cannot be null");
 
-        ArrayList<Integer> powerupsIndexes = new ArrayList<>();
+        if (powerupRequest.getPowerup().isEmpty()) throw new PowerupCardsNotFoundException();
 
-        for (int i = 0; i < playerPowerups.size(); i++) {
-            for (PowerupCard powerupCard : toUse) {
-                if (playerPowerups.get(i).equals(powerupCard)) {
-                    powerupsIndexes.add(i);
-                }
-            }
-
-        }
-
-        if (powerupsIndexes.isEmpty()) throw new PowerupCardsNotFoundException();
-
-        return new PowerupRequest(new PowerupRequest.PowerupRequestBuilder(username, token, powerupsIndexes));
+        return powerupRequest;
     }
 
     @NotNull
@@ -181,23 +172,25 @@ public class MessageBuilder {
 
     @NotNull
     @Contract("_, null, _, _ -> fail; _, !null, null, _ -> fail")
-    public static ShootRequest buildShootRequest(ShootRequest.ShootRequestBuilder fireRequestBuilt) {
-        if (fireRequestBuilt.getUsername() == null)
+    public static ShootRequest buildShootRequest(ShootRequest.ShootRequestBuilder shootRequestBuilt) {
+        ShootRequest shootRequest = shootRequestBuilt.build();
+
+        if (shootRequest.getSenderUsername() == null)
             throw new NullPointerException("player userName can not be null");
 
-        if(fireRequestBuilt.getWeaponID() < 0 || fireRequestBuilt.getWeaponID() > 3)
+        if(shootRequest.getWeaponID() < 0 || shootRequest.getWeaponID() > 3)
             throw new IndexOutOfBoundsException("Invalid index for maximum number of weapons allowed in hand");
 
-        if(fireRequestBuilt.getEffect() < 0 || fireRequestBuilt.getEffect() > 3)
+        if(shootRequest.getEffect() < 0 || shootRequest.getEffect() > 3)
             throw new IndexOutOfBoundsException("Invalid index for maximum number od powerups allowed in hand!");
 
-        if(fireRequestBuilt.getPaymentPowerups().size() > 3)
+        if(shootRequest.getPaymentPowerups().size() > 3)
             throw new IndexOutOfBoundsException("Invalid size for recharging powerups");
 
-        if(fireRequestBuilt.getRechargingWeapons().size() > 3)
+        if(shootRequest.getRechargingWeapons().size() > 3)
             throw new IndexOutOfBoundsException("Invalid size for recharging weapons");
 
-        return fireRequestBuilt.build();
+        return shootRequest;
     }
 
     @NotNull

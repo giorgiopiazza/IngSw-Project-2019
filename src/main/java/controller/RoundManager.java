@@ -323,12 +323,12 @@ public class RoundManager {
                     if (!paymentPowerups.isEmpty()) {
                         tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
                                 .paymentPowerups(scopeMessage.getPaymentPowerups())
-                                .targetPlayersID(new ArrayList<>(List.of(targets.get(i))))
+                                .targetPlayersUsername(new ArrayList<>(List.of(targets.get(i))))
                                 .build();
                         paymentPowerups.remove(0);
                     } else {
                         tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
-                                .targetPlayersID(new ArrayList<>(List.of(targets.get(i))))
+                                .targetPlayersUsername(new ArrayList<>(List.of(targets.get(i))))
                                 .build();
                     }
                     try {
@@ -348,7 +348,7 @@ public class RoundManager {
                 if (powerupsIndexes.size() == 3) {
                     for (int i = 0; i < 2; ++i) {
                         tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
-                                .targetPlayersID(new ArrayList<>(List.of(targets.get(0))))
+                                .targetPlayersUsername(new ArrayList<>(List.of(targets.get(0))))
                                 .build();
                         try {
                             turnOwner.getPowerups()[i].use(tempRequest);
@@ -363,7 +363,7 @@ public class RoundManager {
                     }
 
                     tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(2))))
-                            .targetPlayersID(new ArrayList<>(List.of(targets.get(1))))
+                            .targetPlayersUsername(new ArrayList<>(List.of(targets.get(1))))
                             .build();
                     try {
                         turnOwner.getPowerups()[2].use(tempRequest);
@@ -380,12 +380,12 @@ public class RoundManager {
                         if (!paymentPowerups.isEmpty()) {
                             tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
                                     .paymentPowerups(scopeMessage.getPaymentPowerups())
-                                    .targetPlayersID(new ArrayList<>(List.of(targets.get(0))))
+                                    .targetPlayersUsername(new ArrayList<>(List.of(targets.get(0))))
                                     .build();
                             paymentPowerups.remove(0);
                         } else {
                             tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
-                                    .targetPlayersID(new ArrayList<>(List.of(targets.get(0))))
+                                    .targetPlayersUsername(new ArrayList<>(List.of(targets.get(0))))
                                     .build();
                         }
                         try {
@@ -405,7 +405,7 @@ public class RoundManager {
             case 2:
                 for (int i = 0; i < 3; ++i) {
                     tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
-                            .targetPlayersID(new ArrayList<>(List.of(targets.get(0))))
+                            .targetPlayersUsername(new ArrayList<>(List.of(targets.get(0))))
                             .build();
                     try {
                         turnOwner.getPowerups()[i].use(tempRequest);
@@ -444,7 +444,7 @@ public class RoundManager {
 
         chosenPowerup = turnManager.getTurnOwner().getPowerups()[powerupRequest.getPowerup().get(0)];
 
-        if (!chosenPowerup.getName().equals(NEWTON) || !chosenPowerup.getName().equals(TELEPORTER)) {
+        if (!chosenPowerup.getName().equals(NEWTON) && !chosenPowerup.getName().equals(TELEPORTER)) {
             return buildNegativeResponse("Invalid Powerup");
         }
 

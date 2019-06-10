@@ -38,6 +38,7 @@ public class Cli extends ClientGameManager {
     private static final String MOVE_TARGET = "moveTarget";
     private static final String MAX_MOVE_TARGET = "maxMoveTarget";
     private static final String MOVE_TARGET_BEFORE = "moveTargetBefore";
+    private static final String TP = "tp";
 
     public Cli() {
         super();
@@ -434,23 +435,23 @@ public class Cli extends ClientGameManager {
         printWeapons(playersWeapons);
 
         out.println("Choose the weapons you want to reload (-1 to stop choosing)");
-        for(int i = 0; i < playersWeapons.length; ++i) {
+        for (int i = 0; i < playersWeapons.length; ++i) {
             int tempChoose = askWeapon(-1);
-            if(tempChoose == -1) break;
+            if (tempChoose == -1) break;
             else rechargingWeapons.add(tempChoose);
         }
 
-        if(!getPowerups().isEmpty()) {
+        if (!getPowerups().isEmpty()) {
             paymentPowerups = askPaymentPowerups();
         }
 
         try {
-            if(paymentPowerups.isEmpty()) {
-                if(!sendRequest(MessageBuilder.buildReloadRequest(client.getToken(), getPlayer(), rechargingWeapons))) {
+            if (paymentPowerups.isEmpty()) {
+                if (!sendRequest(MessageBuilder.buildReloadRequest(client.getToken(), getPlayer(), rechargingWeapons))) {
                     promptError(SEND_ERROR, true);
                 }
             } else {
-                if(!sendRequest(MessageBuilder.buildReloadRequest(client.getToken(), getPlayer(), rechargingWeapons, paymentPowerups))) {
+                if (!sendRequest(MessageBuilder.buildReloadRequest(client.getToken(), getPlayer(), rechargingWeapons, paymentPowerups))) {
                     promptError(SEND_ERROR, true);
                 }
             }
@@ -461,7 +462,7 @@ public class Cli extends ClientGameManager {
 
     @Override
     public void passTurn() {
-        if(!sendRequest(MessageBuilder.buildPassTurnRequest(client.getToken(), getPlayer()))) {
+        if (!sendRequest(MessageBuilder.buildPassTurnRequest(client.getToken(), getPlayer()))) {
             promptError(SEND_ERROR, true);
         }
     }
@@ -511,7 +512,7 @@ public class Cli extends ClientGameManager {
         return paymentPowerups;
     }
 
-    private ShootRequest.ShootRequestBuilder buildShootRequest(Effect chosenEffect, ShootRequest.ShootRequestBuilder fireRequestBuilding) {
+    private ShootRequest.ShootRequestBuilder buildShootRequest(Effect chosenEffect, ShootRequest.ShootRequestBuilder shootRequestBuilder) {
         Map<String, String> effectProperties = chosenEffect.getProperties();
         TargetType[] targets = chosenEffect.getTargets();
         ArrayList<String> targetsChosen = new ArrayList<>();
@@ -521,13 +522,13 @@ public class Cli extends ClientGameManager {
             switch (target) {
                 case PLAYER:
                     targetsChosen = askTargetsUsernames(effectProperties);
-                    fireRequestBuilding.targetPlayersUsernames(targetsChosen);
+                    shootRequestBuilder.targetPlayersUsernames(targetsChosen);
                     break;
                 case SQUARE:
-                    fireRequestBuilding.targetPositions(askTargetSquaresPositions(effectProperties));
+                    shootRequestBuilder.targetPositions(askTargetSquaresPositions(effectProperties));
                     break;
                 case ROOM:
-                    fireRequestBuilding.targetRoomColor(askTargetRoomColor(effectProperties));
+                    shootRequestBuilder.targetRoomColor(askTargetRoomColor(effectProperties));
                     break;
                 default:
                     throw new InvalidPropertiesException();
@@ -537,23 +538,23 @@ public class Cli extends ClientGameManager {
         // now that I have the targets we need to handle the possible move decisions
         if (effectProperties.containsKey(MOVE)) {
             // move is always permitted both before and after, decision is then always asked
-            fireRequestBuilding.senderMovePosition(askMovePositionInShoot());
-            fireRequestBuilding.moveSenderFirst(askBeforeAfterMove());
+            shootRequestBuilder.senderMovePosition(askMovePositionInShoot());
+            shootRequestBuilder.moveSenderFirst(askBeforeAfterMove());
         }
 
         // now that I have handled the Turn Owner movement I have to handle the targets ones
         if (effectProperties.containsKey(MOVE_TARGET) || effectProperties.containsKey(MAX_MOVE_TARGET)) {
-            fireRequestBuilding.targetPlayersMovePositions(askTargetsMovePositions(targetsChosen));
+            shootRequestBuilder.targetPlayersMovePositions(askTargetsMovePositions(targetsChosen));
         }
 
         // in the end if the targets movement can be done before or after the shoot action I ask when to the shooter
         if (effectProperties.containsKey(MOVE_TARGET_BEFORE)) {
-            fireRequestBuilding.moveTargetsFirst(Boolean.parseBoolean(effectProperties.get(MOVE_TARGET_BEFORE)));
-        } else if (effectProperties.containsKey(MOVE_TARGET) || effectProperties.containsKey(MAX_MOVE_TARGET)){
-            fireRequestBuilding.moveTargetsFirst(askBeforeAfterMove());
+            shootRequestBuilder.moveTargetsFirst(Boolean.parseBoolean(effectProperties.get(MOVE_TARGET_BEFORE)));
+        } else if (effectProperties.containsKey(MOVE_TARGET) || effectProperties.containsKey(MAX_MOVE_TARGET)) {
+            shootRequestBuilder.moveTargetsFirst(askBeforeAfterMove());
         }
 
-        return fireRequestBuilding;
+        return shootRequestBuilder;
     }
 
     private ArrayList<String> askTargetsUsernames(Map<String, String> effectProperties) {
@@ -617,7 +618,7 @@ public class Cli extends ClientGameManager {
 
         do {
             out.println("Choose exactly " + exactIntNum + " target/s squares for your shoot action:");
-            chosenSquares.add(getCoordinates());
+            chosenSquares.add(askCoordinates());
         } while (chosenSquares.size() < exactIntNum);
 
         return chosenSquares;
@@ -630,7 +631,7 @@ public class Cli extends ClientGameManager {
         do {
             PlayerPosition tempPos;
             out.println("Choose up to " + maxIntNum + " target/s squares for your shoot action (-1 to stop choosing):");
-            tempPos = getCoordinates();
+            tempPos = askCoordinates();
             if (tempPos.getCoordX() == -1 && chosenSquares.size() > 1) return chosenSquares;
             chosenSquares.add(tempPos);
         } while (chosenSquares.size() < maxIntNum);
@@ -651,7 +652,7 @@ public class Cli extends ClientGameManager {
 
     private PlayerPosition askMovePositionInShoot() {
         out.println("Choose the moving position for your shoot action:");
-        return getCoordinates();
+        return askCoordinates();
     }
 
     private boolean askBeforeAfterMove() {
@@ -666,7 +667,7 @@ public class Cli extends ClientGameManager {
 
         for (String target : targetsChosen) {
             out.println("Choose " + target + " moving position:");
-            targetsMovePositions.add(getCoordinates());
+            targetsMovePositions.add(askCoordinates());
         }
 
         return targetsMovePositions;
@@ -688,7 +689,7 @@ public class Cli extends ClientGameManager {
             }
         } while (!correctColor);
 
-        if(!sendRequest(MessageBuilder.buildTerminatorSpawnRequest(client.getToken(), getGameSerialized().getBot(), gameMap.getSquare(botSpawnPosition)))) {
+        if (!sendRequest(MessageBuilder.buildTerminatorSpawnRequest(client.getToken(), getGameSerialized().getBot(), gameMap.getSquare(botSpawnPosition)))) {
             promptError(SEND_ERROR, true);
         }
     }
@@ -706,18 +707,18 @@ public class Cli extends ClientGameManager {
         PlayerPosition adrenalineMovePosition;
 
         out.println("Choose the moving square for your adrenaline shoot action (same position not to move):");
-        adrenalineMovePosition = getCoordinates();
+        adrenalineMovePosition = askCoordinates();
 
         // now that I also know the moving position needed for the adrenaline shoot action I can build the shoot request and send it
         shootRequestBuilt = sharedShootBuilder();
 
-        if(shootRequestBuilt == null) {
+        if (shootRequestBuilt == null) {
             return;
         } else {
             shootRequestBuilt.adrenalineMovePosition(adrenalineMovePosition);
         }
 
-        if(!sendRequest(MessageBuilder.buildShootRequest(shootRequestBuilt))) {
+        if (!sendRequest(MessageBuilder.buildShootRequest(shootRequestBuilt))) {
             promptError(SEND_ERROR, true);
         }
     }
@@ -758,24 +759,24 @@ public class Cli extends ClientGameManager {
         ArrayList<Integer> rechargingWeapons = new ArrayList<>();
 
         out.println("Choose the moving square for your frenzy shoot action (same position not to move):");
-        frenzyMovePosition = getCoordinates();
+        frenzyMovePosition = askCoordinates();
 
         out.println("Do you want to recharge your weapons before shooting (-1 to stop choosing)?");
-        for(int i = 0; i < getPlayer().getWeapons().length; ++i) {
+        for (int i = 0; i < getPlayer().getWeapons().length; ++i) {
             int tempChoose = askWeapon(-1);
-            if(tempChoose == -1) break;
+            if (tempChoose == -1) break;
             rechargingWeapons.add(tempChoose);
         }
 
         // now that I have everything I need more for a frenzy shoot I build the normal shoot request, add these and send it
         shootRequestBuilt = sharedShootBuilder();
-        if(shootRequestBuilt == null) {
+        if (shootRequestBuilt == null) {
             return;
         } else {
             shootRequestBuilt.adrenalineMovePosition(frenzyMovePosition).rechargingWeapons(rechargingWeapons);
         }
 
-        if(!sendRequest(MessageBuilder.buildShootRequest(shootRequestBuilt))) {
+        if (!sendRequest(MessageBuilder.buildShootRequest(shootRequestBuilt))) {
             promptError(SEND_ERROR, true);
         }
     }
@@ -784,7 +785,7 @@ public class Cli extends ClientGameManager {
     public void shoot() {
         ShootRequest.ShootRequestBuilder shootRequestBuilder = sharedShootBuilder();
 
-        if(shootRequestBuilder == null) return;
+        if (shootRequestBuilder == null) return;
 
         if (!sendRequest(MessageBuilder.buildShootRequest(shootRequestBuilder))) {
             promptError(SEND_ERROR, true);
@@ -887,7 +888,7 @@ public class Cli extends ClientGameManager {
         printMap();
 
         out.println("\nChoose the moving square for your pick action (same position not to move):");
-        newPos = getCoordinates();
+        newPos = askCoordinates();
 
         Square square = getGameSerialized().getGameMap().getSquare(newPos.getCoordX(), newPos.getCoordY());
 
@@ -910,7 +911,7 @@ public class Cli extends ClientGameManager {
         printMap();
         out.println();
 
-        if (!sendRequest(MessageBuilder.buildMoveRequest(client.getToken(), getPlayer(), getCoordinates()))) {
+        if (!sendRequest(MessageBuilder.buildMoveRequest(client.getToken(), getPlayer(), askCoordinates()))) {
             promptError(SEND_ERROR, true);
         }
     }
@@ -993,12 +994,34 @@ public class Cli extends ClientGameManager {
         printPowerups();
 
         PowerupCard powerupCard = askPowerupCli();
-        ArrayList<PowerupCard> powerups = new ArrayList<>();
 
-        powerups.add(powerupCard);
+
+        if (!powerupCard.getName().equals(NEWTON) && !powerupCard.getName().equals(TELEPORTER)) {
+            cancelAction("ERROR: You can't use this powerup!");
+            return;
+        }
+
+        ArrayList<Integer> powerups = new ArrayList<>();
+        powerups.add(getPowerups().indexOf(powerupCard));
+
+        PowerupRequest.PowerupRequestBuilder powerupRequestBuilder = new PowerupRequest.PowerupRequestBuilder(getUsername(), client.getToken(), powerups);
+
+        Effect baseEffect = powerupCard.getBaseEffect();
+        Map<String, String> effectProperties = baseEffect.getProperties();
+
+        if (effectProperties.containsKey(TP)) {
+            powerupRequestBuilder.targetPlayersUsername(new ArrayList<>(List.of(getUsername())));
+            powerupRequestBuilder.targetPlayersMovePositions(new ArrayList<>(List.of(askCoordinates())));
+        }
+
+        if (effectProperties.containsKey(MAX_MOVE_TARGET)) {
+            out.println("Choose target username:");
+            powerupRequestBuilder.targetPlayersUsername(askExactTargets("1"));
+            powerupRequestBuilder.targetPlayersMovePositions(new ArrayList<>(List.of(askCoordinates())));
+        }
 
         try {
-            if (!sendRequest(MessageBuilder.buildPowerupRequest(client.getToken(), getUsername(), new ArrayList<>(getPowerups()), powerups))) {
+            if (!sendRequest(MessageBuilder.buildPowerupRequest(powerupRequestBuilder))) {
                 promptError(SEND_ERROR, true);
             }
         } catch (PowerupCardsNotFoundException e) {
@@ -1035,12 +1058,12 @@ public class Cli extends ClientGameManager {
         out.println("Which power up do you want to use?");
 
         for (int i = 0; i < newList.size(); i++) {
-            out.println("\t" + i + 1 + " - " + CliPrinter.toStringPowerUpCard(newList.get(i)) + " (" + Ammo.toColor(newList.get(i).getValue()) + " room)");
+            out.println("\t" + i + " - " + CliPrinter.toStringPowerUpCard(newList.get(i)) + " (" + Ammo.toColor(newList.get(i).getValue()) + " room)");
         }
 
         out.println();
 
-        return powerups.get(readInt(1, powerups.size()) - 1);
+        return powerups.get(readInt(0, powerups.size() - 1));
     }
 
     private PowerupCard askPowerupSpawn() {
@@ -1062,7 +1085,7 @@ public class Cli extends ClientGameManager {
 
     @NotNull
     @Contract(" -> new")
-    private PlayerPosition getCoordinates() {
+    private PlayerPosition askCoordinates() {
         boolean exit = false;
         boolean firstError = true;
 
@@ -1123,12 +1146,12 @@ public class Cli extends ClientGameManager {
         printMap();
 
         out.println("Choose the position for the bot action (same position not to move):");
-        newPos = getCoordinates();
+        newPos = askCoordinates();
 
         out.println("Choose the target for the bot action (-1 not to shoot):");
         target = readBotTarget(getGameSerialized().getPlayers());
 
-        if(!sendRequest(MessageBuilder.buildUseTerminatorRequest(client.getToken(), getGameSerialized().getBot(), newPos, (UserPlayer) getPlayerByName(target)))) {
+        if (!sendRequest(MessageBuilder.buildUseTerminatorRequest(client.getToken(), getGameSerialized().getBot(), newPos, (UserPlayer) getPlayerByName(target)))) {
             promptError(SEND_ERROR, true);
         }
     }
@@ -1165,12 +1188,20 @@ public class Cli extends ClientGameManager {
     private int readInt(int minVal, int maxVal) {
         boolean firstError = true;
         boolean accepted = false;
-        int choose;
+        int choose = Integer.MIN_VALUE;
+
         do {
             out.print(">>> ");
-            choose = Integer.valueOf(in.nextLine());
-            if (choose >= minVal && choose <= maxVal) accepted = true;
-            else firstError = promptInputError(firstError, "Not valid input!");
+
+            try {
+                choose = Integer.valueOf(in.nextLine());
+
+                if (choose >= minVal && choose <= maxVal) accepted = true;
+                else firstError = promptInputError(firstError, "Not valid input!");
+
+            } catch (NumberFormatException e) {
+                promptInputError(firstError, "Not valid input!");
+            }
         } while (!accepted);
 
         return choose;
@@ -1184,10 +1215,10 @@ public class Cli extends ClientGameManager {
         do {
             out.print(">>> ");
             chosenTarget = in.nextLine();
-            if(chosenTarget.equals("-1")) return null;
-            if(!chosenTarget.equals("bot")) {       // no one can shoot itself!
-                for(UserPlayer player : inGamePlayers) {
-                    if(player.getUsername().equals(chosenTarget)) {
+            if (chosenTarget.equals("-1")) return null;
+            if (!chosenTarget.equals("bot")) {       // no one can shoot itself!
+                for (UserPlayer player : inGamePlayers) {
+                    if (player.getUsername().equals(chosenTarget)) {
                         accepted = true;
                         break;
                     }
