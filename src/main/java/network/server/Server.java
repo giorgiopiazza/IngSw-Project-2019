@@ -24,6 +24,7 @@ public class Server implements Runnable {
 
     private static final int MAX_CLIENT = 5;
     private static final String[] FORBIDDEN_USERNAME = {Game.GOD, Game.BOT};
+    private static final String DEFAULT_CONF_FILE_PATH = "conf.json";
 
     private Map<String, Connection> clients;
 
@@ -99,7 +100,7 @@ public class Server implements Runnable {
     }
 
     public static void main(String[] args) {
-        String confFilePath = "conf.json";
+        String confFilePath = DEFAULT_CONF_FILE_PATH;
         boolean terminator = false;
         int skullNum = 5;
         boolean reloadGame = false;

@@ -573,7 +573,7 @@ public class GameManager implements TimerRunListener, Serializable {
         }
 
         // at this point gme should always be ready to start
-        if (gameInstance.isGameReadyToStart() && (lobby.getInLobbyPlayers().size() >= MIN_PLAYERS || lobby.getInLobbyPlayers().size() >= MIN_PLAYERS && lobby.getTerminatorPresence())) {    // TODO add here control that before 10s ended someone disconnected from the lobby ?
+        if (gameInstance.isGameReadyToStart() && (lobby.getInLobbyPlayers().size() >= MIN_PLAYERS || lobby.getInLobbyPlayers().size() >= MIN_PLAYERS && lobby.getTerminatorPresence())) {
             startingStateHandler();
         }
         // nothing to do here as we said game should always be ready to start at this point
