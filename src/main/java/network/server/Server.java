@@ -1,10 +1,11 @@
 package network.server;
 
+import com.google.gson.JsonObject;
 import controller.GameManager;
-import enumerations.MessageContent;
 import enumerations.MessageStatus;
 import model.Game;
 import network.message.*;
+import utility.ConfigurationParser;
 import utility.persistency.SaveGame;
 
 import java.io.IOException;
@@ -30,8 +31,24 @@ public class Server implements Runnable {
 
     public static final Logger LOGGER = Logger.getLogger("Server");
 
-    private Server(boolean terminator, int skullNum) {
-        clients = new HashMap<>();
+    private int startTime;
+    private int moveTime;
+
+    private Server(String confFilePath) {
+        gameManager = SaveGame.loadGame(this);
+
+        try {
+            JsonObject jo = ConfigurationParser.parseConfiguration(confFilePath);
+
+            startTime = jo.get("start_time").getAsInt();
+            moveTime = jo.get("move_time").getAsInt();
+
+            LOGGER.log(Level.INFO, "Start time : {0}", startTime);
+            LOGGER.log(Level.INFO, "Move time : {0}", moveTime);
+        } catch (IOException e) {
+            LOGGER.severe(e.getMessage());
+            return;
+        }
 
         SocketServer serverSocket = new SocketServer(this, SOCKET_PORT);
         serverSocket.startServer();
@@ -45,11 +62,24 @@ public class Server implements Runnable {
 
         Thread pinger = new Thread(this);
         pinger.start();
-
-        gameManager = new GameManager(this, terminator, skullNum);
     }
 
-    private Server() {
+    public Server(boolean terminator, int skullNum, String confFilePath) {
+        clients = new HashMap<>();
+
+        gameManager = new GameManager(this, terminator, skullNum);
+
+        try {
+            JsonObject jo = ConfigurationParser.parseConfiguration(confFilePath);
+            LOGGER.info(jo.toString());
+
+            startTime = jo.get("start_time").getAsInt();
+            moveTime = jo.get("move_time").getAsInt();
+        } catch (IOException e) {
+            LOGGER.severe(e.getMessage());
+            return;
+        }
+
         SocketServer serverSocket = new SocketServer(this, SOCKET_PORT);
         serverSocket.startServer();
 
@@ -62,12 +92,10 @@ public class Server implements Runnable {
 
         Thread pinger = new Thread(this);
         pinger.start();
-
-        gameManager = SaveGame.loadGame(this);
     }
 
     public static void main(String[] args) {
-        String confFilePath = "default/path";
+        String confFilePath = "conf.json";
         boolean terminator = false;
         int skullNum = 5;
         boolean reloadGame = false;
@@ -100,13 +128,13 @@ public class Server implements Runnable {
                 }
             }
         } else {
-            new Server(terminator,  skullNum);
+            new Server(terminator,  skullNum, confFilePath);
             return;
         }
 
         // if the starting command contains -r it means that a game is going to be reloaded
         if(reloadGame) {
-            new Server();
+            new Server(confFilePath);
             return;
         }
 
@@ -115,8 +143,7 @@ public class Server implements Runnable {
             skullNum = 5;
         }
 
-        // TODO pass confFilePath as it can be parsed in the server and used to set parameters
-        new Server(terminator, skullNum);
+        new Server(terminator, skullNum, confFilePath);
     }
 
     /**
