@@ -45,15 +45,17 @@ public class GameManager implements TimerRunListener, Serializable {
      * Creates an instance of {@link GameManager GameManager} binding the server tha will send messages to him
      *
      * @param server the Server to be bind
+     * @param skullNum number of skulls in this game
+     * @param startTime the lobby timeout time in seconds
      */
-    public GameManager(Server server, boolean terminator, int skullNum) {
+    public GameManager(Server server, boolean terminator, int skullNum, int startTime) {
         this.server = server;
         this.gameState = PossibleGameState.GAME_ROOM;
         this.lobby = new GameLobby(terminator, skullNum);
         this.gameInstance = Game.getInstance();
         this.roundManager = new RoundManager(this);
 
-        lobbyTimeoutTime = 10000;
+        lobbyTimeoutTime = startTime * 1000;
     }
 
     /**

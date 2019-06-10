@@ -14,12 +14,18 @@ public class ConfigurationParser {
         throw new IllegalStateException("utility class");
     }
 
-    public static JsonObject parseConfiguration(String path) throws IOException {
+    public static JsonObject parseConfiguration(String path) {
         JsonParser jp = new JsonParser();
-        InputStream is = new FileInputStream(path);
+        JsonObject jsonObject;
 
-        JsonObject jsonObject = jp.parse(new InputStreamReader(is)).getAsJsonObject();
-        is.close();
+        try {
+            InputStream is = new FileInputStream(path);
+
+            jsonObject = jp.parse(new InputStreamReader(is)).getAsJsonObject();
+            is.close();
+        } catch (IOException e) {
+            jsonObject = null;
+        }
 
         return jsonObject;
     }

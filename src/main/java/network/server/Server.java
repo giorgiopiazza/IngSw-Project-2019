@@ -35,20 +35,19 @@ public class Server implements Runnable {
     private int moveTime;
 
     private Server(String confFilePath) {
-        gameManager = SaveGame.loadGame(this);
+        JsonObject jo = ConfigurationParser.parseConfiguration(confFilePath);
 
-        try {
-            JsonObject jo = ConfigurationParser.parseConfiguration(confFilePath);
-
-            startTime = jo.get("start_time").getAsInt();
-            moveTime = jo.get("move_time").getAsInt();
-
-            LOGGER.log(Level.INFO, "Start time : {0}", startTime);
-            LOGGER.log(Level.INFO, "Move time : {0}", moveTime);
-        } catch (IOException e) {
-            LOGGER.severe(e.getMessage());
+        if (jo == null) {
+            gameManager = null;
+            LOGGER.log(Level.SEVERE, "Configuration file not found: {0}", confFilePath);
             return;
         }
+
+        startTime = jo.get("start_time").getAsInt();
+        moveTime = jo.get("move_time").getAsInt();
+
+        LOGGER.log(Level.INFO, "Start time : {0}", startTime);
+        LOGGER.log(Level.INFO, "Move time : {0}", moveTime);
 
         SocketServer serverSocket = new SocketServer(this, SOCKET_PORT);
         serverSocket.startServer();
@@ -59,6 +58,8 @@ public class Server implements Runnable {
         rmiServer.startServer();
 
         LOGGER.info("RMI Server Started");
+
+        gameManager = SaveGame.loadGame(this);
 
         Thread pinger = new Thread(this);
         pinger.start();
@@ -67,18 +68,19 @@ public class Server implements Runnable {
     public Server(boolean terminator, int skullNum, String confFilePath) {
         clients = new HashMap<>();
 
-        gameManager = new GameManager(this, terminator, skullNum);
+        JsonObject jo = ConfigurationParser.parseConfiguration(confFilePath);
 
-        try {
-            JsonObject jo = ConfigurationParser.parseConfiguration(confFilePath);
-            LOGGER.info(jo.toString());
-
-            startTime = jo.get("start_time").getAsInt();
-            moveTime = jo.get("move_time").getAsInt();
-        } catch (IOException e) {
-            LOGGER.severe(e.getMessage());
+        if (jo == null) {
+            gameManager = null;
+            LOGGER.log(Level.SEVERE, "Configuration file not found: {0}", confFilePath);
             return;
         }
+
+        startTime = jo.get("start_time").getAsInt();
+        moveTime = jo.get("move_time").getAsInt();
+
+        LOGGER.log(Level.INFO, "Start time : {0}", startTime);
+        LOGGER.log(Level.INFO, "Move time : {0}", moveTime);
 
         SocketServer serverSocket = new SocketServer(this, SOCKET_PORT);
         serverSocket.startServer();
@@ -89,6 +91,8 @@ public class Server implements Runnable {
         rmiServer.startServer();
 
         LOGGER.info("RMI Server Started");
+
+        gameManager = new GameManager(this, terminator, skullNum, startTime);
 
         Thread pinger = new Thread(this);
         pinger.start();
