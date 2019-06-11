@@ -725,7 +725,7 @@ public class Cli extends ClientGameManager {
 
     @Override
     public void frenzyMove() {
-        out.println("FRENZY ACTION! \n");   // succhiami il cazzo sonar ti owno aggiungendo uno spazio ad ogni stringa e stai muto
+        out.println("FRENZY ACTION! \n");
         move();
     }
 

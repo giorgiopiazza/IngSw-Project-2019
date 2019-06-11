@@ -35,8 +35,6 @@ public enum Ammo {
             if(color.toString().equals(colorChosen)) {
                 return RoomColor.BLUE;
             }
-
-            throw new NullPointerException("An ammo has always a color to be returned!");
         }
 
         throw new InexistentColorException(colorChosen);

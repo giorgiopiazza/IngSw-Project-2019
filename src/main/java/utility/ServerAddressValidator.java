@@ -11,6 +11,9 @@ public class ServerAddressValidator {
     }
 
     public static boolean isAddressValid(String address) {
+        return true;
+
+        /*
         if (address == null || address.equals("localhost")) {
             return true;
         }
@@ -29,6 +32,7 @@ public class ServerAddressValidator {
         } catch (NumberFormatException e) {
             return false;
         }
+         */
     }
 
     public static boolean isPortValid(String portString) {
