@@ -248,8 +248,6 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
             default:
         }
-
-        //Logger.getGlobal().log(Level.INFO, "{0}", message);
     }
 
     private void checkTurnChange(GameStateMessage stateMessage) {
@@ -426,7 +424,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         return actions;
     }
 
-    private List<Player> getPlayers() {
+    protected List<Player> getPlayers() {
         List<Player> players;
 
         synchronized (gameSerializedLock) {

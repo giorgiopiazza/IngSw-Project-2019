@@ -974,7 +974,7 @@ public class Cli extends ClientGameManager {
     public PossibleAction askAction() {
         int choose;
         List<PossibleAction> possibleActions = getPossibleActions();
-
+        printUsername();
         printAmmo();
         out.println();
         printPowerupsNum();
@@ -1159,6 +1159,14 @@ public class Cli extends ClientGameManager {
     private void printMap() {
         CliPrinter.clearConsole(out);
         CliPrinter.printMap(out, getGameSerialized());
+    }
+
+    private void printUsername() {
+        CliPrinter.printUsername(out, getPlayers()
+                .stream()
+                .filter(p -> !p.getUsername().equals(getUsername()))
+                .collect(Collectors.toList()));
+        out.println();
     }
 
     private void printPowerups() {
