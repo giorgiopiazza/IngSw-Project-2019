@@ -38,6 +38,7 @@
       "quantity": 2,
       "properties" : {
         "moveInLine" : true,
+        "targetNum" : 1,
         "maxMoveTarget" : 2,
         "target" : ["PLAYER"]
       },

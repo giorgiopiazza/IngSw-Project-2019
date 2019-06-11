@@ -688,7 +688,7 @@ public class GameManager implements TimerRunListener, Serializable {
     private boolean checkStartedLobby() {
         ArrayList<LobbyMessage> inLobbyPlayers = lobby.getInLobbyPlayers();
 
-        if(inLobbyPlayers.size() < MIN_PLAYERS) {       // TODO verify if terminator counts
+        if(inLobbyPlayers.size() < MIN_PLAYERS) {
             endGame();
             return true;
         } else {

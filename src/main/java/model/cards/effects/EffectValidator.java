@@ -1,6 +1,7 @@
 package model.cards.effects;
 
 import enumerations.Direction;
+import enumerations.MessageContent;
 import enumerations.Properties;
 import enumerations.TargetType;
 import exceptions.command.InvalidCommandException;
@@ -207,8 +208,11 @@ class EffectValidator {
 
         for (PlayerPosition position : positions) {
             try {
-
-                shooter.getPosition().getDirection(position);
+                if(request.getContent() == MessageContent.POWERUP_USAGE) {
+                    Game.getInstance().getPlayerByName(request.getTargetPlayersUsername().get(0)).getPosition().getDirection(position);
+                } else {
+                    shooter.getPosition().getDirection(position);
+                }
 
             } catch (NoDirectionException e) {
                 return false;
