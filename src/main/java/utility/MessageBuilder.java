@@ -184,12 +184,6 @@ public class MessageBuilder {
         if(shootRequest.getEffect() < 0 || shootRequest.getEffect() > 3)
             throw new IndexOutOfBoundsException("Invalid index for maximum number od powerups allowed in hand!");
 
-        if(shootRequest.getPaymentPowerups().size() > 3)
-            throw new IndexOutOfBoundsException("Invalid size for recharging powerups");
-
-        if(shootRequest.getRechargingWeapons().size() > 3)
-            throw new IndexOutOfBoundsException("Invalid size for recharging weapons");
-
         return shootRequest;
     }
 
