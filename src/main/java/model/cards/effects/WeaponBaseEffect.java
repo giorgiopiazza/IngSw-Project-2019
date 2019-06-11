@@ -11,20 +11,12 @@ import java.util.List;
 import java.util.Map;
 
 public class WeaponBaseEffect extends Effect {
-    private AmmoQuantity cost;
 
     public WeaponBaseEffect(AmmoQuantity cost, Map<String, String> properties, TargetType[] targets, String description) {
         this.cost = cost;
         this.targets = targets;
         this.properties = properties;
         this.description = description;
-    }
-
-    /**
-     * @return the cost of the Effect
-     */
-    public AmmoQuantity getCost() {
-        return this.cost;
     }
 
     @Override

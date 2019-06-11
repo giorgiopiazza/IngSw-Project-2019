@@ -5,6 +5,7 @@ import exceptions.actions.IncompatibleActionException;
 import exceptions.actions.InvalidActionException;
 import exceptions.cards.WeaponAlreadyChargedException;
 import exceptions.cards.WeaponNotChargedException;
+import exceptions.command.InvalidCommandException;
 import exceptions.playerboard.NotEnoughAmmoException;
 import model.cards.WeaponCard;
 import model.player.PlayerPosition;
@@ -96,7 +97,7 @@ public class ShootAction implements Action {
         // then I shoot
         try {
             shootingWeapon.use(shootRequest);
-        } catch (WeaponNotChargedException e) {
+        } catch (WeaponNotChargedException | InvalidCommandException e) {
             // the weapon can not be used, then I set back the shooting position to his starting position because this
             // action can not be executed
             actingPlayer.changePosition(startingPos.getCoordX(), startingPos.getCoordY());
