@@ -493,7 +493,7 @@ public class Cli extends ClientGameManager {
             choose = readInt(0, weapon.getSecondaryEffects().size());
         } while (choose < 0 || choose > weapon.getSecondaryEffects().size());
 
-        return readInt();
+        return choose;
     }
 
     private ArrayList<Integer> askPaymentPowerups() {
@@ -1200,15 +1200,19 @@ public class Cli extends ClientGameManager {
 
         do {
             out.print(">>> ");
+            if(in.hasNextLine()) {
+                try {
+                    choose = Integer.valueOf(in.nextLine());
 
-            try {
-                choose = Integer.valueOf(in.nextLine());
+                    if (choose >= minVal && choose <= maxVal) accepted = true;
+                    else firstError = promptInputError(firstError, "Not valid input!");
 
-                if (choose >= minVal && choose <= maxVal) accepted = true;
-                else firstError = promptInputError(firstError, "Not valid input!");
-
-            } catch (NumberFormatException e) {
-                promptInputError(firstError, "Not valid input!");
+                } catch (NumberFormatException e) {
+                    promptInputError(firstError, "Not valid input!");
+                }
+            } else {
+                firstError = promptInputError(firstError, "Invalid integer!");
+                in.nextLine();
             }
         } while (!accepted);
 
