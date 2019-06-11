@@ -16,7 +16,7 @@ public class ServerAddressValidator {
             return true;
         }
 
-        return address.matches("/\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}\\b/g");
+        return address.matches("\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}\\b");
     }
 
     public static boolean isPortValid(String portString) {
