@@ -3,13 +3,13 @@ package model.player;
 import enumerations.PlayerColor;
 import model.Game;
 
-public class Terminator extends Player {
+public class Bot extends Player {
     private boolean spawnTurn;
-    public Terminator(PlayerColor color, PlayerBoard playerBoard) {
-        super(Game.TERMINATOR_USERNAME, color, playerBoard);
+    public Bot(PlayerColor color, PlayerBoard playerBoard) {
+        super(Game.BOT, color, playerBoard);
     }
 
-    public Terminator(Terminator other) {
+    public Bot(Bot other) {
         super(other);
         this.spawnTurn = other.spawnTurn;
     }

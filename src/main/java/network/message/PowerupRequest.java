@@ -8,13 +8,15 @@ import model.player.PlayerPosition;
 import java.util.ArrayList;
 
 public class PowerupRequest extends EffectRequest {
+    private static final long serialVersionUID = 8674157231024320484L;
+
     private final ArrayList<Integer> powerup;
     private final Ammo ammoColor;
 
     public PowerupRequest(PowerupRequestBuilder builder) {
         super(
-                new EffectRequestBuilder(builder.username, builder.token, MessageContent.POWERUP)
-                        .targetPlayersUsernames(builder.targetPlayersUsernames)
+                new EffectRequestBuilder(builder.username, builder.token, MessageContent.POWERUP_USAGE)
+                        .targetPlayersUsernames(builder.targetPlayersUsername)
                         .targetPositions(builder.targetPositions)
                         .targetRoomColor(builder.targetRoomColor)
                         .senderMovePosition(builder.senderMovePosition)
@@ -40,7 +42,7 @@ public class PowerupRequest extends EffectRequest {
         private ArrayList<Integer> powerup;
         private Ammo ammoColor;
 
-        private ArrayList<String> targetPlayersUsernames;
+        private ArrayList<String> targetPlayersUsername;
         private ArrayList<PlayerPosition> targetPositions;
         private RoomColor targetRoomColor;
 
@@ -55,8 +57,8 @@ public class PowerupRequest extends EffectRequest {
             this.powerup = powerup;
         }
 
-        public PowerupRequestBuilder targetPlayersID(ArrayList<String> targetPlayersUsernames) {
-            this.targetPlayersUsernames = targetPlayersUsernames;
+        public PowerupRequestBuilder targetPlayersUsername(ArrayList<String> targetPlayersUsername) {
+            this.targetPlayersUsername = targetPlayersUsername;
             return this;
         }
 

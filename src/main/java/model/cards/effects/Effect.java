@@ -4,9 +4,13 @@ import enumerations.TargetType;
 import network.message.EffectRequest;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 
 public abstract class Effect implements Serializable {
+    private static final long serialVersionUID = 992667210434983695L;
+
     private Map<String, String> properties;
     private TargetType[] targets;
     private String description;
@@ -49,4 +53,21 @@ public abstract class Effect implements Serializable {
      * @return {@code true} if the command is valid, {@code false} otherwise
      */
     public abstract boolean validate(EffectRequest request);
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Effect effect = (Effect) o;
+        return Objects.equals(properties, effect.properties) &&
+                Arrays.equals(targets, effect.targets) &&
+                Objects.equals(description, effect.description);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(properties, description);
+        result = 31 * result + Arrays.hashCode(targets);
+        return result;
+    }
 }

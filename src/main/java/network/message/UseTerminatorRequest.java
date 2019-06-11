@@ -4,11 +4,13 @@ import enumerations.MessageContent;
 import model.player.PlayerPosition;
 
 public class UseTerminatorRequest extends Message {
-    private PlayerPosition movingPosition;
-    private String targetPlayer;
+    private static final long serialVersionUID = -2468038742086444870L;
+
+    private final PlayerPosition movingPosition;
+    private final String targetPlayer;
 
     public UseTerminatorRequest(String username, String token, PlayerPosition movingPosition, String targetPlayer) {
-        super(username, token, MessageContent.TERMINATOR);
+        super(username, token, MessageContent.BOT_ACTION);
         this.movingPosition = movingPosition;
         this.targetPlayer = targetPlayer;
     }

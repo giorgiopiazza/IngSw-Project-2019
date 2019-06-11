@@ -1,256 +1,173 @@
 package controller;
 
 import enumerations.GameClientState;
-import enumerations.PlayerBoardState;
-import enumerations.PossibleAction;
 import enumerations.UserPlayerState;
 import exceptions.player.ClientRoundManagerException;
-import model.player.UserPlayer;
 
-import java.util.ArrayList;
-import java.util.List;
 
-public class ClientRoundManager {
+class ClientRoundManager {
 
     private UserPlayerState playerState;
-    private PlayerBoardState boardState;
     private GameClientState gameClientState;
 
-    private List<PossibleAction> possibleActions;
+    private boolean secondFrenzyAction;
 
-    private boolean terminatorPresent;
-    private boolean terminatorCanMove;
+    private final boolean botPresent;
+    private boolean botMoved;
     private boolean roundStarted;
-    private boolean reloaded;
 
-    private UserPlayer that;
-
-    public ClientRoundManager(UserPlayer that, boolean terminatorPresent) {
-        this.that = that;
-
+    ClientRoundManager(boolean botPresent) {
         this.roundStarted = false;
-        this.reloaded = false;
-        this.terminatorPresent = terminatorPresent;
-        this.terminatorCanMove = true;
+        this.botPresent = botPresent;
+        this.botMoved = false;
 
-        this.playerState = UserPlayerState.BEGIN;
-        this.boardState = PlayerBoardState.NORMAL;
+        this.playerState = UserPlayerState.SPAWN;
         this.gameClientState = GameClientState.NORMAL;
 
-        this.possibleActions = new ArrayList<>();
-        this.possibleActions.add(PossibleAction.CHOOSE_SPAWN);
+        this.secondFrenzyAction = false;
     }
 
     /**
      * Change the state of the player in this round
-     *
-     * @param that the updated current player in game
      */
-    public void nextMove(UserPlayer that) {
-        nextMove(that, false, false);
-    }
-
-    /**
-     * Change the state of the player in this round
-     *
-     * @param that the updated current player in game
-     * @param reloaded if the player reload his weapons
-     */
-    public void nextMove(UserPlayer that, boolean reloaded) {
-        nextMove(that, reloaded, false);
-    }
-
-    /**
-     * Change the state of the player in this round
-     *
-     * @param that the updated current player in game
-     * @param reloaded if the player reload his weapons
-     * @param terminatorMove if the next move is a TERMINATOR_MOVE
-     */
-    public void nextMove(UserPlayer that, boolean reloaded, boolean terminatorMove) {
-        if (reloaded && this.reloaded) throw new ClientRoundManagerException("Cannot reload more than 1 time for round");
-        if (!terminatorCanMove && terminatorMove && terminatorPresent) throw new ClientRoundManagerException("Cannot move terminator more than 1 time for round");
-        if (!roundStarted) throw new ClientRoundManagerException("Error, round not started yet (before call nextMove() you must call beginRound())");
-        if (playerState.equals(UserPlayerState.SECOND_MOVE) && !terminatorMove && terminatorPresent && terminatorCanMove) throw new ClientRoundManagerException("the player does not move the terminator");
-        if (that ==  null) throw new NullPointerException("UserPlayer \"that\" cannot be null");
-
-        this.reloaded = reloaded;
-        this.that = that;
-        this.terminatorCanMove = terminatorMove;
+    void nextState() {
+        if (!roundStarted)
+            throw new ClientRoundManagerException("Error, round not started yet (before call nextState() you must call beginRound())");
 
         switch (playerState) {
-            case BEGIN:
-                if (terminatorCanMove && terminatorPresent) {
-                    playerState = UserPlayerState.TERMINATOR_FIRST;
-                    terminatorCanMove = false;
-                } else {
-                    playerState = UserPlayerState.FIRST_MOVE;
-                }
+            case BOT_SPAWN:
+                playerState = UserPlayerState.SPAWN;
                 break;
 
-            case FIRST_MOVE:
-                if (terminatorCanMove && terminatorPresent) {
-                    playerState = UserPlayerState.TERMINATOR_SECOND;
-                } else {
-                    playerState = UserPlayerState.SECOND_MOVE;
-                }
+            case SPAWN:
+                handleBegin();
                 break;
 
-            case SECOND_MOVE:
-                if (terminatorMove && terminatorPresent) {
-                    playerState = UserPlayerState.TERMINATOR_THIRD;
-                } else {
-                    playerState = UserPlayerState.END;
-                }
+            case FIRST_ACTION:
+                playerState = UserPlayerState.SECOND_ACTION;
                 break;
 
-            case TERMINATOR_FIRST:
-                playerState = UserPlayerState.FIRST_MOVE;
+            case SECOND_ACTION:
+                handleSecondMove();
                 break;
 
-            case TERMINATOR_SECOND:
-                playerState = UserPlayerState.SECOND_MOVE;
+            case FIRST_FRENZY_ACTION:
+                handleFirstFrenzy();
                 break;
 
-            case TERMINATOR_THIRD:
+            case SECOND_FRENZY_ACTION:
+                handleSecondFrenzy();
+                break;
+
+            case BOT_ACTION:
+                playerState = UserPlayerState.ENDING_PHASE;
+                break;
+
+            case ENDING_PHASE:
                 playerState = UserPlayerState.END;
                 break;
 
-            case TERMINATOR_MOVE:
-                throw new ClientRoundManagerException("Error, ClientRoundManager cannot be in UserPlayerState.TERMINATOR_MOVE state");
+            case DEAD:
+                playerState = UserPlayerState.FIRST_ACTION;
+                break;
 
             case END:
                 throw new ClientRoundManagerException("Error, in the UserPlayerState.END state you must call the endRound() method");
+
+            default:
+                throw new ClientRoundManagerException("Invalid State!");
         }
     }
 
-    public void beginRound(UserPlayer that) {
-        this.that = that;
-        this.boardState = that.getPlayerBoard().getBoardState();
+    private void handleBegin() {
+        if (gameClientState == GameClientState.NORMAL) {
+            playerState = UserPlayerState.FIRST_ACTION;
+        } else {
+            playerState = UserPlayerState.FIRST_FRENZY_ACTION;
+        }
+    }
+
+    private void handleSecondMove() {
+        if (botPresent && !botMoved) {
+            playerState = UserPlayerState.BOT_ACTION;
+        } else {
+            playerState = UserPlayerState.ENDING_PHASE;
+        }
+    }
+
+    private void handleFirstFrenzy() {
+        if (secondFrenzyAction) {
+            playerState = UserPlayerState.SECOND_FRENZY_ACTION;
+        } else {
+            if (botPresent && !botMoved) {
+                playerState = UserPlayerState.BOT_ACTION;
+            } else {
+                playerState = UserPlayerState.ENDING_PHASE;
+            }
+        }
+    }
+
+    private void handleSecondFrenzy() {
+        if (botPresent && !botMoved) {
+            playerState = UserPlayerState.BOT_ACTION;
+        } else {
+            playerState = UserPlayerState.ENDING_PHASE;
+        }
+    }
+
+    void death() {
+        playerState = UserPlayerState.DEAD;
+    }
+
+    void botSpawn() {
+        playerState = UserPlayerState.BOT_SPAWN;
+    }
+
+    void beginRound() {
         roundStarted = true;
     }
 
     /**
-     * Set the state to {@code BEGIN}, reset {@code terminatorCanMove} to true
+     * Set the state to {@code FIRST_ACTION}, reset {@code botMoved} to false
      */
-    public void endRound() {
-        playerState = UserPlayerState.BEGIN;
-        terminatorCanMove = true;
+    void endRound() {
+        playerState = UserPlayerState.FIRST_ACTION;
+        botMoved = false;
         roundStarted = false;
-        reloaded = false;
     }
 
-    public UserPlayerState getPlayerState() {
-        return playerState == UserPlayerState.TERMINATOR_FIRST || playerState == UserPlayerState.TERMINATOR_SECOND || playerState == UserPlayerState.TERMINATOR_THIRD  ? UserPlayerState.TERMINATOR_MOVE : playerState;
+    UserPlayerState getUserPlayerState() {
+        return playerState;
     }
 
-    /**
-     * This method return the possible actions that the player can be in this round.
-     * If in the list is present the PossibleAction.RELOAD, this action is not counted and another can be performed.
-     * If in the list is present the PossibleAction.TERMINATOR_ACTION, means that the next move can be the terminator one,
-     * if the round is in the UserPlayerState.SECOND_MOVE state, then the next move is necessarily the terminator one.
-     *
-     * @return a list with the possible actions that the player can perform in this round
-     */
-    public List<PossibleAction> possibleActions() {
-        List<PossibleAction> actions = new ArrayList<>();
-        boardState = that.getPlayerBoard().getBoardState();
 
-        if (gameClientState.equals(GameClientState.NORMAL)) {
-            switch (boardState) {
-                case NORMAL:
-                    normalActions(actions);
-                    break;
 
-                case FIRST_ADRENALINE:
-                    firstAdrenalineActions(actions);
-                    break;
-
-                case SECOND_ADRENALINE:
-                    secondAdrenalineActions(actions);
-                    break;
-            }
-        } else {
-            finalFrenzyActions(actions);
-        }
-
-        return actions;
-    }
-
-    private void setGameClientState(GameClientState gameClientState) {
-        this.gameClientState = gameClientState;
-    }
-
-    private GameClientState getGameClientState() {
-        return gameClientState;
-    }
-
-    private void normalActions(List<PossibleAction> actions) {
-        if (playerState != UserPlayerState.END && playerState != UserPlayerState.BEGIN) {
-            if (terminatorCanMove && terminatorPresent) actions.add(PossibleAction.TERMINATOR_ACTION);
-            actions.add(PossibleAction.MOVE);
-            actions.add(PossibleAction.MOVE_AND_PICK);
-            actions.add(PossibleAction.SHOOT);
-        }
-        if (!reloaded) actions.add(PossibleAction.RELOAD);
-    }
-
-    private void firstAdrenalineActions(List<PossibleAction> actions) {
-        if (playerState != UserPlayerState.END && playerState != UserPlayerState.BEGIN) {
-            if (terminatorCanMove && terminatorPresent) actions.add(PossibleAction.TERMINATOR_ACTION);
-            actions.add(PossibleAction.MOVE);
-            actions.add(PossibleAction.ADRENALINE_PICK);
-            actions.add(PossibleAction.SHOOT);
-        }
-        if (!reloaded) actions.add(PossibleAction.RELOAD);
-    }
-
-    private void secondAdrenalineActions(List<PossibleAction> actions) {
-        if (playerState != UserPlayerState.END && playerState != UserPlayerState.BEGIN) {
-            if (terminatorCanMove && terminatorPresent) actions.add(PossibleAction.TERMINATOR_ACTION);
-            actions.add(PossibleAction.MOVE);
-            actions.add(PossibleAction.ADRENALINE_PICK);
-            actions.add(PossibleAction.ADRENALINE_SHOOT);
-        }
-        if (!reloaded) actions.add(PossibleAction.RELOAD);
-    }
-
-    private void finalFrenzyActions(List<PossibleAction> actions) {
-        // TODO
+    void setSecondFrenzyAction(boolean secondFrenzyAction) {
+        this.secondFrenzyAction = secondFrenzyAction;
     }
 
     /**
-     * Check if the round already started
-     *
-     * @return true if the round is started, otherwise false
-     */
-    public boolean isStarted() {
-        return roundStarted;
-    }
-
-    /**
-     * Check if the current player have already reload
-     *
-     * @return true if already reload, otherwise false
-     */
-    public boolean alreadyReloaded() {
-        return reloaded;
-    }
-
-    /**
-     * Check if the player have already done the terminator move
+     * Check if the player have already done the bot move
      *
      * @return true if already moved, otherwise false
      */
-    public boolean terminatorMoved() {
-        return !terminatorCanMove;
+    boolean hasBotMoved() {
+        return botMoved;
     }
 
-    public boolean terminatorPresent() {
-        return terminatorPresent;
+    boolean isBotPresent() {
+        return botPresent;
     }
 
-    public boolean roundEnded() {
-        return UserPlayerState.BEGIN == playerState && !roundStarted;
+    void setFinalFrenzy() {
+        this.gameClientState = GameClientState.FINAL_FRENZY;
+    }
+
+    GameClientState getGameClientState() {
+        return gameClientState;
+    }
+
+    boolean isDoubleActionFrenzy() {
+        return secondFrenzyAction;
     }
 }

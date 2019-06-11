@@ -5,7 +5,9 @@ import enumerations.MessageContent;
 import java.util.Objects;
 
 public class GameSetupMessage extends Message {
-    private int mapVote;
+    private static final long serialVersionUID = -1592035927392350342L;
+
+    private final int mapVote;
 
     public GameSetupMessage(String username, String token, int mapVote) {
         super(username, token, MessageContent.GAME_SETUP);

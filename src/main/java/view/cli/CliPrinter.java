@@ -1,12 +1,10 @@
 package view.cli;
 
-import enumerations.Ammo;
-import enumerations.PlayerColor;
-import enumerations.SquareAdjacency;
-import enumerations.SquareType;
+import enumerations.*;
 import model.GameSerialized;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
+import model.player.AmmoQuantity;
 import model.player.Player;
 import model.map.*;
 import model.player.UserPlayer;
@@ -504,11 +502,9 @@ class CliPrinter {
      * Prints the weapons in a {@link UserPlayer UserPlayer's} hand
      *
      * @param out        printStream where to print
-     * @param userPlayer the {@link UserPlayer UserPlayer} whose {@link WeaponCard Weapons} need to be printed
+     * @param weaponCards Array of {@link WeaponCard weapons} to be printed
      */
-    static void printWeapons(AdrenalinePrintStream out, UserPlayer userPlayer) {
-        WeaponCard[] weaponCards = userPlayer.getWeapons();
-
+    static void printWeapons(AdrenalinePrintStream out, WeaponCard[] weaponCards) {
         if (weaponCards.length == 0) {
             out.println("                    YOU HAVE NO WEAPONS                     ");
         } else {
@@ -646,7 +642,7 @@ class CliPrinter {
 
         for (WeaponCard weapon : weapons) {
             if (weapon != null) {
-                out.append("║           Base Effect:            ║     ");
+                out.append("║         Base Effect: [0]          ║     ");
             } else {
                 out.append("                                          ");
             }
@@ -662,7 +658,7 @@ class CliPrinter {
         for (WeaponCard weapon : weapons) {
             if (weapon != null) {
                 if (!weapon.getSecondaryEffects().isEmpty()) {
-                    out.append("║           First Effect:           ║     ");
+                    out.append("║         First Effect: [1]         ║     ");
                 } else {
                     out.append("║                                   ║     ");
                 }
@@ -681,7 +677,7 @@ class CliPrinter {
         for (WeaponCard weapon : weapons) {
             if (weapon != null) {
                 if (weapon.getSecondaryEffects().size() > 1) {
-                    out.append("║           Second Effect:          ║     ");
+                    out.append("║         Second Effect: [2]        ║     ");
                 } else {
                     out.append("║                                   ║     ");
                 }
@@ -700,7 +696,7 @@ class CliPrinter {
         for (WeaponCard weapon : weapons) {
             if (weapon != null) {
                 if (weapon.getSecondaryEffects().size() > 2) {
-                    out.append("║           Combo Effect:           ║     ");
+                    out.append("║         Combo Effect: [3]         ║     ");
                 } else {
                     out.append("║    NO COMBO WITH THESE EFFECTS    ║     ");
                 }
@@ -807,9 +803,9 @@ class CliPrinter {
     private static String addPowerupName(PowerupCard[] powerups) {
         StringBuilder out = new StringBuilder();
 
-        for (PowerupCard powerup : powerups) {
-            if (powerup != null) {
-                out.append("║ ").append(addFirstMissingBlanks(powerup.getName())).append(powerup.getName()).append(addSecondMissingBlanks(powerup.getName())).append(" ║     ");
+        for (int i = 0; i < powerups.length; ++i) {
+            if (powerups[i] != null) {
+                out.append("║ ").append(addFirstMissingBlanks(powerups[i].getName())).append(powerups[i].getName()).append(" [").append(i).append("]").append(addSecondMissingBlanks(powerups[i].getName())).append(" ║     ");
             } else {
                 out.append("                                 ");
             }
@@ -821,7 +817,7 @@ class CliPrinter {
 
     private static StringBuilder addFirstMissingBlanks(String powerupName) {
         StringBuilder tempOut = new StringBuilder();
-        final int MAX_POWERUP_LENGTH = 24;
+        final int MAX_POWERUP_LENGTH = 22;
         int missingBlanks = (MAX_POWERUP_LENGTH - powerupName.length()) / 2;
 
         tempOut.append(" ".repeat(missingBlanks));
@@ -830,7 +826,7 @@ class CliPrinter {
 
     private static StringBuilder addSecondMissingBlanks(String powerupName) {
         StringBuilder tempOut = new StringBuilder();
-        final int MAX_POWERUP_LENGTH = 24;
+        final int MAX_POWERUP_LENGTH = 18;
         int missingBlanks = (MAX_POWERUP_LENGTH - powerupName.length()) / 2;
 
         if (powerupName.length() % 2 != 0) ++missingBlanks;
@@ -920,5 +916,36 @@ class CliPrinter {
         String name = powerupCard.getName();
 
         return name + " " + color;
+    }
+
+    static void printAmmo(AdrenalinePrintStream out, AmmoQuantity ammo) {
+        if(ammo.noAmmo()) {
+            out.println("                    NO AMMO POOR BOY                    ");
+        } else {
+            out.print(
+                            printColorAmmos(ammo.getRedAmmo(), "Red") + "\n\n" +
+                            printColorAmmos(ammo.getBlueAmmo(), "Blue") + "\n\n" +
+                            printColorAmmos(ammo.getYellowAmmo(), "Yellow") + "\n"
+            );
+        }
+    }
+
+    private static String printColorAmmos(int ammoInt, String color) {
+        StringBuilder tempOut = new StringBuilder();
+        String ammoColor = AnsiCode.getTextColorCodeByName(color, true);
+
+        tempOut.append(color).append(" Ammo: ");
+
+        String ammoString = (ammoColor + "  " + AnsiCode.RESET + " ").repeat(ammoInt);
+
+        return tempOut.append(ammoString).toString();
+    }
+
+    /**
+     * Clears the console
+     */
+    public static void clearConsole(AdrenalinePrintStream out) {
+        out.print("\033[H\033[2J");
+        out.flush();
     }
 }

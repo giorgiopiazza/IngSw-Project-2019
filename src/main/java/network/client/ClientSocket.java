@@ -84,13 +84,6 @@ public class ClientSocket extends Client implements Runnable {
             } catch (ClassNotFoundException e) {
                 // Discard Message
             }
-
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                disconnect();
-            }
         }
     }
 
@@ -103,8 +96,6 @@ public class ClientSocket extends Client implements Runnable {
         } catch (IOException e) {
             Logger.getGlobal().severe(e.getMessage());
         }
-
-        messageReceiver.interrupt();
     }
 
     /**
@@ -117,6 +108,8 @@ public class ClientSocket extends Client implements Runnable {
         if (!socket.isClosed()) {
             socket.close();
         }
+
+        messageReceiver.interrupt();
 
         in = null;
         out = null;

@@ -9,15 +9,11 @@ import java.util.logging.Logger;
 public class ClientUpdater implements Runnable {
     private final Client client;
     private ClientUpdateListener updateListener;
-    private boolean stop;
     private Thread thread;
-    private final Object waiter;
 
-    public ClientUpdater(Client client, ClientUpdateListener updateListener, Object waiter) {
+    public ClientUpdater(Client client, ClientUpdateListener updateListener) {
         this.client = client;
         this.updateListener = updateListener;
-        this.stop = false;
-        this.waiter = waiter;
         this.thread = new Thread(this);
         this.thread.start();
     }
@@ -32,10 +28,7 @@ public class ClientUpdater implements Runnable {
                     messages = client.receiveMessages();
                 } while (messages.isEmpty());
 
-                updateListener.onUpdate(messages);
-                synchronized (waiter) {
-                    waiter.notify();
-                }
+                messages.forEach(updateListener::onUpdate);
             }
 
             try {

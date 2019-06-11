@@ -14,6 +14,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class PlayerBoard implements Serializable {
+    private static final long serialVersionUID = 696570674587022548L;
+
     private List<String> damages;
     private List<String> marks;
 

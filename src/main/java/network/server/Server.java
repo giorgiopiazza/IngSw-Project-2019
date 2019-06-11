@@ -1,10 +1,12 @@
 package network.server;
 
+import com.google.gson.JsonObject;
 import controller.GameManager;
-import enumerations.MessageContent;
 import enumerations.MessageStatus;
 import model.Game;
 import network.message.*;
+import utility.ConfigurationParser;
+import utility.persistency.SaveGame;
 
 import java.io.IOException;
 import java.util.*;
@@ -21,7 +23,8 @@ public class Server implements Runnable {
     private static final int RMI_PORT = 7272;
 
     private static final int MAX_CLIENT = 5;
-    private static final String[] FORBIDDEN_USERNAME = {Game.GOD, Game.TERMINATOR_USERNAME};
+    private static final String[] FORBIDDEN_USERNAME = {Game.GOD, Game.BOT};
+    private static final String DEFAULT_CONF_FILE_PATH = "conf.json";
 
     private Map<String, Connection> clients;
 
@@ -29,8 +32,23 @@ public class Server implements Runnable {
 
     public static final Logger LOGGER = Logger.getLogger("Server");
 
-    private Server(boolean terminator, int skullNum) {
-        clients = new HashMap<>();
+    private int startTime;
+    private int moveTime;
+
+    private Server(String confFilePath) {
+        JsonObject jo = ConfigurationParser.parseConfiguration(confFilePath);
+
+        if (jo == null) {
+            gameManager = null;
+            LOGGER.log(Level.SEVERE, "Configuration file not found: {0}", confFilePath);
+            return;
+        }
+
+        startTime = jo.get("start_time").getAsInt();
+        moveTime = jo.get("move_time").getAsInt();
+
+        LOGGER.log(Level.INFO, "Start time : {0}", startTime);
+        LOGGER.log(Level.INFO, "Move time : {0}", moveTime);
 
         SocketServer serverSocket = new SocketServer(this, SOCKET_PORT);
         serverSocket.startServer();
@@ -42,16 +60,53 @@ public class Server implements Runnable {
 
         LOGGER.info("RMI Server Started");
 
+        gameManager = SaveGame.loadGame(this);
+
         Thread pinger = new Thread(this);
         pinger.start();
+    }
 
-        gameManager = new GameManager(this, terminator, skullNum);
+    public Server(boolean terminator, int skullNum, String confFilePath) {
+        clients = new HashMap<>();
+
+        JsonObject jo = ConfigurationParser.parseConfiguration(confFilePath);
+
+        if (jo == null) {
+            gameManager = null;
+            LOGGER.log(Level.SEVERE, "Configuration file not found: {0}", confFilePath);
+            return;
+        }
+
+        startTime = jo.get("start_time").getAsInt();
+        moveTime = jo.get("move_time").getAsInt();
+
+        LOGGER.log(Level.INFO, "Start time : {0}", startTime);
+        LOGGER.log(Level.INFO, "Move time : {0}", moveTime);
+
+        SocketServer serverSocket = new SocketServer(this, SOCKET_PORT);
+        serverSocket.startServer();
+
+        LOGGER.info("Socket Server Started");
+
+        RMIServer rmiServer = new RMIServer(this, RMI_PORT);
+        rmiServer.startServer();
+
+        LOGGER.info("RMI Server Started");
+
+        gameManager = new GameManager(this, terminator, skullNum, startTime);
+
+        Thread pinger = new Thread(this);
+        pinger.start();
     }
 
     public static void main(String[] args) {
-        String confFilePath = "default/path";
+        String confFilePath = DEFAULT_CONF_FILE_PATH;
         boolean terminator = false;
         int skullNum = 5;
+        boolean reloadGame = false;
+
+        // normal complete Server launch should have the following parameters: -l "confFilePath.txt" -b true/false -s #skulls
+        // normal complete Server launch with game Reload should have the following parameter: -l "confFilePath.txt" -r
 
         if(args.length > 0 && args.length < 7) {
             for(int i = 0; i < args.length; ++i) {
@@ -69,13 +124,22 @@ public class Server implements Runnable {
                             skullNum = Integer.parseInt(args[i + 1]);
                             ++i;
                             break;
+                        case 'r':
+                            reloadGame = true;
+                            break;
                         default:
                             break;
                     }
                 }
             }
         } else {
-            new Server(terminator,  skullNum);
+            new Server(terminator,  skullNum, confFilePath);
+            return;
+        }
+
+        // if the starting command contains -r it means that a game is going to be reloaded
+        if(reloadGame) {
+            new Server(confFilePath);
             return;
         }
 
@@ -84,8 +148,7 @@ public class Server implements Runnable {
             skullNum = 5;
         }
 
-        // TODO pass confFilePath as it can be parsed in the server and used to set parameters
-        new Server(terminator, skullNum);
+        new Server(terminator, skullNum, confFilePath);
     }
 
     /**
@@ -118,6 +181,7 @@ public class Server implements Runnable {
                 }
             } else {
                 if (clients.keySet().size() == MAX_CLIENT) { // Max players
+                    // TODO FIX THIS
                     connection.sendMessage(
                             new ConnectionResponse("Max number of player reached", null, MessageStatus.ERROR)
                     );
@@ -197,7 +261,7 @@ public class Server implements Runnable {
 
         if (username != null) {
             sendMessageToAll(new DisconnectionMessage(username));
-            gameManager.onMessage(new LobbyMessage(username, null, MessageContent.DISCONNECTION, null));
+            gameManager.onMessage(new LobbyMessage(username, null, null, true));
             LOGGER.log(Level.INFO, "{0} disconnected from server!", username);
         }
     }

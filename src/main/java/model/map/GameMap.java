@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class GameMap implements Serializable {
@@ -60,6 +59,8 @@ public class GameMap implements Serializable {
      * W W W Y
      */
     public static final int MAP_4 = 4;
+
+    private static final long serialVersionUID = 1887000392810101907L;
 
     private Square[][] rooms;
 
@@ -274,30 +275,38 @@ public class GameMap implements Serializable {
         for (int i = 0; i < MAX_ROWS; ++i) {
             for (int j = 0; j < MAX_COLUMNS; ++j) {
                 Square tempSquare = getSquare(i, j);
-                if (tempSquare.getSquareType() == SquareType.TILE) {
-                    if (!((CardSquare) tempSquare).isAmmoTilePresent()) {
-                        ((CardSquare) tempSquare).setAmmoTile((AmmoTile) Game.getInstance().getAmmoTileDeck().draw());
-                    }
-                } else if (tempSquare.getSquareType() == SquareType.SPAWN) {
-                    if (((SpawnSquare) tempSquare).getWeapons().length < 3) {
-                        addMissingWeapons((SpawnSquare) tempSquare);
-                    }
-                } else {
-                    throw new NullPointerException("A Square must always have a type!");
+
+                if (tempSquare == null) {
+                    continue;
+                }
+
+                switch (tempSquare.getSquareType()) {
+                    case TILE:
+                        fillWithAmmoTile(tempSquare);
+                        break;
+                    case SPAWN:
+                        for(int k = 0; k < getMissingCards((SpawnSquare) tempSquare); ++k) ((SpawnSquare) tempSquare).addWeapon((WeaponCard) Game.getInstance().getWeaponsCardsDeck().draw());
+                        break;
+                    default:
+                        throw new NullPointerException("A Square must always have a type!");
                 }
             }
         }
     }
 
-    /**
-     * Method used to reduce cognitive complexity when we need to add more than just one missing card to a Spawn Square
-     *
-     * @param missingSquare SpawnSquare on which 1 or more Weapon is missing
-     */
-    private void addMissingWeapons(SpawnSquare missingSquare) {     // remember: on a square can stay maximum 3 cards!
-        for (int i = 0; i < (3 - missingSquare.getWeapons().length); ++i) {
-            missingSquare.addWeapon((WeaponCard) Game.getInstance().getWeaponsCardsDeck().draw());
+    private void fillWithAmmoTile(Square tempSquare) {
+        if (!((CardSquare) tempSquare).isAmmoTilePresent()) {
+            ((CardSquare) tempSquare).setAmmoTile((AmmoTile) Game.getInstance().getAmmoTileDeck().draw());
         }
+    }
+
+    private int getMissingCards(SpawnSquare spawnSquare) {
+        int nullCounter = 0;
+        for(int i = 0; i < 3; ++i) {
+            if(spawnSquare.getWeapons()[i] == null) ++nullCounter;
+        }
+
+        return nullCounter;
     }
 
     @Override

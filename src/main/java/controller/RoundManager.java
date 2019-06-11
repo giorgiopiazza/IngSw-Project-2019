@@ -15,15 +15,17 @@ import model.actions.*;
 import model.cards.PowerupCard;
 
 import model.map.Square;
+import model.player.Bot;
 import model.player.UserPlayer;
 import network.message.*;
+import utility.persistency.SaveGame;
 
 import java.util.*;
 
 /**
  * This class contains all the methods needed to handle entirely the Round of a player's turn
  */
-class RoundManager {
+public class RoundManager {
     private static final String TAGBACK_GRANADE = "TAGBACK_GRANADE";
     private static final String TELEPORTER = "TELEPORTER";
     private static final String NEWTON = "NEWTON";
@@ -51,10 +53,14 @@ class RoundManager {
         this.turnManager = new TurnManager(gameInstance.getPlayers());
     }
 
+    public void initTurnManager(TurnManager otherTurnManager) {
+        this.turnManager = new TurnManager(otherTurnManager);
+    }
+
     /**
      * @return the {@link TurnManager TurnManager} for the started {@link Game Game}
      */
-    TurnManager getTurnManager() {
+    public TurnManager getTurnManager() {
         return this.turnManager;
     }
 
@@ -63,10 +69,12 @@ class RoundManager {
      * depending on the {@link Game Game} state that can be: {@link GameState GameState.NORMAL} or
      * {@link GameState GameState}
      */
-    private void setInitialActions() {
-        if (gameInstance.getState() == GameState.NORMAL) {
+    void setInitialActions() {
+        if(gameInstance.getState() == GameState.NORMAL && turnManager.getTurnOwner().getPlayerState() == PossiblePlayerState.FIRST_SPAWN) {
+            ActionManager.setStartingPossibleActions(turnManager.getTurnOwner(), gameInstance.isTerminatorPresent());
+        } else if (gameInstance.getState() == GameState.NORMAL && turnManager.getTurnOwner().getPlayerState() == PossiblePlayerState.PLAYING) {
             ActionManager.setPossibleActions(turnManager.getTurnOwner());
-        } else if (gameInstance.getState() == GameState.FINAL_FRENZY) {
+        } else if (gameInstance.getState() == GameState.FINAL_FRENZY && turnManager.getTurnOwner().getPlayerState() == PossiblePlayerState.PLAYING) {
             ActionManager.setFrenzyPossibleActions(turnManager.getTurnOwner(), turnManager);
         }
     }
@@ -79,14 +87,14 @@ class RoundManager {
     }
 
     /**
-     * Method that handles the FirstSpawn of the {@link model.player.Terminator Terminator}, performed by the First
+     * Method that handles the FirstSpawn of the {@link Bot Terminator}, performed by the First
      * {@link UserPlayer Player} that starts the {@link Game Game}
      *
      * @param spawnRequest the {@link TerminatorSpawnRequest TerminatorSpawnRequest} received
      * @return a positive or negative {@link Response Response} handled by the server
      */
     Response handleTerminatorFirstSpawn(TerminatorSpawnRequest spawnRequest) {
-        if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.SPAWN_TERMINATOR)) {
+        if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.SPAWN_BOT)) {
             // terminator does not still exist!
             try {
                 gameInstance.buildTerminator();
@@ -98,8 +106,6 @@ class RoundManager {
             return buildNegativeResponse("Invalid Action ");
         }
 
-        // I pick the two powerups for the first turn of the player an I set his state to FIRST_SPAWN
-        pickTwoPowerups();
         turnManager.getTurnOwner().changePlayerState(PossiblePlayerState.FIRST_SPAWN);
         return buildPositiveResponse("Terminator has spawned!");
     }
@@ -120,9 +126,11 @@ class RoundManager {
             return buildNegativeResponse("Invalid powerup index  ");
         }
 
+        PowerupCard spawningPowerup = turnOwner.getPowerups()[firstSpawnPowerup];
+
         if (turnOwner.getPossibleActions().contains(PossibleAction.CHOOSE_SPAWN)) {
             try {
-                spawnColor = Ammo.toColor(turnOwner.getPowerups()[discardRequest.getPowerup()].getValue());
+                spawnColor = Ammo.toColor(spawningPowerup.getValue());
                 turnOwner.discardPowerupByIndex(discardRequest.getPowerup());
             } catch (EmptyHandException e) {
                 // never reached, in first spawn state every player always have two powerups!
@@ -139,23 +147,10 @@ class RoundManager {
             // never reached, a powerup has always a corresponding spawning color!
         }
 
-        // changing state handling
-        if (gameInstance.isTerminatorPresent()) {
-            if (turnOwner.isFirstPlayer()) {
-                turnManager.nextTurn();
-                pickTwoPowerups();
-            }
-        } else {
-            if (turnManager.endOfRound()) {
-                turnManager.nextTurn();
-                setInitialActions();
-                gameManager.changeState(PossibleGameState.GAME_STARTED);
-            } else {
-                turnManager.nextTurn();
-                pickTwoPowerups();
-            }
-        }
-
+        // every player must see the powerup the spawning one choosed to spawn
+        gameManager.sendBroadcastMessage(new BroadcastSpawningPowerup(spawningPowerup));
+        turnManager.getTurnOwner().changePlayerState(PossiblePlayerState.PLAYING);
+        setInitialActions();
         return buildPositiveResponse("Player spawned with chosen powerup");
     }
 
@@ -166,18 +161,9 @@ class RoundManager {
      * @param gameState the {@link GameState GameState} in which the {@link GameManager GameManager} needs to evolve
      */
     private void afterTerminatorActionHandler(PossibleGameState gameState) {
-        if (gameState == PossibleGameState.GAME_READY) {
-            if (turnManager.endOfRound()) {
-                turnManager.nextTurn();
-                setInitialActions();
-                gameManager.changeState(PossibleGameState.GAME_STARTED);
-            } else {
-                turnManager.nextTurn();
-                pickTwoPowerups();
-            }
-        } else if (gameState == PossibleGameState.GAME_STARTED) {
+        if (gameState == PossibleGameState.GAME_STARTED) {
             // if terminator action is done before the 2 actions the game state does not change, otherwise it must be done before passing the turn
-            turnManager.getTurnOwner().removeAction(PossibleAction.TERMINATOR_ACTION);
+            turnManager.getTurnOwner().removeAction(PossibleAction.BOT_ACTION);
         } else if (gameState == PossibleGameState.MISSING_TERMINATOR_ACTION) {
             if (gameInstance.getState().equals(GameState.NORMAL)) {
                 setReloadAction();
@@ -189,24 +175,6 @@ class RoundManager {
             }
         } else {
             throw new InvalidGameStateException();
-        }
-    }
-
-    /**
-     * Method that handles the TurnPass after that all needed informations have been restored because of a TAGBACK GRANADE usage
-     */
-    private void handleNextTurnReset() {
-        PossibleGameState arrivingState = turnManager.getArrivingGameState();
-
-        if (arrivingState == PossibleGameState.GAME_READY) {
-            turnManager.nextTurn();
-            if (turnManager.getTurnOwner().isFirstPlayer()) {
-                gameManager.changeState(PossibleGameState.GAME_STARTED);
-            } else {
-                pickTwoPowerups();
-            }
-        } else {
-            gameManager.changeState(handleAfterActionState(turnManager.isSecondAction()));
         }
     }
 
@@ -228,14 +196,14 @@ class RoundManager {
      * Method that handles the {@link TerminatorAction TerminatorAction}
      *
      * @param terminatorRequest the {@link UseTerminatorRequest UseTerminatorRequest} received
-     * @param gameState the {@link GameState GameState} used by the method
-     *                  {@link #afterTerminatorActionHandler(PossibleGameState) afterTerminatorActionHandler}
+     * @param gameState         the {@link GameState GameState} used by the method
+     *                          {@link #afterTerminatorActionHandler(PossibleGameState) afterTerminatorActionHandler}
      * @return a positive or negative {@link Response Response} handled by the server
      */
     Response handleTerminatorAction(UseTerminatorRequest terminatorRequest, PossibleGameState gameState) {
         TerminatorAction terminatorAction;
 
-        if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.TERMINATOR_ACTION)) {
+        if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.BOT_ACTION)) {
             terminatorAction = new TerminatorAction(turnManager.getTurnOwner(), gameInstance.getUserPlayerByUsername(terminatorRequest.getTargetPlayer()), terminatorRequest.getMovingPosition());
             try {
                 if (terminatorAction.validate()) {
@@ -260,7 +228,6 @@ class RoundManager {
             afterTerminatorActionHandler(gameState);
         }
 
-        gameManager.sendPrivateUpdates();
         return buildPositiveResponse("Terminator action used");
     }
 
@@ -305,8 +272,8 @@ class RoundManager {
 
         turnManager.increaseCount();
         // if the player is the last one to use the granade I set back the state to the previous one and give the turn to the next player
-        if(turnManager.getTurnCount() > turnManager.getDamagedPlayers().size() - 1) {
-            handleNextTurnReset();
+        if (turnManager.getTurnCount() > turnManager.getDamagedPlayers().size() - 1) {
+            gameManager.changeState(handleAfterActionState(turnManager.isSecondAction()));
         }
 
         // then I give the turn to the next damaged player
@@ -326,43 +293,43 @@ class RoundManager {
         PowerupRequest tempRequest;
         List<Integer> powerupsIndexes = scopeMessage.getPowerup();
         List<Integer> paymentPowerups = scopeMessage.getPaymentPowerups();
-        List<String> targets = scopeMessage.getTargetPlayersUsernames();
+        List<String> targets = scopeMessage.getTargetPlayersUsername();
         int sizeDifference = powerupsIndexes.size() - targets.size();
 
-        for(Integer index : powerupsIndexes) {
-            if(index < 0 || index > turnOwner.getPowerups().length -1) {
+        for (Integer index : powerupsIndexes) {
+            if (index < 0 || index > turnOwner.getPowerups().length - 1) {
                 return buildNegativeResponse("Invalid Index");
             }
-            for(Integer paymentIndex : paymentPowerups) {
-                if(index.equals(paymentIndex)) {
+            for (Integer paymentIndex : paymentPowerups) {
+                if (index.equals(paymentIndex)) {
                     return buildNegativeResponse("Invalid Payment indexes");
                 }
             }
         }
 
-        if(powerupsIndexes.size() > turnOwner.getPowerups().length) {
+        if (powerupsIndexes.size() > turnOwner.getPowerups().length) {
             return buildNegativeResponse("Too many indexes");
         }
 
-        for(Integer index : powerupsIndexes) {
-            if(!turnOwner.getPowerups()[index].getName().equals(TARGETING_SCOPE)) {
+        for (Integer index : powerupsIndexes) {
+            if (!turnOwner.getPowerups()[index].getName().equals(TARGETING_SCOPE)) {
                 return buildNegativeResponse("Invalid Scope Index");
             }
         }
 
         switch (sizeDifference) {
             case 0:
-                for(int i = 0; i < powerupsIndexes.size(); ++i) {
-                    if(!paymentPowerups.isEmpty()) {
+                for (int i = 0; i < powerupsIndexes.size(); ++i) {
+                    if (!paymentPowerups.isEmpty()) {
                         tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
-                                                        .paymentPowerups(scopeMessage.getPaymentPowerups())
-                                                        .targetPlayersID(new ArrayList<>(List.of(targets.get(i))))
-                                                        .build();
+                                .paymentPowerups(scopeMessage.getPaymentPowerups())
+                                .targetPlayersUsername(new ArrayList<>(List.of(targets.get(i))))
+                                .build();
                         paymentPowerups.remove(0);
                     } else {
                         tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
-                                                        .targetPlayersID(new ArrayList<>(List.of(targets.get(i))))
-                                                        .build();
+                                .targetPlayersUsername(new ArrayList<>(List.of(targets.get(i))))
+                                .build();
                     }
                     try {
                         turnOwner.getPowerups()[i].use(tempRequest);
@@ -378,11 +345,11 @@ class RoundManager {
 
                 return buildPositiveResponse("Targeting Scope used");
             case 1:
-                if(powerupsIndexes.size() == 3) {
-                    for(int i = 0; i < 2; ++i) {
+                if (powerupsIndexes.size() == 3) {
+                    for (int i = 0; i < 2; ++i) {
                         tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
-                                                        .targetPlayersID(new ArrayList<>(List.of(targets.get(0))))
-                                                        .build();
+                                .targetPlayersUsername(new ArrayList<>(List.of(targets.get(0))))
+                                .build();
                         try {
                             turnOwner.getPowerups()[i].use(tempRequest);
                             turnOwner.discardPowerupByIndex(i);
@@ -396,8 +363,8 @@ class RoundManager {
                     }
 
                     tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(2))))
-                                                    .targetPlayersID(new ArrayList<>(List.of(targets.get(1))))
-                                                    .build();
+                            .targetPlayersUsername(new ArrayList<>(List.of(targets.get(1))))
+                            .build();
                     try {
                         turnOwner.getPowerups()[2].use(tempRequest);
                         turnOwner.discardPowerupByIndex(2);
@@ -408,17 +375,17 @@ class RoundManager {
                     } catch (EmptyHandException e) {
                         // can not happen here because powerup is already verified to be possessed
                     }
-                } else if(powerupsIndexes.size() == 2) {
-                    for(int i = 0; i < 2; ++i) {
-                        if(!paymentPowerups.isEmpty()) {
+                } else if (powerupsIndexes.size() == 2) {
+                    for (int i = 0; i < 2; ++i) {
+                        if (!paymentPowerups.isEmpty()) {
                             tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
                                     .paymentPowerups(scopeMessage.getPaymentPowerups())
-                                    .targetPlayersID(new ArrayList<>(List.of(targets.get(0))))
+                                    .targetPlayersUsername(new ArrayList<>(List.of(targets.get(0))))
                                     .build();
                             paymentPowerups.remove(0);
                         } else {
                             tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
-                                    .targetPlayersID(new ArrayList<>(List.of(targets.get(0))))
+                                    .targetPlayersUsername(new ArrayList<>(List.of(targets.get(0))))
                                     .build();
                         }
                         try {
@@ -436,9 +403,9 @@ class RoundManager {
 
                 return buildPositiveResponse("Targeting Scopes Used");
             case 2:
-                for(int i = 0; i < 3; ++i) {
+                for (int i = 0; i < 3; ++i) {
                     tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
-                            .targetPlayersID(new ArrayList<>(List.of(targets.get(0))))
+                            .targetPlayersUsername(new ArrayList<>(List.of(targets.get(0))))
                             .build();
                     try {
                         turnOwner.getPowerups()[i].use(tempRequest);
@@ -477,7 +444,7 @@ class RoundManager {
 
         chosenPowerup = turnManager.getTurnOwner().getPowerups()[powerupRequest.getPowerup().get(0)];
 
-        if (!chosenPowerup.getName().equals(NEWTON) || !chosenPowerup.getName().equals(TELEPORTER)) {
+        if (!chosenPowerup.getName().equals(NEWTON) && !chosenPowerup.getName().equals(TELEPORTER)) {
             return buildNegativeResponse("Invalid Powerup");
         }
 
@@ -502,7 +469,7 @@ class RoundManager {
     /**
      * Method that handles the {@link MoveAction MoveAction} performed by the TurnOwner
      *
-     * @param moveRequest the {@link MoveRequest MoveRequest} received
+     * @param moveRequest  the {@link MoveRequest MoveRequest} received
      * @param secondAction Boolean that specifies if the performing action is the second
      * @return a positive or negative {@link Response Response} handled by the server
      */
@@ -539,7 +506,7 @@ class RoundManager {
     /**
      * Method thah handles a {@link PickAction PickAction} performed by the TurnOwner
      *
-     * @param pickRequest the {@link MovePickRequest PickRequest} received
+     * @param pickRequest  the {@link MovePickRequest PickRequest} received
      * @param secondAction Boolean that specifies if the performing action is the second
      * @return a positive or negative {@link Response Response} handled by the server
      */
@@ -641,7 +608,7 @@ class RoundManager {
         // targeting scope handler
         if (scopeRequest != null) {
             response = handleScopeUsage(scopeRequest);
-            if(response.getStatus() == MessageStatus.ERROR) {
+            if (response.getStatus() == MessageStatus.ERROR) {
                 return response;
             } // else targeting scope can be used and granade usage is handled
         }
@@ -669,14 +636,14 @@ class RoundManager {
         UserPlayer turnOwner = turnManager.getTurnOwner();
         ReloadAction reloadAction;
 
-        if(turnOwner.getPossibleActions().contains(PossibleAction.RELOAD)) {
+        if (turnOwner.getPossibleActions().contains(PossibleAction.RELOAD)) {
             reloadAction = new ReloadAction(turnOwner, reloadRequest);
         } else {
             return buildNegativeResponse("Invalid Action");
         }
 
         try {
-            if(reloadAction.validate()) {
+            if (reloadAction.validate()) {
                 reloadAction.execute();
             } else {
                 return buildNegativeResponse("Invalid Action");
@@ -721,10 +688,10 @@ class RoundManager {
      * @return a positive or negative {@link Response Response} handled by the server
      */
     Response handlePassAction() {
-        if(gameInstance.getState() == GameState.NORMAL) {
+        if (gameInstance.getState() == GameState.NORMAL) {
             return deathPlayersHandler(PossibleGameState.PASS_NORMAL_TURN);
-        } else if(gameInstance.getState() == GameState.FINAL_FRENZY) {
-            if(turnManager.getTurnOwner().equals(turnManager.getLastPlayer())) {
+        } else if (gameInstance.getState() == GameState.FINAL_FRENZY) {
+            if (turnManager.getTurnOwner().equals(turnManager.getLastPlayer())) {
                 // if reached, game has ended, last remaining points are calculated and a winner is declared!
                 gameManager.endGame();
                 return buildPositiveResponse("Turn passed and GAME HAS ENDED");
@@ -747,18 +714,18 @@ class RoundManager {
     private Response deathPlayersHandler(PossibleGameState nextPassState) {
         ArrayList<UserPlayer> deathPlayers = gameInstance.getDeathPlayers();
 
-        if(gameInstance.isTerminatorPresent() && gameInstance.getTerminator().getPlayerBoard().getDamageCount() > 10) {
+        if (gameInstance.isTerminatorPresent() && gameInstance.getTerminator().getPlayerBoard().getDamageCount() > 10) {
             // first of all I control if the current player has done a double kill
-            if(!gameInstance.getDeathPlayers().isEmpty()) {
+            if (!gameInstance.getDeathPlayers().isEmpty()) {
                 turnManager.getTurnOwner().addPoints(1);
             }
 
             turnManager.setArrivingGameState(nextPassState);
             gameManager.changeState(PossibleGameState.TERMINATOR_RESPAWN);
             return buildPositiveResponse("Terminator has died respawn him before passing");
-        } else if(!gameInstance.getDeathPlayers().isEmpty()) {
+        } else if (!gameInstance.getDeathPlayers().isEmpty()) {
             // first of all I control if the current player has done a double kill
-            if(gameInstance.getDeathPlayers().size() > 1) {
+            if (gameInstance.getDeathPlayers().size() > 1) {
                 turnManager.getTurnOwner().addPoints(1);
             }
 
@@ -777,7 +744,7 @@ class RoundManager {
     }
 
     /**
-     * Method that handles the Respawn of the {@link model.player.Terminator Terminatore} performed by the TurnOwner
+     * Method that handles the Respawn of the {@link Bot Terminatore} performed by the TurnOwner
      *
      * @param respawnRequest the {@link TerminatorSpawnRequest TerminatorRespawnRequest} received
      * @return a positive or negative {@link Response Response} handled by the server
@@ -791,7 +758,7 @@ class RoundManager {
             return buildNegativeResponse("Invalid Color for Spawning");
         }
 
-        if(!gameInstance.getDeathPlayers().isEmpty()) {
+        if (!gameInstance.getDeathPlayers().isEmpty()) {
             // there are death players: I set everything I need to respawn them
             turnManager.setDeathPlayers(deathPlayers);
             gameManager.changeState(PossibleGameState.MANAGE_DEATHS);
@@ -800,7 +767,7 @@ class RoundManager {
             turnManager.resetCount();
             return buildPositiveResponse("Turn passed after Spawning the Terminator");
         } else {
-            if(gameInstance.remainingSkulls() == 1) {   // last skull is going to be removed, frenzy mode has to be activated
+            if (gameInstance.remainingSkulls() == 1) {   // last skull is going to be removed, frenzy mode has to be activated
                 turnManager.setFrenzyPlayers();
                 turnManager.setLastPlayer();
                 return handleNextTurn(PossibleGameState.PASS_FRENZY_TURN);
@@ -823,15 +790,15 @@ class RoundManager {
         int powerupIndex = respawnRequest.getPowerup();
 
         // if powerupIndex is 3 means that the player wants to respawn with the drawn powerup, otherwise with the specified one
-        if(powerupIndex < 0 || powerupIndex > 3) {
+        if (powerupIndex < 0 || powerupIndex > 3) {
             return buildNegativeResponse("Invalid powerup index");
         }
 
-        if(powerupIndex != 3 && powerupIndex > turnOwner.getPowerups().length - 1) {
+        if (powerupIndex != 3 && powerupIndex > turnOwner.getPowerups().length - 1) {
             return buildNegativeResponse("Invalid powerup index");
         }
 
-        if(powerupIndex == 3) {
+        if (powerupIndex == 3) {
             spawnPowerup = turnOwner.getSpawningCard();
             turnOwner.setSpawningCard(null);
         } else {
@@ -853,13 +820,13 @@ class RoundManager {
 
         // now I have to pass the turn to the next death player and pick a card for him
         turnManager.increaseCount();
-        if(turnManager.getTurnCount() > turnManager.getDeathPlayers().size() -1) {
-            if((turnManager.getDeathPlayers().size() == 1 && gameInstance.remainingSkulls() == 1) || gameInstance.remainingSkulls() == 0) {   // last skull is going to be removed, frenzy mode has to be activated
+        if (turnManager.getTurnCount() > turnManager.getDeathPlayers().size() - 1) {
+            if ((turnManager.getDeathPlayers().size() == 1 && gameInstance.remainingSkulls() == 1) || gameInstance.remainingSkulls() == 0) {   // last skull is going to be removed, frenzy mode has to be activated
                 turnManager.setFrenzyPlayers();
                 turnManager.setLastPlayer();
                 return handleNextTurn(PossibleGameState.PASS_FRENZY_TURN);
             } else {
-                return handleNextTurn(turnManager.getArrivingGameState());
+                return handleNextTurn(PossibleGameState.PASS_NORMAL_TURN);
             }
         }
 
@@ -882,7 +849,7 @@ class RoundManager {
         if (!secondAction) {
             return PossibleGameState.SECOND_ACTION;
         } else {
-            if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.TERMINATOR_ACTION)) {
+            if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.BOT_ACTION)) {
                 return PossibleGameState.MISSING_TERMINATOR_ACTION;
             } else {
                 if (gameInstance.getState().equals(GameState.NORMAL)) {
@@ -905,8 +872,27 @@ class RoundManager {
      * @return a positive or negative {@link Response Response} handled by the server
      */
     private Response handleNextTurn(PossibleGameState arrivingState) {
-        // first I set the turn to the next player and give him his possible actions
-        turnManager.nextTurn();
+        do {
+            // first I set the turn to the next player and give him his possible actions
+            turnManager.nextTurn();
+
+            // if it is the first turn of the last player I set the first turn to false as no more powerups would be picked
+            if (turnManager.isFirstTurn() && turnManager.endOfRound()) {
+                turnManager.endOfFirstTurn();
+                pickTwoPowerups();
+            }
+
+            // then if I am in the very first round of the game I also need to pick the two powerups for the next spawning player
+            if (turnManager.isFirstTurn()) {
+                pickTwoPowerups();
+            }
+
+        } while (turnManager.getTurnOwner().getPlayerState() == PossiblePlayerState.DISCONNECTED);
+
+        /*  Initial actions are set only for the next connected Player, disconneted ones in fact when reconnected may have different
+            actions if the game state changed while they where not connected. These actions will be set as for all connected players
+            thanks for the reconnection
+         */
         setInitialActions();
 
         // then I reset the missing cards on the board
@@ -918,7 +904,6 @@ class RoundManager {
         } else if (arrivingState == PossibleGameState.PASS_FRENZY_TURN) {
             gameManager.changeState(PossibleGameState.FINAL_FRENZY);
             return buildPositiveResponse("Turn Passed");
-
         } else {
             throw new InvalidGameStateException();
         }
@@ -926,17 +911,20 @@ class RoundManager {
 
     /**
      * Method that builds a Positive {@link Response Response}, that has {@link MessageStatus MessageStatus.OK}
+     * For real this method is the most important one of this Class, infact, it also:
+     * (i) send the new Game status to each player
+     * (ii) saves the Game status to have persistency
      *
      * @param reason the reason why the {@link Response Response} is Positive
      * @return the Positive {@link Response Response} built
      */
     private Response buildPositiveResponse(String reason) {
         gameManager.sendPrivateUpdates();
+        SaveGame.saveGame(gameManager);
         return new Response(reason, MessageStatus.OK);
     }
 
     /**
-     *
      * Method that builds a Negative {@link Response Response}, that has {@link MessageStatus MessageStatus.ERROR}
      *
      * @param reason the reason why the {@link Response Response} is Negative

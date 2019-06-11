@@ -6,23 +6,23 @@ import model.cards.WeaponCard;
 import model.map.GameMap;
 import model.player.KillShot;
 import model.player.Player;
-import model.player.Terminator;
+import model.player.Bot;
 import model.player.UserPlayer;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class GameSerialized implements Serializable  {
+    private static final long serialVersionUID = 526685006552543525L;
 
     private GameState currentState;
     private GameMap gameMap;
 
     private ArrayList<UserPlayer> players;
-    private Terminator terminator;
-    private boolean terminatorPresent;
+    private Bot bot;
+    private boolean botPresent;
 
     private int killShotNum;
     private KillShot[] killShotsTrack;
@@ -38,8 +38,8 @@ public class GameSerialized implements Serializable  {
         currentState = instance.getState();
         players = new ArrayList<>(instance.getPlayers());
 
-        terminatorPresent = instance.isTerminatorPresent();
-        if (terminatorPresent) terminator = (Terminator) instance.getTerminator();
+        botPresent = instance.isTerminatorPresent();
+        if (botPresent) bot = (Bot) instance.getTerminator();
 
         killShotsTrack = instance.getKillShotsTrack() != null ? Arrays.copyOf(instance.getKillShotsTrack(), instance.getKillShotsTrack().length) : null;
         killShotNum = instance.getKillShotNum();
@@ -60,8 +60,8 @@ public class GameSerialized implements Serializable  {
         return players;
     }
 
-    public boolean isTerminatorPresent() {
-        return terminatorPresent;
+    public boolean isBotPresent() {
+        return botPresent;
     }
 
     public int getKillShotNum() {
@@ -88,32 +88,46 @@ public class GameSerialized implements Serializable  {
         return this.spawningPowerup;
     }
 
-    public List<PowerupCard> getPowerUps() {
+    public List<PowerupCard> getPowerups() {
         List<PowerupCard> powerupList = Arrays.asList(this.powerupCards);
         if (spawningPowerup != null) powerupList.add(this.spawningPowerup);
 
         return powerupList;
     }
 
-    public Terminator getTerminator() {
-        return terminator;
+    public List<WeaponCard> getPlayerWeapons(String username) {
+        for (UserPlayer p : players) {
+            if (p.getUsername().equalsIgnoreCase(username)) {
+                return Arrays.asList(p.getWeapons());
+            }
+        }
+
+        return null;
+    }
+
+    public Bot getBot() {
+        return bot;
     }
 
     public ArrayList<Player> getAllPlayers() {
         ArrayList<Player> allPlayers = new ArrayList<>(players);
 
-        if(terminatorPresent) {
-            allPlayers.add(terminator);
+        if(botPresent) {
+            allPlayers.add(bot);
             return allPlayers;
         } else {
             return allPlayers;
         }
     }
 
+    public GameState getCurrentState() {
+        return currentState;
+    }
+
     //utility methods for cli debugging
-    public void setTerminator(Terminator terminator) {
-        this.terminatorPresent = true;
-        this.terminator = terminator;
+    public void setBot(Bot bot) {
+        this.botPresent = true;
+        this.bot = bot;
     }
 
     public void setPlayers(ArrayList<UserPlayer> userPlayers) {
@@ -130,8 +144,8 @@ public class GameSerialized implements Serializable  {
                 "currentState=" + currentState +
                 ", gameMap=" + gameMap +
                 ", players=" + players +
-                ", terminator=" + terminator +
-                ", terminatorPresent=" + terminatorPresent +
+                ", terminator=" + bot +
+                ", isBotPresent=" + botPresent +
                 ", killShotNum=" + killShotNum +
                 ", killShotsTrack=" + Arrays.toString(killShotsTrack) +
                 ", points=" + points +

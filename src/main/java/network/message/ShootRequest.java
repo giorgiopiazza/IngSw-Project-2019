@@ -7,15 +7,19 @@ import model.player.PlayerPosition;
 import java.util.ArrayList;
 
 public class ShootRequest extends EffectRequest {
+    private static final long serialVersionUID = -9183566520524697764L;
+
     private final int weaponID;
     private final int effect;
+
+    private PlayerPosition adrenalineMovePosition;
 
     private final boolean moveSenderFirst;
     private final boolean moveTargetsFirst;
 
     private ArrayList<Integer> rechargingWeapons;
 
-    public ShootRequest(FireRequestBuilder builder) {
+    public ShootRequest(ShootRequestBuilder builder) {
         super(
                 new EffectRequestBuilder(builder.username, builder.token, MessageContent.SHOOT)
                         .targetPlayersUsernames(builder.targetPlayersUsernames)
@@ -28,6 +32,7 @@ public class ShootRequest extends EffectRequest {
 
         this.weaponID = builder.weaponID;
         this.effect = builder.effect;
+        this.adrenalineMovePosition = builder.addingMovePosition;
         this.moveSenderFirst = builder.moveSenderFirst;
         this.moveTargetsFirst = builder.moveTargetsFirst;
         this.rechargingWeapons = builder.rechargingWeapons;
@@ -39,6 +44,10 @@ public class ShootRequest extends EffectRequest {
 
     public int getEffect() {
         return effect;
+    }
+
+    public PlayerPosition getAdrenalineMovePosition() {
+        return this.adrenalineMovePosition;
     }
 
     public boolean isMoveSenderFirst() {
@@ -53,7 +62,7 @@ public class ShootRequest extends EffectRequest {
         return rechargingWeapons;
     }
 
-    public static class FireRequestBuilder {
+    public static class ShootRequestBuilder {
         private String username;
         private String token;
         private int weaponID;
@@ -63,6 +72,7 @@ public class ShootRequest extends EffectRequest {
         private ArrayList<PlayerPosition> targetPositions;
         private RoomColor targetRoomColor;
 
+        private PlayerPosition addingMovePosition;
         private PlayerPosition senderMovePosition;
         private ArrayList<PlayerPosition> targetPlayersMovePositions;
 
@@ -72,7 +82,7 @@ public class ShootRequest extends EffectRequest {
         private ArrayList<Integer> paymentPowerups;
         private ArrayList<Integer> rechargingWeapons;
 
-        public FireRequestBuilder(String username, String token, int weaponID, int effect, ArrayList<Integer> rechargingWeapons) {
+        public ShootRequestBuilder(String username, String token, int weaponID, int effect, ArrayList<Integer> rechargingWeapons) {
             this.username = username;
             this.token = token;
             this.weaponID = weaponID;
@@ -80,43 +90,53 @@ public class ShootRequest extends EffectRequest {
             this.rechargingWeapons = rechargingWeapons;
         }
 
-        public FireRequestBuilder targetPlayersUsernames(ArrayList<String> targetPlayersUsernames) {
+        public ShootRequestBuilder targetPlayersUsernames(ArrayList<String> targetPlayersUsernames) {
             this.targetPlayersUsernames = targetPlayersUsernames;
             return this;
         }
 
-        public FireRequestBuilder targetPositions(ArrayList<PlayerPosition> targetPositions) {
+        public ShootRequestBuilder targetPositions(ArrayList<PlayerPosition> targetPositions) {
             this.targetPositions = targetPositions;
             return this;
         }
 
-        public FireRequestBuilder targetRoomColor(RoomColor targetRoomColor) {
+        public ShootRequestBuilder targetRoomColor(RoomColor targetRoomColor) {
             this.targetRoomColor = targetRoomColor;
             return this;
         }
 
-        public FireRequestBuilder senderMovePosition(PlayerPosition senderMovePosition) {
+        public ShootRequestBuilder adrenalineMovePosition(PlayerPosition adrenalineMovePosition) {
+            this.addingMovePosition = adrenalineMovePosition;
+            return this;
+        }
+
+        public ShootRequestBuilder senderMovePosition(PlayerPosition senderMovePosition) {
             this.senderMovePosition = senderMovePosition;
             return this;
         }
 
-        public FireRequestBuilder targetPlayersMovePositions(ArrayList<PlayerPosition> targetPlayersMovePositions) {
+        public ShootRequestBuilder targetPlayersMovePositions(ArrayList<PlayerPosition> targetPlayersMovePositions) {
             this.targetPlayersMovePositions = targetPlayersMovePositions;
             return this;
         }
 
-        public FireRequestBuilder moveSenderFirst(boolean moveSenderFirst) {
+        public ShootRequestBuilder moveSenderFirst(boolean moveSenderFirst) {
             this.moveSenderFirst = moveSenderFirst;
             return this;
         }
 
-        public FireRequestBuilder moveTargetsFirst(boolean moveTargetsFirst) {
+        public ShootRequestBuilder moveTargetsFirst(boolean moveTargetsFirst) {
             this.moveTargetsFirst = moveTargetsFirst;
             return this;
         }
 
-        public FireRequestBuilder paymentPowerups(ArrayList<Integer> paymentPowerups) {
+        public ShootRequestBuilder paymentPowerups(ArrayList<Integer> paymentPowerups) {
             this.paymentPowerups = paymentPowerups;
+            return this;
+        }
+
+        public ShootRequestBuilder rechargingWeapons(ArrayList<Integer> rechargingWeapons) {
+            this.rechargingWeapons = rechargingWeapons;
             return this;
         }
 

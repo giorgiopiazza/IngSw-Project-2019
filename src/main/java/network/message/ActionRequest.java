@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public abstract class ActionRequest extends Message {
+    private static final long serialVersionUID = 9032466429818166290L;
+
     private final PlayerPosition senderMovePosition;
     private final ArrayList<Integer> paymentPowerups;
 
@@ -21,6 +23,7 @@ public abstract class ActionRequest extends Message {
     }
 
     public ArrayList<Integer> getPaymentPowerups() {
-        return paymentPowerups;
+        if(paymentPowerups == null) return new ArrayList<>();
+        else return paymentPowerups;
     }
 }

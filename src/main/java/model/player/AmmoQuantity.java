@@ -7,6 +7,8 @@ import java.io.Serializable;
 import java.util.*;
 
 public class AmmoQuantity implements Serializable {
+    private static final long serialVersionUID = 2053666639366008779L;
+
     private int redAmmo;
     private int blueAmmo;
     private int yellowAmmo;
@@ -77,6 +79,10 @@ public class AmmoQuantity implements Serializable {
         if (yellowAmmo < 3) {
             yellowAmmo++;
         }
+    }
+
+    public boolean noAmmo() {
+        return redAmmo == 0 && blueAmmo == 0 && yellowAmmo == 0;
     }
 
     @Override

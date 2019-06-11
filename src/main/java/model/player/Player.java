@@ -6,6 +6,8 @@ import java.io.Serializable;
 import java.util.Objects;
 
 public abstract class Player implements Serializable, Comparable<Player> {
+    private static final long serialVersionUID = 230386989158315558L;
+
     private final String username;
     protected PlayerColor color;
     private final PlayerBoard playerBoard;
@@ -126,6 +128,13 @@ public abstract class Player implements Serializable, Comparable<Player> {
      */
     public void addPoints(int pointsGained) {
         points = this.points + pointsGained;
+    }
+
+    /**
+     * @param savedPoints setting points to reload the game
+     */
+    public void setPoints(int savedPoints) {
+        this.points = savedPoints;
     }
 
     public boolean canSee(Player other) {

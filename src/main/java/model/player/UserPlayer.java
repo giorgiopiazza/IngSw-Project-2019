@@ -62,6 +62,22 @@ public class UserPlayer extends Player {
         return this.spawningCard;
     }
 
+    public void setPossibleActions(EnumSet<PossibleAction> possibleActions) {
+        this.possibleActions = possibleActions;
+    }
+
+    public void setPlayerState(PossiblePlayerState playerState) {
+        this.playerState = playerState;
+    }
+
+    public void setWeapons(List<WeaponCard> weapons) {
+        this.weapons = weapons;
+    }
+
+    public void setPowerups(List<PowerupCard> powerups) {
+        this.powerups = powerups;
+    }
+
     /**
      * Adds a weapon to your hand when you do not have to discard one
      *

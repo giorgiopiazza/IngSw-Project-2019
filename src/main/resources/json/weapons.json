@@ -158,7 +158,7 @@
         },
 		{
           "id": 3,
-          "description": "Combo between effect 1 and 2.                                                                      ",
+          "description": "Combo between all previous effects.                                                                 ",
 		  "cost": ["BLUE"],
           "properties": {
             "visible": true,

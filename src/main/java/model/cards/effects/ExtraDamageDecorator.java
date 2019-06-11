@@ -15,6 +15,8 @@ public class ExtraDamageDecorator extends ExtraEffectDecorator {
     public ExtraDamageDecorator(Effect effect, int[] extraDamageDistribution, TargetType targetType) {
         this.effect = effect;
         super.setDescription(effect.getDescription());
+        super.setProperties(effect.getProperties());
+        super.setTargets(effect.getTargets());
         this.damageDistribution = extraDamageDistribution;
         this.targetType = targetType;
     }
@@ -35,7 +37,7 @@ public class ExtraDamageDecorator extends ExtraEffectDecorator {
 
         switch (targetType) {
             case PLAYER:
-                targetsUsername = request.getTargetPlayersUsernames();
+                targetsUsername = request.getTargetPlayersUsername();
                 for (int i = 0; i < targetsUsername.size(); ++i) {
                     Game.getInstance().getUserPlayerByUsername(targetsUsername.get(i)).getPlayerBoard().addDamage(shooter, damageDistribution[i]);
                 }

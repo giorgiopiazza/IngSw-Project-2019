@@ -1,14 +1,19 @@
 package view.cli;
 
-import controller.ClientRoundManager;
+import controller.ClientGameManager;
 import enumerations.*;
 import exceptions.actions.PowerupCardsNotFoundException;
 import exceptions.actions.WeaponCardsNotFoundException;
-import exceptions.player.ClientRoundManagerException;
-import exceptions.player.PlayerNotFoundException;
+import exceptions.game.InexistentColorException;
+import exceptions.map.InvalidSpawnColorException;
+import exceptions.utility.InvalidPropertiesException;
 import model.GameSerialized;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
+import model.cards.effects.Effect;
+import model.map.GameMap;
+import model.map.SpawnSquare;
+import model.map.Square;
 import model.player.*;
 import network.client.*;
 import network.message.*;
@@ -18,48 +23,27 @@ import utility.*;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class Cli implements ClientUpdateListener {
-    private final Object lock = new Object();
-    private final Object waiter = new Object();
-
+public class Cli extends ClientGameManager {
     private Client client;
     private Scanner in;
     private AdrenalinePrintStream out;
-    private String username;
-    private PlayerColor playerColor;
-    private GameSerialized gameSerialized;
-    private int timerTime;
 
-    private Timer timer;
-    private TimerTask timerTask;
-    private ClientUpdater clientUpdater;
-
-    private boolean started;
-    private boolean finished;
-    private List<Player> winners;
-    private Player firstPlayer; //the first player to play
-
-    private boolean isTerminator; //terminator in this game
-    private boolean terminatorMoved; //terminator already move in the current round
-    private boolean firstRound;
-    private boolean yourRound; //set to true when receive message that is my round
-
-    private ClientRoundManager roundManager; //manage the rounds of this client
-    private List<PossibleAction> possibleActions; //contains the possible actions for this round in a specific UserPlayerState
+    private static final String SEND_ERROR = "Error while sending the request";
+    private static final String INVALID_STRING = "Invalid String!";
+    private static final String TARGET_NUM = "targetNum";
+    private static final String MAX_TARGET_NUM = "maxTargetNum";
+    private static final String MOVE = "move";
+    private static final String MOVE_TARGET = "moveTarget";
+    private static final String MAX_MOVE_TARGET = "maxMoveTarget";
+    private static final String MOVE_TARGET_BEFORE = "moveTargetBefore";
+    private static final String TP = "tp";
 
     public Cli() {
+        super();
         this.in = new Scanner(System.in);
         this.out = new AdrenalinePrintStream();
-        this.timerTime = 0;
-        this.started = false;
-        this.finished = false;
-        this.firstRound = true;
-        this.yourRound = false;
-        this.terminatorMoved = false;
     }
 
     /**
@@ -67,44 +51,15 @@ public class Cli implements ClientUpdateListener {
      */
     public void start() {
         printLogo();
-        askUsername();
-        askConnection();
-        askColor();
-        askLobbyJoin();
+        doConnection();
+        doLobbyJoin();
 
-        clientUpdater = new ClientUpdater(client, this, waiter);
-
-
-        timer = new Timer();
-        timerTask = new LobbyTimer(() -> {
-            boolean start;
-
-            synchronized (lock) {
-                start = this.started;
-            }
-
-            if (start) {
-                timer.cancel();
-                startGame();
-            }
-        });
-        timer.schedule(timerTask, 1000, 1000);
+        startUpdater(client);
     }
 
-    private void startGame() {
-        // TODO:  terminator present
-        roundManager = new ClientRoundManager((UserPlayer) getPlayer(username), false);
-
-        while (!Thread.currentThread().isInterrupted()) {
-            try {
-                doSomething();
-            } catch (InterruptedException e) {
-                Logger.getGlobal().severe(e.getMessage());
-                Thread.currentThread().interrupt();
-            }
-        }
-    }
-
+    /**
+     * Prints Adrenaline Logo
+     */
     private void printLogo() {
         String adrenalineLogo = "             _____   _____   _______ _   _            _       _  _   _  _______\n" +
                 "      /\\    |  __ \\ |  __ \\ |  ____/| \\ | |    /\\    | |     | || \\ | ||  ____/\n" +
@@ -118,6 +73,9 @@ public class Cli implements ClientUpdateListener {
         out.println(adrenalineLogo);
     }
 
+    /**
+     * Asks the username
+     */
     private void askUsername() {
         boolean validUsername = false;
         boolean firstError = true;
@@ -128,30 +86,33 @@ public class Cli implements ClientUpdateListener {
             out.print(">>> ");
 
             if (in.hasNextLine()) {
-                username = in.nextLine();
+                setUsername(in.nextLine());
 
-                if (username.equals("") ||
-                        username.equalsIgnoreCase("god") ||
-                        username.equalsIgnoreCase("bot")) {
+                if (getUsername().equals("") ||
+                        getUsername().equalsIgnoreCase("god") ||
+                        getUsername().equalsIgnoreCase("bot")) {
                     firstError = promptInputError(firstError, "Invalid username!");
                 } else {
                     validUsername = true;
                 }
             } else {
                 in.nextLine();
-                firstError = promptInputError(firstError, "Invalid string!");
+                firstError = promptInputError(firstError, INVALID_STRING);
             }
         } while (!validUsername);
 
-        clearConsole();
+        CliPrinter.clearConsole(out);
     }
 
+    /**
+     * Asks the connection tpye
+     */
     private void askConnection() {
         boolean validConnection = false;
         boolean firstError = true;
         int connection = -1;
 
-        out.printf("Hi %s!%n", username);
+        out.printf("Hi %s!%n", getUsername());
         out.println("\nEnter the connection type (0 = Sockets or 1 = RMI):");
 
         do {
@@ -172,7 +133,7 @@ public class Cli implements ClientUpdateListener {
             }
         } while (!validConnection);
 
-        clearConsole();
+        CliPrinter.clearConsole(out);
 
         if (connection == 0) {
             out.println("You chose Socket connection\n");
@@ -188,9 +149,9 @@ public class Cli implements ClientUpdateListener {
 
         try {
             if (connection == 0) {
-                client = new ClientSocket(username, address, port);
+                client = new ClientSocket(getUsername(), address, port);
             } else {
-                client = new ClientRMI(username, address, port);
+                client = new ClientRMI(getUsername(), address, port);
             }
 
             startConnection();
@@ -199,6 +160,11 @@ public class Cli implements ClientUpdateListener {
         }
     }
 
+    /**
+     * Asks and verify the address
+     *
+     * @return a verified address
+     */
     private String askAddress() {
         String address;
         boolean firstError = true;
@@ -220,11 +186,17 @@ public class Cli implements ClientUpdateListener {
                 }
             } else {
                 in.nextLine();
-                firstError = promptInputError(firstError, "Invalid string!");
+                firstError = promptInputError(firstError, INVALID_STRING);
             }
         } while (true);
     }
 
+    /**
+     * Asks and verify the port
+     *
+     * @param connection type to set the default port
+     * @return a verified port
+     */
     private int askPort(int connection) {
         boolean firstError = true;
 
@@ -249,13 +221,18 @@ public class Cli implements ClientUpdateListener {
                 }
             } else {
                 in.nextLine();
-                firstError = promptInputError(firstError, "Invalid string!");
+                firstError = promptInputError(firstError, INVALID_STRING);
             }
         } while (true);
     }
 
+    /**
+     * Starts a connection with the server
+     *
+     * @throws Exception if communication with server fails
+     */
     private void startConnection() throws Exception {
-        clearConsole();
+        CliPrinter.clearConsole(out);
         client.startConnection();
         List<Message> messages;
 
@@ -274,21 +251,33 @@ public class Cli implements ClientUpdateListener {
                     out.println();
                     break;
                 } else {
-                    out.println("Connected to " + client.getAddress() + ":" + client.getPort() + " with username " + username);
+                    out.println("Connected to " + client.getAddress() + ":" + client.getPort() + " with username " + getUsername());
                     client.setToken(response.getNewToken());
                     connected = true;
                 }
             }
         }
 
-        if (!connected) askUsername();
+        if (!connected) {
+            client.close();
+            client = null;
+            doConnection();
+        }
     }
 
+    private void doConnection() {
+        askUsername();
+        askConnection();
+    }
+
+    /**
+     * Asks a color
+     */
     private void askColor() {
         boolean validColor = false;
         boolean firstError = true;
 
-        PlayerColor playerColor = null;
+        PlayerColor playercolor = null;
         List<PlayerColor> availableColors = getUnusedColors();
 
 
@@ -308,29 +297,31 @@ public class Cli implements ClientUpdateListener {
             if (in.hasNextLine()) {
                 String color = in.nextLine();
 
-
                 try {
-                    playerColor = PlayerColor.valueOf(color.toUpperCase());
+                    playercolor = PlayerColor.valueOf(color.toUpperCase());
                 } catch (IllegalArgumentException e) {
                     firstError = promptInputError(firstError, "Invalid color!");
                     continue;
                 }
 
-                if (availableColors.contains(playerColor)) {
+                if (availableColors.contains(playercolor)) {
                     validColor = true;
                 } else {
                     firstError = promptInputError(firstError, "Invalid color!");
                 }
             } else {
                 in.nextLine();
-                firstError = promptInputError(firstError, "Invalid string!");
+                firstError = promptInputError(firstError, INVALID_STRING);
             }
         } while (!validColor);
 
-        out.printf("%nYou picked %s color.%n", playerColor.name());
-        this.playerColor = playerColor;
+        out.printf("%nYou picked %s color.%n", playercolor.name());
+        setPlayerColor(playercolor);
     }
 
+    /**
+     * @return the list of unused colors
+     */
     private List<PlayerColor> getUnusedColors() {
         List<Message> messages;
         List<PlayerColor> availableColors = new ArrayList<>();
@@ -356,11 +347,14 @@ public class Cli implements ClientUpdateListener {
         return availableColors;
     }
 
+    /**
+     * Asks to the server the join to the lobby
+     */
     private void askLobbyJoin() {
         List<Message> messages;
 
         try {
-            client.sendMessage(MessageBuilder.buildGetInLobbyMessage(client.getToken(), username, playerColor));
+            client.sendMessage(MessageBuilder.buildGetInLobbyMessage(client.getToken(), getUsername(), getPlayerColor(), false));
         } catch (IOException e) {
             promptError(e.getMessage(), true);
         }
@@ -373,21 +367,31 @@ public class Cli implements ClientUpdateListener {
             if (message.getContent().equals(MessageContent.RESPONSE)) {
                 Response response = (Response) message;
 
-                clearConsole();
-                out.println(response.getMessage());
+                CliPrinter.clearConsole(out);
+
                 if (response.getStatus() == MessageStatus.ERROR) {
+                    out.println(response.getMessage());
                     out.println();
-                    askColor();
+                    doLobbyJoin();
+                } else {
+                    out.println("You joined the lobby!\n\nWait for the game to start...");
                 }
             }
         }
     }
 
-    private void clearConsole() {
-        out.print("\033[H\033[2J");
-        out.flush();
+    private void doLobbyJoin() {
+        askColor();
+        askLobbyJoin();
     }
 
+    /**
+     * Prompts an input error
+     *
+     * @param firstError   {@code true} if it's the first error made
+     * @param errorMessage the error message
+     * @return {@code false} meaning that this isn't the first error
+     */
     private boolean promptInputError(boolean firstError, String errorMessage) {
         out.print(AnsiCode.CLEAR_LINE);
         if (!firstError) {
@@ -398,10 +402,16 @@ public class Cli implements ClientUpdateListener {
         return false;
     }
 
-    private void promptError(String error, boolean close) {
-        clearConsole();
+    /**
+     * Prompts a generic error
+     *
+     * @param errorMessage the error message
+     * @param close        {@code true} if you want to close the shell
+     */
+    private void promptError(String errorMessage, boolean close) {
+        CliPrinter.clearConsole(out);
 
-        out.println("ERROR: " + error);
+        out.println("ERROR: " + errorMessage);
 
         if (close) {
             out.println("\nPress ENTER to exit");
@@ -410,382 +420,685 @@ public class Cli implements ClientUpdateListener {
         }
     }
 
-    private void doSomething() throws InterruptedException {
-        if (firstRound) { // first round
-            if (firstPlayer.getUsername().equals(username)) { // first player to play
-                out.println("You are the first player");
-                yourRound = true;
-            } else { // other players
-                out.println("The first player is: " + firstPlayer.getUsername());
-            }
-            firstRound = false;
+    @Override
+    public void reload() {
+        WeaponCard[] playersWeapons = getPlayer().getWeapons();
+        ArrayList<Integer> rechargingWeapons = new ArrayList<>();
+        ArrayList<Integer> paymentPowerups = new ArrayList<>();
+
+        if (playersWeapons.length == 0) {
+            cancelAction("You have no weapon to recharge");
+            return;
         }
 
-        if (yourRound) { // if the first round
-            playRound();
-        } else {
-            out.println("Wait for your turn...");
-            out.println();
-            // wait while ClientUpdater receive something
-            synchronized (waiter) {
-                waiter.wait();
-            }
-        }
-    }
+        CliPrinter.clearConsole(out);
+        printWeapons(playersWeapons);
 
-    /**
-     * Play the entire round of this player
-     */
-    private void playRound() {
-        do {
-            makeMove();
-        } while (roundManager.roundEnded());
-    }
-
-    /**
-     *
-     */
-    private void makeMove() {
-        // TODO: player is dead
-        boolean reloaded;
-        boolean terminatorMove;
-        switch (roundManager.getPlayerState()) {
-            case BEGIN:
-                roundManager.beginRound((UserPlayer) getPlayer(username));
-
-                terminatorMove = askTerminator();
-                roundManager.nextMove((UserPlayer) getPlayer(username), false, terminatorMoved);
-                this.terminatorMoved = terminatorMove;
-                break;
-
-            case FIRST_MOVE:
-            case SECOND_MOVE:
-                reloaded = firstSecondMove();
-                terminatorMove = askTerminator();
-                roundManager.nextMove((UserPlayer) getPlayer(username), reloaded, terminatorMove);
-                break;
-
-            case TERMINATOR_MOVE:
-                // TODO: move of terminator
-                break;
-
-            case END:
-                // TODO: end round
-                terminatorMoved = false;
-                roundManager.endRound();
-                break;
-
-            default:
-                throw new ClientRoundManagerException("Cannot be here");
-        }
-    }
-
-    /**
-     * Causes the user to perform all the moves it can make in this stage of this round
-     *
-     * @return true if player reload his weapons, otherwise false
-     */
-    private boolean firstSecondMove() {
-        possibleActions = roundManager.possibleActions();
-        boolean reload = false;
-
-        switch (askActions(false)) {
-            case MOVE:
-                actionMove();
-                break;
-            case MOVE_AND_PICK:
-                actionMoveAndPick();
-                break;
-            case SHOOT:
-                actionShoot();
-                break;
-            case RELOAD:
-                actionReload();
-                reload = true;
-                break;
-            case ADRENALINE_PICK:
-                // TODO
-                break;
-            case ADRENALINE_SHOOT:
-                // TODO
-                break;
-            case FRENZY_MOVE:
-                // TODO
-                break;
-            case FRENZY_PICK:
-                // TODO
-                break;
-            case FRENZY_SHOOT:
-                // TODO
-                break;
-            case LIGHT_FRENZY_PICK:
-                // TODO
-                break;
-            case LIGHT_FRENZY_SHOOT:
-                // TODO
-                break;
-
-            default:
-                throw new ClientRoundManagerException("cannot be here");
+        out.println("Choose the weapons you want to reload (-1 to stop choosing)");
+        for (int i = 0; i < playersWeapons.length; ++i) {
+            int tempChoose = askWeapon(-1);
+            if (tempChoose == -1) break;
+            else rechargingWeapons.add(tempChoose);
         }
 
-        if (reload) {
-            switch (askActions(true)) {
-                case MOVE:
-                    actionMove();
-                    break;
-                case MOVE_AND_PICK:
-                    actionMoveAndPick();
-                    break;
-                case SHOOT:
-                    actionShoot();
-                    break;
-                case ADRENALINE_PICK:
-                    // TODO
-                    break;
-                case ADRENALINE_SHOOT:
-                    // TODO
-                    break;
-                case FRENZY_MOVE:
-                    // TODO
-                    break;
-                case FRENZY_PICK:
-                    // TODO
-                    break;
-                case FRENZY_SHOOT:
-                    // TODO
-                    break;
-                case LIGHT_FRENZY_PICK:
-                    // TODO
-                    break;
-                case LIGHT_FRENZY_SHOOT:
-                    // TODO
-                    break;
-
-                default:
-                    throw new ClientRoundManagerException("cannot be here");
-            }
+        if (!getPowerups().isEmpty()) {
+            paymentPowerups = askPaymentPowerups();
         }
-
-        return reload;
-    }
-
-    private Message actionReload() {
-        Message message = null;
 
         try {
-            message = MessageBuilder.buildReloadRequest(client.getToken(), (UserPlayer) getPlayer(username), askWeapon());
-            client.sendMessage(message);
-        } catch (IOException | WeaponCardsNotFoundException e) {
-            promptError(e.getMessage(), true);
+            if (paymentPowerups.isEmpty()) {
+                if (!sendRequest(MessageBuilder.buildReloadRequest(client.getToken(), getPlayer(), rechargingWeapons))) {
+                    promptError(SEND_ERROR, true);
+                }
+            } else {
+                if (!sendRequest(MessageBuilder.buildReloadRequest(client.getToken(), getPlayer(), rechargingWeapons, paymentPowerups))) {
+                    promptError(SEND_ERROR, true);
+                }
+            }
+        } catch (WeaponCardsNotFoundException | PowerupCardsNotFoundException e) {
+            promptError(e.getMessage(), false);
         }
-
-        return message;
     }
 
-    private WeaponCard askWeapon() {
-        UserPlayer player = (UserPlayer) getPlayer(username);
+    @Override
+    public void passTurn() {
+        if (!sendRequest(MessageBuilder.buildPassTurnRequest(client.getToken(), getPlayer()))) {
+            promptError(SEND_ERROR, true);
+        }
+    }
+
+    private int askWeapon(int minVal) {
+        UserPlayer player = getPlayer();
         WeaponCard[] weapons = player.getWeapons();
         int choose;
 
+        printWeapons(player.getWeapons());
+        if (weapons.length == 0) return -1;
+
         do {
             out.println("Choose the weapon:");
-            for (int i = 0; i< weapons.length; i++) {
-                out.println("\t" + (i + 1) + " - " + weapons[i].getName());
-            }
-            choose = readInt(1, weapons.length);
-        } while (choose <= 0 || choose > weapons.length);
+            choose = readInt(minVal, weapons.length - 1);
+        } while (choose < minVal || choose > weapons.length - 1);
 
-        return weapons[choose - 1];
-    }
-
-    private Message actionShoot() {
-        Message message = null;
-        printMap();
-
-        WeaponCard weapon = askWeapon();
-        int effect = askWeaponEffect(weapon);
-
-        try {
-            message = MessageBuilder.buildShootRequest(client.getToken(), (UserPlayer) getPlayer(username), weapon, effect);
-            client.sendMessage(message);
-        } catch (IOException | WeaponCardsNotFoundException e) {
-            promptError(e.getMessage(), true);
-        }
-
-        return message;
+        return choose;
     }
 
     private int askWeaponEffect(WeaponCard weapon) {
-        // todo
+        WeaponCard[] chosenWeapon = new WeaponCard[]{weapon};
+        int choose;
+
+        printWeapons(chosenWeapon);
+        do {
+            out.println("Choose the weapon's effect:");
+            choose = readInt(0, weapon.getSecondaryEffects().size());
+        } while (choose < 0 || choose > weapon.getSecondaryEffects().size());
+
         return readInt();
     }
 
-    private Message actionMoveAndPick() {
-        Message message;
-        printMap();
+    private ArrayList<Integer> askPaymentPowerups() {
+        ArrayList<Integer> paymentPowerups = new ArrayList<>();
+        int tempChoose;
 
-        // todo: porco dio devo accattarmi se è una weapon, se può essere pagata con il mana e tutte ste menate... amen, se deve pickuppare un powerup o salcazzo cos'altro
+        printPowerups();
 
-        return null;
+        do {
+            out.println("Choose the powerups you want to pay with (-1 to stop choosing):");
+            tempChoose = readInt(-1, getPowerups().size());
+            if (tempChoose == -1) return paymentPowerups;
+            paymentPowerups.add(tempChoose);
+        } while (paymentPowerups.size() < getPowerups().size());
+
+        return paymentPowerups;
     }
 
-    private Message actionMove() {
-        Message message;
-        printMap();
+    private ShootRequest.ShootRequestBuilder buildShootRequest(Effect chosenEffect, ShootRequest.ShootRequestBuilder shootRequestBuilder) {
+        Map<String, String> effectProperties = chosenEffect.getProperties();
+        TargetType[] targets = chosenEffect.getTargets();
+        ArrayList<String> targetsChosen = new ArrayList<>();
 
-        message = MessageBuilder.buildMoveRequest(client.getToken(), getPlayer(username), getCoordinates());
+        // targets input ask
+        for (TargetType target : targets) {
+            switch (target) {
+                case PLAYER:
+                    targetsChosen = askTargetsUsernames(effectProperties);
+                    shootRequestBuilder.targetPlayersUsernames(targetsChosen);
+                    break;
+                case SQUARE:
+                    shootRequestBuilder.targetPositions(askTargetSquaresPositions(effectProperties));
+                    break;
+                case ROOM:
+                    shootRequestBuilder.targetRoomColor(askTargetRoomColor(effectProperties));
+                    break;
+                default:
+                    throw new InvalidPropertiesException();
+            }
+        }
+
+        // now that I have the targets we need to handle the possible move decisions
+        if (effectProperties.containsKey(MOVE)) {
+            // move is always permitted both before and after, decision is then always asked
+            shootRequestBuilder.senderMovePosition(askMovePositionInShoot());
+            shootRequestBuilder.moveSenderFirst(askBeforeAfterMove());
+        }
+
+        // now that I have handled the Turn Owner movement I have to handle the targets ones
+        if (effectProperties.containsKey(MOVE_TARGET) || effectProperties.containsKey(MAX_MOVE_TARGET)) {
+            shootRequestBuilder.targetPlayersMovePositions(askTargetsMovePositions(targetsChosen));
+        }
+
+        // in the end if the targets movement can be done before or after the shoot action I ask when to the shooter
+        if (effectProperties.containsKey(MOVE_TARGET_BEFORE)) {
+            shootRequestBuilder.moveTargetsFirst(Boolean.parseBoolean(effectProperties.get(MOVE_TARGET_BEFORE)));
+        } else if (effectProperties.containsKey(MOVE_TARGET) || effectProperties.containsKey(MAX_MOVE_TARGET)) {
+            shootRequestBuilder.moveTargetsFirst(askBeforeAfterMove());
+        }
+
+        return shootRequestBuilder;
+    }
+
+    private ArrayList<String> askTargetsUsernames(Map<String, String> effectProperties) {
+        ArrayList<String> targetsUsernames;
+
+        if (effectProperties.containsKey(TARGET_NUM)) {
+            targetsUsernames = askExactTargets(effectProperties.get(TARGET_NUM));
+        } else if (effectProperties.containsKey(MAX_TARGET_NUM)) {
+            targetsUsernames = askMaxTargets(effectProperties.get(MAX_TARGET_NUM));
+        } else {
+            throw new InvalidPropertiesException();
+        }
+
+        return targetsUsernames;
+    }
+
+    private ArrayList<String> askExactTargets(String exactStringNum) {
+        int exactIntNum = Integer.parseInt(exactStringNum);
+        ArrayList<String> chosenTargets = new ArrayList<>();
+
+        do {
+            out.println("Choose exactly " + exactIntNum + " target/s for your shoot action:");
+            chosenTargets.add(readTargetUsername(getGameSerialized().getPlayers(), false));
+        } while (chosenTargets.size() < exactIntNum);
+
+        return chosenTargets;
+    }
+
+    private ArrayList<String> askMaxTargets(String maxStringNum) {
+        int maxIntNum = Integer.parseInt(maxStringNum);
+        ArrayList<String> chosenTargets = new ArrayList<>();
+
+        do {
+            String tempTarget;
+            out.println("Choose up to " + maxIntNum + " target/s for your shoot action (-1 to stop choosing):");
+            tempTarget = readTargetUsername(getGameSerialized().getPlayers(), true);
+            if (tempTarget.equals("-1") && chosenTargets.size() > 1) return chosenTargets;
+            chosenTargets.add(tempTarget);
+        } while (chosenTargets.size() < maxIntNum);
+
+        return chosenTargets;
+    }
+
+    private ArrayList<PlayerPosition> askTargetSquaresPositions(Map<String, String> effectProperties) {
+        ArrayList<PlayerPosition> targetSquaresPositions;
+
+        if (effectProperties.containsKey(TARGET_NUM)) {
+            targetSquaresPositions = askExactSquares(effectProperties.get(TARGET_NUM));
+        } else if (effectProperties.containsKey(MAX_TARGET_NUM)) {
+            targetSquaresPositions = askMaxSquares(effectProperties.get(MAX_TARGET_NUM));
+        } else {
+            throw new InvalidPropertiesException();
+        }
+
+        return targetSquaresPositions;
+    }
+
+    private ArrayList<PlayerPosition> askExactSquares(String exactStringNum) {
+        int exactIntNum = Integer.parseInt(exactStringNum);
+        ArrayList<PlayerPosition> chosenSquares = new ArrayList<>();
+
+        do {
+            out.println("Choose exactly " + exactIntNum + " target/s squares for your shoot action:");
+            chosenSquares.add(askCoordinates());
+        } while (chosenSquares.size() < exactIntNum);
+
+        return chosenSquares;
+    }
+
+    private ArrayList<PlayerPosition> askMaxSquares(String maxStringNum) {
+        int maxIntNum = Integer.parseInt(maxStringNum);
+        ArrayList<PlayerPosition> chosenSquares = new ArrayList<>();
+
+        do {
+            PlayerPosition tempPos;
+            out.println("Choose up to " + maxIntNum + " target/s squares for your shoot action (-1 to stop choosing):");
+            tempPos = askCoordinates();
+            if (tempPos.getCoordX() == -1 && chosenSquares.size() > 1) return chosenSquares;
+            chosenSquares.add(tempPos);
+        } while (chosenSquares.size() < maxIntNum);
+
+        return chosenSquares;
+    }
+
+    private RoomColor askTargetRoomColor(Map<String, String> effectProperties) {
+        // remember that a room target is always 1, infact we just need to verify that the property is present, then we are sure its going to be one
+        if (effectProperties.containsKey(TARGET_NUM)) {
+            out.println("Choose the color of the target room for your shoot action:");
+
+            return readRoomColor();
+        } else {
+            throw new InvalidPropertiesException();
+        }
+    }
+
+    private PlayerPosition askMovePositionInShoot() {
+        out.println("Choose the moving position for your shoot action:");
+        return askCoordinates();
+    }
+
+    private boolean askBeforeAfterMove() {
+        out.println("Choose if you want to move 'before' or 'after' shooting:");
+        return readMoveDecision();
+    }
+
+    private ArrayList<PlayerPosition> askTargetsMovePositions(ArrayList<String> targetsChosen) {
+        ArrayList<PlayerPosition> targetsMovePositions = new ArrayList<>();
+
+        out.println("Choose each targets' moving position!");
+
+        for (String target : targetsChosen) {
+            out.println("Choose " + target + " moving position:");
+            targetsMovePositions.add(askCoordinates());
+        }
+
+        return targetsMovePositions;
+    }
+
+    @Override
+    public void botSpawn() {
+        GameMap gameMap = getGameSerialized().getGameMap();
+        PlayerPosition botSpawnPosition = null;
+        boolean correctColor;
+
+        out.println("Choose the Color of the square where to Spawn the bot:");
+        do {
+            try {
+                botSpawnPosition = gameMap.getSpawnSquare(readRoomColor());
+                correctColor = true;
+            } catch (InvalidSpawnColorException e) {
+                correctColor = false;
+            }
+        } while (!correctColor);
+
+        if (!sendRequest(MessageBuilder.buildTerminatorSpawnRequest(client.getToken(), getGameSerialized().getBot(), gameMap.getSquare(botSpawnPosition)))) {
+            promptError(SEND_ERROR, true);
+        }
+    }
+
+    @Override
+    public void adrenalinePick() {
+        out.println("ADRENALINE ACTION!\n");
+        moveAndPick();
+    }
+
+    @Override
+    public void adrenalineShoot() {
+        out.println("ADRENALINE ACTION!\n");
+        ShootRequest.ShootRequestBuilder shootRequestBuilt;
+        PlayerPosition adrenalineMovePosition;
+
+        out.println("Choose the moving square for your adrenaline shoot action (same position not to move):");
+        adrenalineMovePosition = askCoordinates();
+
+        // now that I also know the moving position needed for the adrenaline shoot action I can build the shoot request and send it
+        shootRequestBuilt = sharedShootBuilder();
+
+        if (shootRequestBuilt == null) {
+            return;
+        } else {
+            shootRequestBuilt.adrenalineMovePosition(adrenalineMovePosition);
+        }
+
+        if (!sendRequest(MessageBuilder.buildShootRequest(shootRequestBuilt))) {
+            promptError(SEND_ERROR, true);
+        }
+    }
+
+    @Override
+    public void frenzyMove() {
+        out.println("FRENZY ACTION! \n");   // succhiami il cazzo sonar ti owno aggiungendo uno spazio ad ogni stringa e stai muto
+        move();
+    }
+
+    @Override
+    public void frenzyPick() {
+        out.println("FRENZY ACTION!\n");
+        moveAndPick();
+    }
+
+    @Override
+    public void frenzyShoot() {
+        out.println("FRENZY ACTION!\n");
+        sharedFrenzyShoot();
+    }
+
+    @Override
+    public void lightFrenzyPick() {
+        out.println("LIGHT FRENZY ACTION");
+        moveAndPick();
+    }
+
+    @Override
+    public void lightFrenzyShoot() {
+        out.println("LIGHT FRENZY ACTION");
+        sharedFrenzyShoot();
+    }
+
+    private void sharedFrenzyShoot() {
+        ShootRequest.ShootRequestBuilder shootRequestBuilt;
+        PlayerPosition frenzyMovePosition;
+        ArrayList<Integer> rechargingWeapons = new ArrayList<>();
+
+        out.println("Choose the moving square for your frenzy shoot action (same position not to move):");
+        frenzyMovePosition = askCoordinates();
+
+        out.println("Do you want to recharge your weapons before shooting (-1 to stop choosing)?");
+        for (int i = 0; i < getPlayer().getWeapons().length; ++i) {
+            int tempChoose = askWeapon(-1);
+            if (tempChoose == -1) break;
+            rechargingWeapons.add(tempChoose);
+        }
+
+        // now that I have everything I need more for a frenzy shoot I build the normal shoot request, add these and send it
+        shootRequestBuilt = sharedShootBuilder();
+        if (shootRequestBuilt == null) {
+            return;
+        } else {
+            shootRequestBuilt.adrenalineMovePosition(frenzyMovePosition).rechargingWeapons(rechargingWeapons);
+        }
+
+        if (!sendRequest(MessageBuilder.buildShootRequest(shootRequestBuilt))) {
+            promptError(SEND_ERROR, true);
+        }
+    }
+
+    @Override
+    public void shoot() {
+        ShootRequest.ShootRequestBuilder shootRequestBuilder = sharedShootBuilder();
+
+        if (shootRequestBuilder == null) return;
+
+        if (!sendRequest(MessageBuilder.buildShootRequest(shootRequestBuilder))) {
+            promptError(SEND_ERROR, true);
+        }
+    }
+
+    private ShootRequest.ShootRequestBuilder sharedShootBuilder() {
+        ShootRequest.ShootRequestBuilder shootRequestBuilder;
+        ArrayList<Integer> paymentPowerups = new ArrayList<>();
+        Effect chosenEffect;
+
+        WeaponCard[] weapons = getPlayer().getWeapons();
+        if (weapons.length == 0) {
+            cancelAction("You have no weapon to use");
+            return null;
+        }
+
+        printMap();
+        out.println("Care your Ammo before choosing to shoot: ");
+        printAmmo();
+
+        int weapon = askWeapon(0);
+        if (weapon == -1) return null;
+        int effect = askWeaponEffect(getPlayer().getWeapons()[weapon]);
+        if (!getPowerups().isEmpty()) {
+            paymentPowerups = askPaymentPowerups();
+        }
+
+        // normal shoot does not require recharging weapons
+        shootRequestBuilder = new ShootRequest.ShootRequestBuilder(client.getUsername(), client.getToken(), weapon, effect, null).paymentPowerups(paymentPowerups);
+
+        // now we can build the fireRequest specific to each chosen weapon
+        if (effect == 0) {
+            chosenEffect = getPlayer().getWeapons()[weapon].getBaseEffect();
+        } else {
+            chosenEffect = getPlayer().getWeapons()[weapon].getSecondaryEffects().get(effect - 1);
+        }
+
+        return buildShootRequest(chosenEffect, shootRequestBuilder);
+    }
+
+    private void buildPickWeaponRequest(PlayerPosition newPos) {
+        SpawnSquare weaponSquare = (SpawnSquare) getGameSerialized().getGameMap().getSquare(newPos);
+        ArrayList<Integer> paymentPowerups = new ArrayList<>();
+        WeaponCard pickingWeapon;
+        WeaponCard discardingCard = null;
+
+        if (weaponSquare.getWeapons().length == 0) { // very particular case in which a spawn square has no powerups
+            // pick action not allowed
+            return;
+        }
+
+        pickingWeapon = askPickWeapon(weaponSquare);
+        if (!getPowerups().isEmpty()) {
+            paymentPowerups = askPaymentPowerups();
+        }
+
+        // now that we know the WeaponCard the acting player wants to pick, if he has already 3 cards in his hand we ask him which one to discard
+        if (getPlayer().getWeapons().length == 3) {
+            out.println("You already have 3 weapons in your hand, choose one and discard it!");
+            discardingCard = getPlayer().getWeapons()[askWeapon(0)];
+        }
 
         try {
-            client.sendMessage(message);
-        } catch (IOException e) {
+            if (!paymentPowerups.isEmpty()) {
+                if (!sendRequest(MessageBuilder.buildMovePickRequest(client.getToken(), getPlayer(), newPos, paymentPowerups, pickingWeapon, discardingCard))) {
+                    promptError(SEND_ERROR, true);
+                }
+            } else {
+                if (!sendRequest(MessageBuilder.buildMovePickRequest(client.getToken(), getPlayer(), newPos, pickingWeapon, discardingCard))) {
+                    promptError(SEND_ERROR, true);
+                }
+            }
+        } catch (PowerupCardsNotFoundException e) {
             promptError(e.getMessage(), true);
         }
-
-        return message;
     }
 
-    private void printMap() {
-        synchronized (lock) {
-            CliPrinter.printMap(out, gameSerialized);
+    private WeaponCard askPickWeapon(SpawnSquare weaponSquare) {
+        WeaponCard[] weapons = weaponSquare.getWeapons();
+        int choose;
+
+        CliPrinter.clearConsole(out);
+        out.println("Weapons on your moving spawn square are:");
+        printWeapons(weaponSquare.getWeapons());
+
+        do {
+            out.println("\nChoose the weapon. Your ammo are:\n");
+            printAmmo();
+            choose = readInt(0, weapons.length - 1);
+        } while (choose < 0 || choose > weapons.length - 1);
+
+        return weapons[choose];
+    }
+
+    @Override
+    public void moveAndPick() {
+        PlayerPosition newPos;
+
+        printMap();
+
+        out.println("\nChoose the moving square for your pick action (same position not to move):");
+        newPos = askCoordinates();
+
+        Square square = getGameSerialized().getGameMap().getSquare(newPos.getCoordX(), newPos.getCoordY());
+
+        if (square == null) {
+            cancelAction("Position not valid");
+            return;
         }
+
+        if (square.getSquareType() == SquareType.TILE) {
+            if (!sendRequest(MessageBuilder.buildMovePickRequest(client.getToken(), getPlayer(), newPos))) {
+                promptError(SEND_ERROR, true);
+            }
+        } else {
+            buildPickWeaponRequest(newPos);
+        }
+    }
+
+    @Override
+    public void move() {
+        printMap();
+        out.println();
+
+        if (!sendRequest(MessageBuilder.buildMoveRequest(client.getToken(), getPlayer(), askCoordinates()))) {
+            promptError(SEND_ERROR, true);
+        }
+    }
+
+    @Override
+    public void spawn() {
+        printMap();
+        out.println();
+        printPowerups();
+
+        PowerupCard powerupCard = askPowerupSpawn();
+        List<PowerupCard> powerupCards = getPowerups();
+
+        try {
+            if (!sendRequest(MessageBuilder.buildDiscardPowerupRequest(client.getToken(), powerupCards, powerupCard, getUsername()))) {
+                promptError(SEND_ERROR, true);
+            }
+        } catch (PowerupCardsNotFoundException e) {
+            promptError(e.getMessage(), true);
+        }
+    }
+
+    @Override
+    public void firstPlayerCommunication(String username) {
+        if (username.equals(getUsername())) {
+            out.println("You are the first player\n");
+        } else {
+            out.println("The first player is: " + getFirstPlayer() + "\n");
+        }
+    }
+
+    @Override
+    public void notYourTurn() {
+        out.println("Wait for your turn...");
+    }
+
+    @Override
+    public void gameStateUpdate(GameSerialized gameSerialized) {
+        printMap();
+        out.println();
+    }
+
+    @Override
+    public void responseError(String error) {
+        promptError(error + "\n", false);
+    }
+
+    @Override
+    public void notifyGameEnd(List<Player> winners) {
+        // TODO
     }
 
     /**
      * This method asks the user what move he wants to make in this stage of the round, he even asks him if he wants to print to video the map, the player boards, his weapons and his mana.
      * This method returns the choice made by the user, if the choice is a print, the user is asked again what he wants to do until he chooses an action
      *
-     * @param withoutReload if true, it removes the possibility of reload from the user's choices
      * @return the PossibleAction chosen by the user
      */
-    private PossibleAction askActions(boolean withoutReload) {
+    @Override
+    public PossibleAction askAction() {
         int choose;
+        List<PossibleAction> possibleActions = getPossibleActions();
 
-        if (withoutReload) possibleActions.remove(PossibleAction.RELOAD);
-
+        printAmmo();
+        out.println();
+        printPowerupsNum();
         out.println("Choose the next move:");
 
         for (int i = 0; i < possibleActions.size(); i++) {
-            out.println("\t" + (i + 1) + " - " + possibleActions.get(i));
+            out.println("\t" + (i) + " - " + possibleActions.get(i).getDescription());
         }
 
-        // TODO: print map, print player boards, print weapons, print mana
-
-        choose = readInt(1, possibleActions.size());
-        return possibleActions.get(choose - 1);
+        choose = readInt(0, possibleActions.size() - 1);
+        return possibleActions.get(choose);
     }
 
-    private void switchChooses(int choose) {
-        Player player;
-        Message message;
+    @Override
+    public void powerup() {
+        CliPrinter.clearConsole(out);
+        printPowerups();
 
-        switch (choose) {
-            case 0:
-                synchronized (lock) {
-                    CliPrinter.printMap(out, gameSerialized);
-                }
-                break;
+        PowerupCard powerupCard = askPowerupCli();
 
-            case 1:
-                synchronized (lock) {
-                    CliPrinter.printPlayerBoards(out, gameSerialized);
-                }
-                break;
 
-            case 2:
-                synchronized (lock) {
-                    CliPrinter.printMap(out, gameSerialized);
-                }
+        if (!powerupCard.getName().equals(NEWTON) && !powerupCard.getName().equals(TELEPORTER)) {
+            cancelAction("ERROR: You can't use this powerup!");
+            return;
+        }
 
-                player = getPlayer(username);
+        ArrayList<Integer> powerups = new ArrayList<>();
+        powerups.add(getPowerups().indexOf(powerupCard));
 
-                message = MessageBuilder.buildMoveRequest(client.getToken(), player, getCoordinates());
+        PowerupRequest.PowerupRequestBuilder powerupRequestBuilder = new PowerupRequest.PowerupRequestBuilder(getUsername(), client.getToken(), powerups);
 
-                try {
-                    client.sendMessage(message);
-                } catch (IOException e) {
-                    promptError(e.getMessage(), true);
-                }
-                break;
+        Effect baseEffect = powerupCard.getBaseEffect();
+        Map<String, String> effectProperties = baseEffect.getProperties();
 
-            case 3:
-                break;
+        if (effectProperties.containsKey(TP)) {
+            powerupRequestBuilder.targetPlayersUsername(new ArrayList<>(List.of(getUsername())));
+            powerupRequestBuilder.targetPlayersMovePositions(new ArrayList<>(List.of(askCoordinates())));
+        }
 
-            case 4:
-                break;
+        if (effectProperties.containsKey(MAX_MOVE_TARGET)) {
+            out.println("Choose target username:");
+            powerupRequestBuilder.targetPlayersUsername(askExactTargets("1"));
+            powerupRequestBuilder.targetPlayersMovePositions(new ArrayList<>(List.of(askCoordinates())));
+        }
 
-            case 5:
-                PowerupCard powerupCard = askPowerUpSpawn();
-                List<PowerupCard> powerupCards = getPowerUps();
-
-                try {
-                    client.sendMessage(MessageBuilder.buildDiscardPowerupRequest(client.getToken(), powerupCards, powerupCard, username));
-                } catch (IOException | PowerupCardsNotFoundException e) {
-                    promptError(e.getMessage(), true);
-                }
-                break;
-
-            case 6:
-                player = getPlayer(username);
-                try {
-                    client.sendMessage(MessageBuilder.buildPassTurnRequest(client.getToken(), (UserPlayer) player));
-                } catch (IOException e) {
-                    promptError(e.getMessage(), true);
-                }
-                break;
+        try {
+            if (!sendRequest(MessageBuilder.buildPowerupRequest(powerupRequestBuilder))) {
+                promptError(SEND_ERROR, true);
+            }
+        } catch (PowerupCardsNotFoundException e) {
+            promptError(e.getMessage(), false);
         }
     }
 
-    private List<PowerupCard> getPowerUps() {
-        synchronized (lock) {
-            return gameSerialized.getPowerUps();
-        }
+    @Override
+    public void onPlayerDisconnect(String username) {
+        out.println("Player " + username + " DISCONNECTED from the game!");
     }
 
-    private PowerupCard askPowerUpSpawn() {
-        List<PowerupCard> powerups = getPowerUps();
+    private void cancelAction(String message) {
+        out.println(message);
+        cancelAction();
+    }
+
+    private void cancelAction() {
+        CliPrinter.clearConsole(out);
+        reAskAction();
+    }
+
+    private PowerupCard askPowerupCli() {
+        List<PowerupCard> powerups = getPowerups();
+        List<PowerupCard> newList = new ArrayList<>();
+
+        for (PowerupCard powerup : powerups) {
+            if (powerup.getName().equals(ClientGameManager.NEWTON) || powerup.getName().equals(ClientGameManager.TELEPORTER)) {
+                newList.add(powerup);
+            }
+        }
 
         out.println();
-        out.println("Where do you want to re spawn?");
+        out.println("Which power up do you want to use?");
+
+        for (int i = 0; i < newList.size(); i++) {
+            out.println("\t" + i + " - " + CliPrinter.toStringPowerUpCard(newList.get(i)) + " (" + Ammo.toColor(newList.get(i).getValue()) + " room)");
+        }
+
+        out.println();
+
+        return powerups.get(readInt(0, powerups.size() - 1));
+    }
+
+    private PowerupCard askPowerupSpawn() {
+        List<PowerupCard> powerups = getPowerups();
+
+        out.println();
+        out.println("Where do you want to spawn?");
+
         for (int i = 0; i < powerups.size(); i++) {
             out.println("\t" + i + " - " + CliPrinter.toStringPowerUpCard(powerups.get(i)) + " (" + Ammo.toColor(powerups.get(i).getValue()) + " room)");
         }
 
         out.println();
-        boolean firstError = true;
-        int choose = 0;
 
-        do {
-            if (choose >= powerups.size() || choose < 0) {
-                firstError = promptInputError(firstError, "Value not valid");
-            }
-
-            out.print(">>> ");
-
-            if (in.hasNextInt()) {
-                choose = in.nextInt();
-            } else {
-                choose = -1;
-                in.nextLine();
-                firstError = promptInputError(firstError, "Value not valid");
-            }
-        } while (choose < 0 || choose >= powerups.size());
+        int choose = readInt(0, powerups.size() - 1);
 
         return powerups.get(choose);
     }
 
     @NotNull
     @Contract(" -> new")
-    private PlayerPosition getCoordinates() {
+    private PlayerPosition askCoordinates() {
         boolean exit = false;
         boolean firstError = true;
 
         int x = -1;
         int y = -1;
 
-        if (in.hasNextLine()) in.nextLine();
+        if (in.hasNextLine()) {
+            String checkStop = in.nextLine();
+            if (checkStop.equals("-1")) return new PlayerPosition(x, y);
+        }
 
-        out.println("Write the new coordinates " + (getPlayer(username).isDead() ? "(0,0)" : getPlayer(username).getPosition()) + ":");
+        // a target is meant both as: target for a moving action or for choosing a target square
+        out.println("Write the target moving coordinates " + (getPlayer().isDead() ? "(0,0)" : getPlayer().getPosition()) + ":");
         do {
             out.print(">>> ");
 
@@ -810,85 +1123,62 @@ public class Cli implements ClientUpdateListener {
         return new PlayerPosition(x, y);
     }
 
+    private String readString() {
+        return readString("");
+    }
+
+    private String readString(String defVal) {
+        String readString;
+
+        out.print(">>> ");
+        readString = in.nextLine();
+
+        if (readString.equals("")) return defVal;
+
+        return readString;
+    }
+
     @Override
-    public void onUpdate(List<Message> messages) {
-        for (Message message : messages) {
-            out.println(message);
+    public void botAction() {
+        PlayerPosition newPos;
+        String target;
 
-            switch (message.getContent()) {
-                case RESPONSE:
-                    Response response = (Response) message;
-                    if (response.getStatus().equals(MessageStatus.ERROR)) {
-                        // TODO: torno indietro con la macchina a stati
-                        // Sei uno stronzo
-                    } else {
-                        // TODO: vado avanti con la macchina a stati
-                    }
-                    break;
+        printMap();
 
-                case GAME_STATE:
-                    GameStateMessage stateMessage = (GameStateMessage) message;
-                    out.println();
-                    synchronized (lock) {
-                        gameSerialized = stateMessage.getGameSerialized();
-                        CliPrinter.printMap(out, gameSerialized);
-                        out.println();
-                        CliPrinter.printPlayerBoards(out, gameSerialized);
-                    }
-                    break;
+        out.println("Choose the position for the bot action (same position not to move):");
+        newPos = askCoordinates();
 
-                case READY:
-                    GameStartMessage gameStartMessage = (GameStartMessage) message;
-                    synchronized (lock) {
-                        firstPlayer = getPlayer(gameStartMessage.getFirstPlayer());
-                        isTerminator = gameSerialized.isTerminatorPresent();
-                        started = true;
-                    }
-                    break;
+        out.println("Choose the target for the bot action (-1 not to shoot):");
+        target = readBotTarget(getGameSerialized().getPlayers());
 
-                case LAST_RESPONSE:
-                    WinnersResponse winnersList = (WinnersResponse) message;
-                    synchronized (lock) {
-                        this.finished = true;
-                        this.winners = winnersList.getWinners();
-                    }
-                    break;
-
-                case DISCONNECTION:
-                    break;
-
-                default:
-            }
-
-            Logger.getGlobal().log(Level.INFO, "{0}", message);
+        if (!sendRequest(MessageBuilder.buildUseTerminatorRequest(client.getToken(), getGameSerialized().getBot(), newPos, (UserPlayer) getPlayerByName(target)))) {
+            promptError(SEND_ERROR, true);
         }
     }
 
-    private Terminator getTerminator() {
-        synchronized (lock) {
-            return gameSerialized.getTerminator();
-        }
+    private void printMap() {
+        CliPrinter.clearConsole(out);
+        CliPrinter.printMap(out, getGameSerialized());
     }
 
-    private Player getPlayer(String username) {
-        synchronized (lock) {
-            Player player = gameSerialized.getPlayers().stream().filter(p -> p.getUsername().equals(username)).findFirst().orElse(null);
-            if (player == null) throw new PlayerNotFoundException("player not found, cannot continue with the game");
-            return player;
-        }
+    private void printPowerups() {
+        CliPrinter.printPowerups(out, getPowerups().toArray(PowerupCard[]::new));
     }
 
-    private boolean askTerminator() {
-        if (roundManager.terminatorPresent() && !roundManager.terminatorMoved() && !terminatorMoved) {
-            if (!roundManager.getPlayerState().equals(UserPlayerState.SECOND_MOVE)) {
-                //TODO: do you want to move terminator now?
-            } else {
-                //TODO: you must move terminator the next move
-            }
-            return true;
-        }
+    private void printPowerupsNum() {
+        out.println("Powerups: " + getPowerups().size() + "\n");
+    }
 
-        return false;
+    private void printWeapons(WeaponCard[] weapons) {
+        CliPrinter.printWeapons(out, weapons);
+    }
+
+    private void printPlayerBoard() {
+        CliPrinter.printPlayerBoards(out, getGameSerialized());
+    }
+
+    private void printAmmo() {
+        CliPrinter.printAmmo(out, getPlayer().getPlayerBoard().getAmmo());
     }
 
     private int readInt() {
@@ -898,19 +1188,118 @@ public class Cli implements ClientUpdateListener {
     private int readInt(int minVal, int maxVal) {
         boolean firstError = true;
         boolean accepted = false;
-        int choose = 0;
+        int choose = Integer.MIN_VALUE;
+
         do {
             out.print(">>> ");
-            if (in.hasNextInt()) {
-                choose = in.nextInt();
+
+            try {
+                choose = Integer.valueOf(in.nextLine());
+
                 if (choose >= minVal && choose <= maxVal) accepted = true;
-                else firstError = promptInputError(firstError, "Input not valid!");
-            } else {
-                firstError = promptInputError(firstError, "Invalid integer!");
-                in.nextLine();
+                else firstError = promptInputError(firstError, "Not valid input!");
+
+            } catch (NumberFormatException e) {
+                promptInputError(firstError, "Not valid input!");
             }
         } while (!accepted);
 
         return choose;
+    }
+
+    private String readBotTarget(ArrayList<UserPlayer> inGamePlayers) {
+        boolean firstError = true;
+        boolean accepted = false;
+        String chosenTarget;
+
+        do {
+            out.print(">>> ");
+            chosenTarget = in.nextLine();
+            if (chosenTarget.equals("-1")) return null;
+            if (!chosenTarget.equals("bot")) {       // no one can shoot itself!
+                for (UserPlayer player : inGamePlayers) {
+                    if (player.getUsername().equals(chosenTarget)) {
+                        accepted = true;
+                        break;
+                    }
+                }
+            } else {
+                firstError = promptInputError(firstError, "Bot Target Not Valid");
+            }
+        } while (!accepted);
+
+        return chosenTarget;
+    }
+
+    private String readTargetUsername(ArrayList<UserPlayer> inGamePlayers, boolean stoppable) {
+        boolean firstError = true;
+        boolean accepted = false;
+        boolean isTerminatorPresent = getGameSerialized().isBotPresent();
+
+        String chosenTarget;
+        do {
+            out.print(">>> ");
+            chosenTarget = in.nextLine();
+            if (stoppable && chosenTarget.equals("-1")) return chosenTarget;
+            if (isTerminatorPresent && chosenTarget.equals("bot")) {
+                accepted = true;
+            } else if (!chosenTarget.equals(getPlayer().getUsername())) {
+                for (UserPlayer player : inGamePlayers) {
+                    if (player.getUsername().equals(chosenTarget)) {
+                        accepted = true;
+                        break;
+                    }
+                }
+            } else {
+                firstError = promptInputError(firstError, "Target Not Valid");
+            }
+        } while (!accepted);
+
+        return chosenTarget;
+    }
+
+    private RoomColor readRoomColor() {
+        boolean firstError = true;
+        boolean accepted = false;
+        String stringColor;
+        RoomColor roomColor = null;
+
+        do {
+            out.print(">>> ");
+            stringColor = in.nextLine();
+            try {
+                roomColor = RoomColor.getColor(stringColor);
+                accepted = true;
+            } catch (InexistentColorException e) {
+                firstError = promptInputError(firstError, "Invalid Room Color");
+            }
+        } while (!accepted);
+
+        return roomColor;
+    }
+
+    private boolean readMoveDecision() {
+        boolean firstError = true;
+        boolean accepted = false;
+        final String BEFORE = "before";
+        final String AFTER = "after";
+        String stringDecision;
+        Boolean finalDecision = null;
+
+        do {
+            out.print(">>> ");
+            stringDecision = in.nextLine();
+            if (stringDecision.equalsIgnoreCase(BEFORE)) {
+                finalDecision = true;
+                accepted = true;
+            } else if (stringDecision.equalsIgnoreCase(AFTER)) {
+                finalDecision = false;
+                accepted = true;
+            } else {
+                firstError = promptInputError(firstError, "Invalid input");
+            }
+        } while (!accepted);
+
+        return finalDecision;
     }
 }

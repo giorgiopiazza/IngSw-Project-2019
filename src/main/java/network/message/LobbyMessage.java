@@ -6,17 +6,24 @@ import enumerations.PlayerColor;
 import java.util.Objects;
 
 public class LobbyMessage extends Message {
-    private PlayerColor chosenColor;
+    private static final long serialVersionUID = -8420070827032848314L;
 
-    public LobbyMessage(String username, String token, MessageContent messageContent, PlayerColor chosenColor) {
-        // message content can only be GET_IN_LOBBY or DISCONNECTION
-        super(username, token, messageContent);
+    private final PlayerColor chosenColor;
+    private final boolean disconnection;
+
+    public LobbyMessage(String username, String token, PlayerColor chosenColor, boolean disconnection) {
+        super(username, token, MessageContent.GET_IN_LOBBY);
 
         this.chosenColor = chosenColor;
+        this.disconnection = disconnection;
     }
 
     public PlayerColor getChosenColor() {
         return chosenColor;
+    }
+
+    public boolean isDisconnection() {
+        return this.disconnection;
     }
 
     // a Lobby message is equal to an other (in our case) if its the same message or if it has the same user sender name

@@ -10,13 +10,14 @@ import model.cards.PowerupCard;
 import model.player.KillShot;
 import model.player.Player;
 import model.player.PlayerBoard;
-import model.player.Terminator;
+import model.player.Bot;
 import model.player.UserPlayer;
 import network.message.*;
 import network.server.Server;
 import utility.LobbyTimer;
 import utility.TimerRunListener;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -25,34 +26,68 @@ import java.util.stream.Collectors;
 /**
  * This Class is the Controller that receives Messages, validates them and moves the Game State to make the game evolve
  */
-public class GameManager implements TimerRunListener {
+public class GameManager implements TimerRunListener, Serializable {
     private static final int MIN_PLAYERS = 3;
     private static final int MAX_PLAYERS = 5;
 
-    private final Server server;
+    private final transient Server server;
     private PossibleGameState gameState;
     private final Game gameInstance;
-    private GameLobby lobby;
-    private RoundManager roundManager;
+    private transient GameLobby lobby;
+    private transient RoundManager roundManager;
     private ShootParameters shootParameters;
 
-    private int lobbyTimeoutTime;
-    private Timer lobbyTimer;
-    private boolean lobbyTimerRunning = false;
+    private transient int lobbyTimeoutTime;
+    private transient Timer lobbyTimer;
+    private transient boolean lobbyTimerRunning = false;
 
     /**
      * Creates an instance of {@link GameManager GameManager} binding the server tha will send messages to him
      *
      * @param server the Server to be bind
+     * @param skullNum number of skulls in this game
+     * @param startTime the lobby timeout time in seconds
      */
-    public GameManager(Server server, boolean terminator, int skullNum) {
+    public GameManager(Server server, boolean terminator, int skullNum, int startTime) {
         this.server = server;
-        gameState = PossibleGameState.GAME_ROOM;
+        this.gameState = PossibleGameState.GAME_ROOM;
         this.lobby = new GameLobby(terminator, skullNum);
         this.gameInstance = Game.getInstance();
         this.roundManager = new RoundManager(this);
 
+        lobbyTimeoutTime = startTime * 1000;
+    }
+
+    /**
+     * Creates an instance of {@link GameManager GameManager} binding the new server and the GameManager of the game
+     * that is going to be reloaded
+     *
+     * @param server           the Server to be bind
+     * @param savedGameManager the saved {@link GameManager GameManager} from which the {@link Game Game} is going to restart
+     */
+    public GameManager(Server server, GameManager savedGameManager) {
+        this.server = server;
+        this.gameState = savedGameManager.gameState;
+        this.lobby = null; // TODO add lobby settings if needed for players login: should be filled with messages containing the names of the players in the game
+        this.gameInstance = Game.getInstance();
+        this.roundManager = new RoundManager(savedGameManager);
+        this.shootParameters = savedGameManager.shootParameters;
+
         lobbyTimeoutTime = 10000;
+    }
+
+    /**
+     * @return the instance of the {@link Game Game} instance present in the saved {@link GameManager GameManager}
+     */
+    public Game getGameInstance() {
+        return this.gameInstance;
+    }
+
+    /**
+     * @return the instance of the {@link RoundManager RoundManager}
+     */
+    public RoundManager getRoundManager() {
+        return this.roundManager;
     }
 
     /**
@@ -97,6 +132,11 @@ public class GameManager implements TimerRunListener {
                 return new Response("Message from a player that is not his turn!", MessageStatus.ERROR);
             }
 
+            // very first round handling
+            if(roundManager.getTurnManager().getTurnOwner().getPlayerState() != PossiblePlayerState.PLAYING) {
+                return veryFirstRoundHandler(receivedMessage);
+            }
+
             // SPECIAL STATES handling
             tempResponse = specialStatesHandler(receivedMessage);
 
@@ -105,13 +145,9 @@ public class GameManager implements TimerRunListener {
             } // else no special States are affected
 
             switch (receivedMessage.getContent()) {
-                case TERMINATOR_SPAWN:
-                    return terminatorSpawnCheckState(receivedMessage);
-                case DISCARD_POWERUP:
-                    return discardPowerupCheckState(receivedMessage);
-                case TERMINATOR:
+                case BOT_ACTION:
                     return terminatorCheckState(receivedMessage);
-                case POWERUP:
+                case POWERUP_USAGE:
                     return powerupCheckState(receivedMessage);
                 case MOVE:
                     return moveCheckState(receivedMessage);
@@ -130,12 +166,69 @@ public class GameManager implements TimerRunListener {
             Server.LOGGER.severe("Invalid cast of a message from " + receivedMessage.getSenderUsername());
             return buildInvalidResponse();
         }
+    }
 
+    /**
+     * Submethod of the class only used while during the game the {@link Server server} receives disconnection messages from
+     * the {@link UserPlayer userPLayers} in the game
+     *
+     * @param receivedConnectionMessage Message received by the server from a connectinf or disconnecting {@link UserPlayer UserPlayer}
+     * @return a {@link Message Message} which contains the result of the received message
+     */
+    public Message onConnectionMessage(Message receivedConnectionMessage) {
+        if(gameState != PossibleGameState.GAME_ROOM && receivedConnectionMessage.getContent() == MessageContent.GET_IN_LOBBY) {
+            if(((LobbyMessage) receivedConnectionMessage).isDisconnection()) {
+                return disconnectionHandler((LobbyMessage) receivedConnectionMessage);
+            } else {
+                return reconnectionHandler((LobbyMessage) receivedConnectionMessage);
+            }
+        } else {
+            throw new InvalidGameStateException();
+        }
+    }
+
+    private Message disconnectionHandler(LobbyMessage receivedConnectionMessage) {
+        ArrayList<LobbyMessage> inLobbyPlayers = lobby.getInLobbyPlayers();
+        boolean gameEnded;
+
+        if(inLobbyPlayers.contains(receivedConnectionMessage)) {
+            // if I receive a disconnection message I remove it from the lobby and set the corresponding player state to DISCONNECTED
+            inLobbyPlayers.remove(receivedConnectionMessage);
+            ((UserPlayer) gameInstance.getPlayerByName(receivedConnectionMessage.getSenderUsername())).setPlayerState(PossiblePlayerState.DISCONNECTED);
+
+            // then I check if in the lobby there are still enough players to continue the game, if not the game ends
+            gameEnded = checkStartedLobby();
+
+            if(gameEnded) {
+                return new Response("Player disconnected, game has now less then 3 players and then is ending...", MessageStatus.OK);
+            } else if (getRoundManager().getTurnManager().getTurnOwner().getUsername().equals(receivedConnectionMessage.getSenderUsername())){    // if game hasn't ended I check if the disconnected player is the turn owner, if so I change the state, otherwise nothing happens
+                roundManager.handlePassAction();
+                return new Response("Turn Owner disconnected, turn is passed to next Player", MessageStatus.OK);
+            } else {
+                return new Response("Player disconnected from the game", MessageStatus.OK);
+            }
+        } else {
+            return new Response("Disconnection Message from not in lobby Player", MessageStatus.ERROR);
+        }
+    }
+
+    private Message reconnectionHandler(LobbyMessage receivedConnectionMessage) {
+        ArrayList<LobbyMessage> inLobbyPlayers = lobby.getInLobbyPlayers();
+
+        if(!inLobbyPlayers.contains(receivedConnectionMessage)) {
+            // if I receive a reconnection message I add it to the lobby and set the corresponding player state to PLAYING
+            lobby.addPlayer(receivedConnectionMessage);
+            ((UserPlayer) gameInstance.getPlayerByName(receivedConnectionMessage.getSenderUsername())).setPlayerState(PossiblePlayerState.PLAYING);
+
+            return new Response("Player succesfully reconnected to the game", MessageStatus.OK);
+        } else {
+            return new Response("Reconnection message from already in lobby Player", MessageStatus.ERROR);
+        }
     }
 
     /**
      * This method handles both the extemporary usage of a powerup like: TAGBACK GRANADE or TARGETING SCOPE and the
-     * Respawn actions of the {@link Terminator Terminator} and {@link UserPlayer UserPlayer}
+     * Respawn actions of the {@link Bot Terminator} and {@link UserPlayer UserPlayer}
      *
      * @param receivedMessage the {@link Message Message} received
      * @return a positive or negative {@link Response Response} in case that one of the cases is matched; default case
@@ -161,6 +254,25 @@ public class GameManager implements TimerRunListener {
     }
 
     /**
+     * This method handles the very first round of a {@link Game Game}; in this state {@link UserPlayer players}, need
+     * to spawn before starting acting. Remember that if the {@link Bot Terminator} is present, the first
+     * {@link UserPlayer UserPlayer} is the one who spawns it and this must be done before spawning itself
+     *
+     * @param receivedMessage the {@link Message Message} received
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
+    private Response veryFirstRoundHandler(Message receivedMessage) {
+        switch (receivedMessage.getContent()) {
+            case BOT_SPAWN:
+                return terminatorSpawnCheckState(receivedMessage);
+            case DISCARD_POWERUP:
+                return discardPowerupCheckState(receivedMessage);
+            default:
+                throw new InvalidGameStateException();
+        }
+    }
+
+    /**
      * Method used to oblige a player to use the {@link model.actions.TerminatorAction TerminatorAction} in case he hasn't
      * already performed it
      *
@@ -171,9 +283,9 @@ public class GameManager implements TimerRunListener {
     private Response handleTerminatorAsLastAction(Message receivedMessage) {
         // only messages to use the terminator action and a powerup can be used!
         switch (receivedMessage.getContent()) {
-            case TERMINATOR:
+            case BOT_ACTION:
                 return roundManager.handleTerminatorAction((UseTerminatorRequest) receivedMessage, PossibleGameState.MISSING_TERMINATOR_ACTION);
-            case POWERUP:
+            case POWERUP_USAGE:
                 return roundManager.handlePowerupAction((PowerupRequest) receivedMessage);
             default:
                 return buildInvalidResponse();
@@ -187,8 +299,8 @@ public class GameManager implements TimerRunListener {
      * @return a positive or negative {@link Response Response} handled by the server
      */
     private Response granadeCheckContent(Message receivedMessage) {
-        if (receivedMessage.getContent() == MessageContent.POWERUP) {
-            return onGranadeMessage(receivedMessage);
+        if (receivedMessage.getContent() == MessageContent.POWERUP_USAGE) {
+            return onGrenadeMessage(receivedMessage);
         } else {
             return buildInvalidResponse();
         }
@@ -201,7 +313,7 @@ public class GameManager implements TimerRunListener {
      * @return a positive or negative {@link Response Response} handled by the server
      */
     private Response scopeCheckContent(Message receivedMessage) {
-        if (receivedMessage.getContent() == MessageContent.POWERUP) {
+        if (receivedMessage.getContent() == MessageContent.POWERUP_USAGE) {
             if (!((PowerupRequest) receivedMessage).getPowerup().isEmpty()) {
                 return roundManager.handleShootAction(shootParameters.shootRequest, (PowerupRequest) receivedMessage, shootParameters.secondAction);
             } else {
@@ -213,14 +325,14 @@ public class GameManager implements TimerRunListener {
     }
 
     /**
-     * Method that checks and execute the methods related to the Respawn of the {@link Terminator Terminator}
+     * Method that checks and execute the methods related to the Respawn of the {@link Bot Terminator}
      *
      * @param receivedMessage the {@link Message Message} received
      * @return a positive or negative {@link Response Response} handled by the server
      */
     private Response checkTerminatorRespawn(Message receivedMessage) {
         Response tempResponse;
-        if (receivedMessage.getContent() == MessageContent.TERMINATOR_SPAWN) {
+        if (receivedMessage.getContent() == MessageContent.BOT_SPAWN) {
             tempResponse = roundManager.handleTerminatorRespawn((TerminatorSpawnRequest) receivedMessage);
             if (tempResponse.getStatus() == MessageStatus.OK) {
                 // if the Respawn message is validated I can distribute the points of the terminator's playerboard, move the skull from the tracker and then reset his playerboard
@@ -278,13 +390,13 @@ public class GameManager implements TimerRunListener {
     }
 
     /**
-     * Method that checks and executes the FirstSpawn of the {@link Terminator Terminator}
+     * Method that checks and executes the FirstSpawn of the {@link Bot Terminator}
      *
      * @param receivedMessage the {@link Message Message} received
      * @return a positive or negative {@link Response Response} handled by the server
      */
     private Response terminatorSpawnCheckState(Message receivedMessage) {
-        if (gameState == PossibleGameState.GAME_READY) {
+        if (gameState == PossibleGameState.GAME_STARTED && roundManager.getTurnManager().getTurnOwner().getPlayerState() == PossiblePlayerState.SPAWN_TERMINATOR) {
             // remember a player must see the powerups he has drawn before spawning the terminator!
             return roundManager.handleTerminatorFirstSpawn((TerminatorSpawnRequest) receivedMessage);
         } else {
@@ -300,7 +412,7 @@ public class GameManager implements TimerRunListener {
      * @return a positive or negative {@link Response Response} handled by the server
      */
     private Response discardPowerupCheckState(Message receivedMessage) {
-        if (gameState == PossibleGameState.GAME_READY) {
+        if (gameState == PossibleGameState.GAME_STARTED && roundManager.getTurnManager().getTurnOwner().getPlayerState() == PossiblePlayerState.FIRST_SPAWN) {
             return roundManager.handleFirstSpawn((DiscardPowerupRequest) receivedMessage);
         } else {
             return buildInvalidResponse();
@@ -314,9 +426,7 @@ public class GameManager implements TimerRunListener {
      * @return a positive or negative {@link Response Response} handled by the server
      */
     private Response terminatorCheckState(Message receivedMessage) {
-        if (gameState == PossibleGameState.GAME_READY) {
-            return roundManager.handleTerminatorAction((UseTerminatorRequest) receivedMessage, gameState);
-        } else if (gameState == PossibleGameState.GAME_STARTED) {
+        if (gameState == PossibleGameState.GAME_STARTED) {
             return roundManager.handleTerminatorAction((UseTerminatorRequest) receivedMessage, gameState);
         } else {
             return buildInvalidResponse();
@@ -463,7 +573,7 @@ public class GameManager implements TimerRunListener {
         }
 
         // at this point gme should always be ready to start
-        if (gameInstance.isGameReadyToStart()) {
+        if (gameInstance.isGameReadyToStart() && (lobby.getInLobbyPlayers().size() >= MIN_PLAYERS || lobby.getInLobbyPlayers().size() >= MIN_PLAYERS && lobby.getTerminatorPresence())) {
             startingStateHandler();
         }
         // nothing to do here as we said game should always be ready to start at this point
@@ -477,7 +587,7 @@ public class GameManager implements TimerRunListener {
         // first I start the game, the turnManager and set the state of the game
         gameInstance.startGame();
         roundManager.initTurnManager();
-        changeState(PossibleGameState.GAME_READY);
+        changeState(PossibleGameState.GAME_STARTED);
 
         UserPlayer firstPlayer = roundManager.getTurnManager().getTurnOwner();
 
@@ -504,7 +614,7 @@ public class GameManager implements TimerRunListener {
         ArrayList<PlayerColor> unusedColors = lobby.getUnusedColors();
 
         // here time expiration has to be verified
-        if (lobbyMessage.getContent() == MessageContent.GET_IN_LOBBY && !inLobbyPlayers.contains(lobbyMessage)) {
+        if (lobbyMessage.getContent() == MessageContent.GET_IN_LOBBY && !inLobbyPlayers.contains(lobbyMessage) && !lobbyMessage.isDisconnection()) {
             if ((lobby.getTerminatorPresence() && inLobbyPlayers.size() < 4) ||
                     (!lobby.getTerminatorPresence() && inLobbyPlayers.size() < 5) &&
                             lobbyMessage.getChosenColor() != null && unusedColors.contains(lobbyMessage.getChosenColor())) {
@@ -514,7 +624,7 @@ public class GameManager implements TimerRunListener {
             } else {
                 return buildInvalidResponse();
             }
-        } else if (lobbyMessage.getContent() == MessageContent.DISCONNECTION && inLobbyPlayers.contains(lobbyMessage)) {
+        } else if (lobbyMessage.getContent() == MessageContent.GET_IN_LOBBY && inLobbyPlayers.contains(lobbyMessage) && lobbyMessage.isDisconnection()) {
             inLobbyPlayers.remove(lobbyMessage);
             removeVote(lobbyMessage.getSenderUsername());
             Server.LOGGER.log(Level.INFO, "{0} left the lobby", lobbyMessage.getSenderUsername());
@@ -536,12 +646,13 @@ public class GameManager implements TimerRunListener {
             if (inLobbyPlayers.size() < MIN_PLAYERS) {
                 lobbyTimer.cancel();
                 lobbyTimerRunning = false;
+                Server.LOGGER.info("Lobby timer stopped");
             }
         } else {
             if (inLobbyPlayers.size() >= MIN_PLAYERS) {
                 lobbyTimer = new Timer();
                 lobbyTimer.schedule(new LobbyTimer(this), lobbyTimeoutTime);
-                Server.LOGGER.info("Lobby timer started (" + lobbyTimeoutTime / 1000 + " s)");
+                Server.LOGGER.log(Level.INFO, "Lobby timer started ({0} s)", lobbyTimeoutTime / 1000);
                 lobbyTimerRunning = true;
             }
         }
@@ -550,6 +661,7 @@ public class GameManager implements TimerRunListener {
 
     @Override
     public void onTimerRun() {
+        Server.LOGGER.info("Lobby timer ended, game is starting");
         gameSetupHandler();
     }
 
@@ -570,6 +682,17 @@ public class GameManager implements TimerRunListener {
             return new Response("Last player added to lobby, game is starting...", MessageStatus.OK);
         } else {
             return new Response("Player added to lobby", MessageStatus.OK);
+        }
+    }
+
+    private boolean checkStartedLobby() {
+        ArrayList<LobbyMessage> inLobbyPlayers = lobby.getInLobbyPlayers();
+
+        if(inLobbyPlayers.size() < MIN_PLAYERS) {       // TODO verify if terminator counts
+            endGame();
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -611,15 +734,15 @@ public class GameManager implements TimerRunListener {
     }
 
     /**
-     * Method used to handle the decision of a player to use or not a TAGBACK GRANADE when damaged.
+     * Method used to handle the decision of a player to use or not a TAGBACK GRENADE when damaged.
      *
      * @param receivedMessage the {@link Message Message} received that can be handled if a {@link PowerupRequest PowerupRequest}
      *                        or a {@link PassTurnRequest PassTurnRequest}
      * @return a positive or negative {@link Response Response} handled by the server
      */
-    private Response onGranadeMessage(Message receivedMessage) {
+    private Response onGrenadeMessage(Message receivedMessage) {
         switch (receivedMessage.getContent()) {
-            case POWERUP:
+            case POWERUP_USAGE:
                 return roundManager.handleGranadeUsage((PowerupRequest) receivedMessage);
             case PASS_TURN:     // this is a "false" PASS_TURN, turn goes to the next damaged player by the "real" turnOwner
                 // implementation then goes directly here
@@ -676,7 +799,7 @@ public class GameManager implements TimerRunListener {
 
     /**
      * Method that flips all the PlayerBoards in the FinalFrenzy if needed to all {@link UserPlayer UserPlayers} and also
-     * {@link Terminator Terminator}
+     * {@link Bot Terminator}
      */
     private void finalFrenzySetup() {
         // boards flipping setup
@@ -766,11 +889,11 @@ public class GameManager implements TimerRunListener {
      */
     private void handleLastPointsDistribution() {
         List<UserPlayer> players = gameInstance.getPlayers();
-        Terminator terminator = (Terminator) gameInstance.getTerminator();
+        Bot bot = (Bot) gameInstance.getTerminator();
 
-        if (gameInstance.isTerminatorPresent() && terminator.getPlayerBoard().getDamageCount() > 0) {
+        if (gameInstance.isTerminatorPresent() && bot.getPlayerBoard().getDamageCount() > 0) {
             // in the last distribution each damaged player counts as a dead one to calculate points
-            distributePoints(terminator);
+            distributePoints(bot);
         }
 
         for (UserPlayer player : players) {
@@ -933,17 +1056,28 @@ public class GameManager implements TimerRunListener {
     void sendPrivateUpdates() {
         List<UserPlayer> players = gameInstance.getPlayers();
 
-        for(UserPlayer player : players) {
-            server.sendMessage(player.getUsername(), new GameStateMessage(player.getUsername()));
+        for (UserPlayer player : players) {
+            server.sendMessage(player.getUsername(), new GameStateMessage(player.getUsername(), roundManager.getTurnManager().getTurnOwner().getUsername()));
         }
+    }
+
+    /**
+     * Utility method to send a broadcast message to all the Clients
+     *
+     * @param message the {@link Message Message} to be sent
+     */
+    void sendBroadcastMessage(Message message) {
+        server.sendMessageToAll(message);
     }
 
     /**
      * Utility Class Used to manage needed parameters when a Shooter wants to use the TARGETING SCOPE
      */
-    class ShootParameters {
+    class ShootParameters implements Serializable {
+        private static final long serialVersionUID = 6251659361269907424L;
+
         ShootRequest shootRequest;
-        boolean secondAction;
+        Boolean secondAction;
 
         /**
          * Creates an instance of {@link ShootParameters ShootParameters} saving the previous {@link ShootRequest ShootRequest}
