@@ -14,9 +14,10 @@ public class ExtraMarkDecorator extends ExtraEffectDecorator {
 
     public ExtraMarkDecorator(Effect effect, int[] markDistribution, TargetType targetType) {
         this.effect = effect;
-        super.setDescription(effect.getDescription());
-        super.setProperties(effect.getProperties());
-        super.setTargets(effect.getTargets());
+        this.description = effect.description;
+        this.properties = effect.properties;
+        this.targets = effect.targets;
+        this.cost = effect.cost;
         this.markDistribution = markDistribution;
         this.targetType = targetType;
     }

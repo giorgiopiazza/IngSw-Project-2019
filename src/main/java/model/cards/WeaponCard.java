@@ -157,7 +157,7 @@ public class WeaponCard extends UsableCard {
             }
 
             if (effect.validate(request)) {
-                payCost(shootRequest, ((WeaponBaseEffect) effect).getCost());
+                payCost(shootRequest, (effect.getCost()));
 
                 weaponState.use(effect, shootRequest);
                 setStatus(new UnchargedWeapon());

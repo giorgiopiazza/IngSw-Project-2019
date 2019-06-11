@@ -1,6 +1,7 @@
 package model.cards.effects;
 
 import enumerations.TargetType;
+import model.player.AmmoQuantity;
 import network.message.EffectRequest;
 
 import java.io.Serializable;
@@ -11,17 +12,10 @@ import java.util.Objects;
 public abstract class Effect implements Serializable {
     private static final long serialVersionUID = 992667210434983695L;
 
-    private Map<String, String> properties;
-    private TargetType[] targets;
-    private String description;
-
-    public void setProperties(Map<String, String> properties) {
-        this.properties = properties;
-    }
-
-    public void setTargets(TargetType[] targets) {
-        this.targets = targets;
-    }
+    protected AmmoQuantity cost;
+    protected Map<String, String> properties;
+    protected TargetType[] targets;
+    protected String description;
 
     public Map<String, String> getProperties() {
         return this.properties;
@@ -31,12 +25,12 @@ public abstract class Effect implements Serializable {
         return this.targets;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public String getDescription() {
         return this.description;
+    }
+
+    public AmmoQuantity getCost() {
+        return cost;
     }
 
     /**

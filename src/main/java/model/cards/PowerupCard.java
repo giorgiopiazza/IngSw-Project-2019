@@ -42,15 +42,15 @@ public class PowerupCard extends UsableCard {
         UserPlayer shootingPlayer = Game.getInstance().getUserPlayerByUsername(username);
 
         if (getBaseEffect().validate(powerupRequest)) {
-            payEffectCost(powerupRequest, shootingPlayer, ((PowerupBaseEffect) getBaseEffect()).hasCost());
+            payEffectCost(powerupRequest, shootingPlayer, getBaseEffect().getCost());
             getBaseEffect().execute(powerupRequest);
         } else {
             throw new InvalidPowerupActionException();
         }
     }
 
-    private void payEffectCost(PowerupRequest request, UserPlayer shootingPlayer, boolean cost) throws NotEnoughAmmoException {
-        if (cost) {
+    private void payEffectCost(PowerupRequest request, UserPlayer shootingPlayer, AmmoQuantity cost) throws NotEnoughAmmoException {
+        if (!cost.noAmmo()) {
             PowerupCard[] powerupCards = shootingPlayer.getPowerups();
 
             List<Integer> powerupsID = request.getPaymentPowerups();

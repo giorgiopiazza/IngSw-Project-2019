@@ -14,19 +14,10 @@ public class WeaponBaseEffect extends Effect {
     private AmmoQuantity cost;
 
     public WeaponBaseEffect(AmmoQuantity cost, Map<String, String> properties, TargetType[] targets, String description) {
-        setCost(cost);
-        setProperties(properties);
-        setTargets(targets);
-        setDescription(description);
-    }
-
-    /**
-     * Setter of the cost of an Effect
-     *
-     * @param cost the cost of the effect
-     */
-    public void setCost(AmmoQuantity cost) {
         this.cost = cost;
+        this.targets = targets;
+        this.properties = properties;
+        this.description = description;
     }
 
     /**
