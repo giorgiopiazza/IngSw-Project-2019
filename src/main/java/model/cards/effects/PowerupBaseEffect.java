@@ -4,6 +4,7 @@ import enumerations.Properties;
 import enumerations.TargetType;
 import exceptions.utility.InvalidPropertiesException;
 import model.Game;
+import model.player.AmmoQuantity;
 import model.player.PlayerPosition;
 import network.message.EffectRequest;
 import network.message.PowerupRequest;
@@ -14,24 +15,19 @@ import java.util.Map;
 import static model.cards.effects.EffectValidator.teleporterValidator;
 
 public class PowerupBaseEffect extends Effect {
-    private final boolean cost;
 
     public PowerupBaseEffect(Map<String, String> properties, TargetType[] targets, String description) {
-        this.cost = false;
-        setTargets(targets);
-        setProperties(properties);
-        setDescription(description);
+        this.cost = new AmmoQuantity();
+        this.targets = targets;
+        this.properties = properties;
+        this.description = description;
     }
 
-    public PowerupBaseEffect(boolean cost, Map<String, String> properties, TargetType[] targets, String description) {
+    public PowerupBaseEffect(AmmoQuantity cost, Map<String, String> properties, TargetType[] targets, String description) {
         this.cost = cost;
-        setTargets(targets);
-        setProperties(properties);
-        setDescription(description);
-    }
-
-    public boolean hasCost() {
-        return this.cost;
+        this.targets = targets;
+        this.properties = properties;
+        this.description = description;
     }
 
     @Override
