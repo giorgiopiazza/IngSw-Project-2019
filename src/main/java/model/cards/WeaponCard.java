@@ -17,6 +17,8 @@ import model.player.UserPlayer;
 import network.message.ActionRequest;
 import network.message.EffectRequest;
 import network.message.ShootRequest;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -203,6 +205,8 @@ public class WeaponCard extends UsableCard {
         }
     }
 
+    @NotNull
+    @Contract("_, _, _, _ -> new")
     private AmmoQuantity getCostWithoutPowerup(AmmoQuantity cost, List<Integer> powerups, List<Integer> usedPowerups, PowerupCard[] powerupCards) {
         int redCost = cost.getRedAmmo();
         int blueCost = cost.getBlueAmmo();

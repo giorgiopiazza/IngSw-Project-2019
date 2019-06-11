@@ -9,7 +9,8 @@ public class ClientMain {
         if (args.length > 0 && args[0].equalsIgnoreCase("CLI")) {
             new Cli().start();
         } else {
-            Application.launch(Gui.class);
+            new Cli().start();
+            // Application.launch(Gui.class);
         }
     }
 }
