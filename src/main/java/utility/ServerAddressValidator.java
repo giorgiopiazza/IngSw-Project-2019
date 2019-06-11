@@ -1,6 +1,6 @@
 package utility;
 
-import java.util.Arrays;
+import org.jetbrains.annotations.Contract;
 
 public class ServerAddressValidator {
     public static final int MAX_ADDRESS_LENGTH = 15;
@@ -10,25 +10,13 @@ public class ServerAddressValidator {
         throw new IllegalStateException("Utility class");
     }
 
+    @Contract("null -> true")
     public static boolean isAddressValid(String address) {
         if (address == null || address.equals("localhost")) {
             return true;
         }
 
-        String[] groups = address.split("\\.");
-
-        if (groups.length != 4)
-            return false;
-
-        try {
-            return Arrays.stream(groups)
-                    .filter(s -> s.length() > 1 && s.startsWith("0"))
-                    .map(Integer::parseInt)
-                    .filter(i -> (i >= 0 && i <= 255))
-                    .count() == 4;
-        } catch (NumberFormatException e) {
-            return false;
-        }
+        return address.matches("/\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}\\b/g");
     }
 
     public static boolean isPortValid(String portString) {
