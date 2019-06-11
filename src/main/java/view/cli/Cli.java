@@ -1010,8 +1010,8 @@ public class Cli extends ClientGameManager {
         Map<String, String> effectProperties = baseEffect.getProperties();
 
         if (effectProperties.containsKey(TP)) {
-            powerupRequestBuilder.targetPlayersUsername(new ArrayList<>(List.of(getUsername())));
-            powerupRequestBuilder.targetPlayersMovePositions(new ArrayList<>(List.of(askCoordinates())));
+            out.println("Choose your teleporting position:");
+            powerupRequestBuilder.senderMovePosition(askCoordinates());
         }
 
         if (effectProperties.containsKey(MAX_MOVE_TARGET)) {

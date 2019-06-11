@@ -66,9 +66,10 @@ public class Server implements Runnable {
         pinger.start();
     }
 
-    public Server(boolean terminator, int skullNum, String confFilePath) {
+    public Server(boolean terminator, int skullNum/*, String confFilePath*/) {
         clients = new HashMap<>();
 
+        /*
         JsonObject jo = ConfigurationParser.parseConfiguration(confFilePath);
 
         if (jo == null) {
@@ -82,6 +83,7 @@ public class Server implements Runnable {
 
         LOGGER.log(Level.INFO, "Start time : {0}", startTime);
         LOGGER.log(Level.INFO, "Move time : {0}", moveTime);
+         */
 
         SocketServer serverSocket = new SocketServer(this, SOCKET_PORT);
         serverSocket.startServer();
@@ -93,7 +95,7 @@ public class Server implements Runnable {
 
         LOGGER.info("RMI Server Started");
 
-        gameManager = new GameManager(this, terminator, skullNum, startTime);
+        gameManager = new GameManager(this, terminator, skullNum, 10);
 
         Thread pinger = new Thread(this);
         pinger.start();
@@ -133,7 +135,7 @@ public class Server implements Runnable {
                 }
             }
         } else {
-            new Server(terminator,  skullNum, confFilePath);
+            new Server(terminator,  skullNum/*, confFilePath*/);
             return;
         }
 
@@ -148,7 +150,7 @@ public class Server implements Runnable {
             skullNum = 5;
         }
 
-        new Server(terminator, skullNum, confFilePath);
+        new Server(terminator, skullNum/*, confFilePath*/);
     }
 
     /**

@@ -1,5 +1,6 @@
 package model.cards.effects;
 
+import enumerations.Properties;
 import enumerations.TargetType;
 import exceptions.utility.InvalidPropertiesException;
 import model.Game;
@@ -9,6 +10,8 @@ import network.message.PowerupRequest;
 
 import java.util.List;
 import java.util.Map;
+
+import static model.cards.effects.EffectValidator.teleporterValidator;
 
 public class PowerupBaseEffect extends Effect {
     private final boolean cost;
@@ -38,11 +41,15 @@ public class PowerupBaseEffect extends Effect {
 
     @Override
     public boolean validate(EffectRequest request) {
+        PowerupRequest powerupRequest = (PowerupRequest) request;
+
+        if(getProperties().containsKey(Properties.TP.getJKey())) {
+            return teleporterValidator(powerupRequest);
+        }
+
         if (getTargets().length > 1) {   // as normal weapon effects powerup effects do not have subEffects and then their target[] dimension must always be 1
             throw new InvalidPropertiesException();
         }
-
-        PowerupRequest powerupRequest = (PowerupRequest) request;
 
         PlayerPosition powerupUserPos = Game.getInstance().getUserPlayerByUsername(powerupRequest.getSenderUsername()).getPosition();
         List<PlayerPosition> targetPos = EffectValidator.getTargetPositions(powerupRequest, getTargets()[0]);

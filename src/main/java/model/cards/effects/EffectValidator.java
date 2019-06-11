@@ -290,14 +290,14 @@ class EffectValidator {
      * @param properties Map of effect properties
      * @return {@code true} if target moves are valid {@code false} otherwise
      */
-    static boolean isMoveValid(EffectRequest request, Map<String, String> properties) {
+    static boolean  isMoveValid(EffectRequest request, Map<String, String> properties) {
         // Player move validation
         if (properties.containsKey(Properties.MOVE.getJKey())) {
-            List<PlayerPosition> movingPos = request.getTargetPlayersMovePositions();
+            PlayerPosition playerMovingPos = request.getSenderMovePosition();
             String senderUsername = request.getSenderUsername();
             int moveDistance = Integer.parseInt(properties.get(Properties.MOVE.getJKey()));
 
-            if (movingPos.isEmpty() || !EffectValidator.canMove(senderUsername, movingPos.get(0), moveDistance)) {
+            if (playerMovingPos == null || !EffectValidator.canMove(senderUsername, playerMovingPos, moveDistance)) {
                 return false;
             }
         }
@@ -305,16 +305,13 @@ class EffectValidator {
         // Target move validation
         List<String> targetsUsername = request.getTargetPlayersUsername();
         List<PlayerPosition> movingPos = request.getTargetPlayersMovePositions();
-        int moveDistance;
 
-        if (movingPos.isEmpty()) {
-            return false;
-        }
+        int moveDistance;
 
         if (properties.containsKey(Properties.MOVE_TARGET.getJKey())) {
             moveDistance = Integer.parseInt(properties.get(Properties.MOVE_TARGET.getJKey()));
 
-            if (!EffectValidator.canMove(targetsUsername, movingPos, moveDistance, true)) {
+            if (movingPos.isEmpty() || !EffectValidator.canMove(targetsUsername, movingPos, moveDistance, true)) {
                 return false;
             }
         }
@@ -322,7 +319,7 @@ class EffectValidator {
         if (properties.containsKey(Properties.MAX_MOVE_TARGET.getJKey())) {
             moveDistance = Integer.parseInt(properties.get(Properties.MAX_MOVE_TARGET.getJKey()));
 
-            if (!EffectValidator.canMove(targetsUsername, movingPos, moveDistance, false)) {
+            if (movingPos.isEmpty() || !EffectValidator.canMove(targetsUsername, movingPos, moveDistance, false)) {
                 return false;
             }
         }
@@ -385,10 +382,11 @@ class EffectValidator {
     static boolean isVisibilityValid(Map<String, String> properties, PlayerPosition shooterPosition, List<PlayerPosition> targetPositions) {
         return !((properties.containsKey(Properties.SAME_POSITION.getJKey()) && !areInSamePosition(targetPositions)) || // Targets Same Position
                 (properties.containsKey(Properties.VISIBLE.getJKey()) &&
-                        (!Boolean.parseBoolean(properties.get(Properties.VISIBLE.getJKey())) && !areAllInvisible(shooterPosition, targetPositions) || // Visible property == false and at least one target is visible
-                                (Boolean.parseBoolean(properties.get(Properties.VISIBLE.getJKey())) && !areAllVisible(shooterPosition, targetPositions)))) || // Visible property == true and at least one target is invisible
+                        (!Boolean.parseBoolean(properties.get(Properties.VISIBLE.getJKey())) &&
+                                !areAllInvisible(shooterPosition, targetPositions) || // Visible property == false and at least one target is visible
+                                        (Boolean.parseBoolean(properties.get(Properties.VISIBLE.getJKey())) &&
+                                                !areAllVisible(shooterPosition, targetPositions)))) || // Visible property == true and at least one target is invisible
                 (properties.containsKey(Properties.CONCATENATED_VISIBLE.getJKey()) && !areConcatenatedVisible(shooterPosition, targetPositions))); // Concatenated visibility
-
     }
 
     /**
@@ -550,8 +548,6 @@ class EffectValidator {
         } else if (properties.containsKey(Properties.MAX_TARGET_NUM.getJKey())) { // Maximum target number
             targetNumber = Integer.parseInt(properties.get(Properties.MAX_TARGET_NUM.getJKey()));
             exactNumber = false;
-        } else if (properties.containsKey(Properties.TP.getJKey())) {
-            return true;
         } else {
             throw new InvalidPropertiesException();
         }
@@ -583,8 +579,18 @@ class EffectValidator {
         UserPlayer powerupUser = Game.getInstance().getUserPlayerByUsername(request.getSenderUsername());
         int powerupIndex = request.getPowerup().get(0);
 
-        if (powerupIndex < 1 || powerupIndex > 3) {
+        if (powerupIndex < 0 || powerupIndex > 3) {
             throw new InvalidCommandException();
         } else return powerupUser.getPowerups().length >= powerupIndex;
+    }
+
+    static boolean teleporterValidator(PowerupRequest request) {
+        // TELEPORTER move is allowed only if the moving position is not the same
+        if(Game.getInstance().getPlayerByName(request.getSenderUsername()).getPosition().equals(request.getSenderMovePosition())) {
+            return false;
+        }
+
+        // then I always have to check for the powerupIndex
+        return isPowerupIndexValid(request);
     }
 }
