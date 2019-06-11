@@ -18,11 +18,8 @@ public class ConfigurationParser {
         JsonParser jp = new JsonParser();
         JsonObject jsonObject;
 
-        try {
-            InputStream is = new FileInputStream(path);
-
+        try (InputStream is = new FileInputStream(path)) {
             jsonObject = jp.parse(new InputStreamReader(is)).getAsJsonObject();
-            is.close();
         } catch (IOException e) {
             jsonObject = null;
         }

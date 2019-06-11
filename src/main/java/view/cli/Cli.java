@@ -200,7 +200,7 @@ public class Cli extends ClientGameManager {
     private int askPort(int connection) {
         boolean firstError = true;
 
-        int defaultPort = connection == 0 ? 2727 : 7272;
+        int defaultPort = (connection == 0 ? 2727 : 7272);
         out.println("\nEnter the server port (default " + defaultPort + "):");
         in.reset();
 
@@ -725,7 +725,7 @@ public class Cli extends ClientGameManager {
 
     @Override
     public void frenzyMove() {
-        out.println("FRENZY ACTION! \n");   // succhiami il cazzo sonar ti owno aggiungendo uno spazio ad ogni stringa e stai muto
+        out.println("FRENZY ACTION! \n");
         move();
     }
 

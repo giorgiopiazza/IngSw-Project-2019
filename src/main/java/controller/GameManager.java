@@ -65,7 +65,7 @@ public class GameManager implements TimerRunListener, Serializable {
      * @param server           the Server to be bind
      * @param savedGameManager the saved {@link GameManager GameManager} from which the {@link Game Game} is going to restart
      */
-    public GameManager(Server server, GameManager savedGameManager) {
+    public GameManager(Server server, GameManager savedGameManager, int lobbyTimeoutTime) {
         this.server = server;
         this.gameState = savedGameManager.gameState;
         this.lobby = null; // TODO add lobby settings if needed for players login: should be filled with messages containing the names of the players in the game
@@ -73,7 +73,7 @@ public class GameManager implements TimerRunListener, Serializable {
         this.roundManager = new RoundManager(savedGameManager);
         this.shootParameters = savedGameManager.shootParameters;
 
-        lobbyTimeoutTime = 10000;
+        this.lobbyTimeoutTime = lobbyTimeoutTime * 1000;
     }
 
     /**
@@ -169,10 +169,10 @@ public class GameManager implements TimerRunListener, Serializable {
     }
 
     /**
-     * Submethod of the class only used while during the game the {@link Server server} receives disconnection messages from
+     * Sub method of the class only used while during the game the {@link Server server} receives disconnection messages from
      * the {@link UserPlayer userPLayers} in the game
      *
-     * @param receivedConnectionMessage Message received by the server from a connectinf or disconnecting {@link UserPlayer UserPlayer}
+     * @param receivedConnectionMessage Message received by the server from a connect inf or disconnecting {@link UserPlayer UserPlayer}
      * @return a {@link Message Message} which contains the result of the received message
      */
     public Message onConnectionMessage(Message receivedConnectionMessage) {
