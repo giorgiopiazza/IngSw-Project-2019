@@ -2,8 +2,10 @@ package view.cli;
 
 import enumerations.*;
 import model.GameSerialized;
+import model.cards.Card;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
+import model.cards.effects.Effect;
 import model.player.AmmoQuantity;
 import model.player.Player;
 import model.map.*;
@@ -150,7 +152,7 @@ class CliPrinter {
         ArrayList<Player> inGamePlayers = gameSerialized.getAllPlayers();
 
         out.print(
-                        getSquareTopRow(squareRow) +
+                getSquareTopRow(squareRow) +
                         getSquareTopDecoration(squareRow) +
 
                         getSquareMidDecoration(squareRow) +
@@ -390,8 +392,12 @@ class CliPrinter {
 
         if (square.getSquareType() == SquareType.SPAWN) {
             midCentre = "  SPAWN  ";
-        } else { // TODO add isAmmoTilePresent as the AMMO identifier would disappear
-            midCentre = "  AMMO   ";
+        } else {
+            if (((CardSquare) square).isAmmoTilePresent())
+                midCentre = "  AMMO   ";
+            else {
+                midCentre = "         ";
+            }
         }
 
         return midCentre;
@@ -501,7 +507,7 @@ class CliPrinter {
     /**
      * Prints the weapons in a {@link UserPlayer UserPlayer's} hand
      *
-     * @param out        printStream where to print
+     * @param out         printStream where to print
      * @param weaponCards Array of {@link WeaponCard weapons} to be printed
      */
     static void printWeapons(AdrenalinePrintStream out, WeaponCard[] weaponCards) {
@@ -509,7 +515,7 @@ class CliPrinter {
             out.println("                    YOU HAVE NO WEAPONS                     ");
         } else {
             out.print(
-                            getWeapontTopRow(weaponCards) +
+                    getWeapontTopRow(weaponCards) +
                             addWeaponName(weaponCards) +
                             addWeaponGrabCost(weaponCards, 1) +
                             addWeaponGrabCost(weaponCards, 2) +
@@ -652,13 +658,30 @@ class CliPrinter {
         return out.toString();
     }
 
+    private static String getEffectCost(AmmoQuantity ammoQuantity) {
+        StringBuilder tempOut = new StringBuilder();
+
+        tempOut         .append((AnsiCode.getTextColorCodeByName("Red", true) + "  " + AnsiCode.RESET + " ").repeat(ammoQuantity.getRedAmmo()))
+                        .append((AnsiCode.getTextColorCodeByName("Blue", true) + "  " + AnsiCode.RESET + " ").repeat(ammoQuantity.getBlueAmmo()))
+                        .append((AnsiCode.getTextColorCodeByName("Yellow", true) + "  " + AnsiCode.RESET + " ").repeat(ammoQuantity.getYellowAmmo()));
+        if(ammoQuantity.getAmmoCount() == 0) {
+            tempOut.append("        ");
+        } else if(ammoQuantity.getAmmoCount() == 1){
+            tempOut.append("     ");
+        } else {
+            tempOut.append("  ");
+        }
+
+        return tempOut.toString();
+    }
+
     private static String addFirstEffect(WeaponCard[] weapons) {
         StringBuilder out = new StringBuilder();
 
         for (WeaponCard weapon : weapons) {
             if (weapon != null) {
                 if (!weapon.getSecondaryEffects().isEmpty()) {
-                    out.append("║         First Effect: [1]         ║     ");
+                    out.append("║ ").append(getEffectCost(weapon.getSecondaryEffects().get(0).getCost())).append("First Effect: [1]         ║     ");
                 } else {
                     out.append("║                                   ║     ");
                 }
@@ -677,7 +700,7 @@ class CliPrinter {
         for (WeaponCard weapon : weapons) {
             if (weapon != null) {
                 if (weapon.getSecondaryEffects().size() > 1) {
-                    out.append("║         Second Effect: [2]        ║     ");
+                    out.append("║ ").append(getEffectCost(weapon.getSecondaryEffects().get(1).getCost())).append("Second Effect: [2]        ║     ");
                 } else {
                     out.append("║                                   ║     ");
                 }
@@ -766,7 +789,7 @@ class CliPrinter {
             out.println("                    YOU HAVE NO POWERUPS                    ");
         } else {
             out.println(
-                            getPowerupTopRow(powerupCards) +
+                    getPowerupTopRow(powerupCards) +
                             addPowerupName(powerupCards) +
                             addPowerupLineSeparator(powerupCards) +
                             addPowerupEffect(powerupCards) +
@@ -919,33 +942,50 @@ class CliPrinter {
     }
 
     static void printAmmo(AdrenalinePrintStream out, AmmoQuantity ammo) {
-        if(ammo.noAmmo()) {
-            out.println("                    NO AMMO POOR BOY                    ");
+        if (ammo.noAmmo()) {
+            out.println("No ammo, POOR BOY");
         } else {
-            out.print(
-                            printColorAmmos(ammo.getRedAmmo(), "Red") + "\n\n" +
-                            printColorAmmos(ammo.getBlueAmmo(), "Blue") + "\n\n" +
-                            printColorAmmos(ammo.getYellowAmmo(), "Yellow") + "\n"
+            out.print("Ammo: " +
+                    printColorAmmos(ammo.getRedAmmo(), "Red") +
+                    printColorAmmos(ammo.getBlueAmmo(), "Blue") +
+                    printColorAmmos(ammo.getYellowAmmo(), "Yellow") + "\n"
             );
         }
     }
 
+    static void printUsername(AdrenalinePrintStream out, List<Player> playerList) {
+        StringBuilder tempOut = new StringBuilder();
+
+        tempOut.append("Player username: ");
+
+        for (Player player : playerList) {
+            tempOut.append(AnsiCode.getTextColorCodeByName(player.getColor().name(), false))
+                    .append(player.getUsername())
+                    .append(AnsiCode.RESET);
+
+            if (!playerList.get(playerList.size() - 1).equals(player)) {
+                tempOut.append(", ");
+            }
+        }
+
+        out.println(tempOut);
+
+    }
+
     private static String printColorAmmos(int ammoInt, String color) {
         StringBuilder tempOut = new StringBuilder();
+
         String ammoColor = AnsiCode.getTextColorCodeByName(color, true);
-
-        tempOut.append(color).append(" Ammo: ");
-
         String ammoString = (ammoColor + "  " + AnsiCode.RESET + " ").repeat(ammoInt);
 
-        return tempOut.append(ammoString).toString();
+        return tempOut.append(ammoString).append(" ").toString();
     }
 
     /**
      * Clears the console
      */
-    public static void clearConsole(AdrenalinePrintStream out) {
-        out.print("\033[H\033[2J");
+    static void clearConsole(AdrenalinePrintStream out) {
+        out.print(AnsiCode.CLEAR_CONSOLE);
         out.flush();
     }
 }

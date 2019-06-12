@@ -200,7 +200,7 @@ public class Cli extends ClientGameManager {
     private int askPort(int connection) {
         boolean firstError = true;
 
-        int defaultPort = connection == 0 ? 2727 : 7272;
+        int defaultPort = (connection == 0 ? 2727 : 7272);
         out.println("\nEnter the server port (default " + defaultPort + "):");
         in.reset();
 
@@ -493,7 +493,7 @@ public class Cli extends ClientGameManager {
             choose = readInt(0, weapon.getSecondaryEffects().size());
         } while (choose < 0 || choose > weapon.getSecondaryEffects().size());
 
-        return readInt();
+        return choose;
     }
 
     private ArrayList<Integer> askPaymentPowerups() {
@@ -725,7 +725,7 @@ public class Cli extends ClientGameManager {
 
     @Override
     public void frenzyMove() {
-        out.println("FRENZY ACTION! \n");   // succhiami il cazzo sonar ti owno aggiungendo uno spazio ad ogni stringa e stai muto
+        out.println("FRENZY ACTION! \n");
         move();
     }
 
@@ -974,7 +974,7 @@ public class Cli extends ClientGameManager {
     public PossibleAction askAction() {
         int choose;
         List<PossibleAction> possibleActions = getPossibleActions();
-
+        printUsername();
         printAmmo();
         out.println();
         printPowerupsNum();
@@ -1010,8 +1010,8 @@ public class Cli extends ClientGameManager {
         Map<String, String> effectProperties = baseEffect.getProperties();
 
         if (effectProperties.containsKey(TP)) {
-            powerupRequestBuilder.targetPlayersUsername(new ArrayList<>(List.of(getUsername())));
-            powerupRequestBuilder.targetPlayersMovePositions(new ArrayList<>(List.of(askCoordinates())));
+            out.println("Choose your teleporting position:");
+            powerupRequestBuilder.senderMovePosition(askCoordinates());
         }
 
         if (effectProperties.containsKey(MAX_MOVE_TARGET)) {
@@ -1161,6 +1161,14 @@ public class Cli extends ClientGameManager {
         CliPrinter.printMap(out, getGameSerialized());
     }
 
+    private void printUsername() {
+        CliPrinter.printUsername(out, getPlayers()
+                .stream()
+                .filter(p -> !p.getUsername().equals(getUsername()))
+                .collect(Collectors.toList()));
+        out.println();
+    }
+
     private void printPowerups() {
         CliPrinter.printPowerups(out, getPowerups().toArray(PowerupCard[]::new));
     }
@@ -1192,15 +1200,19 @@ public class Cli extends ClientGameManager {
 
         do {
             out.print(">>> ");
+            if(in.hasNextLine()) {
+                try {
+                    choose = Integer.valueOf(in.nextLine());
 
-            try {
-                choose = Integer.valueOf(in.nextLine());
+                    if (choose >= minVal && choose <= maxVal) accepted = true;
+                    else firstError = promptInputError(firstError, "Not valid input!");
 
-                if (choose >= minVal && choose <= maxVal) accepted = true;
-                else firstError = promptInputError(firstError, "Not valid input!");
-
-            } catch (NumberFormatException e) {
-                promptInputError(firstError, "Not valid input!");
+                } catch (NumberFormatException e) {
+                    promptInputError(firstError, "Not valid input!");
+                }
+            } else {
+                firstError = promptInputError(firstError, "Invalid integer!");
+                in.nextLine();
             }
         } while (!accepted);
 

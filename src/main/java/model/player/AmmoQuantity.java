@@ -55,7 +55,7 @@ public class AmmoQuantity implements Serializable {
         return redAmmo;
     }
 
-    public void addRedAmmo() {
+    void addRedAmmo() {
         if (redAmmo < 3) {
             redAmmo++;
         }
@@ -65,7 +65,7 @@ public class AmmoQuantity implements Serializable {
         return blueAmmo;
     }
 
-    public void addBlueAmmo() {
+    void addBlueAmmo() {
         if (blueAmmo < 3) {
             blueAmmo++;
         }
@@ -75,10 +75,14 @@ public class AmmoQuantity implements Serializable {
         return yellowAmmo;
     }
 
-    public void addYellowAmmo() {
+    void addYellowAmmo() {
         if (yellowAmmo < 3) {
             yellowAmmo++;
         }
+    }
+
+    public int getAmmoCount() {
+        return redAmmo + blueAmmo + yellowAmmo;
     }
 
     public boolean noAmmo() {
@@ -100,7 +104,7 @@ public class AmmoQuantity implements Serializable {
         return Objects.hash(redAmmo, blueAmmo, yellowAmmo);
     }
 
-    public AmmoQuantity difference(AmmoQuantity ammoQuantity) throws NotEnoughAmmoException {
+    AmmoQuantity difference(AmmoQuantity ammoQuantity) throws NotEnoughAmmoException {
         if (ammoQuantity == null) {
             throw new NullPointerException();
         }

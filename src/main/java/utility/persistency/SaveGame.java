@@ -35,7 +35,7 @@ public class SaveGame {
         }
     }
 
-    public static GameManager loadGame(Server server) {
+    public static GameManager loadGame(Server server, int startTime) {
         PersistencyClass persistencyClass;
 
         try (FileInputStream gameSaved = new FileInputStream(new File("gameSaved.adrenaline"))) {
@@ -45,7 +45,7 @@ public class SaveGame {
             persistencyClass = (PersistencyClass) inGame.readObject();
 
             // then I restart the beginning class of each Game
-            GameManager newGameManager = new GameManager(server, persistencyClass.getGameManager());
+            GameManager newGameManager = new GameManager(server, persistencyClass.getGameManager(), startTime);
 
             // in the end I set back the state of the real Game
             newGameManager.getGameInstance().loadGame(persistencyClass.getGameManager().getGameInstance(), persistencyClass.getPlayersCopy());

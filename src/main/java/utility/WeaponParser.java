@@ -141,7 +141,7 @@ public class WeaponParser {
                     targetType);
         }
 
-        if (properties.has(Properties.MOVE.getJKey())) {
+        if (properties.has(Properties.MOVE.getJKey()) || properties.has(Properties.TP.getJKey())) {
             effect = new ExtraMoveDecorator(effect, MoveTarget.PLAYER);
         }
 

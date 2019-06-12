@@ -12,6 +12,7 @@ import model.cards.Deck;
 import model.cards.PowerupCard;
 import model.cards.effects.Effect;
 import model.cards.effects.PowerupBaseEffect;
+import model.player.AmmoQuantity;
 
 import java.io.File;
 import java.io.InputStream;
@@ -86,7 +87,8 @@ public class PowerupParser {
         Effect effect;
 
         if (jsonObject.has("cost")) {
-            effect = new PowerupBaseEffect(jsonObject.get("cost").getAsBoolean(), powerupProperties, target, description);
+            effect = new PowerupBaseEffect((jsonObject.get("cost").getAsBoolean()) ? new AmmoQuantity(1, 0, 0) : new AmmoQuantity(),
+                    powerupProperties, target, description);
         } else {
             effect = new PowerupBaseEffect(powerupProperties, target, description);
         }

@@ -10,7 +10,7 @@ public class ClientMain {
             new Cli().start();
         } else {
             new Cli().start();
-            Application.launch(Gui.class);
+            // Application.launch(Gui.class);
         }
     }
 }

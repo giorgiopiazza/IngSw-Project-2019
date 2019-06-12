@@ -1,10 +1,11 @@
 package network.server;
 
+import com.google.gson.JsonObject;
 import controller.GameManager;
-import enumerations.MessageContent;
 import enumerations.MessageStatus;
 import model.Game;
 import network.message.*;
+import utility.ConfigurationParser;
 import utility.persistency.SaveGame;
 
 import java.io.IOException;
@@ -18,11 +19,12 @@ import java.util.stream.Collectors;
  * It handles all the client regardless of whether they are Sockets or RMI
  */
 public class Server implements Runnable {
-    private static final int SOCKET_PORT = 2727;
-    private static final int RMI_PORT = 7272;
+    private final int SOCKET_PORT;
+    private final int RMI_PORT;
 
     private static final int MAX_CLIENT = 5;
     private static final String[] FORBIDDEN_USERNAME = {Game.GOD, Game.BOT};
+    private static final String DEFAULT_CONF_FILE_PATH = "conf.json";
 
     private Map<String, Connection> clients;
 
@@ -30,8 +32,29 @@ public class Server implements Runnable {
 
     public static final Logger LOGGER = Logger.getLogger("Server");
 
-    private Server(boolean terminator, int skullNum) {
-        clients = new HashMap<>();
+    private int startTime;
+    private int moveTime;
+
+    private Server(String confFilePath) {
+        JsonObject jo = ConfigurationParser.parseConfiguration(confFilePath);
+
+        if (jo == null) {
+            SOCKET_PORT = 0;
+            gameManager = null;
+            RMI_PORT = 0;
+            LOGGER.log(Level.SEVERE, "Configuration file not found: {0}", confFilePath);
+            return;
+        }
+
+        startTime = jo.get("start_time").getAsInt();
+        moveTime = jo.get("move_time").getAsInt();
+        SOCKET_PORT = jo.get("socket_port").getAsInt();
+        RMI_PORT = jo.get("rmi_port").getAsInt();
+
+        LOGGER.log(Level.INFO, "Start time : {0}", startTime);
+        LOGGER.log(Level.INFO, "Move time : {0}", moveTime);
+        LOGGER.log(Level.INFO, "Socket port : {0}", SOCKET_PORT);
+        LOGGER.log(Level.INFO, "Rmi port : {0}", RMI_PORT);
 
         SocketServer serverSocket = new SocketServer(this, SOCKET_PORT);
         serverSocket.startServer();
@@ -43,13 +66,35 @@ public class Server implements Runnable {
 
         LOGGER.info("RMI Server Started");
 
-        Thread pinger = new Thread(this);
-        pinger.start();
+        gameManager = SaveGame.loadGame(this, startTime);
 
-        gameManager = new GameManager(this, terminator, skullNum);
+        Thread pingThread = new Thread(this);
+        pingThread.start();
     }
 
-    private Server() {
+    public Server(boolean terminator, int skullNum, String confFilePath) {
+        clients = new HashMap<>();
+
+        JsonObject jo = ConfigurationParser.parseConfiguration(confFilePath);
+
+        if (jo == null) {
+            RMI_PORT = 0;
+            gameManager = null;
+            SOCKET_PORT = 0;
+            LOGGER.log(Level.SEVERE, "Configuration file not found: {0}", confFilePath);
+            return;
+        }
+
+        startTime = jo.get("start_time").getAsInt();
+        moveTime = jo.get("move_time").getAsInt();
+        SOCKET_PORT = jo.get("socket_port").getAsInt();
+        RMI_PORT = jo.get("rmi_port").getAsInt();
+
+        LOGGER.log(Level.INFO, "Start time : {0}", startTime);
+        LOGGER.log(Level.INFO, "Move time : {0}", moveTime);
+        LOGGER.log(Level.INFO, "Socket port : {0}", SOCKET_PORT);
+        LOGGER.log(Level.INFO, "Rmi port : {0}", RMI_PORT);
+
         SocketServer serverSocket = new SocketServer(this, SOCKET_PORT);
         serverSocket.startServer();
 
@@ -60,14 +105,14 @@ public class Server implements Runnable {
 
         LOGGER.info("RMI Server Started");
 
-        Thread pinger = new Thread(this);
-        pinger.start();
+        gameManager = new GameManager(this, terminator, skullNum, startTime);
 
-        gameManager = SaveGame.loadGame(this);
+        Thread pingThread = new Thread(this);
+        pingThread.start();
     }
 
     public static void main(String[] args) {
-        String confFilePath = "default/path";
+        String confFilePath = DEFAULT_CONF_FILE_PATH;
         boolean terminator = false;
         int skullNum = 5;
         boolean reloadGame = false;
@@ -99,14 +144,11 @@ public class Server implements Runnable {
                     }
                 }
             }
-        } else {
-            new Server(terminator,  skullNum);
-            return;
         }
 
         // if the starting command contains -r it means that a game is going to be reloaded
         if(reloadGame) {
-            new Server();
+            new Server(confFilePath);
             return;
         }
 
@@ -115,8 +157,7 @@ public class Server implements Runnable {
             skullNum = 5;
         }
 
-        // TODO pass confFilePath as it can be parsed in the server and used to set parameters
-        new Server(terminator, skullNum);
+        new Server(terminator, skullNum, confFilePath);
     }
 
     /**

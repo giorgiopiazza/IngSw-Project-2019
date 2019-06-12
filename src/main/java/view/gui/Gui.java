@@ -156,7 +156,7 @@ public class Gui extends Application {
             Scene scene = window.getScene();
 
             ImageView backButton = (ImageView) scene.lookup("#backButton");
-            backButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> setConnectionLayout());
+            backButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> closeConnection());
 
             ImageView yellowCard = (ImageView) scene.lookup("#yellowCard");
             yellowCard.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> tryJoinLobby(PlayerColor.YELLOW));
@@ -216,7 +216,13 @@ public class Gui extends Application {
             Scene scene = window.getScene();
 
             ImageView backButton = (ImageView) scene.lookup("#backButton");
-            backButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> setConnectionLayout());
+            backButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> closeConnection());
+        }
+    }
+
+    private void setBoardLayout() {
+        if (setLayout("fxml/lobbyScene.fxml")) {
+
         }
     }
 
@@ -231,6 +237,11 @@ public class Gui extends Application {
             return false;
         }
         return true;
+    }
+
+    private void closeConnection() {
+        // TODO Close Connection
+        setConnectionLayout();
     }
 
     private void showDialog(String title, String text) {

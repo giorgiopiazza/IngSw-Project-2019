@@ -755,7 +755,7 @@
             "damageDistribution": [3],
             "distance": 0,
             "maxMoveTarget": 2,
-            "moveInline": true,
+            "moveInLine": true,
             "moveTargetBefore": false
           }
         }

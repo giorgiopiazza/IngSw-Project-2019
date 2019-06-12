@@ -60,7 +60,11 @@ public class ClientSocket extends Client implements Runnable {
     public void sendMessage(Message message) throws IOException {
         if (out != null) {
             out.writeObject(message);
-            out.reset();
+            try {
+                out.reset();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

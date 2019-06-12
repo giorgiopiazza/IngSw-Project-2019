@@ -285,7 +285,10 @@ public class GameMap implements Serializable {
                         fillWithAmmoTile(tempSquare);
                         break;
                     case SPAWN:
-                        for(int k = 0; k < getMissingCards((SpawnSquare) tempSquare); ++k) ((SpawnSquare) tempSquare).addWeapon((WeaponCard) Game.getInstance().getWeaponsCardsDeck().draw());
+                        int missingWeapons = getMissingCards((SpawnSquare) tempSquare);
+                        for (int k = 0; k < missingWeapons; ++k) {
+                            ((SpawnSquare) tempSquare).addWeapon((WeaponCard) Game.getInstance().getWeaponsCardsDeck().draw());
+                        }
                         break;
                     default:
                         throw new NullPointerException("A Square must always have a type!");
@@ -302,8 +305,8 @@ public class GameMap implements Serializable {
 
     private int getMissingCards(SpawnSquare spawnSquare) {
         int nullCounter = 0;
-        for(int i = 0; i < 3; ++i) {
-            if(spawnSquare.getWeapons()[i] == null) ++nullCounter;
+        for (int i = 0; i < 3; ++i) {
+            if (spawnSquare.getWeapons()[i] == null) ++nullCounter;
         }
 
         return nullCounter;

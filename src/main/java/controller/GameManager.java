@@ -45,15 +45,17 @@ public class GameManager implements TimerRunListener, Serializable {
      * Creates an instance of {@link GameManager GameManager} binding the server tha will send messages to him
      *
      * @param server the Server to be bind
+     * @param skullNum number of skulls in this game
+     * @param startTime the lobby timeout time in seconds
      */
-    public GameManager(Server server, boolean terminator, int skullNum) {
+    public GameManager(Server server, boolean terminator, int skullNum, int startTime) {
         this.server = server;
         this.gameState = PossibleGameState.GAME_ROOM;
         this.lobby = new GameLobby(terminator, skullNum);
         this.gameInstance = Game.getInstance();
         this.roundManager = new RoundManager(this);
 
-        lobbyTimeoutTime = 10000;
+        lobbyTimeoutTime = startTime * 1000;
     }
 
     /**
@@ -63,7 +65,7 @@ public class GameManager implements TimerRunListener, Serializable {
      * @param server           the Server to be bind
      * @param savedGameManager the saved {@link GameManager GameManager} from which the {@link Game Game} is going to restart
      */
-    public GameManager(Server server, GameManager savedGameManager) {
+    public GameManager(Server server, GameManager savedGameManager, int lobbyTimeoutTime) {
         this.server = server;
         this.gameState = savedGameManager.gameState;
         this.lobby = null; // TODO add lobby settings if needed for players login: should be filled with messages containing the names of the players in the game
@@ -71,7 +73,7 @@ public class GameManager implements TimerRunListener, Serializable {
         this.roundManager = new RoundManager(savedGameManager);
         this.shootParameters = savedGameManager.shootParameters;
 
-        lobbyTimeoutTime = 10000;
+        this.lobbyTimeoutTime = lobbyTimeoutTime * 1000;
     }
 
     /**
@@ -167,10 +169,10 @@ public class GameManager implements TimerRunListener, Serializable {
     }
 
     /**
-     * Submethod of the class only used while during the game the {@link Server server} receives disconnection messages from
+     * Sub method of the class only used while during the game the {@link Server server} receives disconnection messages from
      * the {@link UserPlayer userPLayers} in the game
      *
-     * @param receivedConnectionMessage Message received by the server from a connectinf or disconnecting {@link UserPlayer UserPlayer}
+     * @param receivedConnectionMessage Message received by the server from a connect inf or disconnecting {@link UserPlayer UserPlayer}
      * @return a {@link Message Message} which contains the result of the received message
      */
     public Message onConnectionMessage(Message receivedConnectionMessage) {
@@ -571,7 +573,7 @@ public class GameManager implements TimerRunListener, Serializable {
         }
 
         // at this point gme should always be ready to start
-        if (gameInstance.isGameReadyToStart() && (lobby.getInLobbyPlayers().size() >= MIN_PLAYERS || lobby.getInLobbyPlayers().size() >= MIN_PLAYERS && lobby.getTerminatorPresence())) {    // TODO add here control that before 10s ended someone disconnected from the lobby ?
+        if (gameInstance.isGameReadyToStart() && (lobby.getInLobbyPlayers().size() >= MIN_PLAYERS || lobby.getInLobbyPlayers().size() >= MIN_PLAYERS && lobby.getTerminatorPresence())) {
             startingStateHandler();
         }
         // nothing to do here as we said game should always be ready to start at this point
@@ -686,7 +688,7 @@ public class GameManager implements TimerRunListener, Serializable {
     private boolean checkStartedLobby() {
         ArrayList<LobbyMessage> inLobbyPlayers = lobby.getInLobbyPlayers();
 
-        if(inLobbyPlayers.size() < MIN_PLAYERS) {       // TODO verify if terminator counts
+        if(inLobbyPlayers.size() < MIN_PLAYERS) {
             endGame();
             return true;
         } else {
