@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
  * It handles all the client regardless of whether they are Sockets or RMI
  */
 public class Server implements Runnable {
-    private static final int SOCKET_PORT = 2727;
-    private static final int RMI_PORT = 7272;
+    private final int SOCKET_PORT;
+    private final int RMI_PORT;
 
     private static final int MAX_CLIENT = 5;
     private static final String[] FORBIDDEN_USERNAME = {Game.GOD, Game.BOT};
@@ -39,16 +39,22 @@ public class Server implements Runnable {
         JsonObject jo = ConfigurationParser.parseConfiguration(confFilePath);
 
         if (jo == null) {
+            SOCKET_PORT = 0;
             gameManager = null;
+            RMI_PORT = 0;
             LOGGER.log(Level.SEVERE, "Configuration file not found: {0}", confFilePath);
             return;
         }
 
         startTime = jo.get("start_time").getAsInt();
         moveTime = jo.get("move_time").getAsInt();
+        SOCKET_PORT = jo.get("socket_port").getAsInt();
+        RMI_PORT = jo.get("rmi_port").getAsInt();
 
         LOGGER.log(Level.INFO, "Start time : {0}", startTime);
         LOGGER.log(Level.INFO, "Move time : {0}", moveTime);
+        LOGGER.log(Level.INFO, "Socket port : {0}", SOCKET_PORT);
+        LOGGER.log(Level.INFO, "Rmi port : {0}", RMI_PORT);
 
         SocketServer serverSocket = new SocketServer(this, SOCKET_PORT);
         serverSocket.startServer();
@@ -72,16 +78,22 @@ public class Server implements Runnable {
         JsonObject jo = ConfigurationParser.parseConfiguration(confFilePath);
 
         if (jo == null) {
+            RMI_PORT = 0;
             gameManager = null;
+            SOCKET_PORT = 0;
             LOGGER.log(Level.SEVERE, "Configuration file not found: {0}", confFilePath);
             return;
         }
 
         startTime = jo.get("start_time").getAsInt();
         moveTime = jo.get("move_time").getAsInt();
+        SOCKET_PORT = jo.get("socket_port").getAsInt();
+        RMI_PORT = jo.get("rmi_port").getAsInt();
 
         LOGGER.log(Level.INFO, "Start time : {0}", startTime);
         LOGGER.log(Level.INFO, "Move time : {0}", moveTime);
+        LOGGER.log(Level.INFO, "Socket port : {0}", SOCKET_PORT);
+        LOGGER.log(Level.INFO, "Rmi port : {0}", RMI_PORT);
 
         SocketServer serverSocket = new SocketServer(this, SOCKET_PORT);
         serverSocket.startServer();
