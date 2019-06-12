@@ -81,6 +81,10 @@ public class AmmoQuantity implements Serializable {
         }
     }
 
+    public int getAmmoCount() {
+        return redAmmo + blueAmmo + yellowAmmo;
+    }
+
     public boolean noAmmo() {
         return redAmmo == 0 && blueAmmo == 0 && yellowAmmo == 0;
     }

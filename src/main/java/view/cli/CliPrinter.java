@@ -5,6 +5,7 @@ import model.GameSerialized;
 import model.cards.Card;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
+import model.cards.effects.Effect;
 import model.player.AmmoQuantity;
 import model.player.Player;
 import model.map.*;
@@ -657,13 +658,30 @@ class CliPrinter {
         return out.toString();
     }
 
+    private static String getEffectCost(AmmoQuantity ammoQuantity) {
+        StringBuilder tempOut = new StringBuilder();
+
+        tempOut         .append((AnsiCode.getTextColorCodeByName("Red", true) + "  " + AnsiCode.RESET + " ").repeat(ammoQuantity.getRedAmmo()))
+                        .append((AnsiCode.getTextColorCodeByName("Blue", true) + "  " + AnsiCode.RESET + " ").repeat(ammoQuantity.getBlueAmmo()))
+                        .append((AnsiCode.getTextColorCodeByName("Yellow", true) + "  " + AnsiCode.RESET + " ").repeat(ammoQuantity.getYellowAmmo()));
+        if(ammoQuantity.getAmmoCount() == 0) {
+            tempOut.append("        ");
+        } else if(ammoQuantity.getAmmoCount() == 1){
+            tempOut.append("     ");
+        } else {
+            tempOut.append("  ");
+        }
+
+        return tempOut.toString();
+    }
+
     private static String addFirstEffect(WeaponCard[] weapons) {
         StringBuilder out = new StringBuilder();
 
         for (WeaponCard weapon : weapons) {
             if (weapon != null) {
                 if (!weapon.getSecondaryEffects().isEmpty()) {
-                    out.append("║         First Effect: [1]         ║     ");
+                    out.append("║ ").append(getEffectCost(weapon.getSecondaryEffects().get(0).getCost())).append("First Effect: [1]         ║     ");
                 } else {
                     out.append("║                                   ║     ");
                 }
@@ -682,7 +700,7 @@ class CliPrinter {
         for (WeaponCard weapon : weapons) {
             if (weapon != null) {
                 if (weapon.getSecondaryEffects().size() > 1) {
-                    out.append("║         Second Effect: [2]        ║     ");
+                    out.append("║ ").append(getEffectCost(weapon.getSecondaryEffects().get(1).getCost())).append("Second Effect: [2]        ║     ");
                 } else {
                     out.append("║                                   ║     ");
                 }
