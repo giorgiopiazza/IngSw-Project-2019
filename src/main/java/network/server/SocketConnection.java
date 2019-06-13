@@ -16,6 +16,9 @@ class SocketConnection extends Connection implements Runnable {
     private final SocketServer socketServer;
     private final Socket socket;
 
+    private final Object outLock = new Object();
+    private final Object inLock = new Object();
+
     private boolean connected;
 
     private ObjectInputStream in;
@@ -36,8 +39,13 @@ class SocketConnection extends Connection implements Runnable {
         this.connected = true;
 
         try {
-            this.in = new ObjectInputStream(socket.getInputStream());
-            this.out = new ObjectOutputStream(socket.getOutputStream());
+            synchronized (inLock) {
+                this.in = new ObjectInputStream(socket.getInputStream());
+            }
+
+            synchronized (outLock) {
+                this.out = new ObjectOutputStream(socket.getOutputStream());
+            }
         } catch (IOException e) {
             Server.LOGGER.severe(e.toString());
         }
@@ -54,16 +62,20 @@ class SocketConnection extends Connection implements Runnable {
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                Message message = (Message) in.readObject();
-                if (message != null) {
-                    if (message.getContent() == MessageContent.CONNECTION) {
-                        socketServer.login(message.getSenderUsername(), this);
-                    } else {
-                        socketServer.onMessage(message);
+                synchronized (inLock) {
+                    Message message = (Message) in.readObject();
+
+                    if (message != null) {
+                        if (message.getContent() == MessageContent.CONNECTION) {
+                            socketServer.login(message.getSenderUsername(), this);
+                        } else {
+                            socketServer.onMessage(message);
+                        }
                     }
                 }
             } catch (IOException e) {
                 disconnect();
+                Server.LOGGER.severe(e.getMessage());
             } catch (ClassNotFoundException e) {
                 Server.LOGGER.severe(e.getMessage());
             }
@@ -87,16 +99,13 @@ class SocketConnection extends Connection implements Runnable {
     public void sendMessage(Message message) {
         if (connected) {
             try {
-                out.writeObject(message);
+                synchronized (outLock) {
+                    out.writeObject(message);
+                    out.reset();
+                }
             } catch (IOException e) {
-                e.printStackTrace();
+                Server.LOGGER.severe(e.getMessage());
                 disconnect();
-            }
-
-            try {
-                out.reset();
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }
