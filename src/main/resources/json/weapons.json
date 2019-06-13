@@ -233,7 +233,7 @@
       "effects": [
         {
           "id": 0,
-          "description": "Move a target 0, 1, or 2 squares to a square you can see, and give it 1 damage.                    ",
+          "description": "Move a target 0, 1, or 2 moves far from you to a square you can see, and give it 1 damage.         ",
           "properties": {
             "visible": true,
 			"target": ["PLAYER"],
@@ -499,18 +499,18 @@
           "cost": ["YELLOW"],
           "properties": {
             "visible": true,
-            "target": ["SQUARE","PLAYER"],
+            "target": ["PLAYER","SQUARE"],
             "samePosition": true,
             "subEffects": [{
-              "targetNum": 1,
-              "damageDistribution": [1],
-              "minDistance": 1
-            }, {
               "targetNum": 1,
               "damageDistribution": [2],
               "minDistance": 1,
               "maxMoveTarget": 1,
               "moveTargetBefore": false
+            }, {
+              "targetNum": 1,
+              "damageDistribution": [1],
+              "minDistance": 1
             }]
           }
         },
@@ -521,18 +521,18 @@
           "properties": {
             "visible": true,
             "move": 2,
-            "target": ["SQUARE","PLAYER"],
+            "target": ["PLAYER","SQUARE"],
             "samePosition": true,
             "subEffects": [{
-              "targetNum": 1,
-              "damageDistribution": [1],
-              "minDistance": 1
-            }, {
               "targetNum": 1,
               "damageDistribution": [2],
               "minDistance": 1,
               "maxMoveTarget": 1,
               "moveTargetBefore": false
+            }, {
+              "targetNum": 1,
+              "damageDistribution": [1],
+              "minDistance": 1
             }]
           }
         }
