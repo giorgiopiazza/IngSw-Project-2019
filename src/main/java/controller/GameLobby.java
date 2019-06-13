@@ -1,6 +1,7 @@
 package controller;
 
 import enumerations.PlayerColor;
+import exceptions.game.MaxPlayerException;
 import network.message.GameSetupMessage;
 import network.message.LobbyMessage;
 
@@ -16,7 +17,7 @@ public class GameLobby implements Serializable {
     private boolean terminator;
     private int skullNum;
 
-    GameLobby (boolean terminator, int skullNum) {
+    GameLobby(boolean terminator, int skullNum) {
         this.inLobbyPlayers = new ArrayList<>();
         this.votedPlayers = new ArrayList<>();
 
@@ -25,26 +26,33 @@ public class GameLobby implements Serializable {
     }
 
     void addPlayer(LobbyMessage inLobbyPlayer) {
-        this.inLobbyPlayers.add(inLobbyPlayer);
+        if (isLobbyFull()) {
+            throw new MaxPlayerException();
+        }
+
+        inLobbyPlayers.add(inLobbyPlayer);
     }
 
     ArrayList<LobbyMessage> getInLobbyPlayers() {
-        return this.inLobbyPlayers;
+        return inLobbyPlayers;
     }
 
     void addPlayerVote(GameSetupMessage votedPlayer) {
-        this.votedPlayers.add(votedPlayer);
+        if (inLobbyPlayers.stream().anyMatch(lm -> lm.getSenderUsername().equals(votedPlayer.getSenderUsername())
+                && votedPlayers.stream().noneMatch(gsm -> lm.getSenderUsername().equals(votedPlayer.getSenderUsername())))) {
+            votedPlayers.add(votedPlayer);
+        }
     }
 
     ArrayList<GameSetupMessage> getVotedPlayers() {
-        return this.votedPlayers;
+        return votedPlayers;
     }
 
     Integer getFavouriteMap() {
-        if(!votedPlayers.isEmpty()) {
+        if (!votedPlayers.isEmpty()) {
             ArrayList<Integer> playersVotes = new ArrayList<>();
 
-            for(GameSetupMessage mapVote : votedPlayers) {
+            for (GameSetupMessage mapVote : votedPlayers) {
                 playersVotes.add(mapVote.getMapVote());
             }
 
@@ -79,5 +87,10 @@ public class GameLobby implements Serializable {
         }
 
         return unusedColorsList;
+    }
+
+    boolean isLobbyFull() {
+        return (terminator && inLobbyPlayers.size() == 4 ||
+                !terminator && inLobbyPlayers.size() == 5);
     }
 }

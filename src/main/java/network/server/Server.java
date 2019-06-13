@@ -19,10 +19,9 @@ import java.util.stream.Collectors;
  * It handles all the client regardless of whether they are Sockets or RMI
  */
 public class Server implements Runnable {
-    private final int SOCKET_PORT;
-    private final int RMI_PORT;
+    private final int socketPort;
+    private final int rmiPort;
 
-    private static final int MAX_CLIENT = 5;
     private static final String[] FORBIDDEN_USERNAME = {Game.GOD, Game.BOT};
     private static final String DEFAULT_CONF_FILE_PATH = "conf.json";
 
@@ -39,29 +38,29 @@ public class Server implements Runnable {
         JsonObject jo = ConfigurationParser.parseConfiguration(confFilePath);
 
         if (jo == null) {
-            SOCKET_PORT = 0;
+            socketPort = 0;
             gameManager = null;
-            RMI_PORT = 0;
+            rmiPort = 0;
             LOGGER.log(Level.SEVERE, "Configuration file not found: {0}", confFilePath);
             return;
         }
 
         startTime = jo.get("start_time").getAsInt();
         moveTime = jo.get("move_time").getAsInt();
-        SOCKET_PORT = jo.get("socket_port").getAsInt();
-        RMI_PORT = jo.get("rmi_port").getAsInt();
+        socketPort = jo.get("socket_port").getAsInt();
+        rmiPort = jo.get("rmi_port").getAsInt();
 
         LOGGER.log(Level.INFO, "Start time : {0}", startTime);
         LOGGER.log(Level.INFO, "Move time : {0}", moveTime);
-        LOGGER.log(Level.INFO, "Socket port : {0}", SOCKET_PORT);
-        LOGGER.log(Level.INFO, "Rmi port : {0}", RMI_PORT);
+        LOGGER.log(Level.INFO, "Socket port : {0}", socketPort);
+        LOGGER.log(Level.INFO, "Rmi port : {0}", rmiPort);
 
-        SocketServer serverSocket = new SocketServer(this, SOCKET_PORT);
+        SocketServer serverSocket = new SocketServer(this, socketPort);
         serverSocket.startServer();
 
         LOGGER.info("Socket Server Started");
 
-        RMIServer rmiServer = new RMIServer(this, RMI_PORT);
+        RMIServer rmiServer = new RMIServer(this, rmiPort);
         rmiServer.startServer();
 
         LOGGER.info("RMI Server Started");
@@ -78,29 +77,29 @@ public class Server implements Runnable {
         JsonObject jo = ConfigurationParser.parseConfiguration(confFilePath);
 
         if (jo == null) {
-            RMI_PORT = 0;
+            rmiPort = 0;
             gameManager = null;
-            SOCKET_PORT = 0;
+            socketPort = 0;
             LOGGER.log(Level.SEVERE, "Configuration file not found: {0}", confFilePath);
             return;
         }
 
         startTime = jo.get("start_time").getAsInt();
         moveTime = jo.get("move_time").getAsInt();
-        SOCKET_PORT = jo.get("socket_port").getAsInt();
-        RMI_PORT = jo.get("rmi_port").getAsInt();
+        socketPort = jo.get("socket_port").getAsInt();
+        rmiPort = jo.get("rmi_port").getAsInt();
 
         LOGGER.log(Level.INFO, "Start time : {0}", startTime);
         LOGGER.log(Level.INFO, "Move time : {0}", moveTime);
-        LOGGER.log(Level.INFO, "Socket port : {0}", SOCKET_PORT);
-        LOGGER.log(Level.INFO, "Rmi port : {0}", RMI_PORT);
+        LOGGER.log(Level.INFO, "Socket port : {0}", socketPort);
+        LOGGER.log(Level.INFO, "Rmi port : {0}", rmiPort);
 
-        SocketServer serverSocket = new SocketServer(this, SOCKET_PORT);
+        SocketServer serverSocket = new SocketServer(this, socketPort);
         serverSocket.startServer();
 
         LOGGER.info("Socket Server Started");
 
-        RMIServer rmiServer = new RMIServer(this, RMI_PORT);
+        RMIServer rmiServer = new RMIServer(this, rmiPort);
         rmiServer.startServer();
 
         LOGGER.info("RMI Server Started");
@@ -189,8 +188,14 @@ public class Server implements Runnable {
                     LOGGER.log(Level.INFO, "{0} already connected to server!", username);
                 }
             } else {
-                if (clients.keySet().size() == MAX_CLIENT) { // Max players
-                    // TODO FIX THIS
+                if (gameManager.getGameInstance().isGameStarted()) {
+                    connection.sendMessage(
+                            new ConnectionResponse("Game is already started!", null, MessageStatus.ERROR)
+                    );
+
+                    connection.disconnect();
+                    LOGGER.log(Level.INFO, "{0} attempted to connect!", username);
+                } else if (gameManager.isLobbyFull()) { // Max players
                     connection.sendMessage(
                             new ConnectionResponse("Max number of player reached", null, MessageStatus.ERROR)
                     );
@@ -272,6 +277,11 @@ public class Server implements Runnable {
             sendMessageToAll(new DisconnectionMessage(username));
             gameManager.onMessage(new LobbyMessage(username, null, null, true));
             LOGGER.log(Level.INFO, "{0} disconnected from server!", username);
+
+            if (!gameManager.getGameInstance().isGameStarted()) {
+                clients.remove(username);
+                LOGGER.log(Level.INFO, "{0} removed from client list!", username);
+            }
         }
     }
 
