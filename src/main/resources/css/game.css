@@ -1,0 +1,123 @@
+@font-face {
+    src: url("../fonts/ethnocentric-rg.ttf");
+}
+
+@font-face {
+    src: url("../fonts/ethnocentric-rg-it.ttf");
+}
+
+@font-face {
+    src: url("../fonts/Exo2-Black.ttf");
+}
+
+@font-face {
+    src: url("../fonts/Exo2-Medium.ttf");
+}
+
+.mainPane {
+    -fx-background-image: url("../img/scenes/bg.png");
+}
+
+.boardArea {
+    -fx-max-height: 750px;
+    -fx-min-height: 750px;
+
+    -fx-max-width: 1000px;
+    -fx-min-width: 1000px;
+}
+
+.map {
+    -fx-effect: dropshadow(gaussian, #FFFFFF, 15, 0.3, 0, 0);
+}
+
+.powerupDeck {
+    -fx-image: url("../img/powerups/powerup_back.png");
+}
+
+.weaponDeck {
+    -fx-image: url("../img/weapons/weapon_back.png");
+}
+
+.blueWeapon {
+    -fx-rotate: 0deg;
+}
+
+.redWeapon {
+    -fx-rotate: 270deg;
+}
+
+.yellowWeapon {
+    -fx-rotate: 90deg;
+}
+
+#blueWeapon0 {
+    -fx-image: url("../img/weapons/thor.png");
+}
+
+#blueWeapon1 {
+    -fx-image: url("../img/weapons/furnace.png");
+}
+
+#blueWeapon2 {
+    -fx-image: url("../img/weapons/power_glove.png");
+}
+
+#redWeapon0 {
+    -fx-image: url("../img/weapons/heatseeker.png");
+}
+
+#redWeapon1 {
+    -fx-image: url("../img/weapons/whisper.png");
+}
+
+#redWeapon2 {
+    -fx-image: url("../img/weapons/plasma_gun.png");
+}
+
+#yellowWeapon0 {
+    -fx-image: url("../img/weapons/zx2.png");
+}
+
+#yellowWeapon1 {
+    -fx-image: url("../img/weapons/rocket_launcher.png");
+}
+
+#yellowWeapon2 {
+    -fx-image: url("../img/weapons/shotgun.png");
+}
+
+#map1 {
+    -fx-image: url("../img/maps/map1.png");
+}
+
+#map2 {
+    -fx-image: url("../img/maps/map2.png");
+}
+
+#map3 {
+    -fx-image: url("../img/maps/map3.png");
+}
+
+#map4 {
+    -fx-image: url("../img/maps/map4.png");
+}
+
+#blue {
+    -fx-image: url("../img/players/blueFigure.png");
+}
+
+#green {
+    -fx-image: url("../img/players/greenFigure.png");
+}
+
+#grey {
+    -fx-image: url("../img/players/greyFigure.png");
+}
+
+#purple {
+    -fx-image: url("../img/players/purpleFigure.png");
+}
+
+#yellow {
+    -fx-image: url("../img/players/yellowFigure.png");
+}

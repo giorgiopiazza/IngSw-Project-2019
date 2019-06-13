@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import java.net.URL?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.geometry.Insets?>
+<FlowPane alignment="CENTER" xmlns="http://javafx.com/javafx" styleClass="mainPane">
+    <stylesheets>
+        <URL value="@../css/game.css"/>
+    </stylesheets>
+
+    <StackPane styleClass="boardArea">
+        <ImageView id="map1" styleClass="map"/>
+
+        <ImageView StackPane.alignment="TOP_RIGHT" fitWidth="64" fitHeight="100" styleClass="powerupDeck">
+            <StackPane.margin>
+                <Insets top="63.0" right="72.0"/>
+            </StackPane.margin>
+        </ImageView>
+
+        <ImageView StackPane.alignment="TOP_RIGHT" fitWidth="90" fitHeight="153" styleClass="weaponDeck">
+            <StackPane.margin>
+                <Insets top="210.0" right="74.0"/>
+            </StackPane.margin>
+        </ImageView>
+
+        <!-- BLUE WEAPONS -->
+
+        <ImageView StackPane.alignment="TOP_RIGHT" fitWidth="90" fitHeight="153" id="blueWeapon0"
+                   styleClass="blueWeapon">
+            <StackPane.margin>
+                <Insets top="8.0" right="385.0"/>
+            </StackPane.margin>
+        </ImageView>
+
+        <ImageView StackPane.alignment="TOP_RIGHT" fitWidth="90" fitHeight="153" id="blueWeapon1"
+                   styleClass="blueWeapon">
+            <StackPane.margin>
+                <Insets top="8.0" right="285.0"/>
+            </StackPane.margin>
+        </ImageView>
+
+        <ImageView StackPane.alignment="TOP_RIGHT" fitWidth="90" fitHeight="153" id="blueWeapon2"
+                   styleClass="blueWeapon">
+            <StackPane.margin>
+                <Insets top="8.0" right="185.0"/>
+            </StackPane.margin>
+        </ImageView>
+
+        <!-- RED WEAPONS -->
+
+        <ImageView StackPane.alignment="CENTER_LEFT" fitWidth="90" fitHeight="153" id="redWeapon0"
+                   styleClass="redWeapon">
+            <StackPane.margin>
+                <Insets left="53.0" bottom="100.0"/>
+            </StackPane.margin>
+        </ImageView>
+
+        <ImageView StackPane.alignment="CENTER_LEFT" fitWidth="90" fitHeight="153" id="redWeapon1"
+                   styleClass="redWeapon">
+            <StackPane.margin>
+                <Insets left="53.0" top="100.0"/>
+            </StackPane.margin>
+        </ImageView>
+
+        <ImageView StackPane.alignment="CENTER_LEFT" fitWidth="90" fitHeight="153" id="redWeapon2"
+                   styleClass="redWeapon">
+            <StackPane.margin>
+                <Insets left="53.0" top="298.0"/>
+            </StackPane.margin>
+        </ImageView>
+
+        <!-- YELLOW WEAPONS -->
+
+        <ImageView StackPane.alignment="BOTTOM_RIGHT" fitWidth="90" fitHeight="153" id="yellowWeapon0"
+                   styleClass="yellowWeapon">
+            <StackPane.margin>
+                <Insets right="49.0" bottom="207.0"/>
+            </StackPane.margin>
+        </ImageView>
+
+        <ImageView StackPane.alignment="BOTTOM_RIGHT" fitWidth="90" fitHeight="153" id="yellowWeapon1"
+                   styleClass="yellowWeapon">
+            <StackPane.margin>
+                <Insets right="49.0" bottom="107.0"/>
+            </StackPane.margin>
+        </ImageView>
+
+        <ImageView StackPane.alignment="BOTTOM_RIGHT" fitWidth="90" fitHeight="153" id="yellowWeapon2"
+                   styleClass="yellowWeapon">
+            <StackPane.margin>
+                <Insets right="49.0" bottom="7.0"/>
+            </StackPane.margin>
+        </ImageView>
+    </StackPane>
+</FlowPane>

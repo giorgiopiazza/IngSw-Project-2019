@@ -45,7 +45,8 @@ public class Gui extends Application {
 
         window.setScene(new Scene(new Pane()));
 
-        setMainMenuLayout();
+        // setMainMenuLayout();
+        setBoardLayout();
 
         window.show();
     }
@@ -221,7 +222,7 @@ public class Gui extends Application {
     }
 
     private void setBoardLayout() {
-        if (setLayout("fxml/lobbyScene.fxml")) {
+        if (setLayout("fxml/game.fxml")) {
 
         }
     }
