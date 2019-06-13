@@ -2,6 +2,7 @@ package view.cli;
 
 import controller.ClientGameManager;
 import enumerations.*;
+import enumerations.Properties;
 import exceptions.actions.PowerupCardsNotFoundException;
 import exceptions.actions.WeaponCardsNotFoundException;
 import exceptions.game.InexistentColorException;
@@ -32,13 +33,6 @@ public class Cli extends ClientGameManager {
 
     private static final String SEND_ERROR = "Error while sending the request";
     private static final String INVALID_STRING = "Invalid String!";
-    private static final String TARGET_NUM = "targetNum";
-    private static final String MAX_TARGET_NUM = "maxTargetNum";
-    private static final String MOVE = "move";
-    private static final String MOVE_TARGET = "moveTarget";
-    private static final String MAX_MOVE_TARGET = "maxMoveTarget";
-    private static final String MOVE_TARGET_BEFORE = "moveTargetBefore";
-    private static final String TP = "tp";
 
     public Cli() {
         super();
@@ -434,12 +428,16 @@ public class Cli extends ClientGameManager {
         CliPrinter.clearConsole(out);
         printWeapons(playersWeapons);
 
-        out.println("Choose the weapons you want to reload (-1 to stop choosing)");
+        out.println("Choose the weapons you want to reload (-1 to stop choosing). Your ammo are:");
+        printAmmo();
+
         for (int i = 0; i < playersWeapons.length; ++i) {
             int tempChoose = askWeapon(-1);
             if (tempChoose == -1) break;
             else rechargingWeapons.add(tempChoose);
         }
+
+        if(rechargingWeapons.isEmpty()) return;
 
         if (!getPowerups().isEmpty()) {
             paymentPowerups = askPaymentPowerups();
@@ -525,7 +523,11 @@ public class Cli extends ClientGameManager {
                     shootRequestBuilder.targetPlayersUsernames(targetsChosen);
                     break;
                 case SQUARE:
-                    shootRequestBuilder.targetPositions(askTargetSquaresPositions(effectProperties));
+                    if(effectProperties.containsKey(Properties.SAME_POSITION.getJKey())) {
+                        shootRequestBuilder.targetPositions(new ArrayList<>(Collections.singletonList(getPlayerByName(targetsChosen.get(0)).getPosition())));
+                    } else {
+                        shootRequestBuilder.targetPositions(askTargetSquaresPositions(effectProperties));
+                    }
                     break;
                 case ROOM:
                     shootRequestBuilder.targetRoomColor(askTargetRoomColor(effectProperties));
@@ -536,21 +538,21 @@ public class Cli extends ClientGameManager {
         }
 
         // now that I have the targets we need to handle the possible move decisions
-        if (effectProperties.containsKey(MOVE)) {
+        if (effectProperties.containsKey(Properties.MOVE.getJKey())) {
             // move is always permitted both before and after, decision is then always asked
             shootRequestBuilder.senderMovePosition(askMovePositionInShoot());
             shootRequestBuilder.moveSenderFirst(askBeforeAfterMove());
         }
 
         // now that I have handled the Turn Owner movement I have to handle the targets ones
-        if (effectProperties.containsKey(MOVE_TARGET) || effectProperties.containsKey(MAX_MOVE_TARGET)) {
+        if (effectProperties.containsKey(Properties.MOVE_TARGET.getJKey()) || effectProperties.containsKey(Properties.MAX_MOVE_TARGET.getJKey())) {
             shootRequestBuilder.targetPlayersMovePositions(askTargetsMovePositions(targetsChosen));
         }
 
         // in the end if the targets movement can be done before or after the shoot action I ask when to the shooter
-        if (effectProperties.containsKey(MOVE_TARGET_BEFORE)) {
-            shootRequestBuilder.moveTargetsFirst(Boolean.parseBoolean(effectProperties.get(MOVE_TARGET_BEFORE)));
-        } else if (effectProperties.containsKey(MOVE_TARGET) || effectProperties.containsKey(MAX_MOVE_TARGET)) {
+        if (effectProperties.containsKey(Properties.MOVE_TARGET_BEFORE.getJKey())) {
+            shootRequestBuilder.moveTargetsFirst(Boolean.parseBoolean(effectProperties.get(Properties.MOVE_TARGET_BEFORE.getJKey())));
+        } else if (effectProperties.containsKey(Properties.MOVE_TARGET.getJKey()) || effectProperties.containsKey(Properties.MAX_MOVE_TARGET.getJKey())) {
             shootRequestBuilder.moveTargetsFirst(askBeforeAfterMove());
         }
 
@@ -560,10 +562,14 @@ public class Cli extends ClientGameManager {
     private ArrayList<String> askTargetsUsernames(Map<String, String> effectProperties) {
         ArrayList<String> targetsUsernames;
 
-        if (effectProperties.containsKey(TARGET_NUM)) {
-            targetsUsernames = askExactTargets(effectProperties.get(TARGET_NUM));
-        } else if (effectProperties.containsKey(MAX_TARGET_NUM)) {
-            targetsUsernames = askMaxTargets(effectProperties.get(MAX_TARGET_NUM));
+        printMap();
+        out.println();
+        printUsername();
+
+        if (effectProperties.containsKey(Properties.TARGET_NUM.getJKey())) {
+            targetsUsernames = askExactTargets(effectProperties.get(Properties.TARGET_NUM.getJKey()));
+        } else if (effectProperties.containsKey(Properties.MAX_TARGET_NUM.getJKey())) {
+            targetsUsernames = askMaxTargets(effectProperties.get(Properties.MAX_TARGET_NUM.getJKey()));
         } else {
             throw new InvalidPropertiesException();
         }
@@ -601,10 +607,10 @@ public class Cli extends ClientGameManager {
     private ArrayList<PlayerPosition> askTargetSquaresPositions(Map<String, String> effectProperties) {
         ArrayList<PlayerPosition> targetSquaresPositions;
 
-        if (effectProperties.containsKey(TARGET_NUM)) {
-            targetSquaresPositions = askExactSquares(effectProperties.get(TARGET_NUM));
-        } else if (effectProperties.containsKey(MAX_TARGET_NUM)) {
-            targetSquaresPositions = askMaxSquares(effectProperties.get(MAX_TARGET_NUM));
+        if (effectProperties.containsKey(Properties.TARGET_NUM.getJKey())) {
+            targetSquaresPositions = askExactSquares(effectProperties.get(Properties.TARGET_NUM.getJKey()));
+        } else if (effectProperties.containsKey(Properties.MAX_TARGET_NUM.getJKey())) {
+            targetSquaresPositions = askMaxSquares(effectProperties.get(Properties.MAX_TARGET_NUM.getJKey()));
         } else {
             throw new InvalidPropertiesException();
         }
@@ -641,7 +647,7 @@ public class Cli extends ClientGameManager {
 
     private RoomColor askTargetRoomColor(Map<String, String> effectProperties) {
         // remember that a room target is always 1, infact we just need to verify that the property is present, then we are sure its going to be one
-        if (effectProperties.containsKey(TARGET_NUM)) {
+        if (effectProperties.containsKey(Properties.TARGET_NUM.getJKey())) {
             out.println("Choose the color of the target room for your shoot action:");
 
             return readRoomColor();
@@ -952,6 +958,8 @@ public class Cli extends ClientGameManager {
     public void gameStateUpdate(GameSerialized gameSerialized) {
         printMap();
         out.println();
+        printPlayerBoard();
+        out.println();
     }
 
     @Override
@@ -1009,12 +1017,12 @@ public class Cli extends ClientGameManager {
         Effect baseEffect = powerupCard.getBaseEffect();
         Map<String, String> effectProperties = baseEffect.getProperties();
 
-        if (effectProperties.containsKey(TP)) {
+        if (effectProperties.containsKey(Properties.TP.getJKey())) {
             out.println("Choose your teleporting position:");
             powerupRequestBuilder.senderMovePosition(askCoordinates());
         }
 
-        if (effectProperties.containsKey(MAX_MOVE_TARGET)) {
+        if (effectProperties.containsKey(Properties.MAX_MOVE_TARGET.getJKey())) {
             out.println("Choose target username:");
             powerupRequestBuilder.targetPlayersUsername(askExactTargets("1"));
             powerupRequestBuilder.targetPlayersMovePositions(new ArrayList<>(List.of(askCoordinates())));
