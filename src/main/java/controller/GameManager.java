@@ -68,7 +68,7 @@ public class GameManager implements TimerRunListener, Serializable {
     public GameManager(Server server, GameManager savedGameManager, int lobbyTimeoutTime) {
         this.server = server;
         this.gameState = savedGameManager.gameState;
-        this.lobby = null; // TODO add lobby settings if needed for players login: should be filled with messages containing the names of the players in the game
+        this.lobby = null;
         this.gameInstance = Game.getInstance();
         this.roundManager = new RoundManager(savedGameManager);
         this.shootParameters = savedGameManager.shootParameters;
@@ -224,6 +224,10 @@ public class GameManager implements TimerRunListener, Serializable {
         } else {
             return new Response("Reconnection message from already in lobby Player", MessageStatus.ERROR);
         }
+    }
+
+    public boolean isLobbyFull() {
+        return lobby.isLobbyFull();
     }
 
     /**
