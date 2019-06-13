@@ -1106,7 +1106,7 @@ public class Cli extends ClientGameManager {
         }
 
         // a target is meant both as: target for a moving action or for choosing a target square
-        out.println("Write the target moving coordinates " + (getPlayer().isDead() ? "(0,0)" : getPlayer().getPosition()) + ":");
+        out.println("Write the target position coordinates " + (getPlayer().isDead() ? "(0,0)" : getPlayer().getPosition()) + ":");
         do {
             out.print(">>> ");
 
