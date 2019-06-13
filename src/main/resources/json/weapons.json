@@ -233,7 +233,7 @@
       "effects": [
         {
           "id": 0,
-          "description": "Move a target 0, 1, or 2 squares to a square you can see, and give it 1 damage.                    ",
+          "description": "Move a target 0, 1, or 2 moves far from you to a square you can see, and give it 1 damage.         ",
           "properties": {
             "visible": true,
 			"target": ["PLAYER"],

@@ -97,11 +97,14 @@ public class ShootAction implements Action {
         // then I shoot
         try {
             shootingWeapon.use(shootRequest);
-        } catch (WeaponNotChargedException | InvalidCommandException e) {
+        } catch (WeaponNotChargedException e) {
             // the weapon can not be used, then I set back the shooting position to his starting position because this
             // action can not be executed
             actingPlayer.changePosition(startingPos.getCoordX(), startingPos.getCoordY());
             throw new WeaponNotChargedException();
+        } catch (InvalidCommandException e) {
+            actingPlayer.changePosition(startingPos.getCoordX(), startingPos.getCoordY());
+            throw new InvalidActionException();
         }
     }
 }
