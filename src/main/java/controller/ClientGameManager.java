@@ -459,7 +459,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             case NORMAL:
                 actions.add(PossibleAction.MOVE_AND_PICK);
 
-                if (!getPlayerWeapons(getUsername()).isEmpty()) {
+                if (!getPlayerWeapons(getUsername()).isEmpty() && !allDead()) {
                     actions.add(PossibleAction.SHOOT);
                 }
                 break;
@@ -467,7 +467,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             case FIRST_ADRENALINE:
                 actions.add(PossibleAction.ADRENALINE_PICK);
 
-                if (!getPlayerWeapons(getUsername()).isEmpty()) {
+                if (!getPlayerWeapons(getUsername()).isEmpty() && !allDead()) {
                     actions.add(PossibleAction.SHOOT);
                 }
                 break;
@@ -475,13 +475,32 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             case SECOND_ADRENALINE:
                 actions.add(PossibleAction.ADRENALINE_PICK);
 
-                if (!getPlayerWeapons(getUsername()).isEmpty()) {
+                if (!getPlayerWeapons(getUsername()).isEmpty() && !allDead()) {
                     actions.add(PossibleAction.ADRENALINE_SHOOT);
                 }
                 break;
         }
 
         return actions;
+    }
+
+    /**
+     * check if all player except the current player are dead
+     *
+     * @return true if all player are dead (except the current player), otherwise false
+     */
+    private boolean allDead() {
+        boolean noOnePlayer;
+
+        int deadPlayers = 0;
+
+        for (Player player : getPlayers()) {
+            if (player.isDead() || player.getPosition() == null) deadPlayers++;
+        }
+
+        noOnePlayer = deadPlayers == getPlayers().size() - 1;
+
+        return noOnePlayer;
     }
 
     /**
@@ -495,10 +514,10 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
         if (roundManager.isDoubleActionFrenzy()) {
             actions.add(PossibleAction.FRENZY_MOVE);
-            actions.add(PossibleAction.FRENZY_SHOOT);
+            if (!allDead()) actions.add(PossibleAction.FRENZY_SHOOT);
             actions.add(PossibleAction.FRENZY_PICK);
         } else {
-            actions.add(PossibleAction.LIGHT_FRENZY_SHOOT);
+            if (!allDead()) actions.add(PossibleAction.LIGHT_FRENZY_SHOOT);
             actions.add(PossibleAction.LIGHT_FRENZY_PICK);
         }
 

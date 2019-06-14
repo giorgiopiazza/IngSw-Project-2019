@@ -8,7 +8,6 @@ import exceptions.player.EmptyHandException;
 import exceptions.playerboard.NotEnoughAmmoException;
 import model.Game;
 import model.cards.effects.Effect;
-import model.cards.effects.WeaponBaseEffect;
 import model.cards.weaponstates.ChargedWeapon;
 import model.cards.weaponstates.UnchargedWeapon;
 import model.cards.weaponstates.WeaponState;
