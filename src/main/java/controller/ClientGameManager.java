@@ -85,7 +85,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     }
 
     private void startGame() {
-        roundManager = new ClientRoundManager(isBotPresent);
+        roundManager = new ClientRoundManager(isBotPresent, false);
 
         if (firstTurn) { // First round
             if (firstPlayer.equals(getUsername())) { // First player to play
@@ -214,6 +214,10 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 handleWinner((WinnersResponse) message);
                 break;
 
+            case RECONNECTION:
+                handleReconnection((ReconnectionMessage) message);
+                break;
+
             case DISCONNECTION:
                 handleDisconnection((DisconnectionMessage) message);
                 break;
@@ -297,6 +301,19 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         synchronized (gameSerializedLock) {
             queue.add(() -> notifyGameEnd(winnerResponse.getWinners()));
         }
+    }
+
+    private void handleReconnection(ReconnectionMessage reconnectionMessage) {
+        turnOwner = "";
+        firstTurn = false;
+        yourTurn = false;
+
+        client.setToken(reconnectionMessage.getToken());
+
+        isBotPresent = reconnectionMessage.getGameStateMessage().getGameSerialized().isBotPresent();
+        roundManager = new ClientRoundManager(isBotPresent, true);
+
+        handleGameStateMessage(reconnectionMessage.getGameStateMessage());
     }
 
     private void handleDisconnection(DisconnectionMessage disconnectionMessage) {

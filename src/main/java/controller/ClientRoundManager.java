@@ -16,12 +16,12 @@ class ClientRoundManager {
     private boolean botMoved;
     private boolean roundStarted;
 
-    ClientRoundManager(boolean botPresent) {
+    ClientRoundManager(boolean botPresent, boolean reconnect) {
         this.roundStarted = false;
         this.botPresent = botPresent;
         this.botMoved = false;
 
-        this.playerState = UserPlayerState.SPAWN;
+        this.playerState = (reconnect) ? UserPlayerState.FIRST_ACTION : UserPlayerState.SPAWN;
         this.gameClientState = GameClientState.NORMAL;
 
         this.secondFrenzyAction = false;
@@ -139,8 +139,6 @@ class ClientRoundManager {
     UserPlayerState getUserPlayerState() {
         return playerState;
     }
-
-
 
     void setSecondFrenzyAction(boolean secondFrenzyAction) {
         this.secondFrenzyAction = secondFrenzyAction;
