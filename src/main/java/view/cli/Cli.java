@@ -305,7 +305,27 @@ public class Cli extends ClientGameManager {
             out.println();
             askUnusedColors();
         } else {
-            out.println("You joined the lobby!\n\nWait for the game to start...");
+            out.println("You joined the lobby!\n\nWait for the game to start...\n\n");
+            askVoteMap();
+        }
+    }
+
+    private void askVoteMap() {
+        out.println("Which map would you like to play with (1 - 4)?");
+
+        if (!sendRequest(MessageBuilder.buildVoteMessage(getClientToken(), getUsername(), readInt(1, 4)))) {
+            promptError(SEND_ERROR, true);
+        }
+    }
+
+    @Override
+    public void voteResponse(GameVoteResponse gameVoteResponse) {
+        if (gameVoteResponse.getStatus() == MessageStatus.ERROR) {
+            out.println(gameVoteResponse.getMessage());
+            out.println();
+            askVoteMap();
+        } else {
+            out.println("\nYou successfully voted the map.");
         }
     }
 

@@ -45,6 +45,10 @@ public class MessageBuilder {
         return new LobbyMessage(username, token, color, disconnection);
     }
 
+    public static GameVoteMessage buildVoteMessage(String token, String username, int vote) {
+        return new GameVoteMessage(username, token, vote);
+    }
+
     /**
      * Create a {@link DiscardPowerupRequest DiscardPowerupRequest} object from the actual
      * {@code player} and his {@code powerupCard}

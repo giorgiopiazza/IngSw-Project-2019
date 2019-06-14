@@ -85,7 +85,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     }
 
     private void startGame() {
-        roundManager = new ClientRoundManager(isBotPresent, false);
+        roundManager = new ClientRoundManager(isBotPresent);
 
         if (firstTurn) { // First round
             if (firstPlayer.equals(getUsername())) { // First player to play
@@ -198,6 +198,10 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 handleColorResponse((ColorResponse) message);
                 break;
 
+            case VOTE_RESPONSE:
+                handleVoteResponse((GameVoteResponse) message);
+                break;
+
             case RESPONSE:
                 handleResponse((Response) message);
                 break;
@@ -246,6 +250,10 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
     private void handleColorResponse(ColorResponse colorResponse) {
         queue.add(() -> askColor(colorResponse.getColorList()));
+    }
+
+    private void handleVoteResponse(GameVoteResponse gameVoteResponse) {
+        queue.add(() -> voteResponse(gameVoteResponse));
     }
 
     private void handleResponse(Response response) {
@@ -310,10 +318,21 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
         client.setToken(reconnectionMessage.getToken());
 
-        isBotPresent = reconnectionMessage.getGameStateMessage().getGameSerialized().isBotPresent();
-        roundManager = new ClientRoundManager(isBotPresent, true);
+        synchronized (gameSerializedLock) {
+            gameSerialized = reconnectionMessage.getGameStateMessage().getGameSerialized();
+            isBotPresent = gameSerialized.isBotPresent();
+        }
+        roundManager = new ClientRoundManager(isBotPresent);
 
-        handleGameStateMessage(reconnectionMessage.getGameStateMessage());
+        checkFrenzyMode(reconnectionMessage.getGameStateMessage());
+
+        roundManager.firstAction();
+
+        synchronized (gameSerializedLock) {
+            queue.add(() -> gameStateUpdate(gameSerialized));
+        }
+
+        checkTurnChange(reconnectionMessage.getGameStateMessage());
     }
 
     private void handleDisconnection(DisconnectionMessage disconnectionMessage) {
@@ -558,7 +577,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     }
 
     protected boolean sendRequest(Message message) {
-        if (joinedLobby) {
+        if (roundManager != null) {
             checkChangeStateRequest(message);
         }
 

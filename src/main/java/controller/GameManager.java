@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 public class GameManager implements TimerRunListener, Serializable {
     private static final int MIN_PLAYERS = 3;
     private static final int MAX_PLAYERS = 5;
+    private static final long serialVersionUID = 7587280124972034331L;
 
     private final transient Server server;
     private PossibleGameState gameState;
@@ -527,15 +528,15 @@ public class GameManager implements TimerRunListener, Serializable {
      * Method that handles all the messages that the Game needs to receive to set a starting game
      *
      * @param receivedMessage the MessageReceived from the clients, accepted messages in this state are:
-     *                        {@link MessageContent MessaGeContent.GET_IN_LOBBY} and {@link MessageContent MessageContent.GAME_SETUP}
+     *                        {@link MessageContent MessaGeContent.GET_IN_LOBBY} and {@link MessageContent MessageContent.LOBBY_VOTE}
      * @return a {@link Message} handled by the server
      */
     private Message firstStateHandler(Message receivedMessage) {
         switch (receivedMessage.getContent()) {
             case GET_IN_LOBBY:
                 return lobbyMessageHandler((LobbyMessage) receivedMessage);
-            case GAME_SETUP:
-                return setupMessageHandler((GameSetupMessage) receivedMessage);
+            case LOBBY_VOTE:
+                return setupMessageHandler((GameVoteMessage) receivedMessage);
             case COLOR:
                 return colorRequestHandler();
             default:
@@ -621,9 +622,8 @@ public class GameManager implements TimerRunListener, Serializable {
 
         // here time expiration has to be verified
         if (lobbyMessage.getContent() == MessageContent.GET_IN_LOBBY && !inLobbyPlayers.contains(lobbyMessage) && !lobbyMessage.isDisconnection()) {
-            if ((lobby.getTerminatorPresence() && inLobbyPlayers.size() < 4) ||
-                    (!lobby.getTerminatorPresence() && inLobbyPlayers.size() < 5) &&
-                            lobbyMessage.getChosenColor() != null && unusedColors.contains(lobbyMessage.getChosenColor())) {
+            if (!lobby.isLobbyFull() &&
+                    lobbyMessage.getChosenColor() != null && unusedColors.contains(lobbyMessage.getChosenColor())) {
                 lobby.addPlayer(lobbyMessage);
                 Server.LOGGER.log(Level.INFO, "{0} joined the lobby", lobbyMessage.getSenderUsername());
                 timerCheck();
@@ -708,9 +708,9 @@ public class GameManager implements TimerRunListener, Serializable {
      * @param disconnectedPlayer String containing the UserName of the disconnected player
      */
     private void removeVote(String disconnectedPlayer) {
-        ArrayList<GameSetupMessage> playersVotes = lobby.getVotedPlayers();
+        ArrayList<GameVoteMessage> playersVotes = lobby.getVotedPlayers();
 
-        for (GameSetupMessage setupMessage : playersVotes) {
+        for (GameVoteMessage setupMessage : playersVotes) {
             if (setupMessage.getSenderUsername().equals(disconnectedPlayer)) {
                 playersVotes.remove(setupMessage);
             }
@@ -722,25 +722,25 @@ public class GameManager implements TimerRunListener, Serializable {
     }
 
     /**
-     * Method that handles the reception of a {@link GameSetupMessage GameSetupMessage} containing informations about the
+     * Method that handles the reception of a {@link GameVoteMessage GameVoteMessage} containing informations about the
      * votes of the parameters the Sender wants to play with
      *
-     * @param setupMessage the {@link GameSetupMessage GameSetupMessage} received
-     * @return a positive or negative {@link Response Response} handled by the server
+     * @param voteMessage the {@link GameVoteMessage GameVoteMessage} received
+     * @return a positive or negative {@link Message Response} handled by the server
      */
-    private Response setupMessageHandler(GameSetupMessage setupMessage) {
+    private Message setupMessageHandler(GameVoteMessage voteMessage) {
         ArrayList<LobbyMessage> inLobbyPlayers = lobby.getInLobbyPlayers();
-        ArrayList<GameSetupMessage> alreadyVotedPlayers = lobby.getVotedPlayers();
+        ArrayList<GameVoteMessage> alreadyVotedPlayers = lobby.getVotedPlayers();
 
         for (LobbyMessage lobbyPlayer : inLobbyPlayers) {
-            if (lobbyPlayer.getSenderUsername().equals(setupMessage.getSenderUsername()) && !alreadyVotedPlayers.contains(setupMessage)
-                    && setupMessage.getMapVote() > 0 && setupMessage.getMapVote() < 5) {
-                lobby.addPlayerVote(setupMessage);
-                return new Response("Vote added", MessageStatus.OK);
+            if (lobbyPlayer.getSenderUsername().equals(voteMessage.getSenderUsername()) && !alreadyVotedPlayers.contains(voteMessage)
+                    && voteMessage.getMapVote() > 0 && voteMessage.getMapVote() < 5) {
+                lobby.addPlayerVote(voteMessage);
+                return new GameVoteResponse("Vote added", MessageStatus.OK);
             }
         }
 
-        return new Response("Vote NOT added player already voted!", MessageStatus.ERROR);
+        return new GameVoteResponse("Vote NOT added player already voted!", MessageStatus.ERROR);
     }
 
     /**

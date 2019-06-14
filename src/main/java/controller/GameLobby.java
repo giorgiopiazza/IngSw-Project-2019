@@ -2,7 +2,7 @@ package controller;
 
 import enumerations.PlayerColor;
 import exceptions.game.MaxPlayerException;
-import network.message.GameSetupMessage;
+import network.message.GameVoteMessage;
 import network.message.LobbyMessage;
 
 import java.io.Serializable;
@@ -12,7 +12,7 @@ public class GameLobby implements Serializable {
     private static final long serialVersionUID = 9107773386569787630L;
 
     private ArrayList<LobbyMessage> inLobbyPlayers;
-    private ArrayList<GameSetupMessage> votedPlayers;
+    private ArrayList<GameVoteMessage> votedPlayers;
 
     private boolean terminator;
     private int skullNum;
@@ -37,14 +37,11 @@ public class GameLobby implements Serializable {
         return inLobbyPlayers;
     }
 
-    void addPlayerVote(GameSetupMessage votedPlayer) {
-        if (inLobbyPlayers.stream().anyMatch(lm -> lm.getSenderUsername().equals(votedPlayer.getSenderUsername())
-                && votedPlayers.stream().noneMatch(gsm -> lm.getSenderUsername().equals(votedPlayer.getSenderUsername())))) {
-            votedPlayers.add(votedPlayer);
-        }
+    void addPlayerVote(GameVoteMessage votedPlayer) {
+        votedPlayers.add(votedPlayer);
     }
 
-    ArrayList<GameSetupMessage> getVotedPlayers() {
+    ArrayList<GameVoteMessage> getVotedPlayers() {
         return votedPlayers;
     }
 
@@ -52,7 +49,7 @@ public class GameLobby implements Serializable {
         if (!votedPlayers.isEmpty()) {
             ArrayList<Integer> playersVotes = new ArrayList<>();
 
-            for (GameSetupMessage mapVote : votedPlayers) {
+            for (GameVoteMessage mapVote : votedPlayers) {
                 playersVotes.add(mapVote.getMapVote());
             }
 

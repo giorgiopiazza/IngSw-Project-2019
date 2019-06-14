@@ -5,6 +5,7 @@ import enumerations.PossibleAction;
 import model.GameSerialized;
 import model.player.Player;
 import network.message.ConnectionResponse;
+import network.message.GameVoteResponse;
 import network.message.Response;
 
 import java.util.List;
@@ -13,6 +14,7 @@ interface ClientGameManagerListener {
     void connectionResponse(ConnectionResponse response);
     void askColor(List<PlayerColor> availableColors);
     void lobbyJoinResponse(Response response);
+    void voteResponse(GameVoteResponse gameVoteResponse);
 
     void firstPlayerCommunication(String username);
     void notYourTurn();
