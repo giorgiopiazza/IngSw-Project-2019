@@ -184,7 +184,7 @@ public class Game implements Serializable {
     }
 
     public void setGameMap(int mapType) throws InvalidMapNumberException {
-        if (mapType < 0 || mapType > 3) {
+        if (mapType < 1 || mapType > 4) {
             throw new InvalidMapNumberException();
         }
         this.gameMap = new GameMap(mapType);

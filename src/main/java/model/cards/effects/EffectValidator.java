@@ -597,4 +597,19 @@ class EffectValidator {
         // then I always have to check for the powerupIndex
         return isPowerupIndexValid(request);
     }
+
+    /**
+     * Method that sets the correct {@link PlayerPosition PlayerPosition} for the shooter in case his
+     * {@link model.actions.ShootAction ShootAction} is an adrenaline one
+     *
+     * @param request containing the {@link ShootRequest ShootRequest}
+     * @return the correct {@link PlayerPosition PlayerPosition} for the {@link model.actions.ShootAction ShootAction}
+     */
+    static PlayerPosition checkAdrenalineMove(ShootRequest request) {
+        if(request.getAdrenalineMovePosition() != null) {
+            return request.getAdrenalineMovePosition();
+        } else {
+            return Game.getInstance().getUserPlayerByUsername(request.getSenderUsername()).getPosition();
+        }
+    }
 }

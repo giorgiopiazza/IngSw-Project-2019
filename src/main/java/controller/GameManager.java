@@ -275,7 +275,7 @@ public class GameManager implements TimerRunListener, Serializable {
             case DISCARD_POWERUP:
                 return discardPowerupCheckState(receivedMessage);
             default:
-                throw new InvalidGameStateException();
+                return buildInvalidResponse();
         }
     }
 

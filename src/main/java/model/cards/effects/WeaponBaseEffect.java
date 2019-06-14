@@ -41,8 +41,10 @@ public class WeaponBaseEffect extends Effect {
     }
 
     private boolean subValidate(ShootRequest request, Map<String, String> properties, TargetType targetType) {
-        PlayerPosition shooterPosition = Game.getInstance().getUserPlayerByUsername(request.getSenderUsername()).getPosition();
+        PlayerPosition shooterPosition = EffectValidator.checkAdrenalineMove(request);
         List<PlayerPosition> targetPositions = EffectValidator.getTargetPositions(request, targetType);
+
+
 
         // Command targets validation
         if (!EffectValidator.isTargetValid(request, properties, targetType))

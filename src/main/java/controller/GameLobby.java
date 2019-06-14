@@ -38,7 +38,9 @@ public class GameLobby implements Serializable {
     }
 
     void addPlayerVote(GameVoteMessage votedPlayer) {
-        votedPlayers.add(votedPlayer);
+        if(votedPlayer.getMapVote() > 0 || votedPlayer.getMapVote() < 5) {
+            votedPlayers.add(votedPlayer);
+        }
     }
 
     ArrayList<GameVoteMessage> getVotedPlayers() {
