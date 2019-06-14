@@ -3,6 +3,7 @@ package network.server;
 import com.google.gson.JsonObject;
 import controller.GameManager;
 import enumerations.MessageStatus;
+import enumerations.PossibleGameState;
 import model.Game;
 import network.message.*;
 import utility.ConfigurationParser;
@@ -119,9 +120,9 @@ public class Server implements Runnable {
         // normal complete Server launch should have the following parameters: -l "confFilePath.txt" -b true/false -s #skulls
         // normal complete Server launch with game Reload should have the following parameter: -l "confFilePath.txt" -r
 
-        if(args.length > 0 && args.length < 7) {
-            for(int i = 0; i < args.length; ++i) {
-                if(args[i].charAt(0) == '-' && args[i].length() == 2 && args.length >= i + 1 && args[i + 1].charAt(0) != '-') {
+        if (args.length > 0 && args.length < 7) {
+            for (int i = 0; i < args.length; ++i) {
+                if (args[i].charAt(0) == '-' && args[i].length() == 2 && args.length >= i + 1 && args[i + 1].charAt(0) != '-') {
                     switch (args[i].charAt(1)) {
                         case 'l':
                             confFilePath = args[i + 1];
@@ -146,13 +147,13 @@ public class Server implements Runnable {
         }
 
         // if the starting command contains -r it means that a game is going to be reloaded
-        if(reloadGame) {
+        if (reloadGame) {
             new Server(confFilePath);
             return;
         }
 
         // if the passed value is correct it is used for the game, if not DEFAULT value is set back to 5
-        if(skullNum < 5 || skullNum > 8) {
+        if (skullNum < 5 || skullNum > 8) {
             skullNum = 5;
         }
 
@@ -168,64 +169,92 @@ public class Server implements Runnable {
     void login(String username, Connection connection) {
         try {
             if (clients.containsKey(username)) {
-                if (!clients.get(username).isConnected()) { // Player Reconnection
-                    clients.replace(username, connection);
-
-                    String token = UUID.randomUUID().toString();
-                    connection.setToken(token);
-
-                    connection.sendMessage(
-                            new ConnectionResponse("Successfully reconnected", token, MessageStatus.OK)
-                    );
-
-                    LOGGER.log(Level.INFO, "{0} reconnected to server!", username);
-                } else { // Player already connected
-                    connection.sendMessage(
-                            new ConnectionResponse("Player already connected", null, MessageStatus.ERROR)
-                    );
-
-                    connection.disconnect();
-                    LOGGER.log(Level.INFO, "{0} already connected to server!", username);
-                }
+                knownPlayerLogin(username, connection);
             } else {
-                if (gameManager.getGameInstance().isGameStarted()) {
-                    connection.sendMessage(
-                            new ConnectionResponse("Game is already started!", null, MessageStatus.ERROR)
-                    );
-
-                    connection.disconnect();
-                    LOGGER.log(Level.INFO, "{0} attempted to connect!", username);
-                } else if (gameManager.isLobbyFull()) { // Max players
-                    connection.sendMessage(
-                            new ConnectionResponse("Max number of player reached", null, MessageStatus.ERROR)
-                    );
-
-                    connection.disconnect();
-                    LOGGER.log(Level.INFO, "{0} tried to connect but game is full!", username);
-                } else { // New player
-                    if (isUsernameLegit(username)) { // Username legit
-                        clients.put(username, connection);
-
-                        String token = UUID.randomUUID().toString();
-                        connection.setToken(token);
-
-                        connection.sendMessage(
-                                new ConnectionResponse("Successfully connected", token, MessageStatus.OK)
-                        );
-
-                        LOGGER.log(Level.INFO, "{0} connected to server!", username);
-                    } else { // Username not legit
-                        connection.sendMessage(
-                                new ConnectionResponse("Invalid Username", null, MessageStatus.ERROR)
-                        );
-
-                        connection.disconnect();
-                        LOGGER.log(Level.INFO, "{0} tried to connect with invalid name!", username);
-                    }
-                }
+                newPlayerLogin(username, connection);
             }
         } catch (IOException e) {
             connection.disconnect();
+        }
+    }
+
+    /**
+     * Handles a known player login
+     *
+     * @param username   username of the player who is trying to login
+     * @param connection connection of the client
+     * @throws IOException when send message fails
+     */
+    private void knownPlayerLogin(String username, Connection connection) throws IOException {
+        if (!clients.get(username).isConnected()) { // Player Reconnection
+            clients.replace(username, connection);
+
+            String token = UUID.randomUUID().toString();
+            connection.setToken(token);
+
+            if (gameManager.getGameState() == PossibleGameState.GAME_ROOM) { // Game in lobby state
+                connection.sendMessage(
+                        new ConnectionResponse("Successfully reconnected", token, MessageStatus.OK)
+                );
+            } else { // Game started
+                connection.sendMessage(
+                        gameManager.onConnectionMessage(new LobbyMessage(username, token, null, false)
+                        ));
+            }
+
+            LOGGER.log(Level.INFO, "{0} reconnected to server!", username);
+        } else { // Player already connected
+            connection.sendMessage(
+                    new ConnectionResponse("Player already connected", null, MessageStatus.ERROR)
+            );
+
+            connection.disconnect();
+            LOGGER.log(Level.INFO, "{0} already connected to server!", username);
+        }
+    }
+
+    /**
+     * Handles a new player login
+     *
+     * @param username   username of the player who is trying to login
+     * @param connection connection of the client
+     * @throws IOException when send message fails
+     */
+    private void newPlayerLogin(String username, Connection connection) throws IOException {
+        if (gameManager.getGameInstance().isGameStarted()) { // Game Started
+            connection.sendMessage(
+                    new ConnectionResponse("Game is already started!", null, MessageStatus.ERROR)
+            );
+
+            connection.disconnect();
+            LOGGER.log(Level.INFO, "{0} attempted to connect!", username);
+        } else if (gameManager.isLobbyFull()) { // Lobby Full
+            connection.sendMessage(
+                    new ConnectionResponse("Max number of player reached", null, MessageStatus.ERROR)
+            );
+
+            connection.disconnect();
+            LOGGER.log(Level.INFO, "{0} tried to connect but game is full!", username);
+        } else { // New player
+            if (isUsernameLegit(username)) { // Username legit
+                clients.put(username, connection);
+
+                String token = UUID.randomUUID().toString();
+                connection.setToken(token);
+
+                connection.sendMessage(
+                        new ConnectionResponse("Successfully connected", token, MessageStatus.OK)
+                );
+
+                LOGGER.log(Level.INFO, "{0} connected to server!", username);
+            } else { // Username not legit
+                connection.sendMessage(
+                        new ConnectionResponse("Invalid Username", null, MessageStatus.ERROR)
+                );
+
+                connection.disconnect();
+                LOGGER.log(Level.INFO, "{0} tried to connect with invalid name!", username);
+            }
         }
     }
 
@@ -274,14 +303,17 @@ public class Server implements Runnable {
         String username = getUsernameByConnection(playerConnection);
 
         if (username != null) {
-            sendMessageToAll(new DisconnectionMessage(username));
-            gameManager.onMessage(new LobbyMessage(username, null, null, true));
             LOGGER.log(Level.INFO, "{0} disconnected from server!", username);
 
-            if (!gameManager.getGameInstance().isGameStarted()) {
+            if (gameManager.getGameState() == PossibleGameState.GAME_ROOM) {
+                gameManager.onMessage(new LobbyMessage(username, null, null, true));
                 clients.remove(username);
                 LOGGER.log(Level.INFO, "{0} removed from client list!", username);
+            } else {
+                gameManager.onConnectionMessage(new LobbyMessage(username, null, null, true));
             }
+
+            sendMessageToAll(new DisconnectionMessage(username));
         }
     }
 
