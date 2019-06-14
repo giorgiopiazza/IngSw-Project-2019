@@ -16,18 +16,15 @@ import model.map.GameMap;
 import model.map.SpawnSquare;
 import model.map.Square;
 import model.player.*;
-import network.client.*;
 import network.message.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import utility.*;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Cli extends ClientGameManager {
-    private Client client;
     private Scanner in;
     private AdrenalinePrintStream out;
 
@@ -46,9 +43,6 @@ public class Cli extends ClientGameManager {
     public void start() {
         printLogo();
         doConnection();
-        doLobbyJoin();
-
-        startUpdater(client);
     }
 
     /**
@@ -70,9 +64,10 @@ public class Cli extends ClientGameManager {
     /**
      * Asks the username
      */
-    private void askUsername() {
+    private String askUsername() {
         boolean validUsername = false;
         boolean firstError = true;
+        String username = null;
 
         out.println("Enter your username:");
 
@@ -80,11 +75,11 @@ public class Cli extends ClientGameManager {
             out.print(">>> ");
 
             if (in.hasNextLine()) {
-                setUsername(in.nextLine());
+                username = in.nextLine();
 
-                if (getUsername().equals("") ||
-                        getUsername().equalsIgnoreCase("god") ||
-                        getUsername().equalsIgnoreCase("bot")) {
+                if (username.equals("") ||
+                        username.equalsIgnoreCase("god") ||
+                        username.equalsIgnoreCase("bot")) {
                     firstError = promptInputError(firstError, "Invalid username!");
                 } else {
                     validUsername = true;
@@ -96,17 +91,20 @@ public class Cli extends ClientGameManager {
         } while (!validUsername);
 
         CliPrinter.clearConsole(out);
+        return username;
     }
 
     /**
      * Asks the connection tpye
      */
-    private void askConnection() {
+    private void doConnection() {
         boolean validConnection = false;
         boolean firstError = true;
         int connection = -1;
 
-        out.printf("Hi %s!%n", getUsername());
+        String username = askUsername();
+
+        out.printf("Hi %s!%n", username);
         out.println("\nEnter the connection type (0 = Sockets or 1 = RMI):");
 
         do {
@@ -142,13 +140,7 @@ public class Cli extends ClientGameManager {
         out.println("\nServer Port: " + port);
 
         try {
-            if (connection == 0) {
-                client = new ClientSocket(getUsername(), address, port);
-            } else {
-                client = new ClientRMI(getUsername(), address, port);
-            }
-
-            startConnection();
+            createConnection(connection, username, address, port);
         } catch (Exception e) {
             promptError(e.getMessage(), true);
         }
@@ -221,59 +213,40 @@ public class Cli extends ClientGameManager {
     }
 
     /**
-     * Starts a connection with the server
-     *
-     * @throws Exception if communication with server fails
+     * Handles the ConnectionResponse
      */
-    private void startConnection() throws Exception {
+    @Override
+    public void connectionResponse(ConnectionResponse response) {
         CliPrinter.clearConsole(out);
-        client.startConnection();
-        List<Message> messages;
 
-        do {
-            messages = client.receiveMessages();
-        } while (messages.isEmpty());
-
-        boolean connected = false;
-
-        for (Message message : messages) {
-            if (message.getContent().equals(MessageContent.CONNECTION_RESPONSE)) {
-                ConnectionResponse response = (ConnectionResponse) message;
-
-                if (response.getStatus().equals(MessageStatus.ERROR)) {
-                    promptError(response.getMessage(), false);
-                    out.println();
-                    break;
-                } else {
-                    out.println("Connected to " + client.getAddress() + ":" + client.getPort() + " with username " + getUsername());
-                    client.setToken(response.getNewToken());
-                    connected = true;
-                }
-            }
-        }
-
-        if (!connected) {
-            client.close();
-            client = null;
+        if (response.getStatus().equals(MessageStatus.ERROR)) {
+            promptError(response.getMessage(), false);
+            out.println();
             doConnection();
+        } else {
+            out.println("Connected to server with username " + getUsername());
+            askUnusedColors();
         }
     }
 
-    private void doConnection() {
-        askUsername();
-        askConnection();
+    /**
+     * Asks unused colors to the server
+     */
+    private void askUnusedColors() {
+        if (!sendRequest(MessageBuilder.buildColorRequest(getClientToken(), getUsername()))) {
+            promptError(SEND_ERROR, true);
+        }
     }
 
     /**
      * Asks a color
      */
-    private void askColor() {
+    @Override
+    public void askColor(List<PlayerColor> availableColors) {
         boolean validColor = false;
         boolean firstError = true;
 
         PlayerColor playercolor = null;
-        List<PlayerColor> availableColors = getUnusedColors();
-
 
         if (availableColors.isEmpty()) {
             promptError("The game is full!", true);
@@ -310,73 +283,30 @@ public class Cli extends ClientGameManager {
         } while (!validColor);
 
         out.printf("%nYou picked %s color.%n", playercolor.name());
-        setPlayerColor(playercolor);
-    }
 
-    /**
-     * @return the list of unused colors
-     */
-    private List<PlayerColor> getUnusedColors() {
-        List<Message> messages;
-        List<PlayerColor> availableColors = new ArrayList<>();
-
-        try {
-            client.sendMessage(MessageBuilder.buildColorRequest(client.getToken(), client.getUsername()));
-        } catch (IOException e) {
-            promptError(e.getMessage(), true);
-        }
-
-        do {
-            messages = client.receiveMessages();
-        } while (messages.isEmpty());
-
-        for (Message message : messages) {
-            if (message.getContent().equals(MessageContent.COLOR_RESPONSE)) {
-                ColorResponse response = (ColorResponse) message;
-
-                availableColors = response.getColorList();
-            }
-        }
-
-        return availableColors;
+        askLobbyJoin(playercolor);
     }
 
     /**
      * Asks to the server the join to the lobby
      */
-    private void askLobbyJoin() {
-        List<Message> messages;
-
-        try {
-            client.sendMessage(MessageBuilder.buildGetInLobbyMessage(client.getToken(), getUsername(), getPlayerColor(), false));
-        } catch (IOException e) {
-            promptError(e.getMessage(), true);
-        }
-
-        do {
-            messages = client.receiveMessages();
-        } while (messages.isEmpty());
-
-        for (Message message : messages) {
-            if (message.getContent().equals(MessageContent.RESPONSE)) {
-                Response response = (Response) message;
-
-                CliPrinter.clearConsole(out);
-
-                if (response.getStatus() == MessageStatus.ERROR) {
-                    out.println(response.getMessage());
-                    out.println();
-                    doLobbyJoin();
-                } else {
-                    out.println("You joined the lobby!\n\nWait for the game to start...");
-                }
-            }
+    private void askLobbyJoin(PlayerColor playerColor) {
+        if (!sendRequest(MessageBuilder.buildGetInLobbyMessage(getClientToken(), getUsername(), playerColor, false))) {
+            promptError(SEND_ERROR, true);
         }
     }
 
-    private void doLobbyJoin() {
-        askColor();
-        askLobbyJoin();
+    @Override
+    public void lobbyJoinResponse(Response response) {
+        CliPrinter.clearConsole(out);
+
+        if (response.getStatus() == MessageStatus.ERROR) {
+            out.println(response.getMessage());
+            out.println();
+            askUnusedColors();
+        } else {
+            out.println("You joined the lobby!\n\nWait for the game to start...");
+        }
     }
 
     /**
@@ -437,7 +367,7 @@ public class Cli extends ClientGameManager {
             else rechargingWeapons.add(tempChoose);
         }
 
-        if(rechargingWeapons.isEmpty()) return;
+        if (rechargingWeapons.isEmpty()) return;
 
         if (!getPowerups().isEmpty()) {
             paymentPowerups = askPaymentPowerups();
@@ -445,11 +375,11 @@ public class Cli extends ClientGameManager {
 
         try {
             if (paymentPowerups.isEmpty()) {
-                if (!sendRequest(MessageBuilder.buildReloadRequest(client.getToken(), getPlayer(), rechargingWeapons))) {
+                if (!sendRequest(MessageBuilder.buildReloadRequest(getClientToken(), getPlayer(), rechargingWeapons))) {
                     promptError(SEND_ERROR, true);
                 }
             } else {
-                if (!sendRequest(MessageBuilder.buildReloadRequest(client.getToken(), getPlayer(), rechargingWeapons, paymentPowerups))) {
+                if (!sendRequest(MessageBuilder.buildReloadRequest(getClientToken(), getPlayer(), rechargingWeapons, paymentPowerups))) {
                     promptError(SEND_ERROR, true);
                 }
             }
@@ -460,7 +390,7 @@ public class Cli extends ClientGameManager {
 
     @Override
     public void passTurn() {
-        if (!sendRequest(MessageBuilder.buildPassTurnRequest(client.getToken(), getPlayer()))) {
+        if (!sendRequest(MessageBuilder.buildPassTurnRequest(getClientToken(), getPlayer()))) {
             promptError(SEND_ERROR, true);
         }
     }
@@ -523,7 +453,7 @@ public class Cli extends ClientGameManager {
                     shootRequestBuilder.targetPlayersUsernames(targetsChosen);
                     break;
                 case SQUARE:
-                    if(effectProperties.containsKey(Properties.SAME_POSITION.getJKey())) {
+                    if (effectProperties.containsKey(Properties.SAME_POSITION.getJKey())) {
                         shootRequestBuilder.targetPositions(new ArrayList<>(Collections.singletonList(getPlayerByName(targetsChosen.get(0)).getPosition())));
                     } else {
                         shootRequestBuilder.targetPositions(askTargetSquaresPositions(effectProperties));
@@ -695,7 +625,7 @@ public class Cli extends ClientGameManager {
             }
         } while (!correctColor);
 
-        if (!sendRequest(MessageBuilder.buildTerminatorSpawnRequest(client.getToken(), getGameSerialized().getBot(), gameMap.getSquare(botSpawnPosition)))) {
+        if (!sendRequest(MessageBuilder.buildTerminatorSpawnRequest(getClientToken(), getGameSerialized().getBot(), gameMap.getSquare(botSpawnPosition)))) {
             promptError(SEND_ERROR, true);
         }
     }
@@ -821,7 +751,7 @@ public class Cli extends ClientGameManager {
         }
 
         // normal shoot does not require recharging weapons
-        shootRequestBuilder = new ShootRequest.ShootRequestBuilder(client.getUsername(), client.getToken(), weapon, effect, null).paymentPowerups(paymentPowerups);
+        shootRequestBuilder = new ShootRequest.ShootRequestBuilder(getUsername(), getClientToken(), weapon, effect, null).paymentPowerups(paymentPowerups);
 
         // now we can build the fireRequest specific to each chosen weapon
         if (effect == 0) {
@@ -857,11 +787,11 @@ public class Cli extends ClientGameManager {
 
         try {
             if (!paymentPowerups.isEmpty()) {
-                if (!sendRequest(MessageBuilder.buildMovePickRequest(client.getToken(), getPlayer(), newPos, paymentPowerups, pickingWeapon, discardingCard))) {
+                if (!sendRequest(MessageBuilder.buildMovePickRequest(getClientToken(), getPlayer(), newPos, paymentPowerups, pickingWeapon, discardingCard))) {
                     promptError(SEND_ERROR, true);
                 }
             } else {
-                if (!sendRequest(MessageBuilder.buildMovePickRequest(client.getToken(), getPlayer(), newPos, pickingWeapon, discardingCard))) {
+                if (!sendRequest(MessageBuilder.buildMovePickRequest(getClientToken(), getPlayer(), newPos, pickingWeapon, discardingCard))) {
                     promptError(SEND_ERROR, true);
                 }
             }
@@ -904,7 +834,7 @@ public class Cli extends ClientGameManager {
         }
 
         if (square.getSquareType() == SquareType.TILE) {
-            if (!sendRequest(MessageBuilder.buildMovePickRequest(client.getToken(), getPlayer(), newPos))) {
+            if (!sendRequest(MessageBuilder.buildMovePickRequest(getClientToken(), getPlayer(), newPos))) {
                 promptError(SEND_ERROR, true);
             }
         } else {
@@ -917,7 +847,7 @@ public class Cli extends ClientGameManager {
         printMap();
         out.println();
 
-        if (!sendRequest(MessageBuilder.buildMoveRequest(client.getToken(), getPlayer(), askCoordinates()))) {
+        if (!sendRequest(MessageBuilder.buildMoveRequest(getClientToken(), getPlayer(), askCoordinates()))) {
             promptError(SEND_ERROR, true);
         }
     }
@@ -932,7 +862,7 @@ public class Cli extends ClientGameManager {
         List<PowerupCard> powerupCards = getPowerups();
 
         try {
-            if (!sendRequest(MessageBuilder.buildDiscardPowerupRequest(client.getToken(), powerupCards, powerupCard, getUsername()))) {
+            if (!sendRequest(MessageBuilder.buildDiscardPowerupRequest(getClientToken(), powerupCards, powerupCard, getUsername()))) {
                 promptError(SEND_ERROR, true);
             }
         } catch (PowerupCardsNotFoundException e) {
@@ -1012,7 +942,7 @@ public class Cli extends ClientGameManager {
         ArrayList<Integer> powerups = new ArrayList<>();
         powerups.add(getPowerups().indexOf(powerupCard));
 
-        PowerupRequest.PowerupRequestBuilder powerupRequestBuilder = new PowerupRequest.PowerupRequestBuilder(getUsername(), client.getToken(), powerups);
+        PowerupRequest.PowerupRequestBuilder powerupRequestBuilder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), powerups);
 
         Effect baseEffect = powerupCard.getBaseEffect();
         Map<String, String> effectProperties = baseEffect.getProperties();
@@ -1131,21 +1061,6 @@ public class Cli extends ClientGameManager {
         return new PlayerPosition(x, y);
     }
 
-    private String readString() {
-        return readString("");
-    }
-
-    private String readString(String defVal) {
-        String readString;
-
-        out.print(">>> ");
-        readString = in.nextLine();
-
-        if (readString.equals("")) return defVal;
-
-        return readString;
-    }
-
     @Override
     public void botAction() {
         PlayerPosition newPos;
@@ -1159,7 +1074,7 @@ public class Cli extends ClientGameManager {
         out.println("Choose the target for the bot action (-1 not to shoot):");
         target = readBotTarget(getGameSerialized().getPlayers());
 
-        if (!sendRequest(MessageBuilder.buildUseTerminatorRequest(client.getToken(), getGameSerialized().getBot(), newPos, (UserPlayer) getPlayerByName(target)))) {
+        if (!sendRequest(MessageBuilder.buildUseTerminatorRequest(getClientToken(), getGameSerialized().getBot(), newPos, (UserPlayer) getPlayerByName(target)))) {
             promptError(SEND_ERROR, true);
         }
     }
@@ -1197,10 +1112,6 @@ public class Cli extends ClientGameManager {
         CliPrinter.printAmmo(out, getPlayer().getPlayerBoard().getAmmo());
     }
 
-    private int readInt() {
-        return readInt(Integer.MIN_VALUE, Integer.MAX_VALUE);
-    }
-
     private int readInt(int minVal, int maxVal) {
         boolean firstError = true;
         boolean accepted = false;
@@ -1208,7 +1119,7 @@ public class Cli extends ClientGameManager {
 
         do {
             out.print(">>> ");
-            if(in.hasNextLine()) {
+            if (in.hasNextLine()) {
                 try {
                     choose = Integer.valueOf(in.nextLine());
 

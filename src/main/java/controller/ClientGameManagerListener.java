@@ -1,12 +1,19 @@
 package controller;
 
+import enumerations.PlayerColor;
 import enumerations.PossibleAction;
 import model.GameSerialized;
 import model.player.Player;
+import network.message.ConnectionResponse;
+import network.message.Response;
 
 import java.util.List;
 
 interface ClientGameManagerListener {
+    void connectionResponse(ConnectionResponse response);
+    void askColor(List<PlayerColor> availableColors);
+    void lobbyJoinResponse(Response response);
+
     void firstPlayerCommunication(String username);
     void notYourTurn();
     void gameStateUpdate(GameSerialized gameSerialized);

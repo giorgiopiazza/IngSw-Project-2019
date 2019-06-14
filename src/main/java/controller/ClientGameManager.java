@@ -9,9 +9,7 @@ import model.cards.PowerupCard;
 import model.cards.WeaponCard;
 import model.player.Player;
 import model.player.UserPlayer;
-import network.client.Client;
-import network.client.ClientUpdateListener;
-import network.client.ClientUpdater;
+import network.client.*;
 import network.message.*;
 
 import java.io.IOException;
@@ -29,19 +27,18 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     public static final String TARGETING_SCOPE = "TARGETING_SCOPE";
 
     private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
-
     private final Object gameSerializedLock = new Object(); // handles GameSerialized parallelism
 
     private Client client;
+    private boolean joinedLobby;
+
     private ClientRoundManager roundManager; // manage the rounds of this client
     private GameSerialized gameSerialized;
-
-    private String username;
-    private PlayerColor playerColor;
+    private ClientUpdater clientUpdater;
 
     private String firstPlayer;
     private String turnOwner;
-    private boolean turnOwnerChanged = false;
+    private boolean turnOwnerChanged;
 
     private boolean firstTurn;
     private boolean yourTurn;
@@ -51,8 +48,12 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     private boolean noChangeStateRequest; // Identify a request that doesn't have to change the player state
 
     public ClientGameManager() {
-        this.firstTurn = true;
-        this.noChangeStateRequest = false;
+        firstTurn = true;
+        noChangeStateRequest = false;
+        turnOwnerChanged = false;
+
+        joinedLobby = false;
+
         new Thread(this).start();
     }
 
@@ -68,17 +69,26 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
     }
 
-    protected void startUpdater(Client client) {
-        this.client = client;
+    protected void createConnection(int connection, String username, String address, int port) throws Exception {
+        if (connection == 0) {
+            client = new ClientSocket(username, address, port);
+        } else {
+            client = new ClientRMI(username, address, port);
+        }
 
-        new ClientUpdater(client, this);
+        client.startConnection();
+        startUpdater();
+    }
+
+    private void startUpdater() {
+        clientUpdater = new ClientUpdater(client, this);
     }
 
     private void startGame() {
         roundManager = new ClientRoundManager(isBotPresent);
 
         if (firstTurn) { // First round
-            if (firstPlayer.equals(username)) { // First player to play
+            if (firstPlayer.equals(getUsername())) { // First player to play
                 yourTurn = true;
 
                 if (isBotPresent) {
@@ -180,74 +190,117 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     @Override
     public void onUpdate(Message message) {
         switch (message.getContent()) {
+            case CONNECTION_RESPONSE:
+                handleConnectionResponse((ConnectionResponse) message);
+                break;
+
+            case COLOR_RESPONSE:
+                handleColorResponse((ColorResponse) message);
+                break;
+
             case RESPONSE:
-                Response response = (Response) message;
-                if (response.getStatus().equals(MessageStatus.ERROR)) {
-                    responseError(response.getMessage());
-                } else {
-
-                    if (noChangeStateRequest) {
-                        noChangeStateRequest = false;
-                    } else {
-                        roundManager.nextState();
-                    }
-                }
-
-                if (roundManager.getUserPlayerState() != UserPlayerState.END) {
-                    queue.add(this::makeMove);
-                } else {
-                    queue.add(roundManager::endRound);
-                }
-
-                if (yourTurn && turnOwnerChanged) { // Use to wait the response before calling newTurn()
-                    turnOwnerChanged = false;
-                    yourTurn = false;
-
-                    queue.add(this::newTurn);
-                }
+                handleResponse((Response) message);
                 break;
 
             case GAME_STATE:
-                GameStateMessage stateMessage = (GameStateMessage) message;
-
-                checkFrenzyMode(stateMessage);
-
-                synchronized (gameSerializedLock) {
-                    gameSerialized = stateMessage.getGameSerialized();
-
-                    queue.add(() -> gameStateUpdate(gameSerialized));
-                }
-
-                checkTurnChange(stateMessage);
+                handleGameStateMessage((GameStateMessage) message);
                 break;
 
             case READY:
-                GameStartMessage gameStartMessage = (GameStartMessage) message;
-                synchronized (gameSerializedLock) {
-                    firstPlayer = gameStartMessage.getFirstPlayer();
-                    turnOwner = gameStartMessage.getFirstPlayer();
-
-                    isBotPresent = gameSerialized.isBotPresent();
-
-                    queue.add(this::startGame);
-                }
+                handleGameStartMessage((GameStartMessage) message);
                 break;
 
-            case LAST_RESPONSE:
-                WinnersResponse winnersList = (WinnersResponse) message;
-                synchronized (gameSerializedLock) {
-                    queue.add(() -> notifyGameEnd(winnersList.getWinners()));
-                }
+            case WINNER:
+                handleWinner((WinnersResponse) message);
                 break;
 
             case DISCONNECTION:
-                DisconnectionMessage disconnectionMessage = (DisconnectionMessage) message;
-
-                onPlayerDisconnect(disconnectionMessage.getUsername());
+                handleDisconnection((DisconnectionMessage) message);
                 break;
 
             default:
         }
+    }
+
+    private void handleConnectionResponse(ConnectionResponse connectionResponse) {
+        if (connectionResponse.getStatus().equals(MessageStatus.OK)) {
+            client.setToken(connectionResponse.getNewToken());
+        } else {
+            clientUpdater.stop();
+            clientUpdater = null;
+
+            try {
+                client.close();
+            } catch (Exception e) {
+                // No issues
+            }
+            client = null;
+        }
+
+        queue.add(() -> connectionResponse(connectionResponse));
+    }
+
+    private void handleColorResponse(ColorResponse colorResponse) {
+        queue.add(() -> askColor(colorResponse.getColorList()));
+    }
+
+    private void handleResponse(Response response) {
+        if (!joinedLobby) {
+            joinedLobby = response.getStatus().equals(MessageStatus.OK);
+            queue.add(() -> lobbyJoinResponse(response));
+        } else {
+            if (response.getStatus().equals(MessageStatus.ERROR)) {
+                queue.add(() -> responseError(response.getMessage()));
+            } else {
+                nextState();
+            }
+
+            if (roundManager.getUserPlayerState() != UserPlayerState.END) {
+                queue.add(this::makeMove);
+            } else {
+                queue.add(roundManager::endRound);
+            }
+
+            if (yourTurn && turnOwnerChanged) { // Use to wait the response before calling newTurn()
+                turnOwnerChanged = false;
+                yourTurn = false;
+
+                queue.add(this::newTurn);
+            }
+        }
+    }
+
+    private void handleGameStateMessage(GameStateMessage gameStateMessage) {
+        checkFrenzyMode(gameStateMessage);
+
+        synchronized (gameSerializedLock) {
+            gameSerialized = gameStateMessage.getGameSerialized();
+
+            queue.add(() -> gameStateUpdate(gameSerialized));
+        }
+
+        checkTurnChange(gameStateMessage);
+    }
+
+    private void handleGameStartMessage(GameStartMessage gameStartMessage) {
+        synchronized (gameSerializedLock) {
+            firstPlayer = gameStartMessage.getFirstPlayer();
+            turnOwner = gameStartMessage.getFirstPlayer();
+
+            isBotPresent = gameSerialized.isBotPresent();
+
+            queue.add(this::startGame);
+        }
+    }
+
+    private void handleWinner(WinnersResponse winnerResponse) {
+        synchronized (gameSerializedLock) {
+            queue.add(() -> notifyGameEnd(winnerResponse.getWinners()));
+        }
+    }
+
+    private void handleDisconnection(DisconnectionMessage disconnectionMessage) {
+        queue.add(() -> onPlayerDisconnect(disconnectionMessage.getUsername()));
     }
 
     private void checkTurnChange(GameStateMessage stateMessage) {
@@ -260,7 +313,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             if (!yourTurn) { // If you are not the turn owner you don't need to wait a response
                 turnOwnerChanged = false;
 
-                if (turnOwner.equals(username)) {
+                if (turnOwner.equals(getUsername())) {
                     yourTurn = true;
                 }
 
@@ -289,6 +342,14 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             int playerIndex = players.indexOf(getUsername());
 
             roundManager.setSecondFrenzyAction(playerIndex > activatorIndex);
+        }
+    }
+
+    private void nextState() {
+        if (noChangeStateRequest) {
+            noChangeStateRequest = false;
+        } else {
+            roundManager.nextState();
         }
     }
 
@@ -362,7 +423,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             case NORMAL:
                 actions.add(PossibleAction.MOVE_AND_PICK);
 
-                if (!getPlayerWeapons(username).isEmpty()) {
+                if (!getPlayerWeapons(getUsername()).isEmpty()) {
                     actions.add(PossibleAction.SHOOT);
                 }
                 break;
@@ -370,7 +431,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             case FIRST_ADRENALINE:
                 actions.add(PossibleAction.ADRENALINE_PICK);
 
-                if (!getPlayerWeapons(username).isEmpty()) {
+                if (!getPlayerWeapons(getUsername()).isEmpty()) {
                     actions.add(PossibleAction.SHOOT);
                 }
                 break;
@@ -378,7 +439,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             case SECOND_ADRENALINE:
                 actions.add(PossibleAction.ADRENALINE_PICK);
 
-                if (!getPlayerWeapons(username).isEmpty()) {
+                if (!getPlayerWeapons(getUsername()).isEmpty()) {
                     actions.add(PossibleAction.ADRENALINE_SHOOT);
                 }
                 break;
@@ -415,7 +476,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             actions.add(PossibleAction.POWER_UP);
         }
 
-        if (getPlayerWeapons(username).stream().anyMatch(w -> w.status() == 1)) {
+        if (getPlayerWeapons(getUsername()).stream().anyMatch(w -> w.status() == 1)) {
             actions.add(PossibleAction.RELOAD);
         }
 
@@ -446,17 +507,17 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
     }
 
-    public List<WeaponCard> getPlayerWeapons(String username) {
+    protected List<WeaponCard> getPlayerWeapons(String username) {
         synchronized (gameSerializedLock) {
             return gameSerialized.getPlayerWeapons(username);
         }
     }
 
     public UserPlayer getPlayer() {
-        return (UserPlayer) getPlayerByName(username);
+        return (UserPlayer) getPlayerByName(getUsername());
     }
 
-    public Player getPlayerByName(String username) {
+    protected Player getPlayerByName(String username) {
         synchronized (gameSerializedLock) {
             Player player;
 
@@ -475,28 +536,14 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    protected PlayerColor getPlayerColor() {
-        return playerColor;
-    }
-
-    protected void setPlayerColor(PlayerColor playerColor) {
-        this.playerColor = playerColor;
-    }
-
     public String getFirstPlayer() {
         return firstPlayer;
     }
 
     protected boolean sendRequest(Message message) {
-        checkChangeStateRequest(message);
+        if (joinedLobby) {
+            checkChangeStateRequest(message);
+        }
 
         try {
             client.sendMessage(message);
@@ -511,5 +558,13 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     private void checkChangeStateRequest(Message message) {
         noChangeStateRequest = (roundManager.getUserPlayerState() != UserPlayerState.BOT_ACTION && message.getContent() == MessageContent.BOT_ACTION) ||
                 message.getContent() == MessageContent.POWERUP_USAGE;
+    }
+
+    protected String getClientToken() {
+        return client.getToken();
+    }
+
+    protected String getUsername() {
+        return client.getUsername();
     }
 }

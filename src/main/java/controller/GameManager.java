@@ -220,7 +220,7 @@ public class GameManager implements TimerRunListener, Serializable {
             lobby.addPlayer(receivedConnectionMessage);
             ((UserPlayer) gameInstance.getPlayerByName(receivedConnectionMessage.getSenderUsername())).setPlayerState(PossiblePlayerState.PLAYING);
 
-            return new Response("Player succesfully reconnected to the game", MessageStatus.OK);
+            return new ReconnectionResponse("Player succesfully reconnected to the game", receivedConnectionMessage.getToken(), MessageStatus.OK);
         } else {
             return new Response("Reconnection message from already in lobby Player", MessageStatus.ERROR);
         }
@@ -713,6 +713,10 @@ public class GameManager implements TimerRunListener, Serializable {
                 playersVotes.remove(setupMessage);
             }
         }
+    }
+
+    public PossibleGameState getGameState() {
+        return gameState;
     }
 
     /**
