@@ -662,7 +662,7 @@ public class Cli extends ClientGameManager {
         ShootRequest.ShootRequestBuilder shootRequestBuilt;
         PlayerPosition adrenalineMovePosition;
 
-        out.println("Choose the moving square for your adrenaline shoot action (same position not to move):");
+        out.println("Choose the moving square for your adrenaline shoot action (same position not to move)");
         adrenalineMovePosition = askCoordinates();
 
         // now that I also know the moving position needed for the adrenaline shoot action I can build the shoot request and send it
@@ -1049,12 +1049,6 @@ public class Cli extends ClientGameManager {
 
         int x = -1;
         int y = -1;
-
-        if (in.hasNextLine()) {
-            String checkStop = in.nextLine();
-            if (checkStop.equals("-1")) return new PlayerPosition(x, y);
-        }
-
         // a target is meant both as: target for a moving action or for choosing a target square
         out.println("Write the target position coordinates " + (getPlayer().isDead() ? "(0,0)" : getPlayer().getPosition()) + ":");
         do {
