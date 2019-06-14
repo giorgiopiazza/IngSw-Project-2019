@@ -245,12 +245,12 @@ class EffectValidator {
         for (PlayerPosition position : targetPositions) {
             tempDist = shooterPosition.distanceOf(position);
 
-            if (targetType == TargetType.PLAYER || targetType == TargetType.ROOM) {
+            if (targetType == TargetType.PLAYER || targetType == TargetType.SQUARE) {
                 if ((exactDistance && tempDist != distance) ||
                         (!exactDistance && tempDist < distance)) {
                     return false;
                 }
-            } else {
+            } else {    // this is ROOM!
                 if ((Game.getInstance().getGameMap().getSquare(shooterPosition).getRoomColor() == Game.getInstance().getGameMap().getSquare(position).getRoomColor())) {
                     return false;
                 }
@@ -273,7 +273,7 @@ class EffectValidator {
 
         Map<String, String> tempMap = new LinkedHashMap<>(allProperties);
 
-        for (Map.Entry<String, String> entry : tempMap.entrySet()) {
+        for (Map.Entry<String, String> entry : allProperties.entrySet()) {
             if (foundTarget && !entry.getValue().equals("stop")) {
                 tempMap.remove(entry.getKey());
             }
