@@ -533,7 +533,8 @@ public class Cli extends ClientGameManager {
 
         do {
             out.println("Choose exactly " + exactIntNum + " target/s for your shoot action:");
-            chosenTargets.add(readTargetUsername(getGameSerialized().getPlayers(), false));
+            String targetUser = readTargetUsername(getGameSerialized().getPlayers(), false);
+            chosenTargets.add(targetUser);
         } while (chosenTargets.size() < exactIntNum);
 
         return chosenTargets;
@@ -542,12 +543,11 @@ public class Cli extends ClientGameManager {
     private ArrayList<String> askMaxTargets(String maxStringNum) {
         int maxIntNum = Integer.parseInt(maxStringNum);
         ArrayList<String> chosenTargets = new ArrayList<>();
+        out.println("Choose up to " + maxIntNum + " target/s for your shoot action (-1 to stop choosing):");
 
         do {
-            String tempTarget;
-            out.println("Choose up to " + maxIntNum + " target/s for your shoot action (-1 to stop choosing):");
-            tempTarget = readTargetUsername(getGameSerialized().getPlayers(), true);
-            if (tempTarget.equals("-1") && chosenTargets.size() > 1) return chosenTargets;
+            String tempTarget = readTargetUsername(getGameSerialized().getPlayers(), true);
+            if (tempTarget == null && chosenTargets.size() > 1) return chosenTargets;
             chosenTargets.add(tempTarget);
         } while (chosenTargets.size() < maxIntNum);
 
@@ -1184,8 +1184,11 @@ public class Cli extends ClientGameManager {
         String chosenTarget;
         do {
             out.print(">>> ");
-            chosenTarget = in.nextLine();
-            if (stoppable && chosenTarget.equals("-1")) return chosenTarget;
+            in.reset();
+            chosenTarget = in.nextLine().trim();
+
+            if (stoppable && chosenTarget.equals("-1")) return null;
+
             if (isTerminatorPresent && chosenTarget.equals("bot")) {
                 accepted = true;
             } else if (!chosenTarget.equals(getPlayer().getUsername())) {
