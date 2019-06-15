@@ -15,7 +15,10 @@
     </stylesheets>
 
     <StackPane styleClass="boardArea">
+
         <ImageView id="map" styleClass="map"/>
+
+        <!-- DECKS -->
 
         <ImageView StackPane.alignment="TOP_RIGHT" fitWidth="64" fitHeight="100" id="powerupDeck"
                    styleClass="powerupDeck">
@@ -100,17 +103,21 @@
             </StackPane.margin>
         </ImageView>
 
+        <!-- PLAYER ICONS -->
+
         <VBox StackPane.alignment="BOTTOM_LEFT" alignment="BOTTOM_CENTER" styleClass="iconList">
-            <ImageView id="blueIcon"/>
-            <ImageView id="yellowIcon"/>
-            <ImageView id="purpleIcon"/>
-            <ImageView id="greenIcon"/>
-            <ImageView id="greyIcon"/>
+            <ImageView id="blueIcon" styleClass="firstPlayer"/>
+            <ImageView id="yellowIcon" styleClass="notFirstPlayer"/>
+            <ImageView id="purpleIcon" styleClass="notFirstPlayer"/>
+            <ImageView id="greenIcon" styleClass="notFirstPlayer"/>
+            <ImageView id="greyIcon" styleClass="notFirstPlayer"/>
 
             <StackPane.margin>
                 <Insets bottom="20.0" left="20.0"/>
             </StackPane.margin>
         </VBox>
+
+        <!-- WEAPON ZOOM -->
 
         <FlowPane alignment="CENTER" id="weaponZoom" styleClass="weaponZoom">
             <ImageView id="weaponZoomImage" styleClass="weaponZoomImage"/>

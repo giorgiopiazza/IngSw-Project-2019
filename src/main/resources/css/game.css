@@ -58,6 +58,14 @@
     -fx-effect: dropshadow(gaussian, #F44336, 15, 0.2, 0, 0);
 }
 
+.firstPlayer {
+    -fx-effect: dropshadow(gaussian, #F44336, 15, 0.2, 0, 0);
+}
+
+.notFirstPlayer {
+    -fx-opacity: 0.5;
+}
+
 .iconList {
     -fx-min-width: 120px;
     -fx-max-width: 120px;
@@ -121,25 +129,20 @@
 
 #blueIcon {
     -fx-image: url("../img/players/blueIcon.png");
-    -fx-effect: dropshadow(gaussian, #F44336, 15, 0.3, 0, 0);
 }
 
 #greenIcon {
     -fx-image: url("../img/players/greenIcon.png");
-    -fx-opacity: 0.5;
 }
 
 #greyIcon {
     -fx-image: url("../img/players/greyIcon.png");
-    -fx-opacity: 0.5;
 }
 
 #purpleIcon {
     -fx-image: url("../img/players/purpleIcon.png");
-    -fx-opacity: 0.5;
 }
 
 #yellowIcon {
     -fx-image: url("../img/players/yellowIcon.png");
-    -fx-opacity: 0.5;
 }
