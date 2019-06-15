@@ -354,16 +354,14 @@
           "description": "Deal 1 damage and mark to a visible target at least 1 move far, and mark the others on that square.",
           "properties": {
             "visible": true,
+            "targetNum": 1,
+            "minDistance": 1,
 			"target": ["PLAYER", "SQUARE"],
             "samePosition": true,
             "subEffects": [{
-              "targetNum": 1,
-              "damageDistribution": [1],
-              "minDistance": 1
+              "damageDistribution": [1]
             }, {
-              "targetNum": 1,
-              "markDistribution": [1],
-              "minDistance": 1
+              "markDistribution": [1]
             }]
           }
         },
@@ -373,16 +371,14 @@
           "cost": ["RED"],
           "properties": {
             "visible": true,
+            "targetNum": 1,
+            "minDistance": 1,
 			"target": ["PLAYER", "SQUARE"],
             "samePosition": true,
             "subEffects": [{
-              "targetNum": 1,
-              "damageDistribution": [1],
-              "minDistance": 1
+              "damageDistribution": [1]
             }, {
-              "targetNum": 1,
-              "markDistribution": [2],
-              "minDistance": 1
+              "markDistribution": [2]
             }]
           }
         }
@@ -445,14 +441,13 @@
           "cost": ["RED"],
           "properties": {
             "visible": true,
+            "targetNum": 1,
             "target": ["PLAYER","SQUARE"],
             "subEffects": [{
-              "targetNum": 1,
-              "damageDistribution": [1],
               "maxMoveTarget": 1,
+              "damageDistribution": [1],
               "moveTargetBefore": false
             }, {
-              "targetNum": 1,
               "damageDistribution": [1]
             }]
           }
@@ -499,18 +494,16 @@
           "cost": ["YELLOW"],
           "properties": {
             "visible": true,
+            "targetNum": 1,
+            "minDistance": 1,
             "target": ["PLAYER","SQUARE"],
             "samePosition": true,
             "subEffects": [{
-              "targetNum": 1,
               "damageDistribution": [2],
-              "minDistance": 1,
               "maxMoveTarget": 1,
               "moveTargetBefore": false
             }, {
-              "targetNum": 1,
-              "damageDistribution": [1],
-              "minDistance": 1
+              "damageDistribution": [1]
             }]
           }
         },
@@ -520,19 +513,17 @@
           "cost": ["BLUE","YELLOW"],
           "properties": {
             "visible": true,
+            "targetNum": 1,
+            "minDistance": 1,
             "move": 2,
             "target": ["PLAYER","SQUARE"],
             "samePosition": true,
             "subEffects": [{
-              "targetNum": 1,
               "damageDistribution": [2],
-              "minDistance": 1,
               "maxMoveTarget": 1,
               "moveTargetBefore": false
             }, {
-              "targetNum": 1,
-              "damageDistribution": [1],
-              "minDistance": 1
+              "damageDistribution": [1]
             }]
           }
         }
