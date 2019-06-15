@@ -100,7 +100,7 @@
             </StackPane.margin>
         </ImageView>
 
-        <VBox StackPane.alignment="BOTTOM_RIGHT" alignment="BOTTOM_CENTER" styleClass="iconList">
+        <VBox StackPane.alignment="BOTTOM_LEFT" alignment="BOTTOM_CENTER" styleClass="iconList">
             <ImageView id="blueIcon"/>
             <ImageView id="yellowIcon"/>
             <ImageView id="purpleIcon"/>
@@ -108,7 +108,7 @@
             <ImageView id="greyIcon"/>
 
             <StackPane.margin>
-                <Insets bottom="20.0" right="20.0"/>
+                <Insets bottom="20.0" left="20.0"/>
             </StackPane.margin>
         </VBox>
 
