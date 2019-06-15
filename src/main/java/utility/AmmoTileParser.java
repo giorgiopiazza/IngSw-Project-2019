@@ -10,7 +10,6 @@ import model.cards.AmmoTile;
 import model.cards.Deck;
 import model.player.AmmoQuantity;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -37,7 +36,7 @@ public class AmmoTileParser {
         for (JsonElement ammoTileElem : ammoTiles) {
             JsonObject ammoTile = ammoTileElem.getAsJsonObject();
 
-            File image = null;
+            String imagePath = ammoTile.get("image").getAsString();
             boolean powerUp = ammoTile.get("powerUp").getAsBoolean();
             JsonArray ammoArray = ammoTile.getAsJsonArray("ammo");
 
@@ -48,7 +47,7 @@ public class AmmoTileParser {
             Ammo[] ammo = list.toArray(new Ammo[0]);
 
             for (int i = 0; i < ammoTile.get("quantity").getAsInt(); ++i) {
-                deck.addCard(new AmmoTile(image, new AmmoQuantity(ammo), powerUp));
+                deck.addCard(new AmmoTile(imagePath, new AmmoQuantity(ammo), powerUp));
             }
         }
 

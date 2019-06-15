@@ -1,58 +1,75 @@
 {
   "ammoTiles": [
     {
+      "image" : "/img/ammotiles/ammo_yrr.png",
       "quantity": 3,
       "ammo": ["YELLOW","RED","RED"],
       "powerUp": false
     },
     {
+      "image" : "/img/ammotiles/ammo_ybb.png",
       "quantity": 3,
       "ammo": ["YELLOW","BLUE","BLUE"],
       "powerUp": false
     },
     {
+      "image" : "/img/ammotiles/ammo_ryy.png",
       "quantity": 3,
       "ammo": ["RED","YELLOW","YELLOW"],
       "powerUp": false
     },
     {
+      "image" : "/img/ammotiles/ammo_rbb.png",
       "quantity": 3,
       "ammo": ["RED","BLUE","BLUE"],
       "powerUp": false
     },
     {
+      "image" : "/img/ammotiles/ammo_brr.png",
       "quantity": 3,
       "ammo": ["BLUE","RED","RED"],
       "powerUp": false
     },
     {
+      "image" : "/img/ammotiles/ammo_byy.png",
       "quantity": 3,
       "ammo": ["BLUE","YELLOW","YELLOW"],
       "powerUp": false
     },
     {
+      "image" : "/img/ammotiles/ammo_pyr.png",
       "quantity": 4,
       "ammo": ["YELLOW","RED"],
       "powerUp": true
     },
     {
+      "image" : "/img/ammotiles/ammo_pyb.png",
       "quantity": 4,
       "ammo": ["YELLOW","BLUE"],
       "powerUp": true
     },
     {
+      "image" : "/img/ammotiles/ammo_prb.png",
       "quantity": 4,
       "ammo": ["RED","BLUE"],
       "powerUp": true
     },
     {
-      "quantity": 3,
+      "image" : "/img/ammotiles/ammo_pyy.png",
+      "quantity": 2,
       "ammo": ["YELLOW","YELLOW"],
       "powerUp": true
     },
     {
-      "quantity": 3,
+      "image" : "/img/ammotiles/ammo_pbb.png",
+      "quantity": 2,
       "ammo": ["BLUE","BLUE"],
+      "powerUp": true
+    },
+    {
+      "image" : "/img/ammotiles/ammo_prr.png",
+      "quantity": 2,
+      "ammo": ["RED","RED"],
       "powerUp": true
     }
   ]

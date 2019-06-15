@@ -100,11 +100,11 @@ public class PowerupParser {
         for (JsonElement je : values) {
             JsonObject jo = je.getAsJsonObject();
 
-            File image = new File(PowerupParser.class.getResource(jo.get("image").getAsString()).getFile());
+            String imagePath = jo.get("image").getAsString();
             Ammo ammo = Ammo.valueOf(jo.get("color").getAsString());
 
             for (int i = 0; i < quantity; ++i) {
-                cards.add(new PowerupCard(name, image, ammo, effect));
+                cards.add(new PowerupCard(name, imagePath, ammo, effect));
             }
         }
 

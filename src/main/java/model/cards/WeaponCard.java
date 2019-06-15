@@ -19,13 +19,14 @@ import network.message.ShootRequest;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 public class WeaponCard extends UsableCard {
+    private static final long serialVersionUID = -1676793782570413675L;
+
     private final int id;
     private final Ammo[] cost;
     private final ArrayList<Effect> secondaryEffects;
@@ -34,9 +35,9 @@ public class WeaponCard extends UsableCard {
     public static final int UNCHARGED = 1;
     public static final int SEMI_CHARGED = 2;
 
-    public WeaponCard(String name, File image, Effect baseEffect, int id, Ammo[] cost,
+    public WeaponCard(String name, String imagePath, Effect baseEffect, int id, Ammo[] cost,
                       ArrayList<Effect> secondaryEffects, WeaponState weaponState) {
-        super(name, image, baseEffect);
+        super(name, imagePath, baseEffect);
         this.id = id;
         this.cost = cost;
         this.secondaryEffects = secondaryEffects;

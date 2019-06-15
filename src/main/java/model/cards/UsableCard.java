@@ -4,15 +4,16 @@ import exceptions.AdrenalinaException;
 import model.cards.effects.Effect;
 import network.message.EffectRequest;
 
-import java.io.File;
 import java.util.Objects;
 
 public abstract class UsableCard extends Card {
+    private static final long serialVersionUID = 8862569195167166494L;
+
     private final String name;
     private final Effect baseEffect;
 
-    public UsableCard(String name, File image, Effect baseEffect) {
-        super(image);
+    public UsableCard(String name, String imagePath, Effect baseEffect) {
+        super(imagePath);
         this.name = name;
         this.baseEffect = baseEffect;
     }

@@ -37,32 +37,33 @@ public class GameMap implements Serializable {
      * R R R Y
      * W W Y
      */
-    public static final int MAP_1 = 1;
+    static final int MAP_1 = 1;
     /**
      * Map of type:
      * B B B G
      * R R Y Y
      * W Y Y
      */
-    public static final int MAP_2 = 2;
+    static final int MAP_2 = 2;
     /**
      * Map of type:
      * R B B G
      * R M Y Y
      * W W Y Y
      */
-    public static final int MAP_3 = 3;
+    static final int MAP_3 = 3;
     /**
      * Map of type:
      * R B B
      * R M M Y
      * W W W Y
      */
-    public static final int MAP_4 = 4;
+    static final int MAP_4 = 4;
 
     private static final long serialVersionUID = 1887000392810101907L;
 
     private Square[][] rooms;
+    private String imagePath;
 
     public GameMap(int mapType) {
         String path = "json/maps.json";
@@ -100,14 +101,15 @@ public class GameMap implements Serializable {
         }
 
         JsonArray matrix = mapObject.get("map").getAsJsonArray();
-
         fillMap(matrix, map);
 
         this.rooms = map;
+        this.imagePath = mapObject.get("image").getAsString();
     }
 
     public GameMap(@NotNull GameMap gameMap) {
         this.rooms = gameMap.rooms;
+        this.imagePath = gameMap.imagePath;
     }
 
     private static void fillMap(JsonArray matrix, Square[][] map) {

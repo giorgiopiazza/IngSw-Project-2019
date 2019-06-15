@@ -54,7 +54,7 @@ public class WeaponParser {
             JsonObject weapon = weapElem.getAsJsonObject();
 
             String name = weapon.get("name").getAsString();
-            File image = null;
+            String imagePath = weapon.get("image").getAsString();
             int id = weapon.get("id").getAsInt();
             Ammo[] cost = parseAmmoJsonArray(weapon.getAsJsonArray(COST));
 
@@ -71,7 +71,7 @@ public class WeaponParser {
             }
 
             // Card creation
-            deck.addCard((new WeaponCard(name, image, baseEffect, id, cost, secondaryEffects, new SemiChargedWeapon())));
+            deck.addCard((new WeaponCard(name, imagePath, baseEffect, id, cost, secondaryEffects, new SemiChargedWeapon())));
         }
 
         deck.shuffle();

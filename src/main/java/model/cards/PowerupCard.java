@@ -7,26 +7,26 @@ import exceptions.player.EmptyHandException;
 import exceptions.playerboard.NotEnoughAmmoException;
 import model.Game;
 import model.cards.effects.Effect;
-import model.cards.effects.PowerupBaseEffect;
 import model.player.AmmoQuantity;
 import model.player.UserPlayer;
 import network.message.EffectRequest;
 import network.message.PowerupRequest;
 
-import java.io.File;
 import java.util.List;
 import java.util.Objects;
 
 public class PowerupCard extends UsableCard {
+    private static final long serialVersionUID = -8499317938860478314L;
+
     private final Ammo value;
+
+    public PowerupCard(String name, String imagePath, Ammo value, Effect baseEffect) {
+        super(name, imagePath, baseEffect);
+        this.value = value;
+    }
 
     public Ammo getValue() {
         return this.value;
-    }
-
-    public PowerupCard(String name, File image, Ammo value, Effect baseEffect) {
-        super(name, image, baseEffect);
-        this.value = value;
     }
 
     @Override
@@ -92,7 +92,7 @@ public class PowerupCard extends UsableCard {
         if (o == null || getClass() != o.getClass()) return false;
         PowerupCard that = (PowerupCard) o;
         if (!this.getName().equals(that.getName())) return false;
-        if (!Objects.equals(this.getImage(), that.getImage())) return false;
+        if (!Objects.equals(this.imagePath, that.imagePath)) return false;
         return value == that.value;
     }
 

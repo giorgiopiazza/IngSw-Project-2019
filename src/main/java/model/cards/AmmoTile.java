@@ -7,25 +7,25 @@ import model.Game;
 import model.player.AmmoQuantity;
 import model.player.UserPlayer;
 
-import java.io.File;
 import java.util.Objects;
 
 public class AmmoTile extends Card {
+    private static final long serialVersionUID = -1145130365479937145L;
 
     private final AmmoQuantity ammoOnTile;
     private final boolean pickPowerup;
 
-    public AmmoTile(File image, AmmoQuantity ammoOnTile, boolean pickPowerup) {
-        super(image);
+    public AmmoTile(String imagePath, AmmoQuantity ammoOnTile, boolean pickPowerup) {
+        super(imagePath);
         this.ammoOnTile = ammoOnTile;
         this.pickPowerup = pickPowerup;
     }
 
-    public AmmoQuantity getAmmoOnTile() {
+    AmmoQuantity getAmmoOnTile() {
         return this.ammoOnTile;
     }
 
-    public boolean isPickPowerup() {
+    boolean isPickPowerup() {
         return this.pickPowerup;
     }
 
@@ -83,7 +83,7 @@ public class AmmoTile extends Card {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AmmoTile ammoTile = (AmmoTile) o;
-        if (!Objects.equals(this.getImage(), ammoTile.getImage())) return false;
+        if (!Objects.equals(this.imagePath, ammoTile.imagePath)) return false;
         return pickPowerup == ammoTile.pickPowerup &&
                 Objects.equals(ammoOnTile, ammoTile.ammoOnTile);
     }
