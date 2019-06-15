@@ -302,10 +302,7 @@ public class Gui extends Application {
         ImageView weaponTarget = (ImageView) event.getTarget();
 
         if (weaponTarget != null) {
-            ImageView map = (ImageView) scene.lookup("#map");
-            map.getStyleClass().clear();
-
-            setBoardOpaque(0.4);
+            setBoardOpaque(0.3);
 
             FlowPane flowPane = (FlowPane) scene.lookup("#weaponZoom");
             flowPane.setVisible(true);
@@ -323,9 +320,6 @@ public class Gui extends Application {
 
         ImageView imageView = (ImageView) scene.lookup("#weaponZoomImage");
         imageView.setImage(null);
-
-        ImageView map = (ImageView) scene.lookup("#map");
-        map.getStyleClass().add("map");
 
         setBoardOpaque(1);
     }

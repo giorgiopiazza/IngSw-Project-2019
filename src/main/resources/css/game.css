@@ -22,12 +22,12 @@
     -fx-max-height: 750px;
     -fx-min-height: 750px;
 
-    -fx-max-width: 1000px;
-    -fx-min-width: 1000px;
+    -fx-max-width: 1300px;
+    -fx-min-width: 1300px;
 }
 
 .map {
-    -fx-effect: dropshadow(gaussian, #FFFFFF, 15, 0.3, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.8), 15, 0.3, 0, 0);
 }
 
 .powerupDeck {
@@ -52,6 +52,15 @@
 
 .weaponZoom {
     visibility: hidden;
+}
+
+.weaponZoomImage {
+    -fx-effect: dropshadow(gaussian, #F44336, 15, 0.2, 0, 0);
+}
+
+.iconList {
+    -fx-min-width: 120px;
+    -fx-max-width: 120px;
 }
 
 #blueWeapon0 {
@@ -108,4 +117,29 @@
 
 #yellow {
     -fx-image: url("../img/players/yellowFigure.png");
+}
+
+#blueIcon {
+    -fx-image: url("../img/players/blueIcon.png");
+    -fx-effect: dropshadow(gaussian, #F44336, 15, 0.3, 0, 0);
+}
+
+#greenIcon {
+    -fx-image: url("../img/players/greenIcon.png");
+    -fx-opacity: 0.5;
+}
+
+#greyIcon {
+    -fx-image: url("../img/players/greyIcon.png");
+    -fx-opacity: 0.5;
+}
+
+#purpleIcon {
+    -fx-image: url("../img/players/purpleIcon.png");
+    -fx-opacity: 0.5;
+}
+
+#yellowIcon {
+    -fx-image: url("../img/players/yellowIcon.png");
+    -fx-opacity: 0.5;
 }
