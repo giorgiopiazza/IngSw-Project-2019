@@ -15,15 +15,17 @@
     </stylesheets>
 
     <StackPane styleClass="boardArea">
-        <ImageView id="map1" styleClass="map"/>
+        <ImageView id="map" styleClass="map"/>
 
-        <ImageView StackPane.alignment="TOP_RIGHT" fitWidth="64" fitHeight="100" styleClass="powerupDeck">
+        <ImageView StackPane.alignment="TOP_RIGHT" fitWidth="64" fitHeight="100" id="powerupDeck"
+                   styleClass="powerupDeck">
             <StackPane.margin>
                 <Insets top="63.0" right="72.0"/>
             </StackPane.margin>
         </ImageView>
 
-        <ImageView StackPane.alignment="TOP_RIGHT" fitWidth="90" fitHeight="153" styleClass="weaponDeck">
+        <ImageView StackPane.alignment="TOP_RIGHT" fitWidth="90" fitHeight="153" id="weaponDeck"
+                   styleClass="weaponDeck">
             <StackPane.margin>
                 <Insets top="210.0" right="74.0"/>
             </StackPane.margin>
@@ -97,5 +99,9 @@
                 <Insets right="49.0" bottom="7.0"/>
             </StackPane.margin>
         </ImageView>
+
+        <FlowPane alignment="CENTER" id="weaponZoom" styleClass="weaponZoom">
+            <ImageView id="weaponZoomImage"/>
+        </FlowPane>
     </StackPane>
 </FlowPane>

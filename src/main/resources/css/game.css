@@ -39,8 +39,8 @@
 }
 
 .blueWeapon {
-    -fx-rotate: 0deg;
-}
+     -fx-rotate: 0deg;
+ }
 
 .redWeapon {
     -fx-rotate: 270deg;
@@ -48,6 +48,10 @@
 
 .yellowWeapon {
     -fx-rotate: 90deg;
+}
+
+.weaponZoom {
+    visibility: hidden;
 }
 
 #blueWeapon0 {
@@ -84,22 +88,6 @@
 
 #yellowWeapon2 {
     -fx-image: url("../img/weapons/shotgun.png");
-}
-
-#map1 {
-    -fx-image: url("../img/maps/map1.png");
-}
-
-#map2 {
-    -fx-image: url("../img/maps/map2.png");
-}
-
-#map3 {
-    -fx-image: url("../img/maps/map3.png");
-}
-
-#map4 {
-    -fx-image: url("../img/maps/map4.png");
 }
 
 #blue {

@@ -3,6 +3,7 @@ package view.gui;
 import enumerations.PlayerColor;
 import javafx.application.Application;
 import javafx.css.PseudoClass;
+import javafx.event.Event;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -12,6 +13,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -23,6 +25,7 @@ import utility.ServerAddressValidator;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class Gui extends Application {
@@ -223,7 +226,8 @@ public class Gui extends Application {
 
     private void setBoardLayout() {
         if (setLayout("fxml/game.fxml")) {
-
+            setGameMap();
+            bindWeaponZoom();
         }
     }
 
@@ -266,9 +270,79 @@ public class Gui extends Application {
 
         dialogScene.lookup("#okButton").addEventHandler(MouseEvent.MOUSE_CLICKED, event -> dialog.close());
 
-        ((Label)dialogScene.lookup("#dialogTitle")).setText(title);
-        ((Label)dialogScene.lookup("#dialogText")).setText(text);
+        ((Label) dialogScene.lookup("#dialogTitle")).setText(title);
+        ((Label) dialogScene.lookup("#dialogText")).setText(text);
 
         dialog.showAndWait();
+    }
+
+    private void setGameMap() {
+        Scene scene = window.getScene();
+
+        ImageView map = (ImageView) scene.lookup("#map");
+        map.setImage(new Image("/img/maps/map1.png"));
+    }
+
+    private void bindWeaponZoom() {
+        Scene scene = window.getScene();
+        for (String color : List.of("blue", "yellow", "red")) {
+            for (int i = 0; i < 3; ++i) {
+                ImageView weapon = (ImageView) scene.lookup("#" + color + "Weapon" + i);
+                weapon.addEventHandler(MouseEvent.MOUSE_CLICKED, this::showWeaponZoom);
+            }
+        }
+
+        FlowPane weaponZoomPane = (FlowPane) scene.lookup("#weaponZoom");
+        weaponZoomPane.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> hideWeaponZoom());
+    }
+
+    private void showWeaponZoom(Event event) {
+        Scene scene = window.getScene();
+
+        ImageView weaponTarget = (ImageView) event.getTarget();
+
+        if (weaponTarget != null) {
+            ImageView map = (ImageView) scene.lookup("#map");
+            map.getStyleClass().clear();
+
+            setBoardOpaque(0.4);
+
+            FlowPane flowPane = (FlowPane) scene.lookup("#weaponZoom");
+            flowPane.setVisible(true);
+
+            ImageView imageView = (ImageView) scene.lookup("#weaponZoomImage");
+            imageView.setImage(weaponTarget.getImage());
+        }
+    }
+
+    private void hideWeaponZoom() {
+        Scene scene = window.getScene();
+
+        FlowPane flowPane = (FlowPane) scene.lookup("#weaponZoom");
+        flowPane.setVisible(false);
+
+        ImageView imageView = (ImageView) scene.lookup("#weaponZoomImage");
+        imageView.setImage(null);
+
+        ImageView map = (ImageView) scene.lookup("#map");
+        map.getStyleClass().add("map");
+
+        setBoardOpaque(1);
+    }
+
+    private void setBoardOpaque(double value) {
+        Scene scene = window.getScene();
+        ArrayList<String> elements = new ArrayList<>(
+                List.of("map", "powerupDeck", "weaponDeck", "blueWeapon0", "blueWeapon1",
+                        "blueWeapon2", "redWeapon0", "redWeapon1", "redWeapon2",
+                        "yellowWeapon0", "yellowWeapon1", "yellowWeapon2"));
+
+        for (String element : elements) {
+            ImageView imageView = (ImageView) scene.lookup("#" + element);
+
+            if (imageView != null) {
+                imageView.opacityProperty().setValue(value);
+            }
+        }
     }
 }
