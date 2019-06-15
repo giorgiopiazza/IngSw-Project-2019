@@ -305,7 +305,7 @@ public class Cli extends ClientGameManager {
             out.println();
             askUnusedColors();
         } else {
-            out.println("You joined the lobby!\n\nWait for the game to start...\n\n");
+            out.println("You joined the lobby!\n\nWait for the game to start...\n");
             askVoteMap();
         }
     }

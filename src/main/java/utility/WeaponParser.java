@@ -129,15 +129,15 @@ public class WeaponParser {
     static Effect decorateSingleEffect(Effect effect, JsonObject properties) {
         TargetType targetType = TargetType.valueOf(properties.getAsJsonArray(TARGET).get(0).getAsString());
 
-        if (properties.has(Properties.MARK_DISTRIBUTION.getJKey())) {
-            effect = new ExtraMarkDecorator(effect,
-                    parseIntJsonArray(properties.get(Properties.MARK_DISTRIBUTION.getJKey()).getAsJsonArray()),
-                    targetType);
-        }
-
         if (properties.has(Properties.DAMAGE_DISTRIBUTION.getJKey())) {
             effect = new ExtraDamageDecorator(effect,
                     parseIntJsonArray(properties.get(Properties.DAMAGE_DISTRIBUTION.getJKey()).getAsJsonArray()),
+                    targetType);
+        }
+
+        if (properties.has(Properties.MARK_DISTRIBUTION.getJKey())) {
+            effect = new ExtraMarkDecorator(effect,
+                    parseIntJsonArray(properties.get(Properties.MARK_DISTRIBUTION.getJKey()).getAsJsonArray()),
                     targetType);
         }
 
