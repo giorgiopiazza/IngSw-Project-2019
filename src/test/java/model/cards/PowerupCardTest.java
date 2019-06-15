@@ -13,11 +13,10 @@ class PowerupCardTest {
     @Test
     void use() {
         PowerupCard p1, p2;
-        File file = new File("file");
         PowerupBaseEffect effect = mock(PowerupBaseEffect.class);
 
-        p1 = new PowerupCard("nome", file, Ammo.BLUE, effect);
-        p2 = new PowerupCard("nome", file, Ammo.BLUE, effect);
+        p1 = new PowerupCard("nome", "", Ammo.BLUE, effect);
+        p2 = new PowerupCard("nome", "", Ammo.BLUE, effect);
 
         assertEquals(p1, p2);
     }

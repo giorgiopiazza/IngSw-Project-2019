@@ -37,28 +37,28 @@ public class GameMap implements Serializable {
      * R R R Y
      * W W Y
      */
-    static final int MAP_1 = 1;
+    public static final int MAP_1 = 1;
     /**
      * Map of type:
      * B B B G
      * R R Y Y
      * W Y Y
      */
-    static final int MAP_2 = 2;
+    public static final int MAP_2 = 2;
     /**
      * Map of type:
      * R B B G
      * R M Y Y
      * W W Y Y
      */
-    static final int MAP_3 = 3;
+    public static final int MAP_3 = 3;
     /**
      * Map of type:
      * R B B
      * R M M Y
      * W W W Y
      */
-    static final int MAP_4 = 4;
+    public static final int MAP_4 = 4;
 
     private static final long serialVersionUID = 1887000392810101907L;
 

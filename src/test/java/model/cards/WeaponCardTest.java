@@ -35,7 +35,7 @@ class WeaponCardTest {
         full = new ChargedWeapon();
         WeaponState half = new SemiChargedWeapon();
         empty = new UnchargedWeapon();
-        weaponTest = new WeaponCard("TestWeapon", mock(File.class), mock(Effect.class),
+        weaponTest = new WeaponCard("TestWeapon", "", mock(Effect.class),
                 0, cost, secondaryEffects, half);
     }
 
