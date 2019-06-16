@@ -38,7 +38,7 @@ public class GameManager implements TimerRunListener, Serializable {
     private transient RoundManager roundManager;
     private ShootParameters shootParameters;
 
-    private transient int lobbyTimeoutTime;
+    private final transient int lobbyTimeoutTime;
     private transient Timer lobbyTimer;
     private transient boolean lobbyTimerRunning = false;
 
@@ -47,16 +47,16 @@ public class GameManager implements TimerRunListener, Serializable {
      *
      * @param server    the Server to be bind
      * @param skullNum  number of skulls in this game
-     * @param startTime the lobby timeout time in seconds
+     * @param lobbyTimeoutTime the lobby timeout time in seconds
      */
-    public GameManager(Server server, boolean terminator, int skullNum, int startTime) {
+    public GameManager(Server server, boolean terminator, int skullNum, int lobbyTimeoutTime) {
         this.server = server;
         this.gameState = PossibleGameState.GAME_ROOM;
         this.lobby = new GameLobby(terminator, skullNum);
         this.gameInstance = Game.getInstance();
         this.roundManager = new RoundManager(this);
 
-        lobbyTimeoutTime = startTime * 1000;
+        this.lobbyTimeoutTime = lobbyTimeoutTime * 1000;
     }
 
     /**
@@ -65,6 +65,7 @@ public class GameManager implements TimerRunListener, Serializable {
      *
      * @param server           the Server to be bind
      * @param savedGameManager the saved {@link GameManager GameManager} from which the {@link Game Game} is going to restart
+     * @param lobbyTimeoutTime the lobby timeout time in seconds
      */
     public GameManager(Server server, GameManager savedGameManager, int lobbyTimeoutTime) {
         this.server = server;
