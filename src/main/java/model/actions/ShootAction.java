@@ -13,6 +13,7 @@ import model.player.UserPlayer;
 import network.message.EffectRequest;
 import network.message.ReloadRequest;
 import network.message.ShootRequest;
+import utility.InputValidator;
 
 public class ShootAction implements Action {
     private static final int MAX_NORMAL_MOVE = 0;
@@ -34,7 +35,7 @@ public class ShootAction implements Action {
         this.movingPos = shootRequest.getAdrenalineMovePosition();
         this.shootRequest = shootRequest;
 
-        if(shootRequest.getRechargingWeapons() != null) {
+        if (shootRequest.getRechargingWeapons() != null) {
             // i payment powerup in questo caso devono essere dentro la shootRequest per pagare le armi da ricaricare
             ReloadRequest reloadRequest = new ReloadRequest(actingPlayer.getUsername(), shootRequest.getToken(), shootRequest.getRechargingWeapons(), shootRequest.getPaymentPowerups());
             this.reloadAction = new ReloadAction(actingPlayer, reloadRequest);
@@ -46,10 +47,13 @@ public class ShootAction implements Action {
     }
 
     @Override
-    public boolean validate() {
-        int movingDistance = actingPlayer.getPosition().distanceOf(movingPos);
+    public boolean validate() throws InvalidActionException {
+        if (!InputValidator.validatePosition(movingPos)) {
+            throw new InvalidActionException();
+        }
 
         // moving validation
+        int movingDistance = actingPlayer.getPosition().distanceOf(movingPos);
         switch (actionChosen) {
             case SHOOT:
                 if (movingDistance != MAX_NORMAL_MOVE || reloadAction != null) {

@@ -9,6 +9,7 @@ import exceptions.game.InvalidGameStateException;
 import exceptions.map.InvalidSpawnColorException;
 import exceptions.player.EmptyHandException;
 import exceptions.player.MaxCardsInHandException;
+import exceptions.player.PlayerNotFoundException;
 import exceptions.playerboard.NotEnoughAmmoException;
 import model.Game;
 import model.actions.*;
@@ -122,7 +123,7 @@ public class RoundManager {
         int firstSpawnPowerup = discardRequest.getPowerup();
         RoomColor spawnColor;
 
-        if (firstSpawnPowerup < 0 || firstSpawnPowerup > 2 || firstSpawnPowerup > turnOwner.getPowerups().length - 1) {
+        if (firstSpawnPowerup > turnOwner.getPowerups().length - 1) {
             return buildNegativeResponse("Invalid powerup index  ");
         }
 
@@ -204,15 +205,15 @@ public class RoundManager {
         TerminatorAction terminatorAction;
 
         if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.BOT_ACTION)) {
-            terminatorAction = new TerminatorAction(turnManager.getTurnOwner(), gameInstance.getUserPlayerByUsername(terminatorRequest.getTargetPlayer()), terminatorRequest.getMovingPosition());
             try {
+                terminatorAction = new TerminatorAction(turnManager.getTurnOwner(), gameInstance.getUserPlayerByUsername(terminatorRequest.getTargetPlayer()), terminatorRequest.getMovingPosition());
                 if (terminatorAction.validate()) {
                     terminatorAction.execute();
                     turnManager.setDamagedPlayers(new ArrayList<>(List.of(gameInstance.getUserPlayerByUsername(terminatorRequest.getTargetPlayer()))));
                 } else {
                     return buildNegativeResponse("Terminator action not valid");
                 }
-            } catch (InvalidActionException e) {
+            } catch (InvalidActionException | PlayerNotFoundException e) {
                 return buildNegativeResponse("Invalid Action ");
             }
         } else {
@@ -244,7 +245,7 @@ public class RoundManager {
     Response handleGranadeUsage(PowerupRequest granadeMessage) {
         PowerupCard chosenGranade;
 
-        if (granadeMessage.getPowerup().get(0) < 0 || granadeMessage.getPowerup().get(0) > turnManager.getTurnOwner().getPowerups().length) {
+        if (granadeMessage.getPowerup().get(0) > turnManager.getTurnOwner().getPowerups().length) {
             return buildNegativeResponse("Invalid Powerup index!");
         }
 
@@ -740,6 +741,7 @@ public class RoundManager {
                 turnManager.getTurnOwner().addPoints(1);
             }
 
+            gameInstance.getTerminator().setPosition(null);
             turnManager.setArrivingGameState(nextPassState);
             gameManager.changeState(PossibleGameState.TERMINATOR_RESPAWN);
             return buildPositiveResponse("Terminator has died respawn him before passing");

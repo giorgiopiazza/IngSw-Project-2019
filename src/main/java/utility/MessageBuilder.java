@@ -178,7 +178,7 @@ public class MessageBuilder {
         if (shootRequest.getSenderUsername() == null)
             throw new NullPointerException("player userName can not be null");
 
-        if(shootRequest.getWeaponID() < 0 || shootRequest.getWeaponID() > 3)
+        if(shootRequest.getWeaponID() < 0 || shootRequest.getWeaponID() > 2)
             throw new IndexOutOfBoundsException("Invalid index for maximum number of weapons allowed in hand");
 
         if(shootRequest.getEffect() < 0 || shootRequest.getEffect() > 3)
