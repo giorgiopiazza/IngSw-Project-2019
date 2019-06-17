@@ -131,14 +131,17 @@
 
 /* Lobby */
 
-.voteTable {
-    -fx-min-width: 800px;
-    -fx-max-width: 800px;
+.voteHBox {
+    -fx-min-width: 1300px;
+    -fx-max-width: 1300px;
+    -fx-padding: 10 10 10 10;
+    -fx-spacing: 20;
+    -fx-alignment: CENTER;
 }
 
 .voteBox {
-    -fx-min-width: 700px;
-    -fx-max-width: 700px;
+    -fx-min-width: 600px;
+    -fx-max-width: 600px;
     -fx-padding: 10 10 10 10;
     -fx-spacing: 20;
     -fx-alignment: CENTER;

@@ -1,7 +1,6 @@
 package view.gui;
 
 import enumerations.MessageStatus;
-import javafx.application.Platform;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -123,12 +122,10 @@ public class ConnectionSceneController implements Initializable {
         if (response.getStatus() == MessageStatus.OK) {
             GuiManager.setLayout(mainPane.getScene(), "fxml/colorPickScene.fxml");
         } else {
-            Platform.runLater(() -> {
-                GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, response.getMessage());
+            GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, response.getMessage());
 
-                guiManager.closeConnection();
-                onBackButtonClick();
-            });
+            guiManager.closeConnection();
+            onBackButtonClick();
         }
     }
 }

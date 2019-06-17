@@ -3,7 +3,6 @@ package view.gui;
 import enumerations.Ammo;
 import enumerations.PlayerColor;
 import enumerations.RoomColor;
-import javafx.application.Platform;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -74,16 +73,14 @@ public class GameSceneController implements Initializable {
     void setupGame(GameSerialized gameSerialized) {
         GameMap gameMap = gameSerialized.getGameMap();
 
-        Platform.runLater(() -> {
-            map.setImage(new Image(gameMap.getImagePath()));
+        map.setImage(new Image(gameMap.getImagePath()));
 
-            setWeaponCards(gameMap);
-            setPlayerIcons(gameSerialized);
+        setWeaponCards(gameMap);
+        setPlayerIcons(gameSerialized);
 
-            setTurnOwnerIcon();
+        setTurnOwnerIcon();
 
-            bindWeaponZoom();
-        });
+        bindWeaponZoom();
     }
 
     private void setWeaponCards(GameMap gameMap) {

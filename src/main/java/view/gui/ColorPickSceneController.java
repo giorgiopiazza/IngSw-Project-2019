@@ -2,7 +2,6 @@ package view.gui;
 
 import enumerations.MessageStatus;
 import enumerations.PlayerColor;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.image.ImageView;
@@ -51,13 +50,12 @@ public class ColorPickSceneController implements Initializable {
         greenCard.setDisable(true);
 
         if (!guiManager.sendRequest(MessageBuilder.buildColorRequest(guiManager.getClientToken(), guiManager.getUsername()))) {
-            Platform.runLater(() -> {
-                GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE,
-                        GuiManager.SEND_ERROR);
 
-                guiManager.closeConnection();
-                onBackButtonClick();
-            });
+            GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE,
+                    GuiManager.SEND_ERROR);
+
+            guiManager.closeConnection();
+            onBackButtonClick();
         }
     }
 
@@ -85,24 +83,20 @@ public class ColorPickSceneController implements Initializable {
 
         if (!guiManager.sendRequest(MessageBuilder.buildGetInLobbyMessage(guiManager.getClientToken(),
                 guiManager.getUsername(), playerColor, false))) {
-            Platform.runLater(() -> {
-                GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE,
-                        GuiManager.SEND_ERROR);
+            GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE,
+                    GuiManager.SEND_ERROR);
 
-                onBackButtonClick();
-            });
+            onBackButtonClick();
         }
     }
 
     void onColorResponse(List<PlayerColor> availableColors) {
         if (availableColors.isEmpty()) {
-            Platform.runLater(() -> {
-                        GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE,
-                                "The game is full!");
+            GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE,
+                    "The game is full!");
 
-                        onBackButtonClick();
-                    }
-            );
+            onBackButtonClick();
+
         }
 
         yellowCard.setDisable(!availableColors.contains(PlayerColor.YELLOW));
@@ -114,13 +108,12 @@ public class ColorPickSceneController implements Initializable {
 
     void onLobbyJoinResponse(Response response) {
         if (response.getStatus() == MessageStatus.ERROR) {
-            Platform.runLater(() -> {
-                        GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE,
-                                response.getMessage());
 
-                        onBackButtonClick();
-                    }
-            );
+            GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE,
+                    response.getMessage());
+
+            onBackButtonClick();
+
         } else {
             GuiManager.setLayout(mainPane.getScene(), "fxml/lobbyScene.fxml");
         }
