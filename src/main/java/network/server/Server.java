@@ -2,11 +2,13 @@ package network.server;
 
 import com.google.gson.JsonObject;
 import controller.GameManager;
+import enumerations.MessageContent;
 import enumerations.MessageStatus;
 import enumerations.PossibleGameState;
 import model.Game;
 import network.message.*;
 import utility.ConfigurationParser;
+import utility.MoveTimer;
 import utility.persistency.SaveGame;
 
 import java.io.IOException;
@@ -35,6 +37,8 @@ public class Server implements Runnable {
     private int startTime;
     private int moveTime;
 
+    private Timer moveTimer;
+
     private Server(String confFilePath) {
         JsonObject jo = ConfigurationParser.parseConfiguration(confFilePath);
 
@@ -47,12 +51,12 @@ public class Server implements Runnable {
         }
 
         startTime = jo.get("start_time").getAsInt();
-        moveTime = jo.get("move_time").getAsInt();
+        moveTime = jo.get("move_time").getAsInt() * 1000;
         socketPort = jo.get("socket_port").getAsInt();
         rmiPort = jo.get("rmi_port").getAsInt();
 
         LOGGER.log(Level.INFO, "Start time : {0}", startTime);
-        LOGGER.log(Level.INFO, "Move time : {0}", moveTime);
+        LOGGER.log(Level.INFO, "Move time : {0}", moveTime / 1000);
         LOGGER.log(Level.INFO, "Socket port : {0}", socketPort);
         LOGGER.log(Level.INFO, "Rmi port : {0}", rmiPort);
 
@@ -70,6 +74,8 @@ public class Server implements Runnable {
 
         Thread pingThread = new Thread(this);
         pingThread.start();
+
+        moveTimer = new Timer();
     }
 
     public Server(boolean terminator, int skullNum, String confFilePath) {
@@ -86,12 +92,12 @@ public class Server implements Runnable {
         }
 
         startTime = jo.get("start_time").getAsInt();
-        moveTime = jo.get("move_time").getAsInt();
+        moveTime = jo.get("move_time").getAsInt() * 1000;
         socketPort = jo.get("socket_port").getAsInt();
         rmiPort = jo.get("rmi_port").getAsInt();
 
         LOGGER.log(Level.INFO, "Start time : {0}", startTime);
-        LOGGER.log(Level.INFO, "Move time : {0}", moveTime);
+        LOGGER.log(Level.INFO, "Move time : {0}", moveTime / 1000);
         LOGGER.log(Level.INFO, "Socket port : {0}", socketPort);
         LOGGER.log(Level.INFO, "Rmi port : {0}", rmiPort);
 
@@ -109,6 +115,8 @@ public class Server implements Runnable {
 
         Thread pingThread = new Thread(this);
         pingThread.start();
+
+        moveTimer = new Timer();
     }
 
     public static void main(String[] args) {
@@ -121,7 +129,8 @@ public class Server implements Runnable {
         // normal complete Server launch with game Reload should have the following parameter: -l "confFilePath.txt" -r
 
         if (args.length > 0 && args.length < 7) {
-            for (int i = 0; i < args.length; ++i) {
+            int i = 0;
+            while (i < args.length) {
                 if (args[i].charAt(0) == '-' && args[i].length() == 2 && args.length >= i + 1 && args[i + 1].charAt(0) != '-') {
                     switch (args[i].charAt(1)) {
                         case 'l':
@@ -143,6 +152,8 @@ public class Server implements Runnable {
                             break;
                     }
                 }
+
+                ++i;
             }
         }
 
@@ -289,6 +300,28 @@ public class Server implements Runnable {
                 LOGGER.log(Level.INFO, "Message Request {0} - Unknown username {1}", new Object[]{message.getContent().name(), message.getSenderUsername()});
             } else if (msgToken.equals(conn.getToken())) { // Checks that sender is the real player
                 Message response = gameManager.onMessage(message);
+                // update timer
+                if (Game.getInstance().isGameStarted()) {
+                    if (message.getContent().equals(MessageContent.PASS_TURN)
+                            && response.getContent().equals(MessageContent.RESPONSE)
+                            && ((Response) response).getStatus().equals(MessageStatus.OK)) { // if the player pass the turn with success
+                        // cancel the move timer for the previous player and schedule another one for the new player to play
+                        Connection connection = clients.get(gameManager.getRoundManager().getTurnManager().getTurnOwner().getUsername());
+                        String user = gameManager.getRoundManager().getTurnManager().getTurnOwner().getUsername();
+                        LOGGER.log(Level.INFO, "Move timer reset for user {0}, {1} seconds left", new Object[]{user, moveTime / 1000});
+
+                        moveTimer.cancel();
+                        moveTimer = new Timer();
+                        moveTimer.schedule(new MoveTimer(connection, user), moveTime);
+                    } else if (message.getSenderUsername().equals(gameManager.getRoundManager().getTurnManager().getTurnOwner().getUsername())) { // if the message was send by the current user
+                        LOGGER.log(Level.INFO, "Move timer reset for user {0}, {1} seconds left", new Object[]{message.getSenderUsername(), moveTime / 1000});
+
+                        moveTimer.cancel();
+                        moveTimer = new Timer();
+                        moveTimer.schedule(new MoveTimer(conn, message.getSenderUsername()), moveTime);
+                    }
+                }
+                // send message to client
                 sendMessage(message.getSenderUsername(), response);
             }
         }

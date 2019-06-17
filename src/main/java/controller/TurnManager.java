@@ -80,7 +80,7 @@ public class TurnManager implements Serializable {
     /**
      * @return the {@link UserPlayer UserPlayer} owning the Turn
      */
-    UserPlayer getTurnOwner() {
+    public UserPlayer getTurnOwner() {
         return turnOwner;
     }
 
