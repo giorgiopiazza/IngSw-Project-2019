@@ -234,4 +234,9 @@ public class GuiManager extends ClientGameManager {
     public void notifyGameEnd(List<Player> winners) {
 
     }
+
+    @Override
+    public void askScope() {
+
+    }
 }

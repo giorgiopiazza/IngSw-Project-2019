@@ -272,7 +272,11 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             if (response.getStatus().equals(MessageStatus.ERROR)) {
                 queue.add(() -> responseError(response.getMessage()));
             } else {
-                nextState();
+                if (response.getMessage().equals("Shoot Action can have SCOPE usage")) {
+                    askScope();
+                } else {
+                    nextState();
+                }
             }
 
             if (roundManager.getUserPlayerState() != UserPlayerState.END) {

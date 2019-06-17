@@ -5,6 +5,7 @@ import enumerations.PlayerColor;
 import model.Game;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ColorResponse extends Message {
     private static final long serialVersionUID = -5279461134770266666L;
@@ -18,5 +19,13 @@ public class ColorResponse extends Message {
 
     public ArrayList<PlayerColor> getColorList() {
         return colorList;
+    }
+
+    @Override
+    public String toString() {
+        return "ColorResponse{" +
+                "content=" + getContent() +
+                ", colorList=" + (colorList == null ? "null" :Arrays.toString(colorList.toArray())) +
+                '}';
     }
 }

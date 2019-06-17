@@ -24,4 +24,13 @@ public class Response extends Message {
     public MessageStatus getStatus() {
         return status;
     }
+
+    @Override
+    public String toString() {
+        return "Response{" +
+                "content=" + getContent() +
+                ", message='" + message + '\'' +
+                ", status=" + status +
+                '}';
+    }
 }

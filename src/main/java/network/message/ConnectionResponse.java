@@ -30,5 +30,13 @@ public class ConnectionResponse extends Message {
         return status;
     }
 
-
+    @Override
+    public String toString() {
+        return "ConnectionResponse{" +
+                "content=" + getContent() +
+                ", newToken='" + newToken + '\'' +
+                ", message='" + message + '\'' +
+                ", status=" + status +
+                '}';
+    }
 }

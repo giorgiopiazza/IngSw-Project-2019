@@ -152,17 +152,17 @@ public class ShootRequest extends EffectRequest {
                 "senderUsername=" + getSenderUsername() +
                 ", content=" + getContent() +
                 ", senderMovePosition=" + getSenderMovePosition() +
-                ", paymentPowerups=" + Arrays.toString(getPaymentPowerups().toArray()) +
-                ", targetPlayersUsername=" + Arrays.toString(getTargetPlayersUsername().toArray()) +
-                ", targetPlayersMovePositions=" + Arrays.toString(getTargetPlayersMovePositions().toArray()) +
-                ", targetPositions=" + Arrays.toString(getTargetPositions().toArray()) +
+                ", paymentPowerups=" + (getPaymentPowerups() == null ? "null" : Arrays.toString(getPaymentPowerups().toArray())) +
+                ", targetPlayersUsername=" + (getTargetPlayersUsername() == null ? "null" : Arrays.toString(getTargetPlayersUsername().toArray())) +
+                ", targetPlayersMovePositions=" + (getTargetPlayersMovePositions() == null ? "null" : Arrays.toString(getTargetPlayersMovePositions().toArray())) +
+                ", targetPositions=" + (getTargetPositions() == null ? "null" : Arrays.toString(getTargetPositions().toArray())) +
                 ", targetRoomColor=" + getTargetRoomColor() +
                 ", weaponID=" + weaponID +
                 ", effect=" + effect +
                 ", adrenalineMovePosition=" + adrenalineMovePosition +
                 ", moveSenderFirst=" + moveSenderFirst +
                 ", moveTargetsFirst=" + moveTargetsFirst +
-                ", rechargingWeapons=" + Arrays.toString(rechargingWeapons.toArray()) +
+                ", rechargingWeapons=" + (rechargingWeapons == null ? "null" : Arrays.toString(rechargingWeapons.toArray())) +
                 '}';
     }
 }

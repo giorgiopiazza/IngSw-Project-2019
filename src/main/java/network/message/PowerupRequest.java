@@ -102,14 +102,14 @@ public class PowerupRequest extends EffectRequest {
     public String toString() {
         return "PowerupRequest{" +
                 "senderUsername=" + getSenderUsername() +
-                ", content=" + getContent() +
+                ",content=" + getContent() +
                 ", senderMovePosition=" + getSenderMovePosition() +
-                ", paymentPowerups=" + Arrays.toString(getPaymentPowerups().toArray()) +
-                ", targetPlayersUsername=" + Arrays.toString(getTargetPlayersUsername().toArray()) +
-                ", targetPlayersMovePositions=" + Arrays.toString(getTargetPlayersMovePositions().toArray()) +
-                ", targetPositions=" + Arrays.toString(getTargetPositions().toArray()) +
+                ", paymentPowerups=" + (getPaymentPowerups() == null ? "null" : Arrays.toString(getPaymentPowerups().toArray())) +
+                ",targetPlayersUsername=" + (getTargetPlayersUsername() == null ? "null" : Arrays.toString(getTargetPlayersUsername().toArray())) +
+                ", targetPlayersMovePositions=" + (getTargetPlayersMovePositions() == null ? "null" : Arrays.toString(getTargetPlayersMovePositions().toArray())) +
+                ", targetPositions=" + (getTargetPositions() == null ? "null" : Arrays.toString(getTargetPositions().toArray())) +
                 ", targetRoomColor=" + getTargetRoomColor() +
-                ", powerup=" + Arrays.toString(powerup.toArray()) +
+                ", powerup=" + (powerup == null ? "null" : Arrays.toString(powerup.toArray())) +
                 ", ammoColor=" + ammoColor +
                 '}';
     }

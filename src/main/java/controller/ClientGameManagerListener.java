@@ -32,6 +32,8 @@ interface ClientGameManagerListener {
     void adrenalinePick();
     void adrenalineShoot();
 
+    void askScope();
+
     void frenzyMove();
     void frenzyPick();
     void frenzyShoot();

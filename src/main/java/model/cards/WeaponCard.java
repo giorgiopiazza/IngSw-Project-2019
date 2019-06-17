@@ -247,7 +247,7 @@ public class WeaponCard extends UsableCard {
     public String toString() {
         return "WeaponCard{" +
                 "id=" + id +
-                ", cost=" + Arrays.toString(cost) +
+                ", cost=" + (cost == null ? "null" : Arrays.toString(cost)) +
                 ", secondaryEffects=" + secondaryEffects +
                 ", weaponState=" + weaponState +
                 ", imagePath='" + imagePath + '\'' +

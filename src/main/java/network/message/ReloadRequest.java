@@ -27,8 +27,8 @@ public class ReloadRequest extends ActionRequest {
                 "senderUsername=" + getSenderUsername() +
                 ", content=" + getContent() +
                 ", senderMovePosition=" + getSenderMovePosition() +
-                ", paymentPowerups=" + Arrays.toString(getPaymentPowerups().toArray()) +
-                ", weapons=" + Arrays.toString(weapons.toArray()) +
+                ", paymentPowerups=" + (getPaymentPowerups() == null ? "null" : Arrays.toString(getPaymentPowerups().toArray())) +
+                ", weapons=" + (weapons == null ? "null" : Arrays.toString(weapons.toArray())) +
                 '}';
     }
 }

@@ -530,7 +530,7 @@ public class Cli extends ClientGameManager {
 
         do {
             out.println("Choose exactly " + exactIntNum + " target/s for your shoot action:");
-            String targetUser = readTargetUsername(getGameSerialized().getPlayers(), false);
+            String targetUser = readTargetUsername((ArrayList<Player>) getPlayers(), false);
             chosenTargets.add(targetUser);
         } while (chosenTargets.size() < exactIntNum);
 
@@ -543,9 +543,9 @@ public class Cli extends ClientGameManager {
         out.println("Choose up to " + maxIntNum + " target/s for your shoot action (-1 to stop choosing):");
 
         do {
-            String tempTarget = readTargetUsername(getGameSerialized().getPlayers(), true);
+            String tempTarget = readTargetUsername((ArrayList<Player>) getPlayers(), true);
             if (tempTarget == null && chosenTargets.size() > 1) return chosenTargets;
-            chosenTargets.add(tempTarget);
+            if (tempTarget != null) chosenTargets.add(tempTarget);
         } while (chosenTargets.size() < maxIntNum);
 
         return chosenTargets;
@@ -842,7 +842,6 @@ public class Cli extends ClientGameManager {
 
         out.println("\nChoose the moving square for your pick action (same position not to move):");
         newPos = askCoordinates();
-
         Square square = getGameSerialized().getGameMap().getSquare(newPos.getCoordX(), newPos.getCoordY());
 
         if (square == null) {
@@ -1018,7 +1017,7 @@ public class Cli extends ClientGameManager {
 
         out.println();
 
-        return powerups.get(readInt(0, powerups.size() - 1));
+        return newList.get(readInt(0, newList.size() - 1));
     }
 
     private PowerupCard askPowerupSpawn() {
@@ -1060,10 +1059,13 @@ public class Cli extends ClientGameManager {
                     try {
                         x = Integer.parseInt(split[0].trim());
                         y = Integer.parseInt(split[1].trim());
+                        getGameSerialized().getGameMap().getSquare(x, y);
 
                         exit = true;
                     } catch (NumberFormatException e) {
                         firstError = promptInputError(firstError, "Wrong input (must be like \"0,0\" or \"0, 0\")");
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                        firstError = promptInputError(firstError, "Invalid coordinates, out of bounds");
                     }
                 }
             }
@@ -1173,7 +1175,7 @@ public class Cli extends ClientGameManager {
         return chosenTarget;
     }
 
-    private String readTargetUsername(ArrayList<UserPlayer> inGamePlayers, boolean stoppable) {
+    private String readTargetUsername(ArrayList<Player> inGamePlayers, boolean stoppable) {
         boolean firstError = true;
         boolean accepted = false;
         boolean isTerminatorPresent = getGameSerialized().isBotPresent();
@@ -1189,12 +1191,13 @@ public class Cli extends ClientGameManager {
             if (isTerminatorPresent && chosenTarget.equals("bot")) {
                 accepted = true;
             } else if (!chosenTarget.equals(getPlayer().getUsername())) {
-                for (UserPlayer player : inGamePlayers) {
+                for (Player player : inGamePlayers) {
                     if (player.getUsername().equals(chosenTarget)) {
                         accepted = true;
                         break;
                     }
                 }
+                if (!accepted) firstError = promptInputError(firstError, "Target Not Valid");
             } else {
                 firstError = promptInputError(firstError, "Target Not Valid");
             }
@@ -1246,5 +1249,68 @@ public class Cli extends ClientGameManager {
         } while (!accepted);
 
         return finalDecision;
+    }
+
+    @Override
+    public void askScope() {
+        List<PowerupCard> powerups = getPowerups();
+        List<PowerupCard> newList = new ArrayList<>();
+
+        List<PowerupCard> scopes = new ArrayList<>();
+        ArrayList<String> targets = new ArrayList<>();
+        PowerupRequest.PowerupRequestBuilder builder;
+
+        for (PowerupCard powerup : powerups) {
+            if (powerup.getName().equals(ClientGameManager.TARGETING_SCOPE)) {
+                newList.add(powerup);
+            }
+        }
+
+        if (!newList.isEmpty()) {
+            out.println();
+
+            for (int i = 0; i < newList.size(); i++) {
+                out.println("\t" + i + " - " + CliPrinter.toStringPowerUpCard(newList.get(i)) + " (" + Ammo.toColor(newList.get(i).getValue()) + " room)");
+            }
+
+            out.println("Do you want to use some scope(s)? (-1 none or finish scope(s) selection)");
+            out.println();
+
+            int readVal;
+            int cycles = 0;
+
+            do {
+                readVal = readInt(-1, newList.size() - 1);
+                if (readVal != -1) {
+                    out.println("Choose the target player:");
+                    String user = readTargetUsername((ArrayList<Player>) getPlayers(), false);
+
+                    scopes.add(newList.get(readVal));
+                    targets.add(user);
+                }
+                cycles++;
+            } while (readVal != -1 && cycles < newList.size());
+
+            ArrayList<Integer> indexes = new ArrayList<>();
+
+            for (int i = 0; i < powerups.size(); i++) {
+                for (PowerupCard powerup : scopes) {
+                    if (powerup.equals(powerups.get(i))) indexes.add(i);
+                }
+            }
+
+            builder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), indexes);
+            builder.targetPlayersUsername(targets);
+        } else {
+            builder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), new ArrayList<>());
+        }
+
+        try {
+            if (!sendRequest(MessageBuilder.buildPowerupRequest(builder))) {
+                promptError(SEND_ERROR, true);
+            }
+        } catch (PowerupCardsNotFoundException e) {
+            promptError(e.getMessage(), false);
+        }
     }
 }

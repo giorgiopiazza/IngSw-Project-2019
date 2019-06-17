@@ -292,7 +292,8 @@ public class Server implements Runnable {
      */
     void onMessage(Message message) {
         if (message != null && message.getSenderUsername() != null && (message.getToken() != null || message.getSenderUsername().equals("god"))) {
-            LOGGER.log(Level.INFO, "Received: {0}", message);
+            if (message.getContent().equals(MessageContent.SHOOT)) LOGGER.log(Level.INFO, message.toString());
+            else LOGGER.log(Level.INFO, "Received: {0}", message);
             String msgToken = message.getToken();
             Connection conn = clients.get(message.getSenderUsername());
 
@@ -365,6 +366,7 @@ public class Server implements Runnable {
                 }
             }
         }
+        LOGGER.log(Level.INFO, "Send to all: {0}", message);
     }
 
     /**
@@ -384,6 +386,7 @@ public class Server implements Runnable {
                 break;
             }
         }
+        LOGGER.log(Level.INFO, "Send: {0}, {1}", new Object[] {message.getSenderUsername(), message});
     }
 
     /**

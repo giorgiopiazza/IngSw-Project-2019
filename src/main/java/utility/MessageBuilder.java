@@ -139,15 +139,11 @@ public class MessageBuilder {
         return new PassTurnRequest(player.getUsername(), token);
     }
 
-    @NotNull
-    @Contract("_, null, _ -> fail; _, !null, null -> fail")
-    public static PowerupRequest buildPowerupRequest(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) throws PowerupCardsNotFoundException {
+    public static PowerupRequest buildPowerupRequest(@NotNull PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) throws PowerupCardsNotFoundException {
         PowerupRequest powerupRequest = powerupRequestBuilder.build();
 
         if (powerupRequest.getPowerup() == null)
-            throw new NullPointerException("player and powerupCard cannot be null");
-
-        if (powerupRequest.getPowerup().isEmpty()) throw new PowerupCardsNotFoundException();
+            throw new NullPointerException("powerupRequestBuilder cannot be null");
 
         return powerupRequest;
     }
