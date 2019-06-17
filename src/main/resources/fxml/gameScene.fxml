@@ -13,7 +13,7 @@
     </stylesheets>
 
     <StackPane styleClass="boardArea">
-        <ImageView fx:id="map" styleClass="map"/>
+        <ImageView StackPane.alignment="CENTER" fx:id="map" styleClass="map"/>
 
         <!-- DECKS -->
 

@@ -1,7 +1,6 @@
 package view.gui;
 
 import enumerations.MessageStatus;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.image.ImageView;
@@ -56,12 +55,10 @@ public class LobbySceneController implements Initializable {
 
         if (!guiManager.sendRequest(MessageBuilder.buildVoteMessage(guiManager.getClientToken(),
                 guiManager.getUsername(), mapVote))) {
-            Platform.runLater(() -> {
-                GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE,
-                        GuiManager.SEND_ERROR);
+            GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE,
+                    GuiManager.SEND_ERROR);
 
-                onBackButtonClick();
-            });
+            onBackButtonClick();
         }
     }
 
@@ -72,15 +69,11 @@ public class LobbySceneController implements Initializable {
 
     void onVoteResponse(GameVoteResponse gameVoteResponse) {
         if (gameVoteResponse.getStatus() == MessageStatus.OK) {
-            Platform.runLater(() ->
-                    GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), "Info",
-                            "Vote Accepted")
-            );
+            GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), "Info",
+                    "Vote Accepted");
         } else {
-            Platform.runLater(() ->
-                    GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE,
-                            gameVoteResponse.getMessage())
-            );
+            GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE,
+                    gameVoteResponse.getMessage());
 
             map1.setDisable(false);
             map2.setDisable(false);

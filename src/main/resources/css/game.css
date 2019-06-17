@@ -16,6 +16,7 @@
 
 .mainPane {
     -fx-background-image: url("../img/scenes/bg.png");
+    -fx-alignment: CENTER;
 }
 
 .boardArea {

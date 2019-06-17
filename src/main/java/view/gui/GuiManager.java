@@ -3,6 +3,7 @@ package view.gui;
 import controller.ClientGameManager;
 import enumerations.PlayerColor;
 import enumerations.PossibleAction;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -98,22 +99,26 @@ public class GuiManager extends ClientGameManager {
 
     @Override
     public void connectionResponse(ConnectionResponse response) {
-        connectionSceneController.onConnectionResponse(response);
+        Platform.runLater(() ->
+                connectionSceneController.onConnectionResponse(response));
     }
 
     @Override
     public void askColor(List<PlayerColor> availableColors) {
-        colorPickSceneController.onColorResponse(availableColors);
+        Platform.runLater(() ->
+                colorPickSceneController.onColorResponse(availableColors));
     }
 
     @Override
     public void lobbyJoinResponse(Response response) {
-        colorPickSceneController.onLobbyJoinResponse(response);
+        Platform.runLater(() ->
+                colorPickSceneController.onLobbyJoinResponse(response));
     }
 
     @Override
     public void voteResponse(GameVoteResponse gameVoteResponse) {
-        lobbySceneController.onVoteResponse(gameVoteResponse);
+        Platform.runLater(() ->
+                lobbySceneController.onVoteResponse(gameVoteResponse));
     }
 
     @Override
@@ -129,9 +134,11 @@ public class GuiManager extends ClientGameManager {
     @Override
     public void gameStateUpdate(GameSerialized gameSerialized) {
         if (gameSceneController == null) { // Game Start
-            lobbySceneController.onGameStart(gameSerialized);
+            Platform.runLater(() ->
+                    lobbySceneController.onGameStart(gameSerialized));
         } else {
-            gameSceneController.onStateUpdate(gameSerialized);
+            Platform.runLater(() ->
+                    gameSceneController.onStateUpdate(gameSerialized));
         }
     }
 
