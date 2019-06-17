@@ -9,11 +9,13 @@ public class GameStateMessage extends Message {
 
     private final GameSerialized gameSerialized;
     private final String turnOwner;
+    private boolean grenadeUsage;
 
-    public GameStateMessage(String userName, String turnOwner) {
+    public GameStateMessage(String userName, String turnOwner, boolean grenadeUsage) {
         super (Game.GOD, null, MessageContent.GAME_STATE);
         this.gameSerialized = new GameSerialized(userName);
         this.turnOwner = turnOwner;
+        this.grenadeUsage = grenadeUsage;
     }
 
     public GameSerialized getGameSerialized() {
@@ -22,5 +24,9 @@ public class GameStateMessage extends Message {
 
     public String getTurnOwner() {
         return turnOwner;
+    }
+
+    public boolean isGrenadeUsage() {
+        return grenadeUsage;
     }
 }

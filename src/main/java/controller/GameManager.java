@@ -189,6 +189,14 @@ public class GameManager implements TimerRunListener, Serializable {
         }
     }
 
+    /**
+     * Method that handels the disconnection of a {@link UserPlayer UserPlayer}.
+     * Care, if a player disconnects while using a TAGBACK GRENADE he will not
+     * use it by default
+     *
+     * @param receivedConnectionMessage he {@link LobbyMessage LobbyMessage} received from a player that has disconnected
+     * @return a positive or negative {@link Message Message} depending on the fact that the player disconnects or not
+     */
     private Message disconnectionHandler(LobbyMessage receivedConnectionMessage) {
         ArrayList<LobbyMessage> inLobbyPlayers = lobby.getInLobbyPlayers();
         boolean gameEnded;
@@ -214,6 +222,15 @@ public class GameManager implements TimerRunListener, Serializable {
         }
     }
 
+    /**
+     * Method that handles the reconnection of a {@link UserPlayer UserPlayer}.
+     * Care, if a player reconnects while he would be using a TAGBACK GRENADE
+     * he will be reconnected to his next turn because the usage of the powerup
+     * will not be used by default
+     *
+     * @param receivedConnectionMessage the {@link LobbyMessage LobbyMessage} received from a player that wants to reconnect
+     * @return a positive or negative {@link Message Message} depending on the fact that the reconnection has or not happened
+     */
     private Message reconnectionHandler(LobbyMessage receivedConnectionMessage) {
         ArrayList<LobbyMessage> inLobbyPlayers = lobby.getInLobbyPlayers();
 
@@ -224,7 +241,7 @@ public class GameManager implements TimerRunListener, Serializable {
 
             return new ReconnectionMessage(receivedConnectionMessage.getToken(),
                     new GameStateMessage(receivedConnectionMessage.getSenderUsername(),
-                            roundManager.getTurnManager().getTurnOwner().getUsername()));
+                            roundManager.getTurnManager().getTurnOwner().getUsername(), false));
         } else {
             return new Response("Reconnection message from already in lobby Player", MessageStatus.ERROR);
         }
@@ -307,7 +324,7 @@ public class GameManager implements TimerRunListener, Serializable {
      * @return a positive or negative {@link Response Response} handled by the server
      */
     private Response granadeCheckContent(Message receivedMessage) {
-        if (receivedMessage.getContent() == MessageContent.POWERUP_USAGE) {
+        if (receivedMessage.getContent() == MessageContent.POWERUP_USAGE || receivedMessage.getContent() == MessageContent.PASS_TURN) {
             return onGrenadeMessage(receivedMessage);
         } else {
             return buildInvalidResponse();
@@ -386,6 +403,7 @@ public class GameManager implements TimerRunListener, Serializable {
                     gameInstance.setState(GameState.FINAL_FRENZY);
                     finalFrenzySetup();
                 }
+
                 sendPrivateUpdates();
                 return tempResponse;
             } else {
@@ -757,6 +775,14 @@ public class GameManager implements TimerRunListener, Serializable {
                 return roundManager.handleGranadeUsage((PowerupRequest) receivedMessage);
             case PASS_TURN:     // this is a "false" PASS_TURN, turn goes to the next damaged player by the "real" turnOwner
                 // implementation then goes directly here
+
+                // if the player is the last one to use the granade I set back the state to the previous one and give the turn to the next player
+                if (roundManager.getTurnManager().getTurnCount() > roundManager.getTurnManager().getDamagedPlayers().size() - 1) {
+                    roundManager.getTurnManager().giveTurn(roundManager.getTurnManager().getMarkedByGrenadePlayer());
+                    changeState(roundManager.handleAfterActionState(roundManager.getTurnManager().isSecondAction()));
+                    return new Response("Granade not used, shooting player is going back to play", MessageStatus.OK);
+                }
+
                 roundManager.getTurnManager().increaseCount();
                 roundManager.getTurnManager().giveTurn(roundManager.getTurnManager().getDamagedPlayers().get(roundManager.getTurnManager().getTurnCount()));
                 return new Response("Granade not used", MessageStatus.OK);
@@ -1062,13 +1088,26 @@ public class GameManager implements TimerRunListener, Serializable {
 
     /**
      * This method sends to all clients the new state of the {@link Game Game}, contained in the
-     * {@link model.GameSerialized GameSerialized}
+     * {@link model.GameSerialized GameSerialized}. This method is used to send an update of the
+     * {@link Game Game} everytime that a normal action is completed
      */
     void sendPrivateUpdates() {
         List<UserPlayer> players = gameInstance.getPlayers();
 
         for (UserPlayer player : players) {
-            server.sendMessage(player.getUsername(), new GameStateMessage(player.getUsername(), roundManager.getTurnManager().getTurnOwner().getUsername()));
+            server.sendMessage(player.getUsername(), new GameStateMessage(player.getUsername(), roundManager.getTurnManager().getTurnOwner().getUsername(), false));
+        }
+    }
+
+    /**
+     * This method sends to all clients the new state of the {@link Game Game} whenever a turn is
+     * assigned to a player that may use a TAGBACK GRENADE
+     */
+    void sendGrenadePrivateUpdates() {
+        List<UserPlayer> players = gameInstance.getPlayers();
+
+        for(UserPlayer player : players) {
+            server.sendMessage(player.getUsername(), new GameStateMessage(player.getUsername(), roundManager.getTurnManager().getTurnOwner().getUsername(), true));
         }
     }
 

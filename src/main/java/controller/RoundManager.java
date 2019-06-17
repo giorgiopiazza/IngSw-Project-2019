@@ -69,7 +69,7 @@ public class RoundManager {
      * depending on the {@link Game Game} state that can be: {@link GameState GameState.NORMAL} or
      * {@link GameState GameState}
      */
-    void setInitialActions() {
+    private void setInitialActions() {
         if(gameInstance.getState() == GameState.NORMAL && turnManager.getTurnOwner().getPlayerState() == PossiblePlayerState.FIRST_SPAWN) {
             ActionManager.setStartingPossibleActions(turnManager.getTurnOwner(), gameInstance.isTerminatorPresent());
         } else if (gameInstance.getState() == GameState.NORMAL && turnManager.getTurnOwner().getPlayerState() == PossiblePlayerState.PLAYING) {
@@ -221,9 +221,13 @@ public class RoundManager {
 
         if (!turnManager.getDamagedPlayers().isEmpty()) {
             gameManager.changeState(PossibleGameState.GRANADE_USAGE);
+            turnManager.setMarkedByGrenadePlayer(turnManager.getTurnOwner());
+            turnManager.setMarkingTerminator(true);
             turnManager.giveTurn(turnManager.getDamagedPlayers().get(0));
             turnManager.resetCount();
             turnManager.setArrivingGameState(gameState);
+
+            return buildGrenadePositiveResponse("Terminator action used, turn is passing to a possible granade user");
         } else {
             afterTerminatorActionHandler(gameState);
         }
@@ -254,6 +258,13 @@ public class RoundManager {
             return buildNegativeResponse("Invalid Powerup");
         }
 
+        // now I can set the target for the usage of the TAGBACK GRENADE
+        if(gameInstance.isTerminatorPresent() && turnManager.getMarkingTerminator()) {
+            granadeMessage.setGrenadeTarget(Game.BOT);
+        } else {
+            granadeMessage.setGrenadeTarget(turnManager.getMarkedByGrenadePlayer().getUsername());
+        }
+
         try {
             chosenGranade.use(granadeMessage);
         } catch (NotEnoughAmmoException e) {
@@ -273,13 +284,18 @@ public class RoundManager {
         turnManager.increaseCount();
         // if the player is the last one to use the granade I set back the state to the previous one and give the turn to the next player
         if (turnManager.getTurnCount() > turnManager.getDamagedPlayers().size() - 1) {
+            turnManager.giveTurn(turnManager.getMarkedByGrenadePlayer());
+            if(turnManager.getMarkingTerminator()) {
+                afterTerminatorActionHandler(turnManager.getArrivingGameState());
+            }
             gameManager.changeState(handleAfterActionState(turnManager.isSecondAction()));
+            return buildPositiveResponse("Grenade used, turn going back to real turn owner");
         }
 
         // then I give the turn to the next damaged player
         turnManager.giveTurn(turnManager.getDamagedPlayers().get(turnManager.getTurnCount()));
 
-        return buildPositiveResponse("Granade has been Used");
+        return buildGrenadePositiveResponse("Grenade has been Used, turn passed to the next possible user");
     }
 
     /**
@@ -616,9 +632,13 @@ public class RoundManager {
         // tagback granade handler
         if (!turnManager.getDamagedPlayers().isEmpty()) {
             gameManager.changeState(PossibleGameState.GRANADE_USAGE);
+            turnManager.setMarkedByGrenadePlayer(turnManager.getTurnOwner());
+            turnManager.setMarkingTerminator(false);
             turnManager.giveTurn(turnManager.getDamagedPlayers().get(0));
             turnManager.resetCount();
             turnManager.setSecondAction(secondAction);
+
+            return buildGrenadePositiveResponse("Shoot Action done, turn is passing to a possible granade user");
         } else {
             gameManager.changeState(handleAfterActionState(secondAction));
         }
@@ -845,7 +865,7 @@ public class RoundManager {
      * @param secondAction Boolean that specifies if the performing action is the second
      * @return the {@link PossibleGameState PossibleGameState} in which the {@link GameManager GameManager} has to evolve
      */
-    private PossibleGameState handleAfterActionState(boolean secondAction) {
+    PossibleGameState handleAfterActionState(boolean secondAction) {
         if (!secondAction) {
             return PossibleGameState.SECOND_ACTION;
         } else {
@@ -920,6 +940,20 @@ public class RoundManager {
      */
     private Response buildPositiveResponse(String reason) {
         gameManager.sendPrivateUpdates();
+        SaveGame.saveGame(gameManager);
+        return new Response(reason, MessageStatus.OK);
+    }
+
+    /**
+     * Method that builds a Positive {@link Response Response} everyTime the turn has to be assigned to a
+     * {@link UserPlayer UserPlayer} that can use a TAGBACK GRENADE to mark the shootingPlayer that is
+     * damaging him
+     *
+     * @param reason the reason why the {@link Response Response} is Positive
+     * @return the Positive {@link Response Response} built
+     */
+    private Response buildGrenadePositiveResponse(String reason) {
+        gameManager.sendGrenadePrivateUpdates();
         SaveGame.saveGame(gameManager);
         return new Response(reason, MessageStatus.OK);
     }

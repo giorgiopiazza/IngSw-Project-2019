@@ -5,12 +5,14 @@ import enumerations.MessageContent;
 import model.player.PlayerPosition;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Objects;
 
 public abstract class EffectRequest extends ActionRequest {
     private static final long serialVersionUID = 2808691785528480885L;
 
-    private final ArrayList<String> targetPlayersUsername;
+    private ArrayList<String> targetPlayersUsername;
     private final ArrayList<PlayerPosition> targetPositions;
     private final RoomColor targetRoomColor;
     private final ArrayList<PlayerPosition> targetPlayersMovePositions;
@@ -38,6 +40,10 @@ public abstract class EffectRequest extends ActionRequest {
 
     public ArrayList<PlayerPosition> getTargetPlayersMovePositions() {
         return targetPlayersMovePositions;
+    }
+
+    public void setGrenadeTarget(String grenadeTarget) {
+        this.targetPlayersUsername = new ArrayList<>(Collections.singletonList(grenadeTarget));
     }
 
     public static class EffectRequestBuilder {

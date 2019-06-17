@@ -24,6 +24,9 @@ public class TurnManager implements Serializable {
     private ArrayList<UserPlayer> damagedPlayers;
     private ArrayList<UserPlayer> deathPlayers;
 
+    private UserPlayer markedByGrenadePlayer;
+    private boolean markingTerminator;
+
     private boolean firstTurn;
     private boolean secondAction;
 
@@ -64,6 +67,9 @@ public class TurnManager implements Serializable {
         this.players = other.players;
         this.damagedPlayers = other.damagedPlayers;
         this.deathPlayers = other.deathPlayers;
+
+        this.markedByGrenadePlayer = other.markedByGrenadePlayer;
+        this.markingTerminator = other.markingTerminator;
 
         this.firstTurn = other.firstTurn;
         this.secondAction = other.secondAction;
@@ -129,6 +135,39 @@ public class TurnManager implements Serializable {
      */
     ArrayList<UserPlayer> getDeathPlayers() {
         return this.deathPlayers;
+    }
+
+    /**
+     * Sets the {@link model.player.Player Player} that can be
+     *
+     * @param markedByGrenadePlayer the {@link UserPlayer UserPlayer} on which turn a TAGBACK GRENADE can be used
+     */
+    void setMarkedByGrenadePlayer(UserPlayer markedByGrenadePlayer) {
+        this.markedByGrenadePlayer = markedByGrenadePlayer;
+    }
+
+    /**
+     * @return the "real" turn owner while a TAGBACK GRENADE usage is getting maneged
+     */
+    UserPlayer getMarkedByGrenadePlayer() {
+        return this.markedByGrenadePlayer;
+    }
+
+    /**
+     * Used to set the attribute {@link #markingTerminator markingTerminator} when in a TAGBACK GRENADE usage he is the
+     * one to be marked by the powerup
+     *
+     * @param markingTerminator true if the {@link model.player.Bot Bot} is the one to be marked, otherwise false
+     */
+    void setMarkingTerminator(boolean markingTerminator) {
+        this.markingTerminator = markingTerminator;
+    }
+
+    /**
+     * @return true if the  {@link model.player.Bot Bot} is the one to be marked by the TAGBACK GRENADE, otherwise false
+     */
+    boolean getMarkingTerminator() {
+        return this.markingTerminator;
     }
 
     /**
