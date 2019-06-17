@@ -153,6 +153,10 @@ public class GameMap implements Serializable {
         throw new NullPointerException("Something went wrong... mapType: " + mapType + " JsonArray: " + array);
     }
 
+    public String getImagePath() {
+        return imagePath;
+    }
+
     /**
      * Returns the square specifying his coordinates
      *
@@ -254,7 +258,7 @@ public class GameMap implements Serializable {
      * @return the playerposition of the square whre to spawn
      * @throws InvalidSpawnColorException if color chosen does not correspond to a spawn one
      */
-    public PlayerPosition getSpawnSquare(RoomColor spawnColor) throws InvalidSpawnColorException {
+    public PlayerPosition getSpawnSquare(RoomColor spawnColor) {
         List<PlayerPosition> room = getRoom(spawnColor);
         for (PlayerPosition spawnPosition : room) {
             if (getSquare(spawnPosition).getSquareType().equals(SquareType.SPAWN)) {

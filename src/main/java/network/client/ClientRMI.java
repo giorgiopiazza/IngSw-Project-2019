@@ -13,8 +13,7 @@ import java.rmi.registry.Registry;
  * This class represents a RMI Client
  */
 public class ClientRMI extends Client implements RMIClientConnection {
-    private RMIHandler server;
-    private Registry registry;
+    private transient RMIHandler server;
 
     /**
      * Constructs a RMI client
@@ -36,7 +35,7 @@ public class ClientRMI extends Client implements RMIClientConnection {
      */
     @Override
     public void startConnection() throws IOException, NotBoundException {
-        registry = LocateRegistry.getRegistry(getAddress(), getPort());
+        Registry registry = LocateRegistry.getRegistry(getAddress(), getPort());
         server = (RMIHandler) registry.lookup("AdrenalineServer");
 
         server.login(getUsername(), this);
@@ -51,7 +50,7 @@ public class ClientRMI extends Client implements RMIClientConnection {
     @Override
     public void sendMessage(Message message) throws RemoteException {
         if (server == null) {
-            return;
+            throw new RemoteException();
         }
 
         server.onMessage(message);
@@ -61,10 +60,10 @@ public class ClientRMI extends Client implements RMIClientConnection {
      * Closes connection with server
      *
      * @throws RemoteException   in case of problems with communication with server
-     * @throws NotBoundException when the registry doesn't exists
      */
     @Override
-    public void close() throws RemoteException, NotBoundException {
+    public void close() throws RemoteException {
+        server.disconnectMe();
         server = null;
     }
 
@@ -86,5 +85,10 @@ public class ClientRMI extends Client implements RMIClientConnection {
     @Override
     public void ping() {
         // Pinged
+    }
+
+    @Override
+    public void disconnectMe() throws RemoteException {
+        server = null;
     }
 }

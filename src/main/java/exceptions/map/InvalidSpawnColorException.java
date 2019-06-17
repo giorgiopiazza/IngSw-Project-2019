@@ -1,8 +1,8 @@
 package exceptions.map;
 
-import exceptions.AdrenalinaException;
+import exceptions.AdrenalinaRuntimeException;
 
-public class InvalidSpawnColorException extends AdrenalinaException {
+public class InvalidSpawnColorException extends AdrenalinaRuntimeException {
     public InvalidSpawnColorException() {
         super("There are no spawn square in a room of this color");
     }

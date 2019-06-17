@@ -54,57 +54,29 @@
     visibility: hidden;
 }
 
-.weaponZoomImage {
+.weaponZoomImageBlue {
+    -fx-effect: dropshadow(gaussian, #536DFE, 15, 0.2, 0, 0);
+}
+
+.weaponZoomImageRed {
     -fx-effect: dropshadow(gaussian, #F44336, 15, 0.2, 0, 0);
 }
 
-.firstPlayer {
+.weaponZoomImageYellow {
+    -fx-effect: dropshadow(gaussian, #FFEB3B, 15, 0.2, 0, 0);
+}
+
+.turnOwner {
     -fx-effect: dropshadow(gaussian, #F44336, 15, 0.2, 0, 0);
 }
 
-.notFirstPlayer {
+.notTurnOwner {
     -fx-opacity: 0.5;
 }
 
 .iconList {
     -fx-min-width: 120px;
     -fx-max-width: 120px;
-}
-
-#blueWeapon0 {
-    -fx-image: url("../img/weapons/thor.png");
-}
-
-#blueWeapon1 {
-    -fx-image: url("../img/weapons/furnace.png");
-}
-
-#blueWeapon2 {
-    -fx-image: url("../img/weapons/power_glove.png");
-}
-
-#redWeapon0 {
-    -fx-image: url("../img/weapons/heatseeker.png");
-}
-
-#redWeapon1 {
-    -fx-image: url("../img/weapons/whisper.png");
-}
-
-#redWeapon2 {
-    -fx-image: url("../img/weapons/plasma_gun.png");
-}
-
-#yellowWeapon0 {
-    -fx-image: url("../img/weapons/zx2.png");
-}
-
-#yellowWeapon1 {
-    -fx-image: url("../img/weapons/rocket_launcher.png");
-}
-
-#yellowWeapon2 {
-    -fx-image: url("../img/weapons/shotgun.png");
 }
 
 #blue {

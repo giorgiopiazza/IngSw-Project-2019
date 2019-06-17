@@ -20,7 +20,7 @@ public class RMIConnection extends Connection {
      * @param server        server where the client is connected
      * @param clientSession RMI client connected to the server
      */
-    public RMIConnection(Server server, RMIClientConnection clientSession) {
+    RMIConnection(Server server, RMIClientConnection clientSession) {
         this.server = server;
         this.clientSession = clientSession;
     }
@@ -50,6 +50,13 @@ public class RMIConnection extends Connection {
     @Override
     public void disconnect() {
         connected = false;
+
+        try {
+            clientSession.disconnectMe();
+        } catch (RemoteException e) {
+            //
+        }
+
         server.onDisconnect(this);
     }
 

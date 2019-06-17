@@ -8,7 +8,7 @@ import java.rmi.registry.Registry;
 /**
  * This class represents the RMI Server
  */
-public class RMIServer {
+class RMIServer {
     private final Server server;
     private final int port;
 
@@ -18,7 +18,7 @@ public class RMIServer {
      * @param server instance of main server
      * @param port   port of RMI server
      */
-    public RMIServer(Server server, int port) {
+    RMIServer(Server server, int port) {
         this.server = server;
         this.port = port;
     }

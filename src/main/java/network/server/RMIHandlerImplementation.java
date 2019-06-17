@@ -5,16 +5,14 @@ import network.message.Message;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  * This class is the implementation of the interface RMIHandler
  */
 public class RMIHandlerImplementation extends UnicastRemoteObject implements RMIHandler {
     private final transient Server server;
+    private transient RMIConnection rmiSession;
 
-    public RMIHandlerImplementation(Server server) throws RemoteException {
+    RMIHandlerImplementation(Server server) throws RemoteException {
         this.server = server;
     }
 
@@ -26,8 +24,7 @@ public class RMIHandlerImplementation extends UnicastRemoteObject implements RMI
      */
     @Override
     public void login(String username, RMIClientConnection client) {
-        Logger.getGlobal().log(Level.INFO, "{0}", client);
-        RMIConnection rmiSession = new RMIConnection(server, client);
+        rmiSession = new RMIConnection(server, client);
         server.login(username, rmiSession);
     }
 
@@ -39,5 +36,10 @@ public class RMIHandlerImplementation extends UnicastRemoteObject implements RMI
     @Override
     public void onMessage(Message message) {
         server.onMessage(message);
+    }
+
+    @Override
+    public void disconnectMe() {
+        rmiSession.disconnect();
     }
 }

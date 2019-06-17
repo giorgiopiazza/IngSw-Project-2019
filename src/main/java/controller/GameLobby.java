@@ -8,7 +8,7 @@ import network.message.LobbyMessage;
 import java.io.Serializable;
 import java.util.*;
 
-public class GameLobby implements Serializable {
+class GameLobby implements Serializable {
     private static final long serialVersionUID = 9107773386569787630L;
 
     private ArrayList<LobbyMessage> inLobbyPlayers;

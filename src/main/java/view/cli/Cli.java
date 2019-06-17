@@ -28,9 +28,6 @@ public class Cli extends ClientGameManager {
     private Scanner in;
     private AdrenalinePrintStream out;
 
-    private static final String SEND_ERROR = "Error while sending the request";
-    private static final String INVALID_STRING = "Invalid String!";
-
     public Cli() {
         super();
         this.in = new Scanner(System.in);

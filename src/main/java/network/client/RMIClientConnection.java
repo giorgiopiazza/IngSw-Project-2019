@@ -23,4 +23,12 @@ public interface RMIClientConnection extends Remote {
      * @throws RemoteException in case of problems with communication with client
      */
     void ping() throws RemoteException;
+
+    /**
+     * Disconnects the client from server
+     *
+     * @throws RemoteException in case of problems with communication with client
+     */
+    void disconnectMe() throws RemoteException;
+
 }

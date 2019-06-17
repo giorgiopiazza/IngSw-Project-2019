@@ -1,38 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
 <?import java.net.URL?>
 <?import javafx.scene.image.ImageView?>
-<BorderPane xmlns="http://javafx.com/javafx" styleClass="mainPane">
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="view.gui.LobbySceneController" fx:id="mainPane" styleClass="mainPane">
     <stylesheets>
         <URL value="@../css/menu.css"/>
     </stylesheets>
 
     <top>
-        <VBox styleClass="topBox" alignment="CENTER">
+        <VBox styleClass="topBox">
             <Label text="Lobby" styleClass="menuTitle"/>
         </VBox>
     </top>
 
     <left>
-        <VBox styleClass="voteBox" alignment="CENTER">
+        <VBox styleClass="voteBox">
             <Label text="Vote the map you want to play with:" styleClass="menuLabel"/>
-            <FlowPane styleClass="voteInnerBox" alignment="CENTER">
-                <ImageView fitHeight="179" fitWidth="234" id="map1" styleClass="button"/>
-                <ImageView fitHeight="179" fitWidth="234" id="map2" styleClass="button"/>
-                <ImageView fitHeight="179" fitWidth="234" id="map3" styleClass="button"/>
-                <ImageView fitHeight="179" fitWidth="234" id="map4" styleClass="button"/>
+            <FlowPane styleClass="voteInnerBox">
+                <ImageView fitHeight="179" fitWidth="234" fx:id="map1" id="map1" styleClass="button"/>
+                <ImageView fitHeight="179" fitWidth="234" fx:id="map2" id="map2" styleClass="button"/>
+                <ImageView fitHeight="179" fitWidth="234" fx:id="map3" id="map3" styleClass="button"/>
+                <ImageView fitHeight="179" fitWidth="234" fx:id="map4" id="map4" styleClass="button"/>
             </FlowPane>
         </VBox>
     </left>
 
     <right>
-        <VBox styleClass="voteBox" alignment="CENTER">
+        <VBox styleClass="voteBox">
             <VBox styleClass="lobbyInnerBox">
                 <Label text="Pippo" styleClass="playerRow"/>
                 <Label text="Pluto" styleClass="playerRow"/>
@@ -44,8 +42,8 @@
     </right>
 
     <bottom>
-        <VBox styleClass="botBox" alignment="CENTER">
-            <ImageView id="backButton" styleClass="button"/>
+        <VBox styleClass="botBox">
+            <ImageView fx:id="backButton" id="backButton" styleClass="button"/>
         </VBox>
     </bottom>
 </BorderPane>

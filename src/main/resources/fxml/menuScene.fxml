@@ -4,14 +4,15 @@
 <?import java.net.URL?>
 <?import javafx.scene.image.ImageView?>
 
-<VBox alignment="CENTER" xmlns="http://javafx.com/javafx" styleClass="mainPane">
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="view.gui.MenuSceneController" fx:id="mainPane" styleClass="mainPane">
     <stylesheets>
         <URL value="@../css/menu.css"/>
     </stylesheets>
 
     <ImageView id="logoImage"/>
 
-    <ImageView id="startButton" styleClass="button"/>
+    <ImageView fx:id="startButton" id="startButton" styleClass="button"/>
 
-    <ImageView id="exitButton" styleClass="button"/>
+    <ImageView fx:id="exitButton" id="exitButton" styleClass="button"/>
 </VBox>

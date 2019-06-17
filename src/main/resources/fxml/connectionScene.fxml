@@ -5,38 +5,39 @@
 <?import java.net.URL?>
 <?import javafx.scene.image.ImageView?>
 
-<BorderPane xmlns="http://javafx.com/javafx" styleClass="mainPane">
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="view.gui.ConnectionSceneController" fx:id="mainPane" styleClass="mainPane">
     <stylesheets>
         <URL value="@../css/menu.css"/>
     </stylesheets>
 
     <top>
-        <VBox styleClass="topBox" alignment="CENTER">
+        <VBox styleClass="topBox">
             <Label text="Join a game" styleClass="menuTitle"/>
         </VBox>
     </top>
 
     <center>
-        <VBox styleClass="centerBox" alignment="CENTER">
+        <VBox styleClass="centerBox">
             <Label text="Enter your username:" styleClass="menuLabel"/>
-            <TextField id="usernameField" styleClass="menuTextField"/>
+            <TextField fx:id="usernameField" styleClass="menuTextField"/>
 
             <Label text="Enter server address:" styleClass="menuLabel"/>
-            <TextField id="addressField" styleClass="menuTextField"/>
+            <TextField fx:id="addressField" styleClass="menuTextField"/>
 
             <Label text="Enter server port:" styleClass="menuLabel"/>
-            <TextField id="portField" styleClass="menuTextField"/>
+            <TextField fx:id="portField" styleClass="menuTextField"/>
         </VBox>
     </center>
 
     <bottom>
-        <VBox styleClass="botBox" alignment="CENTER">
-            <HBox styleClass="connectBox" alignment="CENTER">
-                <ImageView id="connectSocketButton" styleClass="button"/>
-                <ImageView id="connectRmiButton" styleClass="button"/>
+        <VBox styleClass="botBox">
+            <HBox styleClass="connectBox">
+                <ImageView fx:id="connectSocketButton" id="connectSocketButton" styleClass="button"/>
+                <ImageView fx:id="connectRmiButton" id="connectRmiButton" styleClass="button"/>
             </HBox>
 
-            <ImageView id="backButton" styleClass="button"/>
+            <ImageView fx:id="backButton" id="backButton" styleClass="button"/>
         </VBox>
     </bottom>
 </BorderPane>

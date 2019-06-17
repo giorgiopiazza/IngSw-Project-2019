@@ -18,19 +18,23 @@
 
 .mainPane {
     -fx-background-image: url("../img/scenes/bg.png");
+    -fx-alignment: CENTER;
 }
 
 .topBox {
     -fx-padding: 50 0 0 0;
+    -fx-alignment: CENTER;
 }
 
 .centerBox {
     -fx-max-width: 500px;
     -fx-spacing: 10;
+    -fx-alignment: CENTER;
 }
 
 .botBox {
     -fx-padding: 0 0 50 0;
+    -fx-alignment: CENTER;
 }
 
 .button:hover {
@@ -108,6 +112,7 @@
 
 .connectBox {
     -fx-spacing: 50;
+    -fx-alignment: CENTER;
 }
 
 /* Color Pick */
@@ -116,6 +121,7 @@
     -fx-max-width: 1500px;
     -fx-hgap: 10;
     -fx-vgap: 20;
+    -fx-alignment: CENTER;
 }
 
 .card:hover {
@@ -135,6 +141,7 @@
     -fx-max-width: 700px;
     -fx-padding: 10 10 10 10;
     -fx-spacing: 20;
+    -fx-alignment: CENTER;
 }
 
 .lobbyInnerBox {
@@ -148,6 +155,7 @@
 .voteInnerBox {
     -fx-hgap: 20;
     -fx-vgap: 20;
+    -fx-alignment: CENTER;
 }
 
 .voteMap:selected {

@@ -24,4 +24,9 @@ public interface RMIHandler extends Remote {
      * @param message message sent to server
      */
     void onMessage(Message message) throws RemoteException;
+
+    /**
+     * Disconnects the client from the server
+     */
+    void disconnectMe() throws RemoteException;
 }

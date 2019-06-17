@@ -21,6 +21,10 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public abstract class ClientGameManager implements ClientGameManagerListener, ClientUpdateListener, Runnable {
+    public static final String SEND_ERROR = "Error while sending the request";
+    public static final String INVALID_STRING = "Invalid String!";
+    public static final String ERROR_DIALOG_TITLE = "Error";
+
     public static final String TAGBACK_GRENADE = "TAGBACK_GRENADE";
     public static final String TELEPORTER = "TELEPORTER";
     public static final String NEWTON = "NEWTON";
@@ -69,7 +73,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
     }
 
-    protected void createConnection(int connection, String username, String address, int port) throws Exception {
+    public void createConnection(int connection, String username, String address, int port) throws Exception {
         if (connection == 0) {
             client = new ClientSocket(username, address, port);
         } else {
@@ -78,6 +82,18 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
         client.startConnection();
         startUpdater();
+    }
+
+    public void closeConnection() {
+        clientUpdater.stop();
+        clientUpdater = null;
+
+        try {
+            client.close();
+        } catch (Exception e) {
+            // No issues
+        }
+        client = null;
     }
 
     private void startUpdater() {
@@ -234,15 +250,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         if (connectionResponse.getStatus().equals(MessageStatus.OK)) {
             client.setToken(connectionResponse.getNewToken());
         } else {
-            clientUpdater.stop();
-            clientUpdater = null;
-
-            try {
-                client.close();
-            } catch (Exception e) {
-                // No issues
-            }
-            client = null;
+            closeConnection();
         }
 
         queue.add(() -> connectionResponse(connectionResponse));
@@ -389,11 +397,11 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
     }
 
-    protected void reAskAction() {
+    public void reAskAction() {
         queue.add(this::makeMove);
     }
 
-    protected List<PossibleAction> getPossibleActions() {
+    public List<PossibleAction> getPossibleActions() {
         switch (roundManager.getUserPlayerState()) {
             case BOT_SPAWN:
                 return List.of(PossibleAction.SPAWN_BOT);
@@ -540,7 +548,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         return actions;
     }
 
-    protected List<Player> getPlayers() {
+    public List<Player> getPlayers() {
         List<Player> players;
 
         synchronized (gameSerializedLock) {
@@ -550,7 +558,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         return players;
     }
 
-    protected GameSerialized getGameSerialized() {
+    public GameSerialized getGameSerialized() {
         synchronized (gameSerializedLock) {
             return gameSerialized;
         }
@@ -562,7 +570,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
     }
 
-    protected List<WeaponCard> getPlayerWeapons(String username) {
+    public List<WeaponCard> getPlayerWeapons(String username) {
         synchronized (gameSerializedLock) {
             return gameSerialized.getPlayerWeapons(username);
         }
@@ -572,7 +580,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         return (UserPlayer) getPlayerByName(getUsername());
     }
 
-    protected Player getPlayerByName(String username) {
+    public Player getPlayerByName(String username) {
         synchronized (gameSerializedLock) {
             Player player;
 
@@ -595,7 +603,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         return firstPlayer;
     }
 
-    protected boolean sendRequest(Message message) {
+    public boolean sendRequest(Message message) {
         if (roundManager != null) {
             checkChangeStateRequest(message);
         }
@@ -615,11 +623,15 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 message.getContent() == MessageContent.POWERUP_USAGE;
     }
 
-    protected String getClientToken() {
+    public String getClientToken() {
         return client.getToken();
     }
 
-    protected String getUsername() {
+    public String getUsername() {
         return client.getUsername();
+    }
+
+    public String getTurnOwner() {
+        return turnOwner;
     }
 }

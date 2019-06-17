@@ -5,30 +5,31 @@
 <?import java.net.URL?>
 <?import javafx.scene.image.ImageView?>
 
-<BorderPane xmlns="http://javafx.com/javafx" styleClass="mainPane">
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="view.gui.ColorPickSceneController" fx:id="mainPane" styleClass="mainPane">
     <stylesheets>
         <URL value="@../css/menu.css"/>
     </stylesheets>
 
     <top>
-        <VBox styleClass="topBox" alignment="CENTER">
+        <VBox styleClass="topBox">
             <Label text="Choose your character" styleClass="menuTitle"/>
         </VBox>
     </top>
 
     <center>
-        <FlowPane styleClass="colorBox" alignment="CENTER">
-            <ImageView fitHeight="320" fitWidth="249" id="yellowCard" styleClass="button, card"/>
-            <ImageView fitHeight="320" fitWidth="249" id="blueCard" styleClass="button, card"/>
-            <ImageView fitHeight="320" fitWidth="249" id="greyCard" styleClass="button, card"/>
-            <ImageView fitHeight="320" fitWidth="249" id="purpleCard" styleClass="button, card"/>
-            <ImageView fitHeight="320" fitWidth="249" id="greenCard" styleClass="button, card"/>
+        <FlowPane styleClass="colorBox">
+            <ImageView fitHeight="320" fitWidth="249" fx:id="yellowCard" id="yellowCard" styleClass="button, card"/>
+            <ImageView fitHeight="320" fitWidth="249" fx:id="blueCard" id="blueCard" styleClass="button, card"/>
+            <ImageView fitHeight="320" fitWidth="249" fx:id="greyCard" id="greyCard" styleClass="button, card"/>
+            <ImageView fitHeight="320" fitWidth="249" fx:id="purpleCard" id="purpleCard" styleClass="button, card"/>
+            <ImageView fitHeight="320" fitWidth="249" fx:id="greenCard" id="greenCard" styleClass="button, card"/>
         </FlowPane>
     </center>
 
     <bottom>
-        <VBox styleClass="botBox" alignment="CENTER">
-            <ImageView id="backButton" styleClass="button"/>
+        <VBox styleClass="botBox">
+            <ImageView fx:id="backButton" id="backButton" styleClass="button"/>
         </VBox>
     </bottom>
 </BorderPane>
