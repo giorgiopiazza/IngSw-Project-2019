@@ -31,4 +31,13 @@ public class GameVoteMessage extends Message {
     public int hashCode() {
         return Objects.hash(mapVote);
     }
+
+    @Override
+    public String toString() {
+        return "GameVoteMessage{" +
+                "senderUsername=" + getSenderUsername() +
+                ", content=" + getContent() + ", " +
+                "mapVote=" + mapVote +
+                '}';
+    }
 }

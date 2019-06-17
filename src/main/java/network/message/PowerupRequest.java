@@ -6,6 +6,7 @@ import enumerations.MessageContent;
 import model.player.PlayerPosition;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class PowerupRequest extends EffectRequest {
     private static final long serialVersionUID = 8674157231024320484L;
@@ -95,5 +96,21 @@ public class PowerupRequest extends EffectRequest {
         public PowerupRequest build() {
             return new PowerupRequest(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "PowerupRequest{" +
+                "senderUsername=" + getSenderUsername() +
+                ", content=" + getContent() +
+                ", senderMovePosition=" + getSenderMovePosition() +
+                ", paymentPowerups=" + Arrays.toString(getPaymentPowerups().toArray()) +
+                ", targetPlayersUsername=" + Arrays.toString(getTargetPlayersUsername().toArray()) +
+                ", targetPlayersMovePositions=" + Arrays.toString(getTargetPlayersMovePositions().toArray()) +
+                ", targetPositions=" + Arrays.toString(getTargetPositions().toArray()) +
+                ", targetRoomColor=" + getTargetRoomColor() +
+                ", powerup=" + Arrays.toString(powerup.toArray()) +
+                ", ammoColor=" + ammoColor +
+                '}';
     }
 }

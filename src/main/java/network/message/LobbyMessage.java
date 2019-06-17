@@ -39,4 +39,14 @@ public class LobbyMessage extends Message {
     public int hashCode() {
         return Objects.hash(chosenColor);
     }
+
+    @Override
+    public String toString() {
+        return "LobbyMessage{" +
+                "senderUsername=" + getSenderUsername() +
+                ", content=" + getContent() + ", " +
+                "chosenColor=" + chosenColor +
+                ", disconnection=" + disconnection +
+                '}';
+    }
 }

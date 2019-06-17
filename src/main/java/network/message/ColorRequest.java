@@ -8,4 +8,12 @@ public class ColorRequest extends Message {
     public ColorRequest(String username, String token) {
         super(username, token, MessageContent.COLOR);
     }
+
+    @Override
+    public String toString() {
+        return "ColorRequest{" +
+                "senderUsername=" + getSenderUsername() +
+                ", content=" + getContent() +
+                "}";
+    }
 }

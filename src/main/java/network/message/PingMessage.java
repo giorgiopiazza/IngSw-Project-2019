@@ -9,4 +9,12 @@ public class PingMessage extends Message {
     public PingMessage() {
         super(Game.GOD, null, MessageContent.PING);
     }
+
+    @Override
+    public String toString() {
+        return "PingMessage{" +
+                "senderUsername=" + getSenderUsername() +
+                ", content=" + getContent() +
+                "}";
+    }
 }

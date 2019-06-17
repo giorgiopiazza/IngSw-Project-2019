@@ -242,4 +242,15 @@ public class WeaponCard extends UsableCard {
 
         return new AmmoQuantity(redCost, blueCost, yellowCost);
     }
+
+    @Override
+    public String toString() {
+        return "WeaponCard{" +
+                "id=" + id +
+                ", cost=" + Arrays.toString(cost) +
+                ", secondaryEffects=" + secondaryEffects +
+                ", weaponState=" + weaponState +
+                ", imagePath='" + imagePath + '\'' +
+                '}';
+    }
 }

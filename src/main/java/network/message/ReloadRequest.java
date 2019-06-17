@@ -3,6 +3,7 @@ package network.message;
 import enumerations.MessageContent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 
 public class ReloadRequest extends ActionRequest {
@@ -18,5 +19,16 @@ public class ReloadRequest extends ActionRequest {
 
     public ArrayList<Integer> getWeapons() {
         return weapons;
+    }
+
+    @Override
+    public String toString() {
+        return "ReloadRequest{" +
+                "senderUsername=" + getSenderUsername() +
+                ", content=" + getContent() +
+                ", senderMovePosition=" + getSenderMovePosition() +
+                ", paymentPowerups=" + Arrays.toString(getPaymentPowerups().toArray()) +
+                ", weapons=" + Arrays.toString(weapons.toArray()) +
+                '}';
     }
 }

@@ -22,4 +22,14 @@ public class UseTerminatorRequest extends Message {
     public String getTargetPlayer() {
         return this.targetPlayer;
     }
+
+    @Override
+    public String toString() {
+        return "UseTerminatorRequest{" +
+                "senderUsername=" + getSenderUsername() +
+                ", content=" + getContent() +
+                ", movingPosition=" + movingPosition +
+                ", targetPlayer='" + targetPlayer + '\'' +
+                '}';
+    }
 }

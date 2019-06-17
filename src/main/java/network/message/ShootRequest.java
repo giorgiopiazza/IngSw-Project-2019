@@ -5,6 +5,7 @@ import enumerations.MessageContent;
 import model.player.PlayerPosition;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ShootRequest extends EffectRequest {
     private static final long serialVersionUID = -9183566520524697764L;
@@ -143,5 +144,25 @@ public class ShootRequest extends EffectRequest {
         public ShootRequest build() {
             return new ShootRequest(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "ShootRequest{" +
+                "senderUsername=" + getSenderUsername() +
+                ", content=" + getContent() +
+                ", senderMovePosition=" + getSenderMovePosition() +
+                ", paymentPowerups=" + Arrays.toString(getPaymentPowerups().toArray()) +
+                ", targetPlayersUsername=" + Arrays.toString(getTargetPlayersUsername().toArray()) +
+                ", targetPlayersMovePositions=" + Arrays.toString(getTargetPlayersMovePositions().toArray()) +
+                ", targetPositions=" + Arrays.toString(getTargetPositions().toArray()) +
+                ", targetRoomColor=" + getTargetRoomColor() +
+                ", weaponID=" + weaponID +
+                ", effect=" + effect +
+                ", adrenalineMovePosition=" + adrenalineMovePosition +
+                ", moveSenderFirst=" + moveSenderFirst +
+                ", moveTargetsFirst=" + moveTargetsFirst +
+                ", rechargingWeapons=" + Arrays.toString(rechargingWeapons.toArray()) +
+                '}';
     }
 }

@@ -16,4 +16,13 @@ public class DiscardPowerupRequest extends Message {
     public int getPowerup() {
         return powerup;
     }
+
+    @Override
+    public String toString() {
+        return "DiscardPowerupRequest{" +
+                "senderUsername=" + getSenderUsername() +
+                ", content=" + getContent() + ", " +
+                "powerup=" + powerup +
+                '}';
+    }
 }

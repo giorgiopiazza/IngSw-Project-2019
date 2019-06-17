@@ -5,6 +5,7 @@ import model.cards.WeaponCard;
 import model.player.PlayerPosition;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class MovePickRequest extends ActionRequest {
     private static final long serialVersionUID = 8063700627094470135L;
@@ -25,5 +26,17 @@ public class MovePickRequest extends ActionRequest {
 
     public WeaponCard getDiscardingWeapon() {
         return this.discardingWeapon;
+    }
+
+    @Override
+    public String toString() {
+        return "MovePickRequest{" +
+                "senderUsername=" + getSenderUsername() +
+                ", content=" + getContent() +
+                ", senderMovePosition=" + getSenderMovePosition() +
+                ", paymentPowerups=" + Arrays.toString(getPaymentPowerups().toArray()) +
+                ", addingWeapon=" + addingWeapon +
+                ", discardingWeapon=" + discardingWeapon +
+                '}';
     }
 }

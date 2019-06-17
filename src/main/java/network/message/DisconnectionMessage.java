@@ -16,4 +16,13 @@ public class DisconnectionMessage extends Message {
     public String getUsername() {
         return username;
     }
+
+    @Override
+    public String toString() {
+        return "DisconnectionMessage{" +
+                "senderUsername=" + getSenderUsername() +
+                ", content=" + getContent() + ", " +
+                "username='" + username + '\'' +
+                '}';
+    }
 }

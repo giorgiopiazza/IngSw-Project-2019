@@ -17,4 +17,13 @@ public class TerminatorSpawnRequest extends Message {
     public RoomColor getSpawnColor() {
         return this.spawnColor;
     }
+
+    @Override
+    public String toString() {
+        return "TerminatorSpawnRequest{" +
+                "senderUsername=" + getSenderUsername() +
+                ", content=" + getContent() +
+                ", spawnColor=" + spawnColor +
+                '}';
+    }
 }

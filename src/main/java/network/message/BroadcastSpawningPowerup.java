@@ -18,4 +18,13 @@ public class BroadcastSpawningPowerup extends Message {
     public PowerupCard getPowerupCard() {
         return this.powerupCard;
     }
+
+    @Override
+    public String toString() {
+        return "BroadcastSpawningPowerup{" +
+                "senderUsername=" + getSenderUsername() +
+                ", content=" + getContent() + ", " +
+                "powerupCard=" + powerupCard +
+                '}';
+    }
 }

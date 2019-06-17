@@ -16,4 +16,12 @@ public class GameStartMessage extends Message {
     public String getFirstPlayer() {
         return firstPlayer;
     }
+
+    @Override
+    public String toString() {
+        return "GameStartMessage{" +
+                "senderUsername=" + getSenderUsername() + ", " +
+                "firstPlayer='" + firstPlayer + '\'' +
+                '}';
+    }
 }
