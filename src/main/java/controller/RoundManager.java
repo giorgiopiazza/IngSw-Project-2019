@@ -27,7 +27,7 @@ import java.util.*;
  * This class contains all the methods needed to handle entirely the Round of a player's turn
  */
 public class RoundManager {
-    private static final String TAGBACK_GRANADE = "TAGBACK_GRANADE";
+    private static final String TAGBACK_GRANADE = "TAGBACK_GRENADE";
     private static final String TELEPORTER = "TELEPORTER";
     private static final String NEWTON = "NEWTON";
     private static final String TARGETING_SCOPE = "TARGETING_SCOPE";
@@ -243,17 +243,55 @@ public class RoundManager {
      * @return a positive or negative {@link Response Response} handled by the server
      */
     Response handleGranadeUsage(PowerupRequest granadeMessage) {
-        PowerupCard chosenGranade;
+        Response tempResponse;
 
-        if (granadeMessage.getPowerup().get(0) > turnManager.getTurnOwner().getPowerups().length) {
-            return buildNegativeResponse("Invalid Powerup index!");
+        for(Integer index : granadeMessage.getPowerup()) {
+            tempResponse = grenadeUsage(index, granadeMessage);
+            if(tempResponse.getStatus() == MessageStatus.ERROR) {
+                return tempResponse;
+            }
+
+            // else everything went right and I can discard the grenades used
         }
 
-        if (granadeMessage.getPowerup().size() != 1) {
+        // after having used all the grenades I discard them
+        for(Integer index : granadeMessage.getPowerup()) {
+            try {
+                turnManager.getTurnOwner().discardPowerupByIndex(index);
+            } catch (EmptyHandException e) {
+                // never reached if the player has the powerup!
+            }
+        }
+
+        turnManager.increaseCount();
+        // if the player is the last one to use the granade I set back the state to the previous one and give the turn to the next player
+        if (turnManager.getTurnCount() > turnManager.getDamagedPlayers().size() - 1) {
+            turnManager.giveTurn(turnManager.getMarkedByGrenadePlayer());
+            if(turnManager.getMarkingTerminator()) {
+                afterTerminatorActionHandler(turnManager.getArrivingGameState());
+            }
+            gameManager.changeState(handleAfterActionState(turnManager.isSecondAction()));
+            return buildPositiveResponse("Grenade used, turn going back to real turn owner");
+        }
+
+        // then I give the turn to the next damaged player
+        turnManager.giveTurn(turnManager.getDamagedPlayers().get(turnManager.getTurnCount()));
+
+        return buildGrenadePositiveResponse("Grenade has been Used, turn passed to the next possible user");
+    }
+
+    private Response grenadeUsage(int index, PowerupRequest granadeMessage) {
+        PowerupCard chosenGranade;
+
+        if(index > turnManager.getTurnOwner().getPowerups().length) {
+            return buildNegativeResponse("Invalid Powerup Index");
+        }
+
+        if(granadeMessage.getPowerup().size() > turnManager.getTurnOwner().getPowerups().length) {
             return buildNegativeResponse("Too many powerups!");
         }
 
-        chosenGranade = turnManager.getTurnOwner().getPowerups()[granadeMessage.getPowerup().get(0)];
+        chosenGranade = turnManager.getTurnOwner().getPowerups()[index];
 
         if (!chosenGranade.getName().equals(TAGBACK_GRANADE)) {
             return buildNegativeResponse("Invalid Powerup");
@@ -274,29 +312,7 @@ public class RoundManager {
             return buildNegativeResponse("Powerup can not be used");
         }
 
-        // after having executed the granade action I discard it from the players hand
-        try {
-            turnManager.getTurnOwner().discardPowerupByIndex(granadeMessage.getPowerup().get(0));
-        } catch (EmptyHandException e) {
-            // never reached if the player has the powerup!
-        }
-
-
-        turnManager.increaseCount();
-        // if the player is the last one to use the granade I set back the state to the previous one and give the turn to the next player
-        if (turnManager.getTurnCount() > turnManager.getDamagedPlayers().size() - 1) {
-            turnManager.giveTurn(turnManager.getMarkedByGrenadePlayer());
-            if(turnManager.getMarkingTerminator()) {
-                afterTerminatorActionHandler(turnManager.getArrivingGameState());
-            }
-            gameManager.changeState(handleAfterActionState(turnManager.isSecondAction()));
-            return buildPositiveResponse("Grenade used, turn going back to real turn owner");
-        }
-
-        // then I give the turn to the next damaged player
-        turnManager.giveTurn(turnManager.getDamagedPlayers().get(turnManager.getTurnCount()));
-
-        return buildGrenadePositiveResponse("Grenade has been Used, turn passed to the next possible user");
+        return new Response("Temp response", MessageStatus.NO_RESPONSE);
     }
 
     /**
