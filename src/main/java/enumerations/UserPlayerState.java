@@ -8,7 +8,6 @@ public enum UserPlayerState {
     FIRST_FRENZY_ACTION,
     SECOND_FRENZY_ACTION,
     ENDING_PHASE,
-    FRENZY_ENDING_PHASE,
     END,
     DEAD,
     BOT_RESPAWN,

@@ -172,7 +172,7 @@ public class GameManager implements TimerRunListener, Serializable {
                 return UserPlayerState.ENDING_PHASE;
 
             case FRENZY_ACTIONS_DONE:
-                return UserPlayerState.FRENZY_ENDING_PHASE;
+                return UserPlayerState.ENDING_PHASE;
 
             case MANAGE_DEATHS:
                 return UserPlayerState.DEAD;
