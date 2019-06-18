@@ -102,14 +102,18 @@ public class LobbySceneController implements Initializable {
 
     void updateLobbyList(List<String> users) {
         ObservableList<Node> childrens = lobbyLabelsBox.getChildren();
+        childrens.clear();
 
-        for (int i = 0; i < users.size(); i++) {
-            Label lbl = (Label) childrens.get(i);
-            lbl.setText(users.get(i));
+        for (String user : users) {
+            Label lbl = new Label();
+            lbl.setText(user);
+            lbl.getStyleClass().add("playerRow");
+
+            childrens.add(lbl);
         }
     }
 
-    public void onError(String error) {
+    void onError(String error) {
         GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), "Error", error);
     }
 }

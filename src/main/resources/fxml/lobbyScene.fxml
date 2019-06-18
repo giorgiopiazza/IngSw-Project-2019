@@ -31,11 +31,6 @@
 
             <VBox styleClass="voteBox">
                 <VBox fx:id="lobbyLabelsBox" styleClass="lobbyInnerBox">
-                    <Label styleClass="playerRow"/>
-                    <Label styleClass="playerRow"/>
-                    <Label styleClass="playerRow"/>
-                    <Label styleClass="playerRow"/>
-                    <Label styleClass="playerRow"/>
                 </VBox>
             </VBox>
         </HBox>
