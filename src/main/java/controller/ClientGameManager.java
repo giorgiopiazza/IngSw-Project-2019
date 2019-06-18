@@ -222,6 +222,10 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     @Override
     public void onUpdate(Message message) {
         switch (message.getContent()) {
+            case PLAYERS_IN_LOBBY:
+                handlePlayersInLobby((LobbyPlayersResponse) message);
+                break;
+
             case CONNECTION_RESPONSE:
                 handleConnectionResponse((ConnectionResponse) message);
                 break;
@@ -262,6 +266,10 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 break;
             default:
         }
+    }
+
+    private void handlePlayersInLobby(LobbyPlayersResponse message) {
+        queue.add(() -> playersLobbyUpdate(message.getUsers()));
     }
 
     private void handleConnectionResponse(ConnectionResponse connectionResponse) {

@@ -21,10 +21,18 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import utility.*;
 
+import java.io.IOException;
 import java.util.*;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 import java.util.stream.Collectors;
 
+import static java.util.logging.Level.INFO;
+
 public class Cli extends ClientGameManager {
+    public final Logger LOGGER = Logger.getLogger("adrenaline_client");
+
     private Scanner in;
     private AdrenalinePrintStream out;
 
@@ -32,6 +40,15 @@ public class Cli extends ClientGameManager {
         super();
         this.in = new Scanner(System.in);
         this.out = new AdrenalinePrintStream();
+        try {
+            FileHandler fh = new FileHandler("client.log");
+            fh.setFormatter(new SimpleFormatter());
+            LOGGER.addHandler(fh);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        LOGGER.info("prova");
     }
 
     /**
@@ -950,6 +967,11 @@ public class Cli extends ClientGameManager {
             out.println("\t" + (i) + " - " + possibleActions.get(i).getDescription());
         }
 
+        LOGGER.log(INFO, "possibleActions: {0}", Arrays.toString(possibleActions.toArray()));
+        LOGGER.log(INFO, "userplayer: {0}", getPlayer());
+        LOGGER.log(INFO, "powerups: {0}", Arrays.toString(getGameSerialized().getPowerups().toArray()));
+        LOGGER.log(INFO, "other players: {0}", Arrays.toString(getPlayers().toArray()));
+
         choose = readInt(0, possibleActions.size() - 1);
         return possibleActions.get(choose);
     }
@@ -1311,7 +1333,6 @@ public class Cli extends ClientGameManager {
     public void askScope() {
         List<PowerupCard> powerups = getPowerups();
         List<PowerupCard> newList = new ArrayList<>();
-
         List<PowerupCard> scopes = new ArrayList<>();
         ArrayList<String> targets = new ArrayList<>();
         PowerupRequest.PowerupRequestBuilder builder;
@@ -1355,11 +1376,17 @@ public class Cli extends ClientGameManager {
                 }
             }
 
+            LOGGER.log(INFO, "indexes: {0}", Arrays.toString(indexes.toArray()));
+
             builder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), indexes);
             builder.targetPlayersUsername(targets);
         } else {
             builder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), new ArrayList<>());
         }
+
+        LOGGER.log(INFO, "newList: {0}", Arrays.toString(newList.toArray()));
+        LOGGER.log(INFO, "powerups: {0}", Arrays.toString(powerups.toArray()));
+        LOGGER.log(INFO, "scopes: {0}", Arrays.toString(scopes.toArray()));
 
         try {
             if (!sendRequest(MessageBuilder.buildPowerupRequest(builder))) {
@@ -1368,5 +1395,17 @@ public class Cli extends ClientGameManager {
         } catch (PowerupCardsNotFoundException e) {
             promptError(e.getMessage(), false);
         }
+    }
+
+    @Override
+    public void playersLobbyUpdate(List<String> users) {
+        StringBuilder players = new StringBuilder();
+
+        for (String user : users) {
+            players.append(user);
+            players.append(", ");
+        }
+
+        out.println("Players in lobby: " + players.substring(0, players.length() - 2));
     }
 }

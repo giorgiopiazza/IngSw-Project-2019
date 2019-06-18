@@ -149,7 +149,13 @@ public class GuiManager extends ClientGameManager {
 
     @Override
     public void responseError(String error) {
-
+        if (gameSceneController == null) {
+            Platform.runLater(() ->
+                    lobbySceneController.onError(error));
+        } else {
+            Platform.runLater(() ->
+                    gameSceneController.onError(error));
+        }
     }
 
     @Override
@@ -260,5 +266,13 @@ public class GuiManager extends ClientGameManager {
     @Override
     public void askScope() {
 
+    }
+
+    @Override
+    public void playersLobbyUpdate(List<String> users) {
+        if (lobbySceneController != null) {
+            Platform.runLater(() ->
+                    lobbySceneController.updateLobbyList(users));
+        }
     }
 }

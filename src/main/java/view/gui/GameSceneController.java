@@ -13,10 +13,13 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import model.GameSerialized;
+import model.cards.PowerupCard;
 import model.cards.WeaponCard;
 import model.map.GameMap;
 import model.map.SpawnSquare;
+import model.player.Player;
 import model.player.UserPlayer;
 
 import java.net.URL;
@@ -168,6 +171,26 @@ public class GameSceneController implements Initializable {
 
     void onStateUpdate(GameSerialized gameSerialized) {
         setTurnOwnerIcon();
+        updateMap(gameSerialized);
+    }
+
+    private void updateMap(GameSerialized gameSerialized) {
+        setWeaponCards(gameSerialized.getGameMap());
+        setPlayersCard(gameSerialized.getPlayers());
+        setPlayersOnMap(gameSerialized.getAllPlayers());
+        setPowerUps(gameSerialized.getPowerups());
+    }
+
+    private void setPowerUps(List<PowerupCard> powerups) {
+
+    }
+
+    private void setPlayersOnMap(ArrayList<Player> allPlayers) {
+
+    }
+
+    private void setPlayersCard(ArrayList<UserPlayer> players) {
+
     }
 
     private void showWeaponZoom(Event event) {
@@ -221,5 +244,9 @@ public class GameSceneController implements Initializable {
         yellowWeapon0.opacityProperty().setValue(value);
         yellowWeapon1.opacityProperty().setValue(value);
         yellowWeapon2.opacityProperty().setValue(value);
+    }
+
+    public void onError(String error) {
+        GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), "Error", error);
     }
 }
