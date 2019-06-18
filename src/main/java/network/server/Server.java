@@ -45,14 +45,7 @@ public class Server implements Runnable {
     private Timer moveTimer;
 
     private Server(String confFilePath) {
-        try {
-            FileHandler fh = new FileHandler("server.log");
-            fh.setFormatter(new SimpleFormatter());
-
-            LOGGER.addHandler(fh);
-        } catch (IOException e) {
-            LOGGER.severe(e.getMessage());
-        }
+        initLogger();
         clients = new HashMap<>();
         waitForLoad = true;
 
@@ -96,6 +89,7 @@ public class Server implements Runnable {
     }
 
     public Server(boolean terminator, int skullNum, String confFilePath) {
+        initLogger();
         clients = new HashMap<>();
         waitForLoad = false;
 
@@ -135,6 +129,17 @@ public class Server implements Runnable {
         pingThread.start();
 
         moveTimer = new Timer();
+    }
+
+    private void initLogger() {
+        try {
+            FileHandler fh = new FileHandler("server.log");
+            fh.setFormatter(new SimpleFormatter());
+
+            LOGGER.addHandler(fh);
+        } catch (IOException e) {
+            LOGGER.severe(e.getMessage());
+        }
     }
 
     /**
@@ -345,7 +350,6 @@ public class Server implements Runnable {
                 LOGGER.log(Level.INFO, "Message Request {0} - Unknown username {1}", new Object[]{message.getContent().name(), message.getSenderUsername()});
             } else if (msgToken.equals(conn.getToken())) { // Checks that sender is the real player
                 Message response = gameManager.onMessage(message);
-                if (message.getContent().equals(MessageContent.LOBBY_VOTE)) sendMessageToAll(new LobbyPlayersResponse(new ArrayList<>(clients.keySet())));
                 // update timer
                 if (Game.getInstance().isGameStarted()) {
                     if (message.getContent().equals(MessageContent.PASS_TURN)
@@ -387,15 +391,12 @@ public class Server implements Runnable {
             if (gameManager.getGameState() == PossibleGameState.GAME_ROOM) {
                 clients.remove(username);
 
-                // if game not started yet, send to all the updated list of players in lobby
-                if (!Game.getInstance().isGameStarted()) sendMessageToAll(new LobbyPlayersResponse(new ArrayList<>(clients.keySet())));
                 gameManager.onMessage(new LobbyMessage(username, null, null, true));
                 LOGGER.log(Level.INFO, "{0} removed from client list!", username);
             } else {
                 gameManager.onConnectionMessage(new LobbyMessage(username, null, null, true));
+                sendMessageToAll(new DisconnectionMessage(username));
             }
-
-            sendMessageToAll(new DisconnectionMessage(username));
         }
     }
 
@@ -435,7 +436,6 @@ public class Server implements Runnable {
             }
         }
 
-        if (message.getContent().equals(MessageContent.COLOR_RESPONSE)) sendMessageToAll(new LobbyPlayersResponse(new ArrayList<>(clients.keySet())));
         LOGGER.log(Level.INFO, "Send: {0}, {1}", new Object[]{message.getSenderUsername(), message});
     }
 

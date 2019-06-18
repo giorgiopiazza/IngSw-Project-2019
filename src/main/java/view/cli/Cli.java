@@ -43,12 +43,11 @@ public class Cli extends ClientGameManager {
         try {
             FileHandler fh = new FileHandler("client.log");
             fh.setFormatter(new SimpleFormatter());
+            LOGGER.setUseParentHandlers(false);
             LOGGER.addHandler(fh);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        LOGGER.info("prova");
     }
 
     /**
