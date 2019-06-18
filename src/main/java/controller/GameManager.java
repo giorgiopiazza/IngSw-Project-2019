@@ -159,7 +159,7 @@ public class GameManager implements TimerRunListener, Serializable {
                 return UserPlayerState.FIRST_FRENZY_ACTION;
 
             case SECOND_ACTION:
-                if(gameInstance.getState() == GameState.NORMAL) {
+                if (gameInstance.getState() == GameState.NORMAL) {
                     return UserPlayerState.SECOND_ACTION;
                 } else {
                     return UserPlayerState.SECOND_FRENZY_ACTION;
@@ -178,7 +178,7 @@ public class GameManager implements TimerRunListener, Serializable {
                 return UserPlayerState.DEAD;
 
             case SCOPE_USAGE:
-                if(!shootParameters.secondAction) {
+                if (!shootParameters.secondAction) {
                     return UserPlayerState.FIRST_SCOPE_USAGE;
                 } else {
                     return UserPlayerState.SECOND_SCOPE_USAGE;
@@ -204,7 +204,7 @@ public class GameManager implements TimerRunListener, Serializable {
      * @return a {@link Message Message} which contains the result of the received message
      */
     public Message onMessage(Message receivedMessage) {
-        if(!InputValidator.validateInput(receivedMessage)) {
+        if (!InputValidator.validateInput(receivedMessage)) {
             buildInvalidResponse();
         }
 
@@ -260,7 +260,7 @@ public class GameManager implements TimerRunListener, Serializable {
      * @return a {@link Message Message} which contains the result of the received message
      */
     public Message onConnectionMessage(Message receivedConnectionMessage) {
-        if(!InputValidator.validatePlayerUsername(gameInstance.getPlayers(), receivedConnectionMessage)) {
+        if (!InputValidator.validatePlayerUsername(gameInstance.getPlayers(), receivedConnectionMessage)) {
             return new Response("Invalid connection Message", MessageStatus.ERROR);
         }
 
@@ -816,11 +816,7 @@ public class GameManager implements TimerRunListener, Serializable {
     private void removeVote(String disconnectedPlayer) {
         ArrayList<GameVoteMessage> playersVotes = lobby.getVotedPlayers();
 
-        for (GameVoteMessage setupMessage : playersVotes) {
-            if (setupMessage.getSenderUsername().equals(disconnectedPlayer)) {
-                playersVotes.remove(setupMessage);
-            }
-        }
+        playersVotes.removeIf(voteMessage -> voteMessage.getSenderUsername().equals(disconnectedPlayer));
     }
 
     public PossibleGameState getGameState() {

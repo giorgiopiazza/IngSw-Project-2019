@@ -4,8 +4,6 @@ import enumerations.GameClientState;
 import enumerations.UserPlayerState;
 import exceptions.game.InvalidGameStateException;
 import exceptions.player.ClientRoundManagerException;
-import model.player.UserPlayer;
-
 
 class ClientRoundManager {
 

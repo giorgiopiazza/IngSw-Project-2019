@@ -159,8 +159,8 @@ public class GuiManager extends ClientGameManager {
     }
 
     @Override
-    public PossibleAction askAction() {
-        return null;
+    public void displayActions(List<PossibleAction> possibleActions) {
+
     }
 
     @Override

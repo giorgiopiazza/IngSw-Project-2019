@@ -947,16 +947,13 @@ public class Cli extends ClientGameManager {
         // TODO
     }
 
+
     /**
-     * This method asks the user what move he wants to make in this stage of the round, he even asks him if he wants to print to video the map, the player boards, his weapons and his mana.
-     * This method returns the choice made by the user, if the choice is a print, the user is asked again what he wants to do until he chooses an action
-     *
-     * @return the PossibleAction chosen by the user
+     * This method asks the user what move he wants to make in this stage of the round
      */
     @Override
-    public PossibleAction askAction() {
+    public void displayActions(List<PossibleAction> possibleActions) {
         int choose;
-        List<PossibleAction> possibleActions = getPossibleActions();
         printUsername();
         printAmmo();
         out.println();
@@ -973,7 +970,7 @@ public class Cli extends ClientGameManager {
         LOGGER.log(INFO, "other players: {0}", Arrays.toString(getPlayers().toArray()));
 
         choose = readInt(0, possibleActions.size() - 1);
-        return possibleActions.get(choose);
+        doAction(possibleActions.get(choose));
     }
 
     @Override
@@ -1032,16 +1029,16 @@ public class Cli extends ClientGameManager {
             out.println("\t" + i + " - " + CliPrinter.toStringPowerUpCard(newList.get(i)) + " (" + Ammo.toColor(newList.get(i).getValue()) + " room)");
         }
 
-        for(int i = 0; i < newList.size(); ++i) {
+        for (int i = 0; i < newList.size(); ++i) {
             int tempChoose = readInt(-1, newList.size() - 1);
-            if(tempChoose == -1 && !chosenGrenades.isEmpty()) break;
-            if(tempChoose != -1) chosenGrenades.add(tempChoose);
+            if (tempChoose == -1 && !chosenGrenades.isEmpty()) break;
+            if (tempChoose != -1) chosenGrenades.add(tempChoose);
         }
 
         PowerupRequest.PowerupRequestBuilder grenadeRequestBuilder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), chosenGrenades);
 
         try {
-            if(!sendRequest(MessageBuilder.buildPowerupRequest(grenadeRequestBuilder))) {
+            if (!sendRequest(MessageBuilder.buildPowerupRequest(grenadeRequestBuilder))) {
                 promptError(SEND_ERROR, true);
             }
         } catch (PowerupCardsNotFoundException e) {
@@ -1052,8 +1049,8 @@ public class Cli extends ClientGameManager {
     private List<PowerupCard> getOnlyGrenades() {
         List<PowerupCard> grenades = new ArrayList<>();
 
-        for(PowerupCard powerup : getGameSerialized().getPowerups()) {
-            if(powerup.getName().equals(TAGBACK_GRENADE)) {
+        for (PowerupCard powerup : getGameSerialized().getPowerups()) {
+            if (powerup.getName().equals(TAGBACK_GRENADE)) {
                 grenades.add(powerup);
             }
         }

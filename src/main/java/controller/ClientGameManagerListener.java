@@ -24,7 +24,7 @@ interface ClientGameManagerListener {
     void gameStateUpdate(GameSerialized gameSerialized);
     void responseError(String error);
 
-    PossibleAction askAction();
+    void displayActions(List<PossibleAction> possibleActions);
 
     void botSpawn();
     void botRespawn();

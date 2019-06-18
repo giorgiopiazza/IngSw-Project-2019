@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class GameSerialized implements Serializable  {
+public class GameSerialized implements Serializable {
     private static final long serialVersionUID = 526685006552543525L;
 
     private GameState currentState;
@@ -22,7 +22,7 @@ public class GameSerialized implements Serializable  {
 
     private ArrayList<UserPlayer> players;
     private Bot bot;
-    private boolean botPresent;
+    private Boolean botPresent;
 
     private int killShotNum;
     private KillShot[] killShotsTrack;
@@ -89,7 +89,7 @@ public class GameSerialized implements Serializable  {
     }
 
     public List<PowerupCard> getPowerups() {
-        List<PowerupCard> powerupList = Arrays.asList(this.powerupCards);
+        List<PowerupCard> powerupList = new ArrayList<>(Arrays.asList(this.powerupCards));
         if (spawningPowerup != null) powerupList.add(this.spawningPowerup);
 
         return powerupList;
@@ -112,7 +112,7 @@ public class GameSerialized implements Serializable  {
     public ArrayList<Player> getAllPlayers() {
         ArrayList<Player> allPlayers = new ArrayList<>(players);
 
-        if(botPresent) {
+        if (botPresent) {
             allPlayers.add(bot);
             return allPlayers;
         } else {
