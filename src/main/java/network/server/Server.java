@@ -224,7 +224,9 @@ public class Server implements Runnable {
 
             if (waitForLoad) {// Game in lobby state for load a game
                 connection.sendMessage(
-                        new GameLoadResponse("Successfully reconnected", token, MessageStatus.OK, gameManager.getUserPlayerState(username)));
+                        new GameLoadResponse("Successfully reconnected", token,
+                                gameManager.getUserPlayerState(username), gameManager.getGameInstance().isTerminatorPresent())
+                );
                 checkLoadReady();
             } else {
                 if (gameManager.getGameState() == PossibleGameState.GAME_ROOM) { // Game in lobby state
@@ -233,8 +235,8 @@ public class Server implements Runnable {
                     );
                 } else { // Game started
                     connection.sendMessage(
-                            gameManager.onConnectionMessage(new LobbyMessage(username, token, null, false)
-                            ));
+                            gameManager.onConnectionMessage(new LobbyMessage(username, token, null, false))
+                    );
                 }
             }
 
@@ -418,7 +420,7 @@ public class Server implements Runnable {
                 break;
             }
         }
-        LOGGER.log(Level.INFO, "Send: {0}, {1}", new Object[] {message.getSenderUsername(), message});
+        LOGGER.log(Level.INFO, "Send: {0}, {1}", new Object[]{message.getSenderUsername(), message});
     }
 
     /**

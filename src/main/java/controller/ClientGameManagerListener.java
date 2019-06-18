@@ -12,6 +12,7 @@ import java.util.List;
 
 interface ClientGameManagerListener {
     void connectionResponse(ConnectionResponse response);
+    void loadResponse();
     void askColor(List<PlayerColor> availableColors);
     void lobbyJoinResponse(Response response);
     void voteResponse(GameVoteResponse gameVoteResponse);

@@ -104,6 +104,11 @@ public class GuiManager extends ClientGameManager {
     }
 
     @Override
+    public void loadResponse() {
+
+    }
+
+    @Override
     public void askColor(List<PlayerColor> availableColors) {
         Platform.runLater(() ->
                 colorPickSceneController.onColorResponse(availableColors));

@@ -253,7 +253,9 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             case DISCONNECTION:
                 handleDisconnection((DisconnectionMessage) message);
                 break;
-
+            case GAME_LOAD:
+                handleGameLoad((GameLoadResponse) message);
+                break;
             default:
         }
     }
@@ -339,6 +341,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         turnOwner = "";
         firstTurn = false;
         yourTurn = false;
+        joinedLobby = true;
 
         client.setToken(reconnectionMessage.getToken());
 
@@ -361,6 +364,23 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
     private void handleDisconnection(DisconnectionMessage disconnectionMessage) {
         queue.add(() -> onPlayerDisconnect(disconnectionMessage.getUsername()));
+    }
+
+    private void handleGameLoad(GameLoadResponse gameLoadResponse) {
+        turnOwner = "";
+        firstTurn = false;
+        yourTurn = false;
+        joinedLobby = true;
+
+        client.setToken(gameLoadResponse.getNewToken());
+
+        roundManager = new ClientRoundManager(gameLoadResponse.isBotPresent());
+
+        roundManager.setPlayerState(gameLoadResponse.getUserPlayerState());
+
+        isBotPresent = gameLoadResponse.isBotPresent();
+
+        queue.add(this::loadResponse);
     }
 
     private void checkTurnChange(GameStateMessage stateMessage) {

@@ -1,7 +1,6 @@
 package network.message;
 
 import enumerations.MessageContent;
-import enumerations.MessageStatus;
 import enumerations.UserPlayerState;
 import model.Game;
 
@@ -10,15 +9,15 @@ public class GameLoadResponse extends Message {
 
     private final String newToken;
     private final String message;
-    private final MessageStatus status;
     private final UserPlayerState userPlayerState;
+    private final Boolean botPresent;
 
-    public GameLoadResponse(String message, String newToken, MessageStatus status, UserPlayerState userPlayerState) {
+    public GameLoadResponse(String message, String newToken, UserPlayerState userPlayerState, Boolean botPresent) {
         super(Game.GOD, null, MessageContent.GAME_LOAD);
         this.message = message;
         this.newToken = newToken;
-        this.status = status;
         this.userPlayerState = userPlayerState;
+        this.botPresent = botPresent;
     }
 
     public String getMessage() {
@@ -29,11 +28,11 @@ public class GameLoadResponse extends Message {
         return newToken;
     }
 
-    public MessageStatus getStatus() {
-        return status;
-    }
-
     public UserPlayerState getUserPlayerState() {
         return userPlayerState;
+    }
+
+    public Boolean isBotPresent() {
+        return botPresent;
     }
 }

@@ -3,7 +3,6 @@ package controller;
 import enumerations.GameClientState;
 import enumerations.UserPlayerState;
 import exceptions.player.ClientRoundManagerException;
-import model.player.UserPlayer;
 
 
 class ClientRoundManager {
@@ -140,6 +139,10 @@ class ClientRoundManager {
 
     void beginRound() {
         roundStarted = true;
+    }
+
+    void setPlayerState(UserPlayerState playerState) {
+        this.playerState = playerState;
     }
 
     /**

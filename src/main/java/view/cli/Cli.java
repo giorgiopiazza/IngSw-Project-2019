@@ -226,6 +226,13 @@ public class Cli extends ClientGameManager {
         }
     }
 
+    @Override
+    public void loadResponse() {
+        CliPrinter.clearConsole(out);
+
+        out.println("You joined a loaded game.\nWaiting for other players!");
+    }
+
     /**
      * Asks unused colors to the server
      */
