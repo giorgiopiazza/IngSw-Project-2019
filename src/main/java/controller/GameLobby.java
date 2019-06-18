@@ -7,6 +7,7 @@ import network.message.LobbyMessage;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 class GameLobby implements Serializable {
     private static final long serialVersionUID = 9107773386569787630L;
@@ -38,7 +39,7 @@ class GameLobby implements Serializable {
     }
 
     void addPlayerVote(GameVoteMessage votedPlayer) {
-        if(votedPlayer.getMapVote() > 0 || votedPlayer.getMapVote() < 5) {
+        if (votedPlayer.getMapVote() > 0 || votedPlayer.getMapVote() < 5) {
             votedPlayers.add(votedPlayer);
         }
     }
@@ -57,10 +58,20 @@ class GameLobby implements Serializable {
 
             Map<Integer, Integer> map = new HashMap<>();
             playersVotes.forEach(t -> map.compute(t, (k, i) -> i == null ? 1 : i + 1));
-            return map.entrySet().stream().max(Comparator.comparingInt(Map.Entry::getValue)).get().getKey();
+
+            Map.Entry<Integer, Integer> voteMap = map.entrySet().stream().max(Comparator.comparing(Map.Entry::getValue)).orElse(null);
+            if (voteMap != null) {
+                return voteMap.getValue();
+            } else {
+                return getRandomMap();
+            }
         } else {
-            return 2;
+            return getRandomMap();
         }
+    }
+
+    private int getRandomMap() {
+        return ThreadLocalRandom.current().nextInt(1, 5);
     }
 
     boolean getTerminatorPresence() {
