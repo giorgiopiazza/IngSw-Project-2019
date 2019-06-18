@@ -124,7 +124,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             roundManager.beginRound();
             makeMove();
         } else {
-            notYourTurn();
+            queue.add(this::notYourTurn);
         }
     }
 
@@ -132,79 +132,87 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
      * Causes the user to perform all the moves it can make in this stage of this round
      */
     private void makeMove() {
+        Runnable action;
+
         switch (askAction()) {
             case SPAWN_BOT:
-                botSpawn();
+                action = this::botSpawn;
+                break;
+
+            case RESPAWN_BOT:
+                action = this::botRespawn;
                 break;
 
             case CHOOSE_SPAWN:
             case CHOOSE_RESPAWN:
-                spawn();
+                action = this::spawn;
                 break;
 
             case POWER_UP:
-                powerup();
+                action = this::powerup;
                 break;
 
             case GRENADE_USAGE:
-                grenadeUsage();
+                action = this::grenadeUsage;
                 break;
 
             case MOVE:
-                move();
+                action = this::move;
                 break;
 
             case MOVE_AND_PICK:
-                moveAndPick();
+                action = this::moveAndPick;
                 break;
 
             case SHOOT:
-                shoot();
+                action = this::shoot;
                 break;
 
             case ADRENALINE_PICK:
-                adrenalinePick();
+                action = this::adrenalinePick;
                 break;
 
             case ADRENALINE_SHOOT:
-                adrenalineShoot();
+                action = this::adrenalineShoot;
                 break;
 
             case FRENZY_MOVE:
-                frenzyMove();
+                action = this::frenzyMove;
                 break;
 
             case FRENZY_PICK:
-                frenzyPick();
+                action = this::frenzyPick;
                 break;
 
             case FRENZY_SHOOT:
-                frenzyShoot();
+                action = this::frenzyShoot;
                 break;
 
             case LIGHT_FRENZY_PICK:
-                lightFrenzyPick();
+                action = this::lightFrenzyPick;
                 break;
 
             case LIGHT_FRENZY_SHOOT:
-                lightFrenzyShoot();
+                action = this::lightFrenzyShoot;
                 break;
 
             case BOT_ACTION:
-                botAction();
+                action = this::botAction;
                 break;
 
             case RELOAD:
-                reload();
+                action = this::reload;
                 break;
 
             case PASS_TURN:
-                passTurn();
+                action = this::passTurn;
                 break;
 
             default:
                 throw new ClientRoundManagerException("cannot be here");
         }
+
+        queue.add(action);
     }
 
     @Override
@@ -277,7 +285,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 queue.add(() -> responseError(response.getMessage()));
             } else {
                 if (response.getMessage().equals("Shoot Action can have SCOPE usage")) {
-                    askScope();
+                    queue.add(this::askScope);
                 } else {
                     nextState();
                 }
@@ -307,11 +315,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             queue.add(() -> gameStateUpdate(gameSerialized));
         }
 
-        if(!gameStateMessage.isGrenadeUsage()) {
-            checkTurnChange(gameStateMessage);
-        } else {
-            checkGrenadeChange(gameStateMessage);
-        }
+        checkTurnChange(gameStateMessage);
     }
 
     private void handleGameStartMessage(GameStartMessage gameStartMessage) {
@@ -371,38 +375,22 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
                 if (turnOwner.equals(getUsername())) {
                     yourTurn = true;
+                    checkSpecialState(stateMessage);
                 }
-
-                checkDeath();
 
                 queue.add(this::newTurn);
             }
         }
     }
 
-    private void checkGrenadeChange(GameStateMessage gameStateMessage) {
-        if(!gameStateMessage.getTurnOwner().equals(turnOwner)) {
-            turnOwner = gameStateMessage.getTurnOwner();
-            turnOwnerChanged = true;
-        }
-
-        if(!yourTurn) {
-            turnOwnerChanged = false;
-
-            if(turnOwner.equals(getUsername())) {
-                yourTurn = true;
-                turnOwnerChanged = true;
-
-                grenadeUsage();
-            }
-
-            queue.add(this::newTurn);
-        }
-    }
-
-    private void checkDeath() {
-        if (getPlayer().isDead()) {
+    private void checkSpecialState(GameStateMessage gameStateMessage) {
+        if (gameStateMessage.isGrenadeUsage()) {
+            roundManager.grenade();
+        } else if (getPlayer().isDead()) {
             roundManager.death();
+        } else if (gameStateMessage.getGameSerialized().isBotPresent() &&
+                gameStateMessage.getGameSerialized().getBot().isDead()) {
+            roundManager.botRespawn();
         }
     }
 
@@ -437,6 +425,9 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         switch (roundManager.getUserPlayerState()) {
             case BOT_SPAWN:
                 return List.of(PossibleAction.SPAWN_BOT);
+
+            case BOT_RESPAWN:
+                return List.of(PossibleAction.RESPAWN_BOT);
 
             case SPAWN:
                 return List.of(PossibleAction.CHOOSE_SPAWN);
