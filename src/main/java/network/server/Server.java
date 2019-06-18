@@ -299,7 +299,7 @@ public class Server implements Runnable {
     private void checkLoadReady() {
         if (clients.entrySet().stream().noneMatch(entry -> entry.getValue() == null || !entry.getValue().isConnected())) {
             waitForLoad = false;
-            // TODO Start Game
+            gameManager.sendPrivateUpdates();
         }
     }
 

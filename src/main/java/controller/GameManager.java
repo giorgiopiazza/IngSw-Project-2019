@@ -1178,7 +1178,7 @@ public class GameManager implements TimerRunListener, Serializable {
      * {@link model.GameSerialized GameSerialized}. This method is used to send an update of the
      * {@link Game Game} everytime that a normal action is completed
      */
-    void sendPrivateUpdates() {
+    public void sendPrivateUpdates() {
         List<UserPlayer> players = gameInstance.getPlayers();
 
         for (UserPlayer player : players) {
