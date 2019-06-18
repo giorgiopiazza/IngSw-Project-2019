@@ -137,14 +137,62 @@ public class GameManager implements TimerRunListener, Serializable {
             } else if (userPlayer.isDead()) {
                 return UserPlayerState.DEAD;
 
-            } else
-            {
-                // TODO Other States
-                return null;
+            } else {
+                return mapStates();
             }
 
         } else {
             return UserPlayerState.FIRST_ACTION;
+        }
+    }
+
+    /**
+     * @return the {@link UserPlayerState UserPlayerState} corresponding to {@link GameManager GameManager} state
+     */
+    private UserPlayerState mapStates() {
+        switch (gameState) {
+
+            case GAME_STARTED:
+                return UserPlayerState.FIRST_ACTION;
+
+            case FINAL_FRENZY:
+                return UserPlayerState.FIRST_FRENZY_ACTION;
+
+            case SECOND_ACTION:
+                if(gameInstance.getState() == GameState.NORMAL) {
+                    return UserPlayerState.SECOND_ACTION;
+                } else {
+                    return UserPlayerState.SECOND_FRENZY_ACTION;
+                }
+
+            case GRANADE_USAGE:
+                return UserPlayerState.GRENADE_USAGE;
+
+            case ACTIONS_DONE:
+                return UserPlayerState.ENDING_PHASE;
+
+            case FRENZY_ACTIONS_DONE:
+                return UserPlayerState.ENDING_PHASE;
+
+            case MANAGE_DEATHS:
+                return UserPlayerState.DEAD;
+
+            case SCOPE_USAGE:
+                if(!shootParameters.secondAction) {
+                    return UserPlayerState.FIRST_SCOPE_USAGE;
+                } else {
+                    return UserPlayerState.SECOND_SCOPE_USAGE;
+                }
+
+            case TERMINATOR_RESPAWN:
+                return UserPlayerState.BOT_RESPAWN;
+
+            case MISSING_TERMINATOR_ACTION:
+                return UserPlayerState.BOT_ACTION;
+
+            default:
+                // they called her: THE CRASHING EXCEPTION... always reached, but never catched...
+                throw new InvalidGameStateException();
         }
     }
 
@@ -490,7 +538,8 @@ public class GameManager implements TimerRunListener, Serializable {
      * @return a positive or negative {@link Response Response} handled by the server
      */
     private Response terminatorCheckState(Message receivedMessage) {
-        if (gameState == PossibleGameState.GAME_STARTED) {
+        if (gameState == PossibleGameState.GAME_STARTED || gameState == PossibleGameState.SECOND_ACTION || gameState == PossibleGameState.FINAL_FRENZY
+                || gameState == PossibleGameState.ACTIONS_DONE || gameState == PossibleGameState.FRENZY_ACTIONS_DONE) {
             return roundManager.handleTerminatorAction((UseTerminatorRequest) receivedMessage, gameState);
         } else {
             return buildInvalidResponse();
