@@ -1,17 +1,24 @@
 package view.gui;
 
 import enumerations.MessageStatus;
+import javafx.application.Platform;
+import javafx.beans.Observable;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import model.GameSerialized;
 import network.message.GameVoteResponse;
 import utility.MessageBuilder;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class LobbySceneController implements Initializable {
@@ -29,6 +36,8 @@ public class LobbySceneController implements Initializable {
     private ImageView map4;
     @FXML
     private ImageView backButton;
+    @FXML
+    private VBox lobbyLabelsBox;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -89,5 +98,18 @@ public class LobbySceneController implements Initializable {
         if (gameSceneController != null) {
             gameSceneController.setupGame(gameSerialized);
         }
+    }
+
+    void updateLobbyList(List<String> users) {
+        ObservableList<Node> childrens = lobbyLabelsBox.getChildren();
+
+        for (int i = 0; i < users.size(); i++) {
+            Label lbl = (Label) childrens.get(i);
+            lbl.setText(users.get(i));
+        }
+    }
+
+    public void onError(String error) {
+        GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), "Error", error);
     }
 }

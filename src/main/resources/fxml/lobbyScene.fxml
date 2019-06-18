@@ -30,12 +30,12 @@
             </VBox>
 
             <VBox styleClass="voteBox">
-                <VBox styleClass="lobbyInnerBox">
-                    <Label text="Pippo" styleClass="playerRow"/>
-                    <Label text="Pluto" styleClass="playerRow"/>
-                    <Label text="Topolino" styleClass="playerRow"/>
-                    <Label text="Minnie" styleClass="playerRow"/>
-                    <Label text="Paperino" styleClass="playerRow"/>
+                <VBox fx:id="lobbyLabelsBox" styleClass="lobbyInnerBox">
+                    <Label styleClass="playerRow"/>
+                    <Label styleClass="playerRow"/>
+                    <Label styleClass="playerRow"/>
+                    <Label styleClass="playerRow"/>
+                    <Label styleClass="playerRow"/>
                 </VBox>
             </VBox>
         </HBox>
