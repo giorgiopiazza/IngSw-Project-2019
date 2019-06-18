@@ -984,6 +984,11 @@ public class Cli extends ClientGameManager {
     }
 
     @Override
+    public void grenadeUsage() {
+        // TODO
+    }
+
+    @Override
     public void onPlayerDisconnect(String username) {
         out.println("Player " + username + " DISCONNECTED from the game!");
     }

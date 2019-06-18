@@ -5,6 +5,7 @@ public enum PossibleAction {
     CHOOSE_SPAWN("Choose spawn point"),
     CHOOSE_RESPAWN("Choose respawn point"),
     POWER_UP("Use a powerup"),
+    GRENADE_USAGE("Use the tagback grenade"),
     MOVE("Move up to 3 boxes"),
     MOVE_AND_PICK("Move up to 1 box and pick up weapon or power up"),
     SHOOT("Shoot a player"),

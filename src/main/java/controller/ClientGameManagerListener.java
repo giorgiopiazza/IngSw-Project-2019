@@ -43,6 +43,7 @@ interface ClientGameManagerListener {
     void botAction();
     void reload();
     void powerup();
+    void grenadeUsage();
     void passTurn();
 
     void onPlayerDisconnect(String username);
