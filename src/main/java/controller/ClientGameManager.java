@@ -146,6 +146,10 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 powerup();
                 break;
 
+            case GRENADE_USAGE:
+                grenadeUsage();
+                break;
+
             case MOVE:
                 move();
                 break;
@@ -272,7 +276,11 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             if (response.getStatus().equals(MessageStatus.ERROR)) {
                 queue.add(() -> responseError(response.getMessage()));
             } else {
-                nextState();
+                if (response.getMessage().equals("Shoot Action can have SCOPE usage")) {
+                    askScope();
+                } else {
+                    nextState();
+                }
             }
 
             if (roundManager.getUserPlayerState() != UserPlayerState.END) {
@@ -299,7 +307,11 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             queue.add(() -> gameStateUpdate(gameSerialized));
         }
 
-        checkTurnChange(gameStateMessage);
+        if(!gameStateMessage.isGrenadeUsage()) {
+            checkTurnChange(gameStateMessage);
+        } else {
+            checkGrenadeChange(gameStateMessage);
+        }
     }
 
     private void handleGameStartMessage(GameStartMessage gameStartMessage) {
@@ -368,6 +380,26 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
     }
 
+    private void checkGrenadeChange(GameStateMessage gameStateMessage) {
+        if(!gameStateMessage.getTurnOwner().equals(turnOwner)) {
+            turnOwner = gameStateMessage.getTurnOwner();
+            turnOwnerChanged = true;
+        }
+
+        if(!yourTurn) {
+            turnOwnerChanged = false;
+
+            if(turnOwner.equals(getUsername())) {
+                yourTurn = true;
+                turnOwnerChanged = true;
+
+                grenadeUsage();
+            }
+
+            queue.add(this::newTurn);
+        }
+    }
+
     private void checkDeath() {
         if (getPlayer().isDead()) {
             roundManager.death();
@@ -417,6 +449,9 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
             case BOT_ACTION:
                 return List.of(PossibleAction.BOT_ACTION);
+
+            case GRENADE_USAGE:
+                return List.of(PossibleAction.GRENADE_USAGE);
 
             case ENDING_PHASE:
                 return getEndingActions();

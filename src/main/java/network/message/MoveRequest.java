@@ -18,7 +18,7 @@ public class MoveRequest extends ActionRequest {
                 "senderUsername=" + getSenderUsername() +
                 ", content=" + getContent() + ", " +
                 ", senderMovePosition=" + getSenderMovePosition() +
-                ", paymentPowerups=" + Arrays.toString(getPaymentPowerups().toArray()) +
+                ", paymentPowerups=" + (getPaymentPowerups() == null ? "null" : Arrays.toString(getPaymentPowerups().toArray())) +
                 "}";
     }
 }

@@ -11,5 +11,6 @@ public enum UserPlayerState {
     END,
     DEAD,
     BOT_RESPAWN,
-    BOT_ACTION
+    BOT_ACTION,
+    GRENADE_USAGE
 }

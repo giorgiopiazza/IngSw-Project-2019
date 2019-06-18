@@ -139,15 +139,11 @@ public class MessageBuilder {
         return new PassTurnRequest(player.getUsername(), token);
     }
 
-    @NotNull
-    @Contract("_, null, _ -> fail; _, !null, null -> fail")
-    public static PowerupRequest buildPowerupRequest(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) throws PowerupCardsNotFoundException {
+    public static PowerupRequest buildPowerupRequest(@NotNull PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) throws PowerupCardsNotFoundException {
         PowerupRequest powerupRequest = powerupRequestBuilder.build();
 
         if (powerupRequest.getPowerup() == null)
-            throw new NullPointerException("player and powerupCard cannot be null");
-
-        if (powerupRequest.getPowerup().isEmpty()) throw new PowerupCardsNotFoundException();
+            throw new NullPointerException("powerupRequestBuilder cannot be null");
 
         return powerupRequest;
     }
@@ -182,7 +178,7 @@ public class MessageBuilder {
         if (shootRequest.getSenderUsername() == null)
             throw new NullPointerException("player userName can not be null");
 
-        if(shootRequest.getWeaponID() < 0 || shootRequest.getWeaponID() > 3)
+        if(shootRequest.getWeaponID() < 0 || shootRequest.getWeaponID() > 2)
             throw new IndexOutOfBoundsException("Invalid index for maximum number of weapons allowed in hand");
 
         if(shootRequest.getEffect() < 0 || shootRequest.getEffect() > 3)

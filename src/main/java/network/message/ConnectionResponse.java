@@ -29,4 +29,14 @@ public class ConnectionResponse extends Message {
     public MessageStatus getStatus() {
         return status;
     }
+
+    @Override
+    public String toString() {
+        return "ConnectionResponse{" +
+                "content=" + getContent() +
+                ", newToken='" + newToken + '\'' +
+                ", message='" + message + '\'' +
+                ", status=" + status +
+                '}';
+    }
 }

@@ -18,6 +18,7 @@ import model.player.PlayerPosition;
 import model.player.UserPlayer;
 import network.message.ActionRequest;
 import network.message.MovePickRequest;
+import utility.InputValidator;
 
 public class PickAction implements Action {
     private static final int MAX_NORMAL_MOVE = 1;
@@ -57,13 +58,7 @@ public class PickAction implements Action {
 
     @Override
     public boolean validate() throws InvalidActionException {
-        // check that the built position has a valid X coordinate
-        if (movingPos.getCoordX() < 0 || movingPos.getCoordX() > 2) {
-            throw new InvalidActionException();
-        }
-
-        // check that the built position has a valid Y coordinate
-        if (movingPos.getCoordY() < 0 || movingPos.getCoordY() > 3) {
+        if(!InputValidator.validatePosition(movingPos)) {
             throw new InvalidActionException();
         }
 

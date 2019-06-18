@@ -22,7 +22,7 @@ public class DisconnectionMessage extends Message {
         return "DisconnectionMessage{" +
                 "senderUsername=" + getSenderUsername() +
                 ", content=" + getContent() + ", " +
-                "username='" + username + '\'' +
+                ", username='" + username + '\'' +
                 '}';
     }
 }

@@ -32,6 +32,8 @@ interface ClientGameManagerListener {
     void adrenalinePick();
     void adrenalineShoot();
 
+    void askScope();
+
     void frenzyMove();
     void frenzyPick();
     void frenzyShoot();
@@ -41,6 +43,7 @@ interface ClientGameManagerListener {
     void botAction();
     void reload();
     void powerup();
+    void grenadeUsage();
     void passTurn();
 
     void onPlayerDisconnect(String username);

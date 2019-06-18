@@ -14,6 +14,7 @@ import model.player.Bot;
 import model.player.UserPlayer;
 import network.message.*;
 import network.server.Server;
+import utility.InputValidator;
 import utility.LobbyTimer;
 import utility.TimerRunListener;
 
@@ -155,52 +156,51 @@ public class GameManager implements TimerRunListener, Serializable {
      * @return a {@link Message Message} which contains the result of the received message
      */
     public Message onMessage(Message receivedMessage) {
+        if(!InputValidator.validateInput(receivedMessage)) {
+            buildInvalidResponse();
+        }
+
         Response tempResponse;
 
-        try {
-            // on the game setup messages can be received from any player
-            if (gameState == PossibleGameState.GAME_ROOM) {
-                return firstStateHandler(receivedMessage);
-            }
+        // on the game setup messages can be received from any player
+        if (gameState == PossibleGameState.GAME_ROOM) {
+            return firstStateHandler(receivedMessage);
+        }
 
-            // if the message received comes from a client that is not the turn owner it is never executed!
-            if (!gameInstance.getPlayerByName(receivedMessage.getSenderUsername()).equals(roundManager.getTurnManager().getTurnOwner())) {
-                return new Response("Message from a player that is not his turn!", MessageStatus.ERROR);
-            }
+        // if the message received comes from a client that is not the turn owner it is never executed!
+        if (!gameInstance.getPlayerByName(receivedMessage.getSenderUsername()).equals(roundManager.getTurnManager().getTurnOwner())) {
+            return new Response("Message from a player that is not his turn!", MessageStatus.ERROR);
+        }
 
-            // very first round handling
-            if (roundManager.getTurnManager().getTurnOwner().getPlayerState() != PossiblePlayerState.PLAYING) {
-                return veryFirstRoundHandler(receivedMessage);
-            }
+        // very first round handling
+        if (roundManager.getTurnManager().getTurnOwner().getPlayerState() != PossiblePlayerState.PLAYING) {
+            return veryFirstRoundHandler(receivedMessage);
+        }
 
-            // SPECIAL STATES handling
-            tempResponse = specialStatesHandler(receivedMessage);
+        // SPECIAL STATES handling
+        tempResponse = specialStatesHandler(receivedMessage);
 
-            if (tempResponse.getStatus() != MessageStatus.NO_RESPONSE) {
-                return tempResponse;
-            } // else no special States are affected
+        if (tempResponse.getStatus() != MessageStatus.NO_RESPONSE) {
+            return tempResponse;
+        } // else no special States are affected
 
-            switch (receivedMessage.getContent()) {
-                case BOT_ACTION:
-                    return terminatorCheckState(receivedMessage);
-                case POWERUP_USAGE:
-                    return powerupCheckState(receivedMessage);
-                case MOVE:
-                    return moveCheckState(receivedMessage);
-                case MOVE_PICK:
-                    return pickCheckState(receivedMessage);
-                case SHOOT:
-                    return shootCheckState(receivedMessage);
-                case RELOAD:
-                    return reloadCheckState(receivedMessage);
-                case PASS_TURN:
-                    return passCheckState();
-                default:
-                    throw new InvalidGameStateException();
-            }
-        } catch (ClassCastException e) {
-            Server.LOGGER.severe("Invalid cast of a message from " + receivedMessage.getSenderUsername());
-            return buildInvalidResponse();
+        switch (receivedMessage.getContent()) {
+            case BOT_ACTION:
+                return terminatorCheckState(receivedMessage);
+            case POWERUP_USAGE:
+                return powerupCheckState(receivedMessage);
+            case MOVE:
+                return moveCheckState(receivedMessage);
+            case MOVE_PICK:
+                return pickCheckState(receivedMessage);
+            case SHOOT:
+                return shootCheckState(receivedMessage);
+            case RELOAD:
+                return reloadCheckState(receivedMessage);
+            case PASS_TURN:
+                return passCheckState();
+            default:
+                throw new InvalidGameStateException();
         }
     }
 
@@ -212,6 +212,10 @@ public class GameManager implements TimerRunListener, Serializable {
      * @return a {@link Message Message} which contains the result of the received message
      */
     public Message onConnectionMessage(Message receivedConnectionMessage) {
+        if(!InputValidator.validatePlayerUsername(gameInstance.getPlayers(), receivedConnectionMessage)) {
+            return new Response("Invalid connection Message", MessageStatus.ERROR);
+        }
+
         if (gameState != PossibleGameState.GAME_ROOM && receivedConnectionMessage.getContent() == MessageContent.GET_IN_LOBBY) {
             if (((LobbyMessage) receivedConnectionMessage).isDisconnection()) {
                 return disconnectionHandler((LobbyMessage) receivedConnectionMessage);

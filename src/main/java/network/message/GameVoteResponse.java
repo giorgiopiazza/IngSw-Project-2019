@@ -23,4 +23,13 @@ public class GameVoteResponse extends Message {
     public MessageStatus getStatus() {
         return status;
     }
+
+    @Override
+    public String toString() {
+        return "GameVoteResponse{" +
+                "content=" + getContent() +
+                ", message='" + message + '\'' +
+                ", status=" + status +
+                '}';
+    }
 }

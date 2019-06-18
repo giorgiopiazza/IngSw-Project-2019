@@ -3,6 +3,7 @@ package controller;
 import enumerations.GameClientState;
 import enumerations.UserPlayerState;
 import exceptions.player.ClientRoundManagerException;
+import model.player.UserPlayer;
 
 
 class ClientRoundManager {
@@ -67,6 +68,10 @@ class ClientRoundManager {
                 playerState = UserPlayerState.END;
                 break;
 
+            case GRENADE_USAGE:
+                playerState = UserPlayerState.GRENADE_USAGE;
+                break;
+
             case DEAD:
                 playerState = UserPlayerState.FIRST_ACTION;
                 break;
@@ -117,6 +122,10 @@ class ClientRoundManager {
 
     void death() {
         playerState = UserPlayerState.DEAD;
+    }
+
+    void grenade() {
+        playerState = UserPlayerState.GRENADE_USAGE;
     }
 
     void botSpawn() {

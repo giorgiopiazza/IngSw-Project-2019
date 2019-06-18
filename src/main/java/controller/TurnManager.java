@@ -128,6 +128,9 @@ public class TurnManager implements Serializable {
      */
     void setDeathPlayers(ArrayList<UserPlayer> deaths) {
         deathPlayers = Objects.requireNonNullElse(deaths, new ArrayList<>());
+        for(UserPlayer deathPlayer : deathPlayers) {
+            deathPlayer.setPosition(null);
+        }
     }
 
     /**
