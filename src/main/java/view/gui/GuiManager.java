@@ -158,6 +158,11 @@ public class GuiManager extends ClientGameManager {
     }
 
     @Override
+    public void botRespawn() {
+
+    }
+
+    @Override
     public void spawn() {
 
     }
@@ -224,6 +229,11 @@ public class GuiManager extends ClientGameManager {
 
     @Override
     public void powerup() {
+
+    }
+
+    @Override
+    public void grenadeUsage() {
 
     }
 

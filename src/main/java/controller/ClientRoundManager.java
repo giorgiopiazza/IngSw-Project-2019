@@ -68,11 +68,9 @@ class ClientRoundManager {
                 playerState = UserPlayerState.END;
                 break;
 
-            case GRENADE_USAGE:
-                playerState = UserPlayerState.GRENADE_USAGE;
-                break;
-
             case DEAD:
+            case GRENADE_USAGE:
+            case BOT_RESPAWN:
                 playerState = UserPlayerState.FIRST_ACTION;
                 break;
 
@@ -130,6 +128,10 @@ class ClientRoundManager {
 
     void botSpawn() {
         playerState = UserPlayerState.BOT_SPAWN;
+    }
+
+    void botRespawn() {
+        playerState = UserPlayerState.BOT_RESPAWN;
     }
 
     void firstAction() {

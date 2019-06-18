@@ -2,6 +2,7 @@ package enumerations;
 
 public enum PossibleAction {
     SPAWN_BOT("Choose a bot spawn point"),
+    RESPAWN_BOT("Choose a bot respawn point"),
     CHOOSE_SPAWN("Choose spawn point"),
     CHOOSE_RESPAWN("Choose respawn point"),
     POWER_UP("Use a powerup"),
@@ -13,10 +14,10 @@ public enum PossibleAction {
     ADRENALINE_PICK("Move up to 2 boxes and pick up weapon or power up"),
     ADRENALINE_SHOOT("Move up to 1 box and shoot a player"),
     FRENZY_MOVE("TODO Frenzy move desc"),
-    FRENZY_PICK("TODO Frenzy move pick"),
-    FRENZY_SHOOT("TODO Frenzy move shoot"),
-    LIGHT_FRENZY_PICK("TODO Frenzy move pick"),
-    LIGHT_FRENZY_SHOOT("TODO Frenzy move shot"),
+    FRENZY_PICK("TODO Frenzy move pick desc"),
+    FRENZY_SHOOT("TODO Frenzy move shoot desc"),
+    LIGHT_FRENZY_PICK("TODO Frenzy move pick desc"),
+    LIGHT_FRENZY_SHOOT("TODO Frenzy move shot desc"),
     BOT_ACTION("Do the bot action"),
     PASS_TURN("Pass the turn");
 

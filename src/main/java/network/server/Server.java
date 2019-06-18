@@ -5,7 +5,9 @@ import controller.GameManager;
 import enumerations.MessageContent;
 import enumerations.MessageStatus;
 import enumerations.PossibleGameState;
+import enumerations.UserPlayerState;
 import model.Game;
+import model.player.UserPlayer;
 import network.message.*;
 import utility.ConfigurationParser;
 import utility.MoveTimer;
@@ -31,6 +33,7 @@ public class Server implements Runnable {
     private Map<String, Connection> clients;
 
     private final GameManager gameManager;
+    private boolean waitForLoad;
 
     public static final Logger LOGGER = Logger.getLogger("Server");
 
@@ -40,6 +43,9 @@ public class Server implements Runnable {
     private Timer moveTimer;
 
     private Server(String confFilePath) {
+        clients = new HashMap<>();
+        waitForLoad = true;
+
         JsonObject jo = ConfigurationParser.parseConfiguration(confFilePath);
 
         if (jo == null) {
@@ -71,6 +77,7 @@ public class Server implements Runnable {
         LOGGER.info("RMI Server Started");
 
         gameManager = SaveGame.loadGame(this, startTime);
+        reserveSlots(gameManager.getGameInstance().getPlayers());
 
         Thread pingThread = new Thread(this);
         pingThread.start();
@@ -80,6 +87,7 @@ public class Server implements Runnable {
 
     public Server(boolean terminator, int skullNum, String confFilePath) {
         clients = new HashMap<>();
+        waitForLoad = false;
 
         JsonObject jo = ConfigurationParser.parseConfiguration(confFilePath);
 
@@ -117,6 +125,17 @@ public class Server implements Runnable {
         pingThread.start();
 
         moveTimer = new Timer();
+    }
+
+    /**
+     * Reserves server slots for player loaded from the game save
+     *
+     * @param loadedPlayers from the game save
+     */
+    private void reserveSlots(List<UserPlayer> loadedPlayers) {
+        for (UserPlayer player : loadedPlayers) {
+            clients.put(player.getUsername(), null);
+        }
     }
 
     public static void main(String[] args) {
@@ -197,20 +216,26 @@ public class Server implements Runnable {
      * @throws IOException when send message fails
      */
     private void knownPlayerLogin(String username, Connection connection) throws IOException {
-        if (!clients.get(username).isConnected()) { // Player Reconnection
+        if (clients.get(username) == null || !clients.get(username).isConnected()) { // Player Reconnection
             clients.replace(username, connection);
 
             String token = UUID.randomUUID().toString();
             connection.setToken(token);
 
-            if (gameManager.getGameState() == PossibleGameState.GAME_ROOM) { // Game in lobby state
+            if (waitForLoad) {// Game in lobby state for load a game
                 connection.sendMessage(
-                        new ConnectionResponse("Successfully reconnected", token, MessageStatus.OK)
-                );
-            } else { // Game started
-                connection.sendMessage(
-                        gameManager.onConnectionMessage(new LobbyMessage(username, token, null, false)
-                        ));
+                        new GameLoadResponse("Successfully reconnected", token, MessageStatus.OK, gameManager.getUserPlayerState(username)));
+                checkLoadReady();
+            } else {
+                if (gameManager.getGameState() == PossibleGameState.GAME_ROOM) { // Game in lobby state
+                    connection.sendMessage(
+                            new ConnectionResponse("Successfully reconnected", token, MessageStatus.OK)
+                    );
+                } else { // Game started
+                    connection.sendMessage(
+                            gameManager.onConnectionMessage(new LobbyMessage(username, token, null, false)
+                            ));
+                }
             }
 
             LOGGER.log(Level.INFO, "{0} reconnected to server!", username);
@@ -266,6 +291,13 @@ public class Server implements Runnable {
                 connection.disconnect();
                 LOGGER.log(Level.INFO, "{0} tried to connect with invalid name!", username);
             }
+        }
+    }
+
+    private void checkLoadReady() {
+        if (clients.entrySet().stream().noneMatch(entry -> entry.getValue() == null || !entry.getValue().isConnected())) {
+            waitForLoad = false;
+            // TODO Start Game
         }
     }
 
@@ -358,7 +390,7 @@ public class Server implements Runnable {
      */
     public void sendMessageToAll(Message message) {
         for (Map.Entry<String, Connection> client : clients.entrySet()) {
-            if (client.getValue().isConnected()) {
+            if (client.getValue() != null && client.getValue().isConnected()) {
                 try {
                     client.getValue().sendMessage(message);
                 } catch (IOException e) {
@@ -377,7 +409,7 @@ public class Server implements Runnable {
      */
     public void sendMessage(String username, Message message) {
         for (Map.Entry<String, Connection> client : clients.entrySet()) {
-            if (client.getKey().equals(username) && client.getValue().isConnected()) {
+            if (client.getKey().equals(username) && client.getValue() != null && client.getValue().isConnected()) {
                 try {
                     client.getValue().sendMessage(message);
                 } catch (IOException e) {
@@ -416,7 +448,7 @@ public class Server implements Runnable {
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             for (Map.Entry<String, Connection> client : clients.entrySet()) {
-                if (client.getValue().isConnected()) {
+                if (client.getValue() != null && client.getValue().isConnected()) {
                     client.getValue().ping();
                 }
             }

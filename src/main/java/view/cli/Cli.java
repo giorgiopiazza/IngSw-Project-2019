@@ -648,6 +648,11 @@ public class Cli extends ClientGameManager {
     }
 
     @Override
+    public void botRespawn() {
+        botSpawn();
+    }
+
+    @Override
     public void adrenalinePick() {
         out.println("ADRENALINE ACTION!\n");
         moveAndPick();

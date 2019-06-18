@@ -24,6 +24,7 @@ interface ClientGameManagerListener {
     PossibleAction askAction();
 
     void botSpawn();
+    void botRespawn();
     void spawn();
     void move();
     void moveAndPick();
