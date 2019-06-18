@@ -930,16 +930,13 @@ public class Cli extends ClientGameManager {
         // TODO
     }
 
+
     /**
-     * This method asks the user what move he wants to make in this stage of the round, he even asks him if he wants to print to video the map, the player boards, his weapons and his mana.
-     * This method returns the choice made by the user, if the choice is a print, the user is asked again what he wants to do until he chooses an action
-     *
-     * @return the PossibleAction chosen by the user
+     * This method asks the user what move he wants to make in this stage of the round
      */
     @Override
-    public PossibleAction askAction() {
+    public void displayActions(List<PossibleAction> possibleActions) {
         int choose;
-        List<PossibleAction> possibleActions = getPossibleActions();
         printUsername();
         printAmmo();
         out.println();
@@ -951,7 +948,7 @@ public class Cli extends ClientGameManager {
         }
 
         choose = readInt(0, possibleActions.size() - 1);
-        return possibleActions.get(choose);
+        doAction(possibleActions.get(choose));
     }
 
     @Override

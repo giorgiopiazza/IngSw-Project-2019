@@ -128,13 +128,18 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
     }
 
-    /**
-     * Causes the user to perform all the moves it can make in this stage of this round
-     */
     private void makeMove() {
+        queue.add(() -> displayActions(getPossibleActions()));
+    }
+
+    /**
+     * Executes the action chosen
+     * @param chosenAction action chosen by the user
+     */
+    public void doAction(PossibleAction chosenAction) {
         Runnable action;
 
-        switch (askAction()) {
+        switch (chosenAction) {
             case SPAWN_BOT:
                 action = this::botSpawn;
                 break;
@@ -213,7 +218,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 break;
 
             default:
-                throw new ClientRoundManagerException("cannot be here");
+                throw new ClientRoundManagerException("Invalid Action");
         }
 
         queue.add(action);
@@ -298,16 +303,16 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             }
 
             if (roundManager.getUserPlayerState() != UserPlayerState.END) {
-                queue.add(this::makeMove);
+                makeMove();
             } else {
-                queue.add(roundManager::endRound);
+                roundManager.endRound();
             }
 
             if (yourTurn && turnOwnerChanged) { // Use to wait the response before calling newTurn()
                 turnOwnerChanged = false;
                 yourTurn = false;
 
-                queue.add(this::newTurn);
+                newTurn();
             }
         }
     }
@@ -331,7 +336,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
             isBotPresent = gameSerialized.isBotPresent();
 
-            queue.add(this::startGame);
+            startGame();
         }
     }
 
@@ -402,7 +407,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                     checkSpecialState(stateMessage);
                 }
 
-                queue.add(this::newTurn);
+                newTurn();
             }
         }
     }
@@ -442,7 +447,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     }
 
     public void reAskAction() {
-        queue.add(this::makeMove);
+        makeMove();
     }
 
     public List<PossibleAction> getPossibleActions() {
