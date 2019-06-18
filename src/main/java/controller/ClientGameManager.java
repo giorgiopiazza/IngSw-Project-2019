@@ -134,6 +134,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
     /**
      * Executes the action chosen
+     *
      * @param chosenAction action chosen by the user
      */
     public void doAction(PossibleAction chosenAction) {

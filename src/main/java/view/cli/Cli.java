@@ -1007,16 +1007,16 @@ public class Cli extends ClientGameManager {
             out.println("\t" + i + " - " + CliPrinter.toStringPowerUpCard(newList.get(i)) + " (" + Ammo.toColor(newList.get(i).getValue()) + " room)");
         }
 
-        for(int i = 0; i < newList.size(); ++i) {
+        for (int i = 0; i < newList.size(); ++i) {
             int tempChoose = readInt(-1, newList.size() - 1);
-            if(tempChoose == -1 && !chosenGrenades.isEmpty()) break;
-            if(tempChoose != -1) chosenGrenades.add(tempChoose);
+            if (tempChoose == -1 && !chosenGrenades.isEmpty()) break;
+            if (tempChoose != -1) chosenGrenades.add(tempChoose);
         }
 
         PowerupRequest.PowerupRequestBuilder grenadeRequestBuilder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), chosenGrenades);
 
         try {
-            if(!sendRequest(MessageBuilder.buildPowerupRequest(grenadeRequestBuilder))) {
+            if (!sendRequest(MessageBuilder.buildPowerupRequest(grenadeRequestBuilder))) {
                 promptError(SEND_ERROR, true);
             }
         } catch (PowerupCardsNotFoundException e) {
@@ -1027,8 +1027,8 @@ public class Cli extends ClientGameManager {
     private List<PowerupCard> getOnlyGrenades() {
         List<PowerupCard> grenades = new ArrayList<>();
 
-        for(PowerupCard powerup : getGameSerialized().getPowerups()) {
-            if(powerup.getName().equals(TAGBACK_GRENADE)) {
+        for (PowerupCard powerup : getGameSerialized().getPowerups()) {
+            if (powerup.getName().equals(TAGBACK_GRENADE)) {
                 grenades.add(powerup);
             }
         }
