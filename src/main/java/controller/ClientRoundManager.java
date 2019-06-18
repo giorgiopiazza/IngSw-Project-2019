@@ -2,7 +2,9 @@ package controller;
 
 import enumerations.GameClientState;
 import enumerations.UserPlayerState;
+import exceptions.game.InvalidGameStateException;
 import exceptions.player.ClientRoundManagerException;
+import model.player.UserPlayer;
 
 
 class ClientRoundManager {
@@ -48,6 +50,8 @@ class ClientRoundManager {
                 break;
 
             case SECOND_ACTION:
+            case SECOND_FRENZY_ACTION:
+            case SECOND_SCOPE_USAGE:
                 handleSecondMove();
                 break;
 
@@ -55,8 +59,8 @@ class ClientRoundManager {
                 handleFirstFrenzy();
                 break;
 
-            case SECOND_FRENZY_ACTION:
-                handleSecondFrenzy();
+            case FIRST_SCOPE_USAGE:
+                handleFirstScope();
                 break;
 
             case BOT_ACTION:
@@ -109,11 +113,11 @@ class ClientRoundManager {
         }
     }
 
-    private void handleSecondFrenzy() {
-        if (botPresent && !botMoved) {
-            playerState = UserPlayerState.BOT_ACTION;
+    private void handleFirstScope() {
+        if (gameClientState == GameClientState.NORMAL) {
+            playerState = UserPlayerState.SECOND_ACTION;
         } else {
-            playerState = UserPlayerState.ENDING_PHASE;
+            handleFirstFrenzy();
         }
     }
 
@@ -133,6 +137,15 @@ class ClientRoundManager {
         playerState = UserPlayerState.BOT_RESPAWN;
     }
 
+    void targetingScope() {
+        if (playerState == UserPlayerState.FIRST_ACTION || playerState == UserPlayerState.FIRST_FRENZY_ACTION) {
+            playerState = UserPlayerState.FIRST_SCOPE_USAGE;
+        } else if (playerState == UserPlayerState.SECOND_ACTION || playerState == UserPlayerState.SECOND_FRENZY_ACTION) {
+            playerState = UserPlayerState.SECOND_SCOPE_USAGE;
+        } else {
+            throw new InvalidGameStateException();
+        }
+    }
     void firstAction() {
         handleBegin();
     }

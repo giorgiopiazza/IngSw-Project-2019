@@ -894,7 +894,7 @@ public class GameManager implements TimerRunListener, Serializable {
             if (powerupCard.getName().equals("TARGETING SCOPE")) {
                 shootParameters = new ShootParameters(shootRequest, secondAction);
                 changeState(PossibleGameState.SCOPE_USAGE);
-                return new Response("Shoot Action can have SCOPE usage", MessageStatus.OK);
+                return new Response("Shoot Action can have SCOPE usage", MessageStatus.NEED_PLAYER_ACTION);
             }
         }
 

@@ -280,14 +280,14 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
     private void handleResponse(Response response) {
         if (!joinedLobby) {
-            joinedLobby = response.getStatus().equals(MessageStatus.OK);
+            joinedLobby = response.getStatus() == MessageStatus.OK;
             queue.add(() -> lobbyJoinResponse(response));
         } else {
-            if (response.getStatus().equals(MessageStatus.ERROR)) {
+            if (response.getStatus() == MessageStatus.ERROR) {
                 queue.add(() -> responseError(response.getMessage()));
             } else {
-                if (response.getMessage().equals("Shoot Action can have SCOPE usage")) {
-                    queue.add(this::askScope);
+                if (response.getStatus() == MessageStatus.NEED_PLAYER_ACTION) {
+                    roundManager.targetingScope();
                 } else {
                     nextState();
                 }
@@ -458,6 +458,10 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             case SECOND_FRENZY_ACTION:
                 return getGameActions();
 
+            case FIRST_SCOPE_USAGE:
+            case SECOND_SCOPE_USAGE:
+                return List.of(PossibleAction.SCOPE_USAGE);
+
             case BOT_ACTION:
                 return List.of(PossibleAction.BOT_ACTION);
 
@@ -585,7 +589,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             actions.add(PossibleAction.POWER_UP);
         }
 
-        if (getPlayerWeapons(getUsername()).stream().anyMatch(w -> w.status() == 1)) {
+        if (roundManager.getGameClientState() == GameClientState.NORMAL && getPlayerWeapons(getUsername()).stream().anyMatch(w -> w.status() == 1)) {
             actions.add(PossibleAction.RELOAD);
         }
 
