@@ -2,20 +2,23 @@ package network.message;
 
 import enumerations.MessageContent;
 import enumerations.MessageStatus;
+import enumerations.UserPlayerState;
 import model.Game;
 
-public class ConnectionResponse extends Message {
-    private static final long serialVersionUID = 8971780730242420173L;
+public class GameLoadResponse extends Message {
+    private static final long serialVersionUID = 4880522547664967982L;
 
     private final String newToken;
     private final String message;
     private final MessageStatus status;
+    private final UserPlayerState userPlayerState;
 
-    public ConnectionResponse(String message, String newToken, MessageStatus status) {
-        super(Game.GOD, null, MessageContent.CONNECTION_RESPONSE);
+    public GameLoadResponse(String message, String newToken, MessageStatus status, UserPlayerState userPlayerState) {
+        super(Game.GOD, null, MessageContent.GAME_LOAD);
         this.message = message;
         this.newToken = newToken;
         this.status = status;
+        this.userPlayerState = userPlayerState;
     }
 
     public String getMessage() {
@@ -28,5 +31,9 @@ public class ConnectionResponse extends Message {
 
     public MessageStatus getStatus() {
         return status;
+    }
+
+    public UserPlayerState getUserPlayerState() {
+        return userPlayerState;
     }
 }

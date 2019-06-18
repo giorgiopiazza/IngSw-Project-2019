@@ -45,8 +45,8 @@ public class GameManager implements TimerRunListener, Serializable {
     /**
      * Creates an instance of {@link GameManager GameManager} binding the server tha will send messages to him
      *
-     * @param server    the Server to be bind
-     * @param skullNum  number of skulls in this game
+     * @param server           the Server to be bind
+     * @param skullNum         number of skulls in this game
      * @param lobbyTimeoutTime the lobby timeout time in seconds
      */
     public GameManager(Server server, boolean terminator, int skullNum, int lobbyTimeoutTime) {
@@ -111,6 +111,40 @@ public class GameManager implements TimerRunListener, Serializable {
         handleKillShotTrackDistribution();
         winners = declareWinner();
         server.sendMessageToAll(winners);
+    }
+
+    /**
+     * Calculates UserPlayerState based on GameManager machine
+     *
+     * @param username of the player
+     * @return the UserPlayerState in which the player is
+     */
+    public UserPlayerState getUserPlayerState(String username) {
+        UserPlayer userPlayer = (UserPlayer) gameInstance.getPlayerByName(username);
+
+        if (userPlayer == null) {
+            return null;
+        }
+
+        if (roundManager.getTurnManager().getTurnOwner().equals(userPlayer)) {
+            if (gameInstance.isTerminatorPresent() && gameInstance.getTerminator().getPosition() == null) {
+                if (gameInstance.getTerminator().isDead()) {
+                    return UserPlayerState.BOT_RESPAWN;
+                } else {
+                    return UserPlayerState.BOT_SPAWN;
+                }
+            } else if (userPlayer.isDead()) {
+                return UserPlayerState.DEAD;
+
+            } else
+            {
+                // TODO Other States
+                return null;
+            }
+
+        } else {
+            return UserPlayerState.FIRST_ACTION;
+        }
     }
 
     /**
@@ -1106,7 +1140,7 @@ public class GameManager implements TimerRunListener, Serializable {
     void sendGrenadePrivateUpdates() {
         List<UserPlayer> players = gameInstance.getPlayers();
 
-        for(UserPlayer player : players) {
+        for (UserPlayer player : players) {
             server.sendMessage(player.getUsername(), new GameStateMessage(player.getUsername(), roundManager.getTurnManager().getTurnOwner().getUsername(), true));
         }
     }

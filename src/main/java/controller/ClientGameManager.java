@@ -112,7 +112,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 }
             }
 
-            firstPlayerCommunication(firstPlayer);
+            queue.add(() -> firstPlayerCommunication(firstPlayer));
             firstTurn = false;
         }
 
