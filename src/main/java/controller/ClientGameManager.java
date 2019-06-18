@@ -156,6 +156,10 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 action = this::grenadeUsage;
                 break;
 
+            case SCOPE_USAGE:
+                action = this::askScope;
+                break;
+
             case MOVE:
                 action = this::move;
                 break;
