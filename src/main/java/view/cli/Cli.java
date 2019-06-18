@@ -1317,7 +1317,7 @@ public class Cli extends ClientGameManager {
         PowerupRequest.PowerupRequestBuilder builder;
 
         for (PowerupCard powerup : powerups) {
-            if (powerup.getName().equals(ClientGameManager.TARGETING_SCOPE)) {
+            if (powerup.getName().equals(TARGETING_SCOPE)) {
                 newList.add(powerup);
             }
         }

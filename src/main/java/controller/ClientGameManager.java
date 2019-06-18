@@ -25,10 +25,10 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     public static final String INVALID_STRING = "Invalid String!";
     public static final String ERROR_DIALOG_TITLE = "Error";
 
-    public static final String TAGBACK_GRENADE = "TAGBACK_GRENADE";
+    public static final String TAGBACK_GRENADE = "TAGBACK GRENADE";
     public static final String TELEPORTER = "TELEPORTER";
     public static final String NEWTON = "NEWTON";
-    public static final String TARGETING_SCOPE = "TARGETING_SCOPE";
+    public static final String TARGETING_SCOPE = "TARGETING SCOPE";
 
     private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
     private final Object gameSerializedLock = new Object(); // handles GameSerialized parallelism
