@@ -5,11 +5,11 @@ import controller.GameManager;
 import enumerations.MessageContent;
 import enumerations.MessageStatus;
 import enumerations.PossibleGameState;
-import enumerations.UserPlayerState;
 import model.Game;
 import model.player.UserPlayer;
 import network.message.*;
 import utility.ConfigurationParser;
+import utility.GameCostants;
 import utility.MoveTimer;
 import utility.persistency.SaveGame;
 
@@ -29,7 +29,6 @@ public class Server implements Runnable {
     private final int socketPort;
     private final int rmiPort;
 
-    private static final String[] FORBIDDEN_USERNAME = {Game.GOD, Game.BOT};
     private static final String DEFAULT_CONF_FILE_PATH = "conf.json";
 
     private Map<String, Connection> clients;
@@ -325,7 +324,7 @@ public class Server implements Runnable {
      * @return if a username is legit
      */
     private boolean isUsernameLegit(String username) {
-        for (String forbidden : FORBIDDEN_USERNAME) {
+        for (String forbidden : GameCostants.FORBIDDEN_USERNAME) {
             if (username.equalsIgnoreCase(forbidden)) {
                 return false;
             }

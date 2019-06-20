@@ -3,6 +3,7 @@ package network.message;
 import enumerations.MessageContent;
 import model.Game;
 import model.cards.PowerupCard;
+import utility.GameCostants;
 
 public class BroadcastSpawningPowerup extends Message {
     private static final long serialVersionUID = 8037294570203660769L;
@@ -10,7 +11,7 @@ public class BroadcastSpawningPowerup extends Message {
     private final PowerupCard powerupCard;
 
     public BroadcastSpawningPowerup(PowerupCard powerupCard) {
-        super(Game.GOD, null, MessageContent.DISCARD_POWERUP);
+        super(GameCostants.GOD_NAME, null, MessageContent.DISCARD_POWERUP);
 
         this.powerupCard = powerupCard;
     }

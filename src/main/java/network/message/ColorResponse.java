@@ -3,6 +3,7 @@ package network.message;
 import enumerations.MessageContent;
 import enumerations.PlayerColor;
 import model.Game;
+import utility.GameCostants;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,7 +14,7 @@ public class ColorResponse extends Message {
     private final ArrayList<PlayerColor> colorList;
 
     public ColorResponse(ArrayList<PlayerColor> colorList) {
-        super(Game.GOD, null, MessageContent.COLOR_RESPONSE);
+        super(GameCostants.GOD_NAME, null, MessageContent.COLOR_RESPONSE);
         this.colorList = colorList;
     }
 

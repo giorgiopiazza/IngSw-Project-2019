@@ -11,6 +11,7 @@ import model.player.Player;
 import model.player.UserPlayer;
 import network.client.*;
 import network.message.*;
+import utility.GameCostants;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,8 +22,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public abstract class ClientGameManager implements ClientGameManagerListener, ClientUpdateListener, Runnable {
-    public static final String CANCEL_KEYWORD = "CANCEL";
-
     public static final String SEND_ERROR = "Error while sending the request";
     public static final String INVALID_STRING = "Invalid String!";
     public static final String ERROR_DIALOG_TITLE = "Error";
@@ -654,7 +653,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         synchronized (gameSerializedLock) {
             Player player;
 
-            if (username.equals(Game.BOT)) {
+            if (username.equalsIgnoreCase(GameCostants.GOD_NAME)) {
                 if (isBotPresent) {
                     return gameSerialized.getBot();
                 } else {

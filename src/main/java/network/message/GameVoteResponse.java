@@ -3,6 +3,7 @@ package network.message;
 import enumerations.MessageContent;
 import enumerations.MessageStatus;
 import model.Game;
+import utility.GameCostants;
 
 public class GameVoteResponse extends Message {
     private static final long serialVersionUID = -6209158395966916144L;
@@ -11,7 +12,7 @@ public class GameVoteResponse extends Message {
     private final MessageStatus status;
 
     public GameVoteResponse(String message, MessageStatus status) {
-        super(Game.GOD, null, MessageContent.VOTE_RESPONSE);
+        super(GameCostants.GOD_NAME, null, MessageContent.VOTE_RESPONSE);
         this.message = message;
         this.status = status;
     }
