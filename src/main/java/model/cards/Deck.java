@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 public class Deck implements Serializable {
     private static final long serialVersionUID = -3053418734560184556L;
@@ -120,5 +121,14 @@ public class Deck implements Serializable {
                 ",\ngarbage=" + garbage +
                 ",\ndiscard=" + (discard != null ? Arrays.toString(discard.toArray()) : "null" ) +
                 "\n}";
+    }
+
+    public List<Card> toList() {
+        List<Card> list = new ArrayList<>();
+
+        list.addAll(new ArrayList<>(cardsDeck));
+        if (garbage) list.addAll(new ArrayList<>(discard));
+
+        return list;
     }
 }
