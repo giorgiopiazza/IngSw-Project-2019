@@ -296,6 +296,9 @@ public class GameManager implements TimerRunListener, Serializable {
             if (gameEnded) {
                 return new Response("Player disconnected, game has now less then 3 players and then is ending...", MessageStatus.OK);
             } else if (getRoundManager().getTurnManager().getTurnOwner().getUsername().equals(receivedConnectionMessage.getSenderUsername())) {    // if game hasn't ended I check if the disconnected player is the turn owner, if so I change the state, otherwise nothing happens
+                if(roundManager.getTurnManager().isFirstTurn()) {
+                    return roundManager.handleRandomSpawn();
+                }
                 roundManager.handlePassAction();
                 return new Response("Turn Owner disconnected, turn is passed to next Player", MessageStatus.OK);
             } else {

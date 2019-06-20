@@ -151,7 +151,7 @@ public class RoundManager {
 
         // every player must see the powerup the spawning one choosed to spawn
         gameManager.sendBroadcastMessage(new BroadcastSpawningPowerup(spawningPowerup));
-        turnManager.getTurnOwner().changePlayerState(PossiblePlayerState.PLAYING);
+        turnOwner.changePlayerState(PossiblePlayerState.PLAYING);
         setInitialActions();
         return buildPositiveResponse("Player spawned with chosen powerup");
     }
@@ -1071,6 +1071,51 @@ public class RoundManager {
         }
 
         return false;
+    }
+
+    /**
+     * Method that handles the spawn of a {@link UserPlayer UserPlayer} while he disconnects from the game on the very
+     * first round. If the {@link Bot Bot} is present his spawn is also managed
+     *
+     * @return always a positive response because this method always works alone
+     */
+    Response handleRandomSpawn() {
+        int randomIndex = Game.rand.nextInt(1);
+
+        PowerupCard spawningPowerup = getTurnManager().getTurnOwner().getPowerups()[randomIndex];
+        RoomColor spawnColor = null;
+
+        if (getTurnManager().getTurnOwner().getPossibleActions().contains(PossibleAction.SPAWN_BOT)) {
+            // terminator does not still exist!
+            try {
+                gameInstance.buildTerminator();
+                gameInstance.spawnTerminator(gameInstance.getGameMap().getSpawnSquare(RoomColor.getRandomSpawnColor()));
+            } catch (InvalidSpawnColorException e) {
+                // never reached random color is always a correct color
+            }
+        }
+
+        if(getTurnManager().getTurnOwner().getPossibleActions().contains(PossibleAction.CHOOSE_SPAWN)) {
+            try {
+                spawnColor = Ammo.toColor(spawningPowerup.getValue());
+                getTurnManager().getTurnOwner().discardPowerupByIndex(randomIndex);
+            } catch (EmptyHandException e) {
+                // never reached, in first spawn state every player always have two powerups!
+            }
+
+            try {
+                gameInstance.spawnPlayer(getTurnManager().getTurnOwner(), gameInstance.getGameMap().getSpawnSquare(spawnColor));
+            } catch (InvalidSpawnColorException e) {
+                // never reached, a powerup has always a corresponding spawning color!
+            }
+
+            // every player must see the powerup the spawning one choosed to spawn
+            gameManager.sendBroadcastMessage(new BroadcastSpawningPowerup(spawningPowerup));
+            getTurnManager().getTurnOwner().changePlayerState(PossiblePlayerState.PLAYING);
+            setInitialActions();
+        }
+
+        return buildPositiveResponse("Player randomly spawned because disconnected while very first round");
     }
 
     /**
