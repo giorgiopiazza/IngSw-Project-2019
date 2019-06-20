@@ -5,6 +5,7 @@ import enumerations.*;
 import enumerations.Properties;
 import exceptions.actions.PowerupCardsNotFoundException;
 import exceptions.actions.WeaponCardsNotFoundException;
+import exceptions.client.CancelledActionException;
 import exceptions.game.InexistentColorException;
 import exceptions.map.InvalidSpawnColorException;
 import exceptions.utility.InvalidPropertiesException;
@@ -17,8 +18,6 @@ import model.map.SpawnSquare;
 import model.map.Square;
 import model.player.*;
 import network.message.*;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 import utility.*;
 
 import java.io.IOException;
@@ -31,7 +30,7 @@ import java.util.stream.Collectors;
 import static java.util.logging.Level.INFO;
 
 public class Cli extends ClientGameManager {
-    public final Logger LOGGER = Logger.getLogger("adrenaline_client");
+    private static final Logger LOGGER = Logger.getLogger("adrenaline_client");
 
     private Scanner in;
     private AdrenalinePrintStream out;
@@ -46,7 +45,7 @@ public class Cli extends ClientGameManager {
             LOGGER.setUseParentHandlers(false);
             LOGGER.addHandler(fh);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.severe(e.getMessage());
         }
     }
 
@@ -226,8 +225,23 @@ public class Cli extends ClientGameManager {
     }
 
     /**
-     * Handles the ConnectionResponse
+     * Send an unused colors request to the server
      */
+    private void sendUnusedColorsRequest() {
+        if (!sendRequest(MessageBuilder.buildColorRequest(getClientToken(), getUsername()))) {
+            promptError(SEND_ERROR, true);
+        }
+    }
+
+    /**
+     * Send a lobby join request to the server
+     */
+    private void sendLobbyJoinRequest(PlayerColor playerColor) {
+        if (!sendRequest(MessageBuilder.buildGetInLobbyMessage(getClientToken(), getUsername(), playerColor, false))) {
+            promptError(SEND_ERROR, true);
+        }
+    }
+
     @Override
     public void connectionResponse(ConnectionResponse response) {
         CliPrinter.clearConsole(out);
@@ -238,7 +252,7 @@ public class Cli extends ClientGameManager {
             doConnection();
         } else {
             out.println("Connected to server with username " + getUsername());
-            askUnusedColors();
+            sendUnusedColorsRequest();
         }
     }
 
@@ -249,18 +263,6 @@ public class Cli extends ClientGameManager {
         out.println("You joined a loaded game.\nWaiting for other players!");
     }
 
-    /**
-     * Asks unused colors to the server
-     */
-    private void askUnusedColors() {
-        if (!sendRequest(MessageBuilder.buildColorRequest(getClientToken(), getUsername()))) {
-            promptError(SEND_ERROR, true);
-        }
-    }
-
-    /**
-     * Asks a color
-     */
     @Override
     public void askColor(List<PlayerColor> availableColors) {
         boolean validColor = false;
@@ -304,16 +306,7 @@ public class Cli extends ClientGameManager {
 
         out.printf("%nYou picked %s color.%n", playercolor.name());
 
-        askLobbyJoin(playercolor);
-    }
-
-    /**
-     * Asks to the server the join to the lobby
-     */
-    private void askLobbyJoin(PlayerColor playerColor) {
-        if (!sendRequest(MessageBuilder.buildGetInLobbyMessage(getClientToken(), getUsername(), playerColor, false))) {
-            promptError(SEND_ERROR, true);
-        }
+        sendLobbyJoinRequest(playercolor);
     }
 
     @Override
@@ -323,19 +316,23 @@ public class Cli extends ClientGameManager {
         if (response.getStatus() == MessageStatus.ERROR) {
             out.println(response.getMessage());
             out.println();
-            askUnusedColors();
+            sendUnusedColorsRequest();
         } else {
             out.println("You joined the lobby!\n\nWait for the game to start...\n");
             askVoteMap();
         }
     }
 
-    private void askVoteMap() {
-        out.println("Which map would you like to play with (1 - 4)?");
+    @Override
+    public void playersLobbyUpdate(List<String> users) {
+        StringBuilder players = new StringBuilder();
 
-        if (!sendRequest(MessageBuilder.buildVoteMessage(getClientToken(), getUsername(), readInt(1, 4)))) {
-            promptError(SEND_ERROR, true);
+        for (String user : users) {
+            players.append(user);
+            players.append(", ");
         }
+
+        out.println("Players in lobby: " + players.substring(0, players.length() - 2));
     }
 
     @Override
@@ -347,6 +344,452 @@ public class Cli extends ClientGameManager {
         } else {
             out.println("\nYou successfully voted the map.");
         }
+    }
+
+    @Override
+    public void firstPlayerCommunication(String username) {
+        if (username.equals(getUsername())) {
+            out.println("You are the first player\n");
+        } else {
+            out.println("The first player is: " + getFirstPlayer() + "\n");
+        }
+    }
+
+    @Override
+    public void notYourTurn() {
+        out.println("Wait for your turn...");
+    }
+
+    @Override
+    public void gameStateUpdate(GameSerialized gameSerialized) {
+        printMap();
+        out.println();
+        printPlayerBoard();
+        out.println();
+    }
+
+    @Override
+    public void responseError(String error) {
+        promptError(error + "\n", false);
+    }
+
+    @Override
+    public void displayActions(List<PossibleAction> possibleActions) {
+        Integer choose;
+        printPlayers();
+        printAmmo();
+        out.println();
+        printPowerupsNum();
+        out.println("Choose the next move:");
+
+        for (int i = 0; i < possibleActions.size(); i++) {
+            out.println("\t" + (i) + " - " + possibleActions.get(i).getDescription());
+        }
+
+        LOGGER.log(INFO, "possibleActions: {0}", Arrays.toString(possibleActions.toArray()));
+        LOGGER.log(INFO, "userplayer: {0}", getPlayer());
+        LOGGER.log(INFO, "powerups: {0}", Arrays.toString(getGameSerialized().getPowerups().toArray()));
+        LOGGER.log(INFO, "other players: {0}", Arrays.toString(getPlayers().toArray()));
+
+        choose = readInt(0, possibleActions.size() - 1, false);
+        if (choose != null) {
+            doAction(possibleActions.get(choose));
+        }
+    }
+
+    @Override
+    public void botSpawn() {
+        GameMap gameMap = getGameSerialized().getGameMap();
+        PlayerPosition botSpawnPosition = null;
+        boolean correctColor;
+
+        out.println("Choose the Color of the square where to Spawn the bot:");
+        do {
+            try {
+                botSpawnPosition = gameMap.getSpawnSquare(readRoomColor());
+                correctColor = true;
+            } catch (InvalidSpawnColorException e) {
+                correctColor = false;
+            } catch (CancelledActionException e) {
+                cancelAction();
+                return;
+            }
+        } while (!correctColor);
+
+        if (!sendRequest(MessageBuilder.buildTerminatorSpawnRequest(getClientToken(), getGameSerialized().getBot(), gameMap.getSquare(botSpawnPosition)))) {
+            promptError(SEND_ERROR, true);
+        }
+    }
+
+    @Override
+    public void botRespawn() {
+        botSpawn();
+    }
+
+    @Override
+    public void spawn() {
+        printMap();
+        out.println();
+        printPowerups();
+
+        out.println();
+        out.println("Where do you want to spawn?");
+        PowerupCard powerupCard;
+        try {
+            powerupCard = askPowerup();
+        } catch (CancelledActionException e) {
+            cancelAction();
+            return;
+        }
+
+        List<PowerupCard> powerupCards = getPowerups();
+
+        try {
+            if (!sendRequest(MessageBuilder.buildDiscardPowerupRequest(getClientToken(), powerupCards, powerupCard, getUsername()))) {
+                promptError(SEND_ERROR, true);
+            }
+        } catch (PowerupCardsNotFoundException e) {
+            promptError(e.getMessage(), true);
+        }
+    }
+
+    @Override
+    public void move() {
+        printMap();
+        out.println();
+
+        try {
+            if (!sendRequest(MessageBuilder.buildMoveRequest(getClientToken(), getPlayer(), readCoordinates()))) {
+                promptError(SEND_ERROR, true);
+            }
+        } catch (CancelledActionException e) {
+            cancelAction();
+        }
+    }
+
+    @Override
+    public void moveAndPick() {
+        PlayerPosition newPos;
+        Square square;
+
+        printMap();
+
+        out.println("\nChoose the moving square for your pick action (same position not to move):");
+        try {
+            newPos = readCoordinates();
+            square = getGameSerialized().getGameMap().getSquare(newPos.getCoordX(), newPos.getCoordY());
+        } catch (CancelledActionException e) {
+            cancelAction();
+            return;
+        }
+
+        if (square.getSquareType() == SquareType.TILE) {
+            if (!sendRequest(MessageBuilder.buildMovePickRequest(getClientToken(), getPlayer(), newPos))) {
+                promptError(SEND_ERROR, true);
+            }
+        } else {
+            try {
+                buildPickWeaponRequest(newPos);
+            } catch (CancelledActionException e) {
+                cancelAction();
+            }
+        }
+    }
+
+    @Override
+    public void shoot() {
+        try {
+            ShootRequest.ShootRequestBuilder shootRequestBuilder = sharedShootBuilder();
+
+            if (shootRequestBuilder == null) {
+                cancelAction();
+                return;
+            }
+
+            if (!sendRequest(MessageBuilder.buildShootRequest(shootRequestBuilder))) {
+                promptError(SEND_ERROR, true);
+            }
+
+        } catch (CancelledActionException e) {
+            cancelAction();
+        }
+    }
+
+    @Override
+    public void adrenalinePick() {
+        out.println("ADRENALINE ACTION!\n");
+        moveAndPick();
+    }
+
+    @Override
+    public void adrenalineShoot() {
+        out.println("ADRENALINE ACTION!\n");
+        ShootRequest.ShootRequestBuilder shootRequestBuilt;
+        PlayerPosition adrenalineMovePosition;
+
+        out.println("Choose the moving square for your adrenaline shoot action (same position not to move)");
+        try {
+            adrenalineMovePosition = readCoordinates();
+
+            // now that I also know the moving position needed for the adrenaline shoot action I can build the shoot request and send it
+            shootRequestBuilt = sharedShootBuilder();
+        } catch (CancelledActionException e) {
+            cancelAction();
+            return;
+        }
+
+        if (shootRequestBuilt == null) {
+            cancelAction();
+            return;
+        } else {
+            shootRequestBuilt.adrenalineMovePosition(adrenalineMovePosition);
+        }
+
+        if (!sendRequest(MessageBuilder.buildShootRequest(shootRequestBuilt))) {
+            promptError(SEND_ERROR, true);
+        }
+    }
+
+    @Override
+    public void frenzyMove() {
+        out.println("FRENZY ACTION! \n");
+        move();
+    }
+
+    @Override
+    public void frenzyPick() {
+        out.println("FRENZY ACTION!\n");
+        moveAndPick();
+    }
+
+    @Override
+    public void frenzyShoot() {
+        out.println("FRENZY ACTION!\n");
+        buildFrenzyShoot();
+    }
+
+    @Override
+    public void lightFrenzyPick() {
+        out.println("LIGHT FRENZY ACTION");
+        moveAndPick();
+    }
+
+    @Override
+    public void lightFrenzyShoot() {
+        out.println("LIGHT FRENZY ACTION");
+        buildFrenzyShoot();
+    }
+
+    @Override
+    public void botAction() {
+        PlayerPosition newPos;
+        String target;
+
+        printMap();
+
+        try {
+            out.println("Choose the position for the bot action (same position not to move):");
+            newPos = readCoordinates();
+
+            out.println("Choose the target for the bot action (-1 not to shoot):");
+            target = readBotTarget(getGameSerialized().getPlayers());
+        } catch (CancelledActionException e) {
+            cancelAction();
+            return;
+        }
+
+        if (!sendRequest(MessageBuilder.buildUseTerminatorRequest(getClientToken(), getGameSerialized().getBot(), newPos, (UserPlayer) getPlayerByName(target)))) {
+            promptError(SEND_ERROR, true);
+        }
+    }
+
+    @Override
+    public void targetingScope() {
+        List<PowerupCard> powerups = getPowerups();
+        List<PowerupCard> newList = new ArrayList<>();
+        PowerupRequest.PowerupRequestBuilder builder;
+
+        for (PowerupCard powerup : powerups) {
+            if (powerup.getName().equals(TARGETING_SCOPE)) {
+                newList.add(powerup);
+            }
+        }
+
+        if (!newList.isEmpty()) {
+            try {
+                builder = buildTargetingScopeRequest(powerups, newList);
+            } catch (CancelledActionException e) {
+                cancelAction();
+                return;
+            }
+        } else {
+            builder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), new ArrayList<>());
+        }
+
+        try {
+            if (!sendRequest(MessageBuilder.buildPowerupRequest(builder))) {
+                promptError(SEND_ERROR, true);
+            }
+        } catch (PowerupCardsNotFoundException e) {
+            promptError(e.getMessage(), false);
+        }
+    }
+
+    @Override
+    public void tagbackGrenade() {
+        List<PowerupCard> newList = getOnlyGrenades();
+        ArrayList<Integer> chosenGrenades = new ArrayList<>();
+
+        CliPrinter.clearConsole(out);
+        CliPrinter.printPowerups(out, newList.toArray(PowerupCard[]::new));
+
+        out.println("Choose the TAGBACK GRENADE/S you want to use to mark the shooting player (-1 to stop choosing)!");
+        out.println();
+
+        for (int i = 0; i < newList.size(); i++) {
+            out.println("\t" + i + " - " + CliPrinter.toStringPowerUpCard(newList.get(i)) + " (" + Ammo.toColor(newList.get(i).getValue()) + " room)");
+        }
+
+        try {
+            for (int i = 0; i < newList.size(); ++i) {
+                int tempChoose = readInt(-1, newList.size() - 1, true);
+
+                if (tempChoose == -1 && !chosenGrenades.isEmpty()) break;
+                if (tempChoose != -1) chosenGrenades.add(tempChoose);
+            }
+        } catch (CancelledActionException e) {
+            cancelAction();
+            return;
+        }
+
+        PowerupRequest.PowerupRequestBuilder grenadeRequestBuilder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), chosenGrenades);
+
+        try {
+            if (!sendRequest(MessageBuilder.buildPowerupRequest(grenadeRequestBuilder))) {
+                promptError(SEND_ERROR, true);
+            }
+        } catch (PowerupCardsNotFoundException e) {
+            promptError(e.getMessage(), false);
+        }
+    }
+
+    @Override
+    public void reload() {
+        WeaponCard[] playersWeapons = getPlayer().getWeapons();
+        ArrayList<Integer> rechargingWeapons = new ArrayList<>();
+        ArrayList<Integer> paymentPowerups = new ArrayList<>();
+
+        if (playersWeapons.length == 0) {
+            cancelAction("You have no weapon to recharge");
+            return;
+        }
+
+        CliPrinter.clearConsole(out);
+        printWeapons(playersWeapons);
+
+        out.println("Choose the weapons you want to reload (-1 to stop choosing). Your ammo are:");
+        printAmmo();
+
+        try {
+            for (int i = 0; i < playersWeapons.length; ++i) {
+                int tempChoose = askWeapon(true);
+                if (tempChoose == -1) break;
+                else rechargingWeapons.add(tempChoose);
+            }
+
+            if (rechargingWeapons.isEmpty()) {
+                cancelAction();
+                return;
+            }
+
+            if (!getPowerups().isEmpty()) {
+                paymentPowerups = askPaymentPowerups();
+            }
+        } catch (CancelledActionException e) {
+            cancelAction();
+            return;
+        }
+
+        try {
+            if (paymentPowerups.isEmpty()) {
+                if (!sendRequest(MessageBuilder.buildReloadRequest(getClientToken(), getPlayer(), rechargingWeapons))) {
+                    promptError(SEND_ERROR, true);
+                }
+            } else {
+                if (!sendRequest(MessageBuilder.buildReloadRequest(getClientToken(), getPlayer(), rechargingWeapons, paymentPowerups))) {
+                    promptError(SEND_ERROR, true);
+                }
+            }
+        } catch (WeaponCardsNotFoundException | PowerupCardsNotFoundException e) {
+            promptError(e.getMessage(), false);
+        }
+    }
+
+    @Override
+    public void powerup() {
+        CliPrinter.clearConsole(out);
+        printPowerups();
+
+        out.println();
+        out.println("Which power up do you want to use?");
+
+        PowerupCard powerupCard = askPowerup();
+
+        if (!powerupCard.getName().equals(NEWTON) && !powerupCard.getName().equals(TELEPORTER)) {
+            cancelAction("You can't use this powerup!");
+            return;
+        }
+
+        ArrayList<Integer> powerups = new ArrayList<>();
+        powerups.add(getPowerups().indexOf(powerupCard));
+
+        PowerupRequest.PowerupRequestBuilder powerupRequestBuilder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), powerups);
+
+        Effect baseEffect = powerupCard.getBaseEffect();
+        Map<String, String> effectProperties = baseEffect.getProperties();
+
+        try {
+            if (effectProperties.containsKey(Properties.TP.getJKey())) {
+                out.println("Choose your teleporting position:");
+                powerupRequestBuilder.senderMovePosition(readCoordinates());
+            }
+
+            if (effectProperties.containsKey(Properties.MAX_MOVE_TARGET.getJKey())) {
+                out.println("Choose target username:");
+                powerupRequestBuilder.targetPlayersUsername(askExactTargets("1"));
+                powerupRequestBuilder.targetPlayersMovePositions(new ArrayList<>(List.of(readCoordinates())));
+            }
+
+        } catch (CancelledActionException e) {
+            cancelAction();
+            return;
+        }
+
+        try {
+            if (!sendRequest(MessageBuilder.buildPowerupRequest(powerupRequestBuilder))) {
+                promptError(SEND_ERROR, true);
+            }
+        } catch (PowerupCardsNotFoundException e) {
+            promptError(e.getMessage(), false);
+        }
+    }
+
+    @Override
+    public void passTurn() {
+        if (!sendRequest(MessageBuilder.buildPassTurnRequest(getClientToken(), getPlayer()))) {
+            promptError(SEND_ERROR, true);
+        }
+    }
+
+    @Override
+    public void onPlayerDisconnect(String username) {
+        out.println("Player " + username + " DISCONNECTED from the game!");
+    }
+
+    @Override
+    public void notifyGameEnd(List<Player> winners) {
+        out.println("EndGame todo");
+        // TODO
     }
 
     /**
@@ -384,102 +827,298 @@ public class Cli extends ClientGameManager {
         }
     }
 
-    @Override
-    public void reload() {
-        WeaponCard[] playersWeapons = getPlayer().getWeapons();
-        ArrayList<Integer> rechargingWeapons = new ArrayList<>();
-        ArrayList<Integer> paymentPowerups = new ArrayList<>();
+    /**
+     * Asks the map that the player wants to play with
+     */
+    private void askVoteMap() {
+        out.println("Which map would you like to play with (1 - 4)?");
 
-        if (playersWeapons.length == 0) {
-            cancelAction("You have no weapon to recharge");
-            return;
-        }
+        int mapVote = readInt(1, 4, false);
 
-        CliPrinter.clearConsole(out);
-        printWeapons(playersWeapons);
-
-        out.println("Choose the weapons you want to reload (-1 to stop choosing). Your ammo are:");
-        printAmmo();
-
-        for (int i = 0; i < playersWeapons.length; ++i) {
-            int tempChoose = askWeapon(-1);
-            if (tempChoose == -1) break;
-            else rechargingWeapons.add(tempChoose);
-        }
-
-        if (rechargingWeapons.isEmpty()) return;
-
-        if (!getPowerups().isEmpty()) {
-            paymentPowerups = askPaymentPowerups();
-        }
-
-        try {
-            if (paymentPowerups.isEmpty()) {
-                if (!sendRequest(MessageBuilder.buildReloadRequest(getClientToken(), getPlayer(), rechargingWeapons))) {
-                    promptError(SEND_ERROR, true);
-                }
-            } else {
-                if (!sendRequest(MessageBuilder.buildReloadRequest(getClientToken(), getPlayer(), rechargingWeapons, paymentPowerups))) {
-                    promptError(SEND_ERROR, true);
-                }
-            }
-        } catch (WeaponCardsNotFoundException | PowerupCardsNotFoundException e) {
-            promptError(e.getMessage(), false);
-        }
-    }
-
-    @Override
-    public void passTurn() {
-        if (!sendRequest(MessageBuilder.buildPassTurnRequest(getClientToken(), getPlayer()))) {
+        if (!sendRequest(MessageBuilder.buildVoteMessage(getClientToken(), getUsername(), mapVote))) {
             promptError(SEND_ERROR, true);
         }
     }
 
-    private int askWeapon(int minVal) {
+    /**
+     * Asks to choose a weapon
+     *
+     * @param optional {@code true} if it's an optional chose, {@code false} if it is not
+     * @return -1 if no weapon was chosen, the index of the weapon otherwise
+     * @throws CancelledActionException if the action was cancelled
+     */
+    private int askWeapon(boolean optional) {
         UserPlayer player = getPlayer();
         WeaponCard[] weapons = player.getWeapons();
         int choose;
 
-        printWeapons(player.getWeapons());
         if (weapons.length == 0) return -1;
+        int minVal = optional ? -1 : 0;
+
+        printWeapons(player.getWeapons());
 
         do {
             out.println("Choose the weapon:");
-            choose = readInt(minVal, weapons.length - 1);
-        } while (choose < minVal || choose > weapons.length - 1);
+            choose = readInt(minVal, weapons.length - 1, true);
+        } while ((choose < minVal || choose > weapons.length - 1));
 
         return choose;
     }
 
-    private int askWeaponEffect(WeaponCard weapon) {
+    /**
+     * Asks to choose a weapon's effect
+     *
+     * @param weapon the weapon card of the weapon selected
+     * @return the index of the weapon's effect
+     * @throws CancelledActionException if the action was cancelled
+     */
+    private Integer askWeaponEffect(WeaponCard weapon) {
         WeaponCard[] chosenWeapon = new WeaponCard[]{weapon};
-        int choose;
+        Integer choose;
 
         printWeapons(chosenWeapon);
         do {
             out.println("Choose the weapon's effect:");
-            choose = readInt(0, weapon.getSecondaryEffects().size());
+            choose = readInt(0, weapon.getSecondaryEffects().size(), true);
         } while (choose < 0 || choose > weapon.getSecondaryEffects().size());
 
         return choose;
     }
 
+    /**
+     * Asks to choose payment powerups
+     *
+     * @return the list of powerups read
+     * @throws CancelledActionException if the action was cancelled
+     */
     private ArrayList<Integer> askPaymentPowerups() {
         ArrayList<Integer> paymentPowerups = new ArrayList<>();
-        int tempChoose;
+        Integer tempChoose;
 
         printPowerups();
 
         do {
             out.println("Choose the powerups you want to pay with (-1 to stop choosing):");
-            tempChoose = readInt(-1, getPowerups().size());
-            if (tempChoose == -1) return paymentPowerups;
+            tempChoose = readInt(-1, getPowerups().size(), true);
+
+            if (tempChoose == -1) {
+                return paymentPowerups;
+            }
+
             paymentPowerups.add(tempChoose);
         } while (paymentPowerups.size() < getPowerups().size());
 
         return paymentPowerups;
     }
 
+    /**
+     * Based on the effect properties asks a number of player targets
+     *
+     * @param effectProperties properties of effect
+     * @return the list of username targets
+     * @throws CancelledActionException if the action was cancelled
+     */
+    private ArrayList<String> askTargetsUsername(Map<String, String> effectProperties) {
+        ArrayList<String> targetsUsername;
+
+        printMap();
+        out.println();
+        printPlayers();
+
+        if (effectProperties.containsKey(Properties.TARGET_NUM.getJKey())) {
+            targetsUsername = askExactTargets(effectProperties.get(Properties.TARGET_NUM.getJKey()));
+        } else if (effectProperties.containsKey(Properties.MAX_TARGET_NUM.getJKey())) {
+            targetsUsername = askMaxTargets(effectProperties.get(Properties.MAX_TARGET_NUM.getJKey()));
+        } else {
+            throw new InvalidPropertiesException();
+        }
+
+        return targetsUsername;
+    }
+
+    /**
+     * Asks an exact number of player targets
+     *
+     * @param exactStringNum exact number of targets
+     * @return the list of username targets
+     * @throws CancelledActionException if the action was cancelled
+     */
+    private ArrayList<String> askExactTargets(String exactStringNum) {
+        int exactIntNum = Integer.parseInt(exactStringNum);
+        ArrayList<String> chosenTargets = new ArrayList<>();
+
+        do {
+            out.println("Choose exactly " + exactIntNum + " target/s for your shoot action:");
+            String target = readTargetUsername((ArrayList<Player>) getPlayers(), false);
+
+            chosenTargets.add(target);
+
+        } while (chosenTargets.size() < exactIntNum);
+
+        return chosenTargets;
+    }
+
+    /**
+     * Asks a max number of player targets
+     *
+     * @param maxStringNum max number of targets
+     * @return the list of username targets
+     * @throws CancelledActionException if the action was cancelled
+     */
+    private ArrayList<String> askMaxTargets(String maxStringNum) {
+        int maxIntNum = Integer.parseInt(maxStringNum);
+        ArrayList<String> chosenTargets = new ArrayList<>();
+        out.println("Choose up to " + maxIntNum + " target/s for your shoot action (-1 to stop choosing):");
+
+        do {
+            String target = readTargetUsername((ArrayList<Player>) getPlayers(), true);
+
+            if (target != null) {
+                chosenTargets.add(target);
+            } else if (chosenTargets.size() > 1) {
+                return chosenTargets;
+            }
+
+        } while (chosenTargets.size() < maxIntNum);
+
+        return chosenTargets;
+    }
+
+    /**
+     * Based on the effect properties asks a number of square positions
+     *
+     * @param effectProperties properties of effect
+     * @return the list of square targets
+     * @throws CancelledActionException if the action was cancelled
+     */
+    private ArrayList<PlayerPosition> askTargetSquaresPositions(Map<String, String> effectProperties) {
+        ArrayList<PlayerPosition> targetSquaresPositions;
+
+        if (effectProperties.containsKey(Properties.TARGET_NUM.getJKey())) {
+            targetSquaresPositions = askExactSquares(effectProperties.get(Properties.TARGET_NUM.getJKey()));
+        } else if (effectProperties.containsKey(Properties.MAX_TARGET_NUM.getJKey())) {
+            targetSquaresPositions = askMaxSquares(effectProperties.get(Properties.MAX_TARGET_NUM.getJKey()));
+        } else {
+            throw new InvalidPropertiesException();
+        }
+
+        return targetSquaresPositions;
+    }
+
+    /**
+     * Asks an exact number of square targets
+     *
+     * @param exactStringNum exact number of targets
+     * @return the list of square targets
+     * @throws CancelledActionException if the action was cancelled
+     */
+    private ArrayList<PlayerPosition> askExactSquares(String exactStringNum) {
+        int exactIntNum = Integer.parseInt(exactStringNum);
+        ArrayList<PlayerPosition> chosenSquares = new ArrayList<>();
+
+        do {
+            out.println("Choose exactly " + exactIntNum + " target/s squares for your shoot action:");
+
+            chosenSquares.add(readCoordinates());
+        } while (chosenSquares.size() < exactIntNum);
+
+        return chosenSquares;
+    }
+
+    /**
+     * Asks an exact number of square targets
+     *
+     * @param maxStringNum max number of targets
+     * @return the list of square targets
+     * @throws CancelledActionException if the action was cancelled
+     */
+    private ArrayList<PlayerPosition> askMaxSquares(String maxStringNum) {
+        int maxIntNum = Integer.parseInt(maxStringNum);
+        ArrayList<PlayerPosition> chosenSquares = new ArrayList<>();
+
+        do {
+            out.println("Choose up to " + maxIntNum + " target/s squares for your shoot action (-1 to stop choosing):");
+            PlayerPosition coord = readCoordinates();
+
+            if (coord.getCoordX() == -1 && chosenSquares.size() > 1) {
+                return chosenSquares;
+            }
+
+            chosenSquares.add(coord);
+        } while (chosenSquares.size() < maxIntNum);
+
+        return chosenSquares;
+    }
+
+    /**
+     * Asks a color of target room
+     *
+     * @param effectProperties properties of the effect
+     * @return the room color read
+     * @throws CancelledActionException if the action was cancelled
+     */
+    private RoomColor askTargetRoomColor(Map<String, String> effectProperties) {
+        if (effectProperties.containsKey(Properties.TARGET_NUM.getJKey())) {
+            out.println("Choose the color of the target room for your shoot action:");
+
+            return readRoomColor();
+        } else {
+            throw new InvalidPropertiesException();
+        }
+    }
+
+    /**
+     * Asks the moving position of the shoot action
+     *
+     * @return the position read
+     * @throws CancelledActionException if the action was cancelled
+     */
+    private PlayerPosition askMovePositionInShoot() {
+        out.println("Choose the moving position for your shoot action:");
+        return readCoordinates();
+    }
+
+    /**
+     * Asks if the player move has to be executed before of after shooting
+     *
+     * @return the move decision read
+     * @throws CancelledActionException if the action was cancelled
+     */
+    private Boolean askBeforeAfterMove() {
+        out.println("Choose if you want to move 'before' or 'after' shooting:");
+        return readMoveDecision();
+    }
+
+    /**
+     * Ask for each target the moving position
+     *
+     * @param targetsChosen list of targets
+     * @return the list of positions
+     * @throws CancelledActionException if the action was cancelled
+     */
+    private ArrayList<PlayerPosition> askTargetsMovePositions(ArrayList<String> targetsChosen) {
+        ArrayList<PlayerPosition> targetsMovePositions = new ArrayList<>();
+
+        out.println("Choose each target moving position!");
+
+        for (String target : targetsChosen) {
+            out.println("Choose " + target + " moving position:");
+            PlayerPosition coord = readCoordinates();
+
+            targetsMovePositions.add(coord);
+        }
+
+        return targetsMovePositions;
+    }
+
+    /**
+     * Build a shoot request adding properties to an existent one
+     *
+     * @param chosenEffect        the chosen effect
+     * @param shootRequestBuilder the already existent builder
+     * @return the shoot request builder
+     * @throws CancelledActionException if the action was cancelled
+     */
     private ShootRequest.ShootRequestBuilder buildShootRequest(Effect chosenEffect, ShootRequest.ShootRequestBuilder shootRequestBuilder) {
         Map<String, String> effectProperties = chosenEffect.getProperties();
         TargetType[] targets = chosenEffect.getTargets();
@@ -489,7 +1128,7 @@ public class Cli extends ClientGameManager {
         for (TargetType target : targets) {
             switch (target) {
                 case PLAYER:
-                    targetsChosen = askTargetsUsernames(effectProperties);
+                    targetsChosen = askTargetsUsername(effectProperties);
                     shootRequestBuilder.targetPlayersUsernames(targetsChosen);
                     break;
                 case SQUARE:
@@ -529,222 +1168,22 @@ public class Cli extends ClientGameManager {
         return shootRequestBuilder;
     }
 
-    private ArrayList<String> askTargetsUsernames(Map<String, String> effectProperties) {
-        ArrayList<String> targetsUsernames;
-
-        printMap();
-        out.println();
-        printUsername();
-
-        if (effectProperties.containsKey(Properties.TARGET_NUM.getJKey())) {
-            targetsUsernames = askExactTargets(effectProperties.get(Properties.TARGET_NUM.getJKey()));
-        } else if (effectProperties.containsKey(Properties.MAX_TARGET_NUM.getJKey())) {
-            targetsUsernames = askMaxTargets(effectProperties.get(Properties.MAX_TARGET_NUM.getJKey()));
-        } else {
-            throw new InvalidPropertiesException();
-        }
-
-        return targetsUsernames;
-    }
-
-    private ArrayList<String> askExactTargets(String exactStringNum) {
-        int exactIntNum = Integer.parseInt(exactStringNum);
-        ArrayList<String> chosenTargets = new ArrayList<>();
-
-        do {
-            out.println("Choose exactly " + exactIntNum + " target/s for your shoot action:");
-            String targetUser = readTargetUsername((ArrayList<Player>) getPlayers(), false);
-            chosenTargets.add(targetUser);
-        } while (chosenTargets.size() < exactIntNum);
-
-        return chosenTargets;
-    }
-
-    private ArrayList<String> askMaxTargets(String maxStringNum) {
-        int maxIntNum = Integer.parseInt(maxStringNum);
-        ArrayList<String> chosenTargets = new ArrayList<>();
-        out.println("Choose up to " + maxIntNum + " target/s for your shoot action (-1 to stop choosing):");
-
-        do {
-            String tempTarget = readTargetUsername((ArrayList<Player>) getPlayers(), true);
-            if (tempTarget == null && chosenTargets.size() > 1) return chosenTargets;
-            if (tempTarget != null) chosenTargets.add(tempTarget);
-        } while (chosenTargets.size() < maxIntNum);
-
-        return chosenTargets;
-    }
-
-    private ArrayList<PlayerPosition> askTargetSquaresPositions(Map<String, String> effectProperties) {
-        ArrayList<PlayerPosition> targetSquaresPositions;
-
-        if (effectProperties.containsKey(Properties.TARGET_NUM.getJKey())) {
-            targetSquaresPositions = askExactSquares(effectProperties.get(Properties.TARGET_NUM.getJKey()));
-        } else if (effectProperties.containsKey(Properties.MAX_TARGET_NUM.getJKey())) {
-            targetSquaresPositions = askMaxSquares(effectProperties.get(Properties.MAX_TARGET_NUM.getJKey()));
-        } else {
-            throw new InvalidPropertiesException();
-        }
-
-        return targetSquaresPositions;
-    }
-
-    private ArrayList<PlayerPosition> askExactSquares(String exactStringNum) {
-        int exactIntNum = Integer.parseInt(exactStringNum);
-        ArrayList<PlayerPosition> chosenSquares = new ArrayList<>();
-
-        do {
-            out.println("Choose exactly " + exactIntNum + " target/s squares for your shoot action:");
-            chosenSquares.add(askCoordinates());
-        } while (chosenSquares.size() < exactIntNum);
-
-        return chosenSquares;
-    }
-
-    private ArrayList<PlayerPosition> askMaxSquares(String maxStringNum) {
-        int maxIntNum = Integer.parseInt(maxStringNum);
-        ArrayList<PlayerPosition> chosenSquares = new ArrayList<>();
-
-        do {
-            PlayerPosition tempPos;
-            out.println("Choose up to " + maxIntNum + " target/s squares for your shoot action (-1 to stop choosing):");
-            tempPos = askCoordinates();
-            if (tempPos.getCoordX() == -1 && chosenSquares.size() > 1) return chosenSquares;
-            chosenSquares.add(tempPos);
-        } while (chosenSquares.size() < maxIntNum);
-
-        return chosenSquares;
-    }
-
-    private RoomColor askTargetRoomColor(Map<String, String> effectProperties) {
-        // remember that a room target is always 1, infact we just need to verify that the property is present, then we are sure its going to be one
-        if (effectProperties.containsKey(Properties.TARGET_NUM.getJKey())) {
-            out.println("Choose the color of the target room for your shoot action:");
-
-            return readRoomColor();
-        } else {
-            throw new InvalidPropertiesException();
-        }
-    }
-
-    private PlayerPosition askMovePositionInShoot() {
-        out.println("Choose the moving position for your shoot action:");
-        return askCoordinates();
-    }
-
-    private boolean askBeforeAfterMove() {
-        out.println("Choose if you want to move 'before' or 'after' shooting:");
-        return readMoveDecision();
-    }
-
-    private ArrayList<PlayerPosition> askTargetsMovePositions(ArrayList<String> targetsChosen) {
-        ArrayList<PlayerPosition> targetsMovePositions = new ArrayList<>();
-
-        out.println("Choose each targets' moving position!");
-
-        for (String target : targetsChosen) {
-            out.println("Choose " + target + " moving position:");
-            targetsMovePositions.add(askCoordinates());
-        }
-
-        return targetsMovePositions;
-    }
-
-    @Override
-    public void botSpawn() {
-        GameMap gameMap = getGameSerialized().getGameMap();
-        PlayerPosition botSpawnPosition = null;
-        boolean correctColor;
-
-        out.println("Choose the Color of the square where to Spawn the bot:");
-        do {
-            try {
-                botSpawnPosition = gameMap.getSpawnSquare(readRoomColor());
-                correctColor = true;
-            } catch (InvalidSpawnColorException e) {
-                correctColor = false;
-            }
-        } while (!correctColor);
-
-        if (!sendRequest(MessageBuilder.buildTerminatorSpawnRequest(getClientToken(), getGameSerialized().getBot(), gameMap.getSquare(botSpawnPosition)))) {
-            promptError(SEND_ERROR, true);
-        }
-    }
-
-    @Override
-    public void botRespawn() {
-        botSpawn();
-    }
-
-    @Override
-    public void adrenalinePick() {
-        out.println("ADRENALINE ACTION!\n");
-        moveAndPick();
-    }
-
-    @Override
-    public void adrenalineShoot() {
-        out.println("ADRENALINE ACTION!\n");
-        ShootRequest.ShootRequestBuilder shootRequestBuilt;
-        PlayerPosition adrenalineMovePosition;
-
-        out.println("Choose the moving square for your adrenaline shoot action (same position not to move)");
-        adrenalineMovePosition = askCoordinates();
-
-        // now that I also know the moving position needed for the adrenaline shoot action I can build the shoot request and send it
-        shootRequestBuilt = sharedShootBuilder();
-
-        if (shootRequestBuilt == null) {
-            return;
-        } else {
-            shootRequestBuilt.adrenalineMovePosition(adrenalineMovePosition);
-        }
-
-        if (!sendRequest(MessageBuilder.buildShootRequest(shootRequestBuilt))) {
-            promptError(SEND_ERROR, true);
-        }
-    }
-
-    @Override
-    public void frenzyMove() {
-        out.println("FRENZY ACTION! \n");
-        move();
-    }
-
-    @Override
-    public void frenzyPick() {
-        out.println("FRENZY ACTION!\n");
-        moveAndPick();
-    }
-
-    @Override
-    public void frenzyShoot() {
-        out.println("FRENZY ACTION!\n");
-        sharedFrenzyShoot();
-    }
-
-    @Override
-    public void lightFrenzyPick() {
-        out.println("LIGHT FRENZY ACTION");
-        moveAndPick();
-    }
-
-    @Override
-    public void lightFrenzyShoot() {
-        out.println("LIGHT FRENZY ACTION");
-        sharedFrenzyShoot();
-    }
-
-    private void sharedFrenzyShoot() {
+    /**
+     * Creates and sends a frenzy shot request
+     *
+     * @throws CancelledActionException if the action was cancelled
+     */
+    private void buildFrenzyShoot() {
         ShootRequest.ShootRequestBuilder shootRequestBuilt;
         PlayerPosition frenzyMovePosition;
         ArrayList<Integer> rechargingWeapons = new ArrayList<>();
 
         out.println("Choose the moving square for your frenzy shoot action (same position not to move):");
-        frenzyMovePosition = askCoordinates();
+        frenzyMovePosition = readCoordinates();
 
         out.println("Do you want to recharge your weapons before shooting (-1 to stop choosing)?");
         for (int i = 0; i < getPlayer().getWeapons().length; ++i) {
-            int tempChoose = askWeapon(-1);
+            int tempChoose = askWeapon(true);
             if (tempChoose == -1) break;
             rechargingWeapons.add(tempChoose);
         }
@@ -762,17 +1201,12 @@ public class Cli extends ClientGameManager {
         }
     }
 
-    @Override
-    public void shoot() {
-        ShootRequest.ShootRequestBuilder shootRequestBuilder = sharedShootBuilder();
-
-        if (shootRequestBuilder == null) return;
-
-        if (!sendRequest(MessageBuilder.buildShootRequest(shootRequestBuilder))) {
-            promptError(SEND_ERROR, true);
-        }
-    }
-
+    /**
+     * Utility method used to create the shoot builder for a shoot action
+     *
+     * @return the created builder
+     * @throws CancelledActionException if the action was cancelled
+     */
     private ShootRequest.ShootRequestBuilder sharedShootBuilder() {
         ShootRequest.ShootRequestBuilder shootRequestBuilder;
         ArrayList<Integer> paymentPowerups = new ArrayList<>();
@@ -780,16 +1214,14 @@ public class Cli extends ClientGameManager {
 
         WeaponCard[] weapons = getPlayer().getWeapons();
         if (weapons.length == 0) {
-            cancelAction("You have no weapon to use");
-            return null;
+            throw new CancelledActionException();
         }
 
         printMap();
-        out.println("Care your Ammo before choosing to shoot: ");
+        out.println("Care of your Ammo before choosing to shoot: ");
         printAmmo();
 
-        int weapon = askWeapon(0);
-        if (weapon == -1) return null;
+        int weapon = askWeapon(false);
         int effect = askWeaponEffect(getPlayer().getWeapons()[weapon]);
         if (!getPowerups().isEmpty()) {
             paymentPowerups = askPaymentPowerups();
@@ -808,6 +1240,12 @@ public class Cli extends ClientGameManager {
         return buildShootRequest(chosenEffect, shootRequestBuilder);
     }
 
+    /**
+     * Builds a pick weapon request
+     *
+     * @param newPos the position where the player is picking
+     * @throws CancelledActionException if the action was cancelled
+     */
     private void buildPickWeaponRequest(PlayerPosition newPos) {
         SpawnSquare weaponSquare = (SpawnSquare) getGameSerialized().getGameMap().getSquare(newPos);
         ArrayList<Integer> paymentPowerups = new ArrayList<>();
@@ -827,7 +1265,7 @@ public class Cli extends ClientGameManager {
         // now that we know the WeaponCard the acting player wants to pick, if he has already 3 cards in his hand we ask him which one to discard
         if (getPlayer().getWeapons().length == 3) {
             out.println("You already have 3 weapons in your hand, choose one and discard it!");
-            discardingCard = getPlayer().getWeapons()[askWeapon(0)];
+            discardingCard = getPlayer().getWeapons()[askWeapon(false)];
         }
 
         try {
@@ -845,9 +1283,63 @@ public class Cli extends ClientGameManager {
         }
     }
 
+    /**
+     * Builds a powerup request builder
+     *
+     * @param powerups list of all powerups
+     * @param newList list of only targeting scopes
+     * @return the builder of the powerup request
+     */
+    private PowerupRequest.PowerupRequestBuilder buildTargetingScopeRequest(List<PowerupCard> powerups,
+                                                                            List<PowerupCard> newList) {
+        List<PowerupCard> scopes = new ArrayList<>();
+        ArrayList<String> targets = new ArrayList<>();
+
+        out.println();
+
+        for (int i = 0; i < newList.size(); i++) {
+            out.println("\t" + i + " - " + CliPrinter.toStringPowerUpCard(newList.get(i)));
+        }
+
+        out.println("Do you want to use some scope(s)? (-1 none or finish scope(s) selection)");
+        out.println();
+
+        int readVal;
+        int cycles = 0;
+
+        do {
+            readVal = readInt(-1, newList.size() - 1, true);
+
+            if (readVal != -1) {
+                out.println("Choose the target player:");
+                String user = readTargetUsername((ArrayList<Player>) getPlayers(), false);
+
+                scopes.add(newList.get(readVal));
+                targets.add(user);
+            }
+            cycles++;
+        } while (readVal != -1 && cycles < newList.size());
+
+        ArrayList<Integer> indexes = new ArrayList<>(getPowerupsIndexesFromList(powerups, scopes));
+
+        LOGGER.log(INFO, "indexes: {0}", Arrays.toString(indexes.toArray()));
+
+        PowerupRequest.PowerupRequestBuilder builder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), indexes);
+        builder.targetPlayersUsername(targets);
+
+        return builder;
+    }
+
+    /**
+     * Asks which weapon the player wants to pick
+     *
+     * @param weaponSquare square where the player is picking
+     * @return the picked weapon
+     * @throws CancelledActionException if the action was cancelled
+     */
     private WeaponCard askPickWeapon(SpawnSquare weaponSquare) {
         WeaponCard[] weapons = weaponSquare.getWeapons();
-        int choose;
+        Integer choose;
 
         CliPrinter.clearConsole(out);
         out.println("Weapons on your moving spawn square are:");
@@ -856,223 +1348,19 @@ public class Cli extends ClientGameManager {
         do {
             out.println("\nChoose the weapon. Your ammo are:\n");
             printAmmo();
-            choose = readInt(0, weapons.length - 1);
-        } while (choose < 0 || choose > weapons.length - 1);
+            choose = readInt(0, weapons.length - 1, true);
+        } while ((choose < 0 || choose > weapons.length - 1));
 
         return weapons[choose];
     }
 
-    @Override
-    public void moveAndPick() {
-        PlayerPosition newPos;
-
-        printMap();
-
-        out.println("\nChoose the moving square for your pick action (same position not to move):");
-        newPos = askCoordinates();
-        Square square = getGameSerialized().getGameMap().getSquare(newPos.getCoordX(), newPos.getCoordY());
-
-        if (square == null) {
-            cancelAction("Position not valid");
-            return;
-        }
-
-        if (square.getSquareType() == SquareType.TILE) {
-            if (!sendRequest(MessageBuilder.buildMovePickRequest(getClientToken(), getPlayer(), newPos))) {
-                promptError(SEND_ERROR, true);
-            }
-        } else {
-            buildPickWeaponRequest(newPos);
-        }
-    }
-
-    @Override
-    public void move() {
-        printMap();
-        out.println();
-
-        if (!sendRequest(MessageBuilder.buildMoveRequest(getClientToken(), getPlayer(), askCoordinates()))) {
-            promptError(SEND_ERROR, true);
-        }
-    }
-
-    @Override
-    public void spawn() {
-        printMap();
-        out.println();
-        printPowerups();
-
-        PowerupCard powerupCard = askPowerupSpawn();
-        List<PowerupCard> powerupCards = getPowerups();
-
-        try {
-            if (!sendRequest(MessageBuilder.buildDiscardPowerupRequest(getClientToken(), powerupCards, powerupCard, getUsername()))) {
-                promptError(SEND_ERROR, true);
-            }
-        } catch (PowerupCardsNotFoundException e) {
-            promptError(e.getMessage(), true);
-        }
-    }
-
-    @Override
-    public void firstPlayerCommunication(String username) {
-        if (username.equals(getUsername())) {
-            out.println("You are the first player\n");
-        } else {
-            out.println("The first player is: " + getFirstPlayer() + "\n");
-        }
-    }
-
-    @Override
-    public void notYourTurn() {
-        out.println("Wait for your turn...");
-    }
-
-    @Override
-    public void gameStateUpdate(GameSerialized gameSerialized) {
-        printMap();
-        out.println();
-        printPlayerBoard();
-        out.println();
-    }
-
-    @Override
-    public void responseError(String error) {
-        promptError(error + "\n", false);
-    }
-
-    @Override
-    public void notifyGameEnd(List<Player> winners) {
-        // TODO
-    }
-
-
     /**
-     * This method asks the user what move he wants to make in this stage of the round
+     * Asks to choose a powerup
+     *
+     * @return the powerup chosen
+     * @throws CancelledActionException if the action was cancelled
      */
-    @Override
-    public void displayActions(List<PossibleAction> possibleActions) {
-        int choose;
-        printUsername();
-        printAmmo();
-        out.println();
-        printPowerupsNum();
-        out.println("Choose the next move:");
-
-        for (int i = 0; i < possibleActions.size(); i++) {
-            out.println("\t" + (i) + " - " + possibleActions.get(i).getDescription());
-        }
-
-        LOGGER.log(INFO, "possibleActions: {0}", Arrays.toString(possibleActions.toArray()));
-        LOGGER.log(INFO, "userplayer: {0}", getPlayer());
-        LOGGER.log(INFO, "powerups: {0}", Arrays.toString(getGameSerialized().getPowerups().toArray()));
-        LOGGER.log(INFO, "other players: {0}", Arrays.toString(getPlayers().toArray()));
-
-        choose = readInt(0, possibleActions.size() - 1);
-        doAction(possibleActions.get(choose));
-    }
-
-    @Override
-    public void powerup() {
-        CliPrinter.clearConsole(out);
-        printPowerups();
-
-        PowerupCard powerupCard = askPowerupCli();
-
-
-        if (!powerupCard.getName().equals(NEWTON) && !powerupCard.getName().equals(TELEPORTER)) {
-            cancelAction("ERROR: You can't use this powerup!");
-            return;
-        }
-
-        ArrayList<Integer> powerups = new ArrayList<>();
-        powerups.add(getPowerups().indexOf(powerupCard));
-
-        PowerupRequest.PowerupRequestBuilder powerupRequestBuilder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), powerups);
-
-        Effect baseEffect = powerupCard.getBaseEffect();
-        Map<String, String> effectProperties = baseEffect.getProperties();
-
-        if (effectProperties.containsKey(Properties.TP.getJKey())) {
-            out.println("Choose your teleporting position:");
-            powerupRequestBuilder.senderMovePosition(askCoordinates());
-        }
-
-        if (effectProperties.containsKey(Properties.MAX_MOVE_TARGET.getJKey())) {
-            out.println("Choose target username:");
-            powerupRequestBuilder.targetPlayersUsername(askExactTargets("1"));
-            powerupRequestBuilder.targetPlayersMovePositions(new ArrayList<>(List.of(askCoordinates())));
-        }
-
-        try {
-            if (!sendRequest(MessageBuilder.buildPowerupRequest(powerupRequestBuilder))) {
-                promptError(SEND_ERROR, true);
-            }
-        } catch (PowerupCardsNotFoundException e) {
-            promptError(e.getMessage(), false);
-        }
-    }
-
-    @Override
-    public void grenadeUsage() {
-        List<PowerupCard> newList = getOnlyGrenades();
-        ArrayList<Integer> chosenGrenades = new ArrayList<>();
-
-        CliPrinter.clearConsole(out);
-        CliPrinter.printPowerups(out, newList.toArray(PowerupCard[]::new));
-
-        out.println("Choose the TAGBACK GRENADE/S you want to use to mark the shooting player (-1 to stop choosing)!");
-        out.println();
-
-        for (int i = 0; i < newList.size(); i++) {
-            out.println("\t" + i + " - " + CliPrinter.toStringPowerUpCard(newList.get(i)) + " (" + Ammo.toColor(newList.get(i).getValue()) + " room)");
-        }
-
-        for (int i = 0; i < newList.size(); ++i) {
-            int tempChoose = readInt(-1, newList.size() - 1);
-            if (tempChoose == -1 && !chosenGrenades.isEmpty()) break;
-            if (tempChoose != -1) chosenGrenades.add(tempChoose);
-        }
-
-        PowerupRequest.PowerupRequestBuilder grenadeRequestBuilder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), chosenGrenades);
-
-        try {
-            if (!sendRequest(MessageBuilder.buildPowerupRequest(grenadeRequestBuilder))) {
-                promptError(SEND_ERROR, true);
-            }
-        } catch (PowerupCardsNotFoundException e) {
-            promptError(e.getMessage(), false);
-        }
-    }
-
-    private List<PowerupCard> getOnlyGrenades() {
-        List<PowerupCard> grenades = new ArrayList<>();
-
-        for (PowerupCard powerup : getGameSerialized().getPowerups()) {
-            if (powerup.getName().equals(TAGBACK_GRENADE)) {
-                grenades.add(powerup);
-            }
-        }
-
-        return grenades;
-    }
-
-    @Override
-    public void onPlayerDisconnect(String username) {
-        out.println("Player " + username + " DISCONNECTED from the game!");
-    }
-
-    private void cancelAction(String message) {
-        out.println(message);
-        cancelAction();
-    }
-
-    private void cancelAction() {
-        CliPrinter.clearConsole(out);
-        reAskAction();
-    }
-
-    private PowerupCard askPowerupCli() {
+    private PowerupCard askPowerup() {
         List<PowerupCard> powerups = getPowerups();
         List<PowerupCard> newList = new ArrayList<>();
 
@@ -1082,149 +1370,149 @@ public class Cli extends ClientGameManager {
             }
         }
 
-        out.println();
-        out.println("Which power up do you want to use?");
-
         for (int i = 0; i < newList.size(); i++) {
-            out.println("\t" + i + " - " + CliPrinter.toStringPowerUpCard(newList.get(i)) + " (" + Ammo.toColor(newList.get(i).getValue()) + " room)");
+            out.println("\t" + i + " - " + CliPrinter.toStringPowerUpCard(newList.get(i)));
         }
 
         out.println();
 
-        return newList.get(readInt(0, newList.size() - 1));
+        return newList.get(readInt(0, newList.size() - 1, true));
     }
 
-    private PowerupCard askPowerupSpawn() {
-        List<PowerupCard> powerups = getPowerups();
+    /**
+     * @return a list of only tagback grenades
+     */
+    private List<PowerupCard> getOnlyGrenades() {
+        return getGameSerialized().getPowerups()
+                .stream()
+                .filter(p -> p.getName().equals(TAGBACK_GRENADE))
+                .collect(Collectors.toList());
+    }
 
-        out.println();
-        out.println("Where do you want to spawn?");
+    /**
+     * Returns the indexes of scope in the powerups list
+     *
+     * @param powerups list of all powerups
+     * @param scopes   list of scopes
+     * @return the list of indexes
+     */
+    private List<Integer> getPowerupsIndexesFromList(List<PowerupCard> powerups, List<PowerupCard> scopes) {
+        ArrayList<Integer> indexes = new ArrayList<>();
 
         for (int i = 0; i < powerups.size(); i++) {
-            out.println("\t" + i + " - " + CliPrinter.toStringPowerUpCard(powerups.get(i)) + " (" + Ammo.toColor(powerups.get(i).getValue()) + " room)");
+            for (PowerupCard powerup : scopes) {
+                if (powerup.equals(powerups.get(i))) indexes.add(i);
+            }
         }
 
-        out.println();
-
-        int choose = readInt(0, powerups.size() - 1);
-
-        return powerups.get(choose);
+        return indexes;
     }
 
-    @NotNull
-    @Contract(" -> new")
-    private PlayerPosition askCoordinates() {
-        boolean exit = false;
-        boolean firstError = true;
+    /**
+     * Print message and force the resend of possible actions
+     *
+     * @param message message to print
+     */
+    private void cancelAction(String message) {
+        CliPrinter.clearConsole(out);
+        out.println(message);
+        reSendActions();
+    }
 
-        int x = -1;
-        int y = -1;
+    /**
+     * Forces the resend of possible actions
+     */
+    private void cancelAction() {
+        CliPrinter.clearConsole(out);
+        reSendActions();
+    }
+
+    /**
+     * Reads a coordinate
+     *
+     * @return the coordinates read
+     * @throws CancelledActionException if the action was cancelled
+     */
+    private PlayerPosition readCoordinates() {
+        boolean firstError = true;
+        PlayerPosition coord = null;
+
         // a target is meant both as: target for a moving action or for choosing a target square
-        out.println("Write the target position coordinates " + (getPlayer().isDead() ? "(0,0)" : getPlayer().getPosition()) + ":");
+        out.println("Write the target position coordinates " + (getPlayer().isDead() ? "" : getPlayer().getPosition()) + ":");
         do {
             out.print(">>> ");
 
-            if (in.hasNextLine()) {
-                String[] split = in.nextLine().split(",");
+            String line = in.nextLine();
 
-                if (split.length != 2)
-                    firstError = promptInputError(firstError, "Wrong input (must be like \"0,0\" or \"0, 0\")");
-                else {
-                    try {
-                        x = Integer.parseInt(split[0].trim());
-                        y = Integer.parseInt(split[1].trim());
-                        getGameSerialized().getGameMap().getSquare(x, y);
-
-                        exit = true;
-                    } catch (NumberFormatException e) {
-                        firstError = promptInputError(firstError, "Wrong input (must be like \"0,0\" or \"0, 0\")");
-                    } catch (ArrayIndexOutOfBoundsException e) {
-                        firstError = promptInputError(firstError, "Invalid coordinates, out of bounds");
-                    }
-                }
+            if (line.equalsIgnoreCase(CANCEL_KEYWORD)) {
+                throw new CancelledActionException();
             }
-        } while (!exit);
 
-        return new PlayerPosition(x, y);
+            String[] split = line.split(",");
+
+            if (split.length != 2)
+                firstError = promptInputError(firstError, "Wrong input (must be like \"0,0\" or \"0, 0\")");
+            try {
+                int x = Integer.parseInt(split[0].trim());
+                int y = Integer.parseInt(split[1].trim());
+                getGameSerialized().getGameMap().getSquare(x, y);
+
+                coord = new PlayerPosition(x, y);
+            } catch (NumberFormatException e) {
+                firstError = promptInputError(firstError, "Wrong input (must be like \"0,0\" or \"0, 0\")");
+            } catch (ArrayIndexOutOfBoundsException e) {
+                firstError = promptInputError(firstError, "Invalid coordinates, out of bounds");
+            }
+        } while (coord == null);
+
+        return coord;
     }
 
-    @Override
-    public void botAction() {
-        PlayerPosition newPos;
-        String target;
-
-        printMap();
-
-        out.println("Choose the position for the bot action (same position not to move):");
-        newPos = askCoordinates();
-
-        out.println("Choose the target for the bot action (-1 not to shoot):");
-        target = readBotTarget(getGameSerialized().getPlayers());
-
-        if (!sendRequest(MessageBuilder.buildUseTerminatorRequest(getClientToken(), getGameSerialized().getBot(), newPos, (UserPlayer) getPlayerByName(target)))) {
-            promptError(SEND_ERROR, true);
-        }
-    }
-
-    private void printMap() {
-        CliPrinter.clearConsole(out);
-        CliPrinter.printMap(out, getGameSerialized());
-    }
-
-    private void printUsername() {
-        CliPrinter.printUsername(out, getPlayers()
-                .stream()
-                .filter(p -> !p.getUsername().equals(getUsername()))
-                .collect(Collectors.toList()));
-        out.println();
-    }
-
-    private void printPowerups() {
-        CliPrinter.printPowerups(out, getPowerups().toArray(PowerupCard[]::new));
-    }
-
-    private void printPowerupsNum() {
-        out.println("Powerups: " + getPowerups().size() + "\n");
-    }
-
-    private void printWeapons(WeaponCard[] weapons) {
-        CliPrinter.printWeapons(out, weapons);
-    }
-
-    private void printPlayerBoard() {
-        CliPrinter.printPlayerBoards(out, getGameSerialized());
-    }
-
-    private void printAmmo() {
-        CliPrinter.printAmmo(out, getPlayer().getPlayerBoard().getAmmo());
-    }
-
-    private int readInt(int minVal, int maxVal) {
+    /**
+     * Read an integer in the desired interval
+     *
+     * @param minVal      minimum value
+     * @param maxVal      maximum value
+     * @param cancellable {@code true} if the read is cancellable with "-1"
+     * @return the integer read
+     * @throws CancelledActionException if the action was cancelled
+     */
+    private Integer readInt(int minVal, int maxVal, boolean cancellable) {
         boolean firstError = true;
         boolean accepted = false;
-        int choose = Integer.MIN_VALUE;
+        Integer choose = Integer.MIN_VALUE;
 
         do {
             out.print(">>> ");
-            if (in.hasNextLine()) {
-                try {
-                    choose = Integer.valueOf(in.nextLine());
+            String line = in.nextLine();
 
-                    if (choose >= minVal && choose <= maxVal) accepted = true;
-                    else firstError = promptInputError(firstError, "Not valid input!");
+            if (cancellable && line.equalsIgnoreCase(CANCEL_KEYWORD)) {
+                throw new CancelledActionException();
+            }
 
-                } catch (NumberFormatException e) {
-                    promptInputError(firstError, "Not valid input!");
+            try {
+                choose = Integer.valueOf(line);
+
+                if (choose >= minVal && choose <= maxVal) {
+                    accepted = true;
+                } else {
+                    firstError = promptInputError(firstError, "Not valid input!");
                 }
-            } else {
-                firstError = promptInputError(firstError, "Invalid integer!");
-                in.nextLine();
+            } catch (NumberFormatException e) {
+                promptInputError(firstError, "Not valid input!");
             }
         } while (!accepted);
 
         return choose;
     }
 
+    /**
+     * Reads a target player for the bot action
+     *
+     * @param inGamePlayers list of players
+     * @return the target
+     * @throws CancelledActionException if the action was cancelled
+     */
     private String readBotTarget(ArrayList<UserPlayer> inGamePlayers) {
         boolean firstError = true;
         boolean accepted = false;
@@ -1233,13 +1521,15 @@ public class Cli extends ClientGameManager {
         do {
             out.print(">>> ");
             chosenTarget = in.nextLine();
-            if (chosenTarget.equals("-1")) return null;
-            if (!chosenTarget.equals("bot")) {       // no one can shoot itself!
-                for (UserPlayer player : inGamePlayers) {
-                    if (player.getUsername().equals(chosenTarget)) {
-                        accepted = true;
-                        break;
-                    }
+
+            if (chosenTarget.equals(CANCEL_KEYWORD)) {
+                throw new CancelledActionException();
+            } else if (!chosenTarget.equals("bot")) { // no one can shoot itself!
+                final String target = chosenTarget;
+                if (inGamePlayers.stream().anyMatch(p -> p.getUsername().equals(target))) {
+                    accepted = true;
+                } else {
+                    firstError = promptInputError(firstError, "Bot Target Not Valid");
                 }
             } else {
                 firstError = promptInputError(firstError, "Bot Target Not Valid");
@@ -1249,6 +1539,14 @@ public class Cli extends ClientGameManager {
         return chosenTarget;
     }
 
+    /**
+     * Reads a target username
+     *
+     * @param inGamePlayers list of players
+     * @param stoppable     {@code true} if the read is stoppable by typing "-1"
+     * @return the username read
+     * @throws CancelledActionException if the action was cancelled
+     */
     private String readTargetUsername(ArrayList<Player> inGamePlayers, boolean stoppable) {
         boolean firstError = true;
         boolean accepted = false;
@@ -1258,20 +1556,26 @@ public class Cli extends ClientGameManager {
         do {
             out.print(">>> ");
             in.reset();
+
             chosenTarget = in.nextLine().trim();
 
-            if (stoppable && chosenTarget.equals("-1")) return null;
+            if (chosenTarget.equalsIgnoreCase(CANCEL_KEYWORD)) {
+                throw new CancelledActionException();
+            }
+
+            if (stoppable && chosenTarget.equals("-1")) {
+                return null;
+            }
 
             if (isTerminatorPresent && chosenTarget.equals("bot")) {
                 accepted = true;
             } else if (!chosenTarget.equals(getPlayer().getUsername())) {
-                for (Player player : inGamePlayers) {
-                    if (player.getUsername().equals(chosenTarget)) {
-                        accepted = true;
-                        break;
-                    }
+                final String target = chosenTarget;
+                if (inGamePlayers.stream().anyMatch(p -> p.getUsername().equals(target))) {
+                    accepted = true;
+                } else {
+                    firstError = promptInputError(firstError, "Target Not Valid");
                 }
-                if (!accepted) firstError = promptInputError(firstError, "Target Not Valid");
             } else {
                 firstError = promptInputError(firstError, "Target Not Valid");
             }
@@ -1280,6 +1584,12 @@ public class Cli extends ClientGameManager {
         return chosenTarget;
     }
 
+    /**
+     * Reads a room color
+     *
+     * @return the room color read
+     * @throws CancelledActionException if the action was cancelled
+     */
     private RoomColor readRoomColor() {
         boolean firstError = true;
         boolean accepted = false;
@@ -1289,6 +1599,11 @@ public class Cli extends ClientGameManager {
         do {
             out.print(">>> ");
             stringColor = in.nextLine();
+
+            if (stringColor.equalsIgnoreCase(CANCEL_KEYWORD)) {
+                throw new CancelledActionException();
+            }
+
             try {
                 roomColor = RoomColor.getColor(stringColor);
                 accepted = true;
@@ -1300,7 +1615,13 @@ public class Cli extends ClientGameManager {
         return roomColor;
     }
 
-    private boolean readMoveDecision() {
+    /**
+     * Request a move decision about doing the move before or after shooting
+     *
+     * @return the move decision read
+     * @throws CancelledActionException if the action was cancelled
+     */
+    private Boolean readMoveDecision() {
         boolean firstError = true;
         boolean accepted = false;
         final String BEFORE = "before";
@@ -1311,7 +1632,10 @@ public class Cli extends ClientGameManager {
         do {
             out.print(">>> ");
             stringDecision = in.nextLine();
-            if (stringDecision.equalsIgnoreCase(BEFORE)) {
+
+            if (stringDecision.equalsIgnoreCase(CANCEL_KEYWORD)) {
+                throw new CancelledActionException();
+            } else if (stringDecision.equalsIgnoreCase(BEFORE)) {
                 finalDecision = true;
                 accepted = true;
             } else if (stringDecision.equalsIgnoreCase(AFTER)) {
@@ -1325,83 +1649,59 @@ public class Cli extends ClientGameManager {
         return finalDecision;
     }
 
-    @Override
-    public void askScope() {
-        List<PowerupCard> powerups = getPowerups();
-        List<PowerupCard> newList = new ArrayList<>();
-        List<PowerupCard> scopes = new ArrayList<>();
-        ArrayList<String> targets = new ArrayList<>();
-        PowerupRequest.PowerupRequestBuilder builder;
-
-        for (PowerupCard powerup : powerups) {
-            if (powerup.getName().equals(TARGETING_SCOPE)) {
-                newList.add(powerup);
-            }
-        }
-
-        if (!newList.isEmpty()) {
-            out.println();
-
-            for (int i = 0; i < newList.size(); i++) {
-                out.println("\t" + i + " - " + CliPrinter.toStringPowerUpCard(newList.get(i)) + " (" + Ammo.toColor(newList.get(i).getValue()) + " room)");
-            }
-
-            out.println("Do you want to use some scope(s)? (-1 none or finish scope(s) selection)");
-            out.println();
-
-            int readVal;
-            int cycles = 0;
-
-            do {
-                readVal = readInt(-1, newList.size() - 1);
-                if (readVal != -1) {
-                    out.println("Choose the target player:");
-                    String user = readTargetUsername((ArrayList<Player>) getPlayers(), false);
-
-                    scopes.add(newList.get(readVal));
-                    targets.add(user);
-                }
-                cycles++;
-            } while (readVal != -1 && cycles < newList.size());
-
-            ArrayList<Integer> indexes = new ArrayList<>();
-
-            for (int i = 0; i < powerups.size(); i++) {
-                for (PowerupCard powerup : scopes) {
-                    if (powerup.equals(powerups.get(i))) indexes.add(i);
-                }
-            }
-
-            LOGGER.log(INFO, "indexes: {0}", Arrays.toString(indexes.toArray()));
-
-            builder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), indexes);
-            builder.targetPlayersUsername(targets);
-        } else {
-            builder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), new ArrayList<>());
-        }
-
-        LOGGER.log(INFO, "newList: {0}", Arrays.toString(newList.toArray()));
-        LOGGER.log(INFO, "powerups: {0}", Arrays.toString(powerups.toArray()));
-        LOGGER.log(INFO, "scopes: {0}", Arrays.toString(scopes.toArray()));
-
-        try {
-            if (!sendRequest(MessageBuilder.buildPowerupRequest(builder))) {
-                promptError(SEND_ERROR, true);
-            }
-        } catch (PowerupCardsNotFoundException e) {
-            promptError(e.getMessage(), false);
-        }
+    /**
+     * Prints the game map
+     */
+    private void printMap() {
+        CliPrinter.clearConsole(out);
+        CliPrinter.printMap(out, getGameSerialized());
     }
 
-    @Override
-    public void playersLobbyUpdate(List<String> users) {
-        StringBuilder players = new StringBuilder();
+    /**
+     * Prints the list of players
+     */
+    private void printPlayers() {
+        CliPrinter.printUsername(out, getPlayers()
+                .stream()
+                .filter(p -> !p.getUsername().equals(getUsername()))
+                .collect(Collectors.toList()));
+        out.println();
+    }
 
-        for (String user : users) {
-            players.append(user);
-            players.append(", ");
-        }
+    /**
+     * Prints the powerups
+     */
+    private void printPowerups() {
+        CliPrinter.printPowerups(out, getPowerups().toArray(PowerupCard[]::new));
+    }
 
-        out.println("Players in lobby: " + players.substring(0, players.length() - 2));
+    /**
+     * Prints the number of powerups
+     */
+    private void printPowerupsNum() {
+        out.println("Powerups: " + getPowerups().size() + "\n");
+    }
+
+    /**
+     * Prints the weapons
+     *
+     * @param weapons to print
+     */
+    private void printWeapons(WeaponCard[] weapons) {
+        CliPrinter.printWeapons(out, weapons);
+    }
+
+    /**
+     * Prints all player playerboards
+     */
+    private void printPlayerBoard() {
+        CliPrinter.printPlayerBoards(out, getGameSerialized());
+    }
+
+    /**
+     * Prints ammos
+     */
+    private void printAmmo() {
+        CliPrinter.printAmmo(out, getPlayer().getPlayerBoard().getAmmo());
     }
 }

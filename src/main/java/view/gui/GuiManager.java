@@ -244,7 +244,7 @@ public class GuiManager extends ClientGameManager {
     }
 
     @Override
-    public void grenadeUsage() {
+    public void tagbackGrenade() {
 
     }
 
@@ -264,7 +264,7 @@ public class GuiManager extends ClientGameManager {
     }
 
     @Override
-    public void askScope() {
+    public void targetingScope() {
 
     }
 
