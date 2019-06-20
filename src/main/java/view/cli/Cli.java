@@ -406,10 +406,13 @@ public class Cli extends ClientGameManager {
         out.println("Choose the Color of the square where to Spawn the bot:");
         do {
             try {
-                botSpawnPosition = gameMap.getSpawnSquare(readRoomColor(false));
+                botSpawnPosition = gameMap.getSpawnSquare(readRoomColor());
                 correctColor = true;
             } catch (InvalidSpawnColorException e) {
                 correctColor = false;
+            } catch (CancelledActionException e) {
+                cancelAction();
+                return;
             }
         } while (!correctColor);
 
@@ -431,8 +434,14 @@ public class Cli extends ClientGameManager {
 
         out.println();
         out.println("Where do you want to spawn?");
+        PowerupCard powerupCard;
+        try {
+            powerupCard = askPowerup();
+        } catch (CancelledActionException e) {
+            cancelAction();
+            return;
+        }
 
-        PowerupCard powerupCard = askPowerup(false);
         List<PowerupCard> powerupCards = getPowerups();
 
         try {
@@ -724,7 +733,7 @@ public class Cli extends ClientGameManager {
         out.println();
         out.println("Which power up do you want to use?");
 
-        PowerupCard powerupCard = askPowerup(true);
+        PowerupCard powerupCard = askPowerup();
 
         if (!powerupCard.getName().equals(NEWTON) && !powerupCard.getName().equals(TELEPORTER)) {
             cancelAction("You can't use this powerup!");
@@ -1052,7 +1061,7 @@ public class Cli extends ClientGameManager {
         if (effectProperties.containsKey(Properties.TARGET_NUM.getJKey())) {
             out.println("Choose the color of the target room for your shoot action:");
 
-            return readRoomColor(true);
+            return readRoomColor();
         } else {
             throw new InvalidPropertiesException();
         }
@@ -1351,7 +1360,7 @@ public class Cli extends ClientGameManager {
      * @return the powerup chosen
      * @throws CancelledActionException if the action was cancelled
      */
-    private PowerupCard askPowerup(boolean cancellable) {
+    private PowerupCard askPowerup() {
         List<PowerupCard> powerups = getPowerups();
         List<PowerupCard> newList = new ArrayList<>();
 
@@ -1367,7 +1376,7 @@ public class Cli extends ClientGameManager {
 
         out.println();
 
-        return newList.get(readInt(0, newList.size() - 1, cancellable));
+        return newList.get(readInt(0, newList.size() - 1, true));
     }
 
     /**
@@ -1578,11 +1587,10 @@ public class Cli extends ClientGameManager {
     /**
      * Reads a room color
      *
-     * @param cancellable {@code true} if the read is cancellable
      * @return the room color read
      * @throws CancelledActionException if the action was cancelled
      */
-    private RoomColor readRoomColor(boolean cancellable) {
+    private RoomColor readRoomColor() {
         boolean firstError = true;
         boolean accepted = false;
         String stringColor;
@@ -1592,7 +1600,7 @@ public class Cli extends ClientGameManager {
             out.print(">>> ");
             stringColor = in.nextLine();
 
-            if (cancellable && stringColor.equalsIgnoreCase(CANCEL_KEYWORD)) {
+            if (stringColor.equalsIgnoreCase(CANCEL_KEYWORD)) {
                 throw new CancelledActionException();
             }
 
