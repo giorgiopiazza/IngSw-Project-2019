@@ -99,7 +99,6 @@ public class RoundManager {
         if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.SPAWN_BOT)) {
             // terminator does not still exist!
             try {
-                gameInstance.buildTerminator();
                 gameInstance.spawnTerminator(gameInstance.getGameMap().getSpawnSquare(spawnRequest.getSpawnColor()));
             } catch (InvalidSpawnColorException e) {
                 return buildNegativeResponse("Invalid color for spawning!");
@@ -756,7 +755,7 @@ public class RoundManager {
             turnManager.setSecondAction(secondAction);
             gameManager.changeState(PossibleGameState.SCOPE_USAGE);
 
-            return buildPositiveResponse("Shoot Action done, shooter can use a Scope");
+            return buildScopePositiveResponse("Shoot Action done, shooter can use a Scope");
         } else if(!turnManager.getDamagedPlayers().isEmpty()){
             gameManager.changeState(PossibleGameState.GRANADE_USAGE);
             turnManager.setMarkedByGrenadePlayer(turnManager.getTurnOwner());
@@ -1145,6 +1144,19 @@ public class RoundManager {
         gameManager.sendGrenadePrivateUpdates();
         SaveGame.saveGame(gameManager);
         return new Response(reason, MessageStatus.OK);
+    }
+
+    /**
+     * Method that builds a {@link MessageStatus NEED_PLAYER_ACTION} {@link Response Response} after a targeting
+     * scope can be used by a shooting {@link UserPlayer UserPlayer}
+     *
+     * @param reason the reason coming from the {@link ShootAction ShootAction}
+     * @return the {@link MessageStatus NEED_PLAYER_ACTION} {@link Response Response} built
+     */
+    private Response buildScopePositiveResponse(String reason) {
+        gameManager.sendPrivateUpdates();
+        SaveGame.saveGame(gameManager);
+        return new Response(reason, MessageStatus.NEED_PLAYER_ACTION);
     }
 
     /**

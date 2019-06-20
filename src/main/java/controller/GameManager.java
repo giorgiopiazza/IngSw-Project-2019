@@ -669,6 +669,11 @@ public class GameManager implements TimerRunListener, Serializable {
             gameInstance.addPlayer(new UserPlayer(player.getSenderUsername(), player.getChosenColor(), new PlayerBoard()));
         }
 
+        // added the players I can add the terminator, if present
+        if(gameInstance.isTerminatorPresent()) {
+            gameInstance.buildTerminator();
+        }
+
         // in the end I set the map and the number of Skulls chosen
         try {
             gameInstance.setGameMap(lobby.getFavouriteMap());

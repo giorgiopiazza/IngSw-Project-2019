@@ -419,7 +419,7 @@ public class Cli extends ClientGameManager {
             }
         } while (!correctColor);
 
-        if (!sendRequest(MessageBuilder.buildTerminatorSpawnRequest(getClientToken(), getGameSerialized().getBot(), gameMap.getSquare(botSpawnPosition)))) {
+        if (!sendRequest(MessageBuilder.buildTerminatorSpawnRequest(getPlayer(), getClientToken(), gameMap.getSquare(botSpawnPosition)))) {
             promptError(SEND_ERROR, true);
         }
     }
@@ -599,7 +599,7 @@ public class Cli extends ClientGameManager {
             return;
         }
 
-        if (!sendRequest(MessageBuilder.buildUseTerminatorRequest(getClientToken(), getGameSerialized().getBot(), newPos, (UserPlayer) getPlayerByName(target)))) {
+        if (!sendRequest(MessageBuilder.buildUseTerminatorRequest(getPlayer(), getClientToken(), newPos, (UserPlayer) getPlayerByName(target)))) {
             promptError(SEND_ERROR, true);
         }
     }
