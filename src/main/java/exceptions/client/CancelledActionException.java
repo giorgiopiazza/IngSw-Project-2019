@@ -1,8 +1,8 @@
 package exceptions.client;
 
-import exceptions.AdrenalinaRuntimeException;
+import exceptions.AdrenalinaException;
 
-public class CancelledActionException extends AdrenalinaRuntimeException {
+public class CancelledActionException extends AdrenalinaException {
     public CancelledActionException() {
         super("Action was cancelled!");
     }
