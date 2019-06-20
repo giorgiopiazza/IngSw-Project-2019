@@ -110,7 +110,7 @@ public class InputValidator {
     private static boolean checkBaseEffect(EffectRequest effectRequest) {
         if (!effectRequest.getTargetPlayersUsername().isEmpty()) {
             for (String userName : effectRequest.getTargetPlayersUsername()) {
-                if (userName == null || userName.equals("null")) {
+                if (userName == null) {
                     return false;
                 }
             }
