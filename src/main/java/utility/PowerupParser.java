@@ -1,27 +1,28 @@
 package utility;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
+
 import enumerations.Ammo;
+import enumerations.MoveTarget;
+import enumerations.Properties;
 import enumerations.TargetType;
 import exceptions.file.JsonFileNotFoundException;
 import model.cards.Card;
 import model.cards.Deck;
 import model.cards.PowerupCard;
-import model.cards.effects.Effect;
-import model.cards.effects.PowerupBaseEffect;
+import model.cards.effects.*;
 import model.player.AmmoQuantity;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static utility.WeaponParser.parseIntJsonArray;
+
 public class PowerupParser {
+    private static final String TARGET = "target";
 
     private PowerupParser() {
         throw new IllegalStateException("Utility class");
@@ -76,8 +77,8 @@ public class PowerupParser {
         TargetType[] target = new TargetType[0];
         List<PowerupCard> cards = new ArrayList<>();
 
-        if (properties.has("target")) {
-            JsonArray targets = properties.getAsJsonArray("target");
+        if (properties.has(TARGET)) {
+            JsonArray targets = properties.getAsJsonArray(TARGET);
             target = WeaponParser.parseTargetTypeJsonArray(targets);
         }
 
@@ -93,7 +94,7 @@ public class PowerupParser {
             effect = new PowerupBaseEffect(powerupProperties, target, description);
         }
 
-        effect = WeaponParser.decorateSingleEffect(effect, properties);
+        effect = decorateSingleEffect(effect, properties);
 
         int quantity = jsonObject.get("quantity").getAsInt();
 
@@ -109,5 +110,37 @@ public class PowerupParser {
         }
 
         return cards;
+    }
+
+    /**
+     * Decorates the base effect with a single effect. Care, this is a Powerup Decoration
+     *
+     * @param effect     base effect
+     * @param properties JsonObject of the properties of the effect
+     * @return the decorated effect
+     */
+    private static Effect decorateSingleEffect(Effect effect, JsonObject properties) {
+        TargetType targetType = TargetType.valueOf(properties.getAsJsonArray(TARGET).get(0).getAsString());
+
+        if (properties.has(Properties.DAMAGE_DISTRIBUTION.getJKey())) {
+            effect = new ExtraDamageNoMarkDecorator(effect,
+                    parseIntJsonArray(properties.get(Properties.DAMAGE_DISTRIBUTION.getJKey()).getAsJsonArray()));
+        }
+
+        if (properties.has(Properties.MARK_DISTRIBUTION.getJKey())) {
+            effect = new ExtraMarkDecorator(effect,
+                    parseIntJsonArray(properties.get(Properties.MARK_DISTRIBUTION.getJKey()).getAsJsonArray()),
+                    targetType);
+        }
+
+        if (properties.has(Properties.TP.getJKey())) {
+            effect = new ExtraMoveDecorator(effect, MoveTarget.PLAYER);
+        }
+
+        if (properties.has(Properties.MAX_MOVE_TARGET.getJKey())) {
+            effect = new ExtraMoveDecorator(effect, MoveTarget.TARGET);
+        }
+
+        return effect;
     }
 }

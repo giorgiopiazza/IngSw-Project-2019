@@ -229,6 +229,26 @@ public class PlayerBoard implements Serializable {
     }
 
     /**
+     * Adds damages on the player board without triggering the marks
+     *
+     * @param damageDealer player who inflicted the damage
+     * @param damageCount  number of damages inflicted
+     */
+    public void addDamageNoMark(Player damageDealer, int damageCount) {
+        if(damageDealer == null) {
+            throw new NullPointerException("Player cannot be null");
+        }
+
+        if(damageCount > 0) {
+            for (int i = 0; i < damageCount; ++i) {
+                damages.add(damageDealer.getUsername());
+            }
+        }
+
+        setBoardState();
+    }
+
+    /**
      * Modify the player board on death.
      * Keeps everything except the damages list and adds a skull on the player board
      */

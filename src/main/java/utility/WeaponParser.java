@@ -12,7 +12,6 @@ import model.cards.effects.*;
 import model.cards.weaponstates.SemiChargedWeapon;
 import model.player.AmmoQuantity;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
@@ -120,13 +119,13 @@ public class WeaponParser {
     }
 
     /**
-     * Decorates the base effect with a single effect
+     * Decorates the base effect with a single effect. Care, this is a Weapon Decoration
      *
      * @param effect     base effect
      * @param properties JsonObject of the properties of the effect
      * @return the decorated effect
      */
-    static Effect decorateSingleEffect(Effect effect, JsonObject properties) {
+    private static Effect decorateSingleEffect(Effect effect, JsonObject properties) {
         TargetType targetType = TargetType.valueOf(properties.getAsJsonArray(TARGET).get(0).getAsString());
 
         if (properties.has(Properties.DAMAGE_DISTRIBUTION.getJKey())) {
@@ -141,7 +140,7 @@ public class WeaponParser {
                     targetType);
         }
 
-        if (properties.has(Properties.MOVE.getJKey()) || properties.has(Properties.TP.getJKey())) {
+        if (properties.has(Properties.MOVE.getJKey())) {
             effect = new ExtraMoveDecorator(effect, MoveTarget.PLAYER);
         }
 
@@ -196,7 +195,7 @@ public class WeaponParser {
      * @param jsonArray JsonArray made of int
      * @return the parsed array made of int
      */
-    private static int[] parseIntJsonArray(JsonArray jsonArray) {
+    static int[] parseIntJsonArray(JsonArray jsonArray) {
         List<Integer> list = new ArrayList<>();
 
         for (JsonElement elem : jsonArray) {
