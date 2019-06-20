@@ -432,11 +432,9 @@ public class Cli extends ClientGameManager {
         out.println();
         printPowerups();
 
-        out.println();
-        out.println("Where do you want to spawn?");
         PowerupCard powerupCard;
         try {
-            powerupCard = askPowerup();
+            powerupCard = askPowerupSpawn();
         } catch (CancelledActionException e) {
             cancelAction();
             return;
@@ -729,9 +727,6 @@ public class Cli extends ClientGameManager {
     public void powerup() {
         CliPrinter.clearConsole(out);
         printPowerups();
-
-        out.println();
-        out.println("Which power up do you want to use?");
 
         PowerupCard powerupCard = askPowerup();
 
@@ -1364,6 +1359,9 @@ public class Cli extends ClientGameManager {
         List<PowerupCard> powerups = getPowerups();
         List<PowerupCard> newList = new ArrayList<>();
 
+        out.println();
+        out.println("Which power up do you want to use?");
+
         for (PowerupCard powerup : powerups) {
             if (powerup.getName().equals(ClientGameManager.NEWTON) || powerup.getName().equals(ClientGameManager.TELEPORTER)) {
                 newList.add(powerup);
@@ -1378,6 +1376,30 @@ public class Cli extends ClientGameManager {
 
         return newList.get(readInt(0, newList.size() - 1, true));
     }
+
+    /**
+     * Asks to choose a powerup for spawn
+     *
+     * @return the powerup chosen
+     * @throws CancelledActionException if the action was cancelled
+     */
+    private PowerupCard askPowerupSpawn() {
+        List<PowerupCard> powerups = getPowerups();
+
+        out.println();
+        out.println("Where do you want to spawn?");
+
+        for (int i = 0; i < powerups.size(); i++) {
+            out.println("\t" + i + " - " + CliPrinter.toStringPowerUpCard(powerups.get(i)) + " (" + Ammo.toColor(powerups.get(i).getValue()) + " room)");
+        }
+
+        out.println();
+
+        int choose = readInt(0, powerups.size() - 1, true);
+
+        return powerups.get(choose);
+    }
+
 
     /**
      * @return a list of only tagback grenades
