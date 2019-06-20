@@ -61,7 +61,7 @@ class GameLobby implements Serializable {
 
             Map.Entry<Integer, Integer> voteMap = map.entrySet().stream().max(Comparator.comparing(Map.Entry::getValue)).orElse(null);
             if (voteMap != null) {
-                return voteMap.getValue();
+                return voteMap.getKey();
             } else {
                 return getRandomMap();
             }

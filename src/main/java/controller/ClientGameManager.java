@@ -21,6 +21,8 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public abstract class ClientGameManager implements ClientGameManagerListener, ClientUpdateListener, Runnable {
+    public static final String CANCEL_KEYWORD = "CANCEL";
+
     public static final String SEND_ERROR = "Error while sending the request";
     public static final String INVALID_STRING = "Invalid String!";
     public static final String ERROR_DIALOG_TITLE = "Error";
@@ -159,11 +161,11 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 break;
 
             case GRENADE_USAGE:
-                action = this::grenadeUsage;
+                action = this::tagbackGrenade;
                 break;
 
             case SCOPE_USAGE:
-                action = this::askScope;
+                action = this::targetingScope;
                 break;
 
             case MOVE:
@@ -455,7 +457,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
     }
 
-    public void reAskAction() {
+    public void reSendActions() {
         makeMove();
     }
 
