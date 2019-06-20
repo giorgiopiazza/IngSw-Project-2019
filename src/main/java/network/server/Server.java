@@ -46,23 +46,23 @@ public class Server implements Runnable {
 
     private Server(String confFilePath) {
         initLogger();
-        clients = new HashMap<>();
-        waitForLoad = true;
+        this.clients = new HashMap<>();
+        this.waitForLoad = true;
 
         JsonObject jo = ConfigurationParser.parseConfiguration(confFilePath);
 
         if (jo == null) {
-            socketPort = 0;
-            gameManager = null;
-            rmiPort = 0;
+            this.socketPort = 0;
+            this.gameManager = null;
+            this.rmiPort = 0;
             LOGGER.log(Level.SEVERE, "Configuration file not found: {0}", confFilePath);
             return;
         }
 
-        startTime = jo.get("start_time").getAsInt();
-        moveTime = jo.get("move_time").getAsInt() * 1000;
-        socketPort = jo.get("socket_port").getAsInt();
-        rmiPort = jo.get("rmi_port").getAsInt();
+        this.startTime = jo.get("start_time").getAsInt();
+        this.moveTime = jo.get("move_time").getAsInt() * 1000;
+        this.socketPort = jo.get("socket_port").getAsInt();
+        this.rmiPort = jo.get("rmi_port").getAsInt();
 
         LOGGER.log(Level.INFO, "Start time : {0}", startTime);
         LOGGER.log(Level.INFO, "Move time : {0}", moveTime / 1000);
@@ -79,7 +79,7 @@ public class Server implements Runnable {
 
         LOGGER.info("RMI Server Started");
 
-        gameManager = SaveGame.loadGame(this, startTime);
+        this.gameManager = SaveGame.loadGame(this, startTime);
         reserveSlots(gameManager.getGameInstance().getPlayers());
 
         Thread pingThread = new Thread(this);

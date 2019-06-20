@@ -72,10 +72,10 @@ public class GameManager implements TimerRunListener, Serializable {
         this.gameState = savedGameManager.gameState;
         this.lobby = null;
         this.gameInstance = Game.getInstance();
-        this.roundManager = new RoundManager(savedGameManager);
         this.shootParameters = savedGameManager.shootParameters;
 
         this.lobbyTimeoutTime = lobbyTimeoutTime * 1000;
+        this.roundManager = new RoundManager(this);
     }
 
     /**
