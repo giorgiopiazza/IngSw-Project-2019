@@ -281,6 +281,13 @@ public class RoundManager {
         return buildGrenadePositiveResponse("Grenade has been Used, turn passed to the next possible user");
     }
 
+    /**
+     * Handles the usage of the grenade passed as an integer index
+     *
+     * @param index the index of the grenade to be used
+     * @param granadeMessage the {@link PowerupRequest GranadeRequest} received
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
     private Response grenadeUsage(int index, PowerupRequest granadeMessage) {
         PowerupCard chosenGranade;
 
@@ -316,6 +323,12 @@ public class RoundManager {
         return new Response("Temp response", MessageStatus.NO_RESPONSE);
     }
 
+    /**
+     * Handles the usage of a Scope Request distributing damages correctly on each target
+     *
+     * @param scopeMessage the {@link PowerupRequest ScopeRequest} received
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
     Response handleScopeUsage(PowerupRequest scopeMessage) {
         int sizeDifference;
         List<Integer> powerupsIndexes = scopeMessage.getPowerup();
