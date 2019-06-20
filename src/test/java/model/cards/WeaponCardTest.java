@@ -131,6 +131,7 @@ class WeaponCardTest {
         // shooter with second effect
         userTarget.clear();
         userTarget.add(target3.getUsername());
+        userTarget.add(target1.getUsername());
 
         ArrayList<Integer> powerup = new ArrayList<>();
         powerup.add(0);
@@ -149,14 +150,13 @@ class WeaponCardTest {
         // final assert
 
         assertEquals(2, target1.getPlayerBoard().getDamageCount());
-        assertEquals(1, target1.getPlayerBoard().getMarkCount());
+        assertEquals(2, target1.getPlayerBoard().getMarkCount());
 
         assertEquals(0, target2.getPlayerBoard().getDamageCount());
         assertEquals(0, target2.getPlayerBoard().getMarkCount());
 
-
         assertEquals(2, target3.getPlayerBoard().getDamageCount());
-        assertEquals(2, target3.getPlayerBoard().getMarkCount());
+        assertEquals(1, target3.getPlayerBoard().getMarkCount());
     }
 
     WeaponCard getWeaponByName(String name) {
