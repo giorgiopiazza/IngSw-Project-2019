@@ -965,9 +965,10 @@ public class RoundManager {
         }
         spawnColor = Ammo.toColor(spawnPowerup.getValue());
 
-        // now that I know the color of the spawning square I can respawn the player
+        // now that I know the color of the spawning square I can respawn the player and set his initial actions
         try {
             gameInstance.spawnPlayer(turnOwner, gameInstance.getGameMap().getSpawnSquare(spawnColor));
+            setInitialActions();
         } catch (InvalidSpawnColorException e) {
             // never reached, a powerup has always a corresponding spawning color!
         }
