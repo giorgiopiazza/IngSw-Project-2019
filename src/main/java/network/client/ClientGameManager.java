@@ -69,7 +69,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             try {
                 queue.take().run();
             } catch (InterruptedException e) {
-                Logger.getGlobal().severe(e.getMessage());
+                Logger.getLogger("adrenaline_client").severe(e.getMessage());
                 Thread.currentThread().interrupt();
             }
         }

@@ -1,6 +1,7 @@
 package utility;
 
 import network.server.Connection;
+import network.server.Server;
 
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -17,7 +18,7 @@ public class MoveTimer extends TimerTask {
 
     @Override
     public void run() {
-        Logger.getGlobal().log(Level.INFO, "Player {0} disconnected, move timer ended", username);
+        Server.LOGGER.log(Level.INFO, "Player {0} disconnected, move timer ended", username);
         connection.disconnect();
     }
 }

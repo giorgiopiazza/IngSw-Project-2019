@@ -64,7 +64,7 @@ public class GuiManager extends ClientGameManager {
             pane = loader.load();
             scene.setRoot(pane);
         } catch (IOException e) {
-            Logger.getGlobal().severe(e.getMessage());
+            Logger.getLogger("adrenaline_client").severe(e.getMessage());
             return null;
         }
 
@@ -78,7 +78,7 @@ public class GuiManager extends ClientGameManager {
         try {
             dialogScene = new Scene(loader.load(), 600, 300);
         } catch (IOException e) {
-            Logger.getGlobal().severe(e.getMessage());
+            Logger.getLogger("adrenaline_client").severe(e.getMessage());
             return;
         }
 

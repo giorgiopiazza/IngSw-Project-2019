@@ -94,7 +94,7 @@ public class ClientSocket extends Client implements Runnable {
         try {
             close();
         } catch (IOException e) {
-            Logger.getGlobal().severe(e.getMessage());
+            Logger.getLogger("adrenaline_client").severe(e.getMessage());
         }
     }
 
