@@ -4,7 +4,6 @@ import enumerations.Ammo;
 import exceptions.cards.WeaponAlreadyChargedException;
 import exceptions.cards.WeaponNotChargedException;
 import exceptions.command.InvalidCommandException;
-import exceptions.player.EmptyHandException;
 import exceptions.playerboard.NotEnoughAmmoException;
 import model.Game;
 import model.cards.effects.Effect;
@@ -12,17 +11,15 @@ import model.cards.weaponstates.ChargedWeapon;
 import model.cards.weaponstates.UnchargedWeapon;
 import model.cards.weaponstates.WeaponState;
 import model.player.AmmoQuantity;
-import model.player.UserPlayer;
 import network.message.ActionRequest;
 import network.message.EffectRequest;
 import network.message.ShootRequest;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+
 
 public class WeaponCard extends UsableCard {
     private static final long serialVersionUID = -1676793782570413675L;
@@ -71,7 +68,7 @@ public class WeaponCard extends UsableCard {
      *
      * @return an array of Ammo which is the recharging Cost of the Weapon
      */
-    private AmmoQuantity getRechargeCost() {
+    public AmmoQuantity getRechargeCost() {
         switch (this.weaponState.status()) {
             case UNCHARGED:
                 return new AmmoQuantity(cost);
@@ -110,7 +107,7 @@ public class WeaponCard extends UsableCard {
     /**
      * @return true if the Weapon is isRechargeable, otherwise false
      */
-    private boolean isRechargeable() {
+    public boolean isRechargeable() {
         return weaponState.isRechargeable(this);
     }
 
@@ -119,7 +116,7 @@ public class WeaponCard extends UsableCard {
      *
      * @throws WeaponAlreadyChargedException exception thrown in case the weapon is already charged
      */
-    private void recharge() throws WeaponAlreadyChargedException {
+    public void recharge() throws WeaponAlreadyChargedException {
         if (this.isRechargeable()) {
             setStatus(new ChargedWeapon());
         } else {
@@ -159,7 +156,9 @@ public class WeaponCard extends UsableCard {
             }
 
             if (effect.validate(request)) {
-                payCost(shootRequest, (effect.getCost()));
+                List<Integer> paymentPowerups = shootRequest.getPaymentPowerups().stream().distinct().collect(Collectors.toList());
+
+                WeaponCostUtility.payCost(shootRequest.getSenderUsername(), paymentPowerups, effect.getCost());
 
                 weaponState.use(effect, shootRequest);
                 setStatus(new UnchargedWeapon());
@@ -177,71 +176,14 @@ public class WeaponCard extends UsableCard {
         }
 
         AmmoQuantity rechargeCost = getRechargeCost();
-        payCost(request, rechargeCost);
+
+        List<Integer> paymentPowerups = request.getPaymentPowerups().stream().distinct().collect(Collectors.toList());
+
+        WeaponCostUtility.payCost(request.getSenderUsername(), paymentPowerups, rechargeCost);
 
         recharge();
     }
 
-    private void payCost(ActionRequest request, AmmoQuantity cost) throws NotEnoughAmmoException {
-        UserPlayer shootingPlayer = Game.getInstance().getUserPlayerByUsername(request.getSenderUsername());
-        PowerupCard[] powerupCards = shootingPlayer.getPowerups();
-
-        List<Integer> powerups = request.getPaymentPowerups();
-        List<Integer> usedPowerups = new ArrayList<>();
-
-        AmmoQuantity costWithoutPowerups = getCostWithoutPowerup(cost, powerups, usedPowerups, powerupCards);
-        shootingPlayer.getPlayerBoard().useAmmo(costWithoutPowerups);
-
-        if (!usedPowerups.isEmpty()) {
-            usedPowerups.sort(Collections.reverseOrder());
-
-            try {
-                for (Integer powID : usedPowerups) {
-                    shootingPlayer.discardPowerupByIndex(powID);
-                }
-            } catch (EmptyHandException e) {
-                throw new InvalidCommandException();
-            }
-        }
-    }
-
-    @NotNull
-    @Contract("_, _, _, _ -> new")
-    private AmmoQuantity getCostWithoutPowerup(AmmoQuantity cost, List<Integer> powerups, List<Integer> usedPowerups, PowerupCard[] powerupCards) {
-        int redCost = cost.getRedAmmo();
-        int blueCost = cost.getBlueAmmo();
-        int yellowCost = cost.getYellowAmmo();
-
-        if (powerups.isEmpty()) {
-            return new AmmoQuantity(redCost, blueCost, yellowCost);
-        }
-
-        for (Integer i : powerups) {
-            Ammo ammo = powerupCards[i].getValue();
-
-            switch (ammo) {
-                case RED:
-                    if (redCost > 0) {
-                        redCost--;
-                        usedPowerups.add(i);
-                    }
-                    break;
-                case BLUE:
-                    if (blueCost > 0) {
-                        blueCost--;
-                        usedPowerups.add(i);
-                    }
-                    break;
-                default:
-                    if (yellowCost > 0) {
-                        yellowCost--;
-                        usedPowerups.add(i);
-                    }
-            }
-        }
-
-        return new AmmoQuantity(redCost, blueCost, yellowCost);
-    }
 
     @Override
     public String toString() {
