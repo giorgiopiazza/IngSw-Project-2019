@@ -36,7 +36,7 @@ public class SaveGame {
     }
 
     public static GameManager loadGame(Server server, int startTime) {
-        PersistencyClass persistencyClass;
+            PersistencyClass persistencyClass;
 
         try (FileInputStream gameSaved = new FileInputStream(new File("gameSaved.adrenaline"))) {
             ObjectInputStream inGame = new ObjectInputStream(gameSaved);

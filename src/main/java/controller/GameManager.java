@@ -6,7 +6,6 @@ import exceptions.game.InvalidGameStateException;
 import exceptions.game.InvalidKillshotNumberException;
 import exceptions.game.InvalidMapNumberException;
 import model.Game;
-import model.cards.PowerupCard;
 import model.player.KillShot;
 import model.player.Player;
 import model.player.PlayerBoard;
@@ -73,10 +72,10 @@ public class GameManager implements TimerRunListener, Serializable {
         this.gameState = savedGameManager.gameState;
         this.lobby = null;
         this.gameInstance = Game.getInstance();
-        this.roundManager = new RoundManager(savedGameManager);
         this.shootParameters = savedGameManager.shootParameters;
 
         this.lobbyTimeoutTime = lobbyTimeoutTime * 1000;
+        this.roundManager = new RoundManager(this);
     }
 
     /**
@@ -169,8 +168,6 @@ public class GameManager implements TimerRunListener, Serializable {
                 return UserPlayerState.GRENADE_USAGE;
 
             case ACTIONS_DONE:
-                return UserPlayerState.ENDING_PHASE;
-
             case FRENZY_ACTIONS_DONE:
                 return UserPlayerState.ENDING_PHASE;
 
@@ -178,7 +175,7 @@ public class GameManager implements TimerRunListener, Serializable {
                 return UserPlayerState.DEAD;
 
             case SCOPE_USAGE:
-                if (!shootParameters.secondAction) {
+                if (!roundManager.getTurnManager().isSecondAction()) {
                     return UserPlayerState.FIRST_SCOPE_USAGE;
                 } else {
                     return UserPlayerState.SECOND_SCOPE_USAGE;
@@ -299,6 +296,9 @@ public class GameManager implements TimerRunListener, Serializable {
             if (gameEnded) {
                 return new Response("Player disconnected, game has now less then 3 players and then is ending...", MessageStatus.OK);
             } else if (getRoundManager().getTurnManager().getTurnOwner().getUsername().equals(receivedConnectionMessage.getSenderUsername())) {    // if game hasn't ended I check if the disconnected player is the turn owner, if so I change the state, otherwise nothing happens
+                if(roundManager.getTurnManager().isFirstTurn()) {
+                    return roundManager.handleRandomSpawn();
+                }
                 roundManager.handlePassAction();
                 return new Response("Turn Owner disconnected, turn is passed to next Player", MessageStatus.OK);
             } else {
@@ -426,11 +426,7 @@ public class GameManager implements TimerRunListener, Serializable {
      */
     private Response scopeCheckContent(Message receivedMessage) {
         if (receivedMessage.getContent() == MessageContent.POWERUP_USAGE) {
-            if (!((PowerupRequest) receivedMessage).getPowerup().isEmpty()) {
-                return roundManager.handleShootAction(shootParameters.shootRequest, (PowerupRequest) receivedMessage, shootParameters.secondAction);
-            } else {
-                return roundManager.handleShootAction(shootParameters.shootRequest, null, shootParameters.secondAction);
-            }
+            return roundManager.handleScopeUsage((PowerupRequest) receivedMessage);
         } else {
             return buildInvalidResponse();
         }
@@ -598,7 +594,7 @@ public class GameManager implements TimerRunListener, Serializable {
      */
     private Response shootCheckState(Message receivedMessage) {
         if (gameState == PossibleGameState.GAME_STARTED || gameState == PossibleGameState.SECOND_ACTION || gameState == PossibleGameState.FINAL_FRENZY) {
-            return onShootMessage((ShootRequest) receivedMessage, handleSecondAction());
+            return roundManager.handleShootAction((ShootRequest) receivedMessage, handleSecondAction());
         } else {
             return buildInvalidResponse();
         }
@@ -671,6 +667,11 @@ public class GameManager implements TimerRunListener, Serializable {
         // then I can start adding players to the game with the color specified in their Lobby Message
         for (LobbyMessage player : lobby.getInLobbyPlayers()) {
             gameInstance.addPlayer(new UserPlayer(player.getSenderUsername(), player.getChosenColor(), new PlayerBoard()));
+        }
+
+        // added the players I can add the terminator, if present
+        if(gameInstance.isTerminatorPresent()) {
+            gameInstance.buildTerminator();
         }
 
         // in the end I set the map and the number of Skulls chosen
@@ -875,30 +876,6 @@ public class GameManager implements TimerRunListener, Serializable {
             default:
                 return new Response("Invalid Message while in granade state", MessageStatus.ERROR);
         }
-    }
-
-    /**
-     * Method that handles the reception of a {@link ShootRequest ShootRequest} setting needed parameters if the shooter
-     * later decides to use a TARGETING SCOPE with his weapon
-     *
-     * @param shootRequest the {@link ShootRequest ShootRequest} received
-     * @param secondAction Boolean that specifies if the performing action is the second
-     * @return a positive or negative {@link Response Response} handled by the server
-     */
-    private Response onShootMessage(ShootRequest shootRequest, boolean secondAction) {
-        shootParameters = null;
-        PowerupCard[] ownersPowerups = roundManager.getTurnManager().getTurnOwner().getPowerups();
-
-        for (PowerupCard powerupCard : ownersPowerups) {
-            if (powerupCard.getName().equals("TARGETING SCOPE")) {
-                shootParameters = new ShootParameters(shootRequest, secondAction);
-                changeState(PossibleGameState.SCOPE_USAGE);
-                return new Response("Shoot Action can have SCOPE usage", MessageStatus.NEED_PLAYER_ACTION);
-            }
-        }
-
-        // if turnOwner has no SCOPEs the shoot action is handled normally
-        return roundManager.handleShootAction(shootRequest, null, secondAction);
     }
 
     /**

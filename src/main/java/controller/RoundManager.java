@@ -17,6 +17,7 @@ import model.cards.PowerupCard;
 
 import model.map.Square;
 import model.player.Bot;
+import model.player.Player;
 import model.player.UserPlayer;
 import network.message.*;
 import utility.GameCostants;
@@ -99,7 +100,6 @@ public class RoundManager {
         if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.SPAWN_BOT)) {
             // terminator does not still exist!
             try {
-                gameInstance.buildTerminator();
                 gameInstance.spawnTerminator(gameInstance.getGameMap().getSpawnSquare(spawnRequest.getSpawnColor()));
             } catch (InvalidSpawnColorException e) {
                 return buildNegativeResponse("Invalid color for spawning!");
@@ -151,7 +151,7 @@ public class RoundManager {
 
         // every player must see the powerup the spawning one choosed to spawn
         gameManager.sendBroadcastMessage(new BroadcastSpawningPowerup(spawningPowerup));
-        turnManager.getTurnOwner().changePlayerState(PossiblePlayerState.PLAYING);
+        turnOwner.changePlayerState(PossiblePlayerState.PLAYING);
         setInitialActions();
         return buildPositiveResponse("Player spawned with chosen powerup");
     }
@@ -281,6 +281,13 @@ public class RoundManager {
         return buildGrenadePositiveResponse("Grenade has been Used, turn passed to the next possible user");
     }
 
+    /**
+     * Handles the usage of the grenade passed as an integer index
+     *
+     * @param index the index of the grenade to be used
+     * @param granadeMessage the {@link PowerupRequest GranadeRequest} received
+     * @return a positive or negative {@link Response Response} handled by the server
+     */
     private Response grenadeUsage(int index, PowerupRequest granadeMessage) {
         PowerupCard chosenGranade;
 
@@ -317,146 +324,254 @@ public class RoundManager {
     }
 
     /**
-     * Method that handles the usage of the TARGETING SCOPE by the Shooting {@link UserPlayer UserPlayer}
+     * Handles the usage of a Scope Request distributing damages correctly on each target
      *
      * @param scopeMessage the {@link PowerupRequest ScopeRequest} received
      * @return a positive or negative {@link Response Response} handled by the server
      */
-    private Response handleScopeUsage(PowerupRequest scopeMessage) {
-        UserPlayer turnOwner = turnManager.getTurnOwner();
-        PowerupRequest tempRequest;
+    Response handleScopeUsage(PowerupRequest scopeMessage) {
+        int sizeDifference;
         List<Integer> powerupsIndexes = scopeMessage.getPowerup();
-        List<Integer> paymentPowerups = scopeMessage.getPaymentPowerups();
+        ArrayList<Integer> paymentPowerups = scopeMessage.getPaymentPowerups();
         List<String> targets = scopeMessage.getTargetPlayersUsername();
-        int sizeDifference = powerupsIndexes.size() - targets.size();
+
+        // checks over every constraint of a SCOPE usage
+
+        // index Check
+        if(!checkScopeIndexes(powerupsIndexes, paymentPowerups)) {
+            return buildNegativeResponse("Invalid Indexes in Request");
+        }
+
+        // targets Check
+        if(!checkScopeTargets(targets)) {
+            return buildNegativeResponse("Invalid Targets in Request");
+        }
+
+        if(powerupsIndexes.size() < targets.size()) {
+            return buildNegativeResponse("Too many Targets");
+        } else {
+            sizeDifference = powerupsIndexes.size() - targets.size();
+        }
+
+        // ammo check
+        if(powerupsIndexes.size() - paymentPowerups.size() != scopeMessage.getAmmoColor().size()) {
+            return buildNegativeResponse("Missing Ammo Colors to pay");
+        }
+
+        switch (sizeDifference) {
+            case 0:
+                return oneScopeForEachTarget(scopeMessage);
+            case 1:
+                if (powerupsIndexes.size() == 3) {
+                    return moreScopesForFirstTarget(scopeMessage);
+                } else if (powerupsIndexes.size() == 2) {
+                    return allScopesForOneTarget(scopeMessage,2);
+                }
+
+                // here is never reached because of previous checks
+                return buildNegativeResponse(" Invalid Action ");
+            case 2:
+                return allScopesForOneTarget(scopeMessage, 3);
+            default:
+                return buildNegativeResponse(" Invalid Action ");
+        }
+    }
+
+    /**
+     * Uses one targetingScope on each target
+     *
+     * @param scopeRequest the {@link PowerupRequest PowerupRequest} received
+     * @return positive or negative {@link Response Response} handled by the server
+     */
+    private Response oneScopeForEachTarget(PowerupRequest scopeRequest) {
+        PowerupRequest tempRequest;
+        UserPlayer turnOwner = turnManager.getTurnOwner();
+        ArrayList<Integer> paymentPowerups = scopeRequest.getPaymentPowerups();
+        ArrayList<Ammo> ammoColors = scopeRequest.getAmmoColor();
+
+        for (int i = 0; i < scopeRequest.getPowerup().size(); ++i) {
+            if (!paymentPowerups.isEmpty()) {
+                tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeRequest.getSenderUsername(), scopeRequest.getToken(), new ArrayList<>(List.of(scopeRequest.getPowerup().get(i))))
+                        .paymentPowerups(new ArrayList<>(List.of(paymentPowerups.get(0))))
+                        .targetPlayersUsername(new ArrayList<>(List.of(scopeRequest.getTargetPlayersUsername().get(i))))
+                        .build();
+                paymentPowerups.remove(0);
+            } else {
+                tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeRequest.getSenderUsername(), scopeRequest.getToken(), new ArrayList<>(List.of(scopeRequest.getPowerup().get(i))))
+                        .targetPlayersUsername(new ArrayList<>(List.of(scopeRequest.getTargetPlayersUsername().get(i))))
+                        .ammoColor(new ArrayList<>(List.of(ammoColors.get(0))))
+                        .build();
+                ammoColors.remove(0);
+            }
+            try {
+                turnOwner.getPowerups()[i].use(tempRequest);
+                turnOwner.discardPowerupByIndex(i);
+            } catch (NotEnoughAmmoException e) {
+                return buildNegativeResponse("Not Enough Ammo");
+            } catch (InvalidPowerupActionException e) {
+                return buildNegativeResponse(" Invalid Action");
+            } catch (EmptyHandException e) {
+                // can not happen here because powerup is already verified to be possessed
+            }
+        }
+
+        gameManager.changeState(handleAfterActionState(turnManager.isSecondAction()));
+        return buildPositiveResponse("Targeting Scope/s used ");
+    }
+
+    /**
+     * Uses two targeting scopes on first target and one on the second
+     *
+     * @param scopeRequest the {@link PowerupRequest PowerupRequest} received
+     * @return positive or negative {@link Response Response} handled by the server
+     */
+    private Response moreScopesForFirstTarget(PowerupRequest scopeRequest) {
+        PowerupRequest tempRequest;
+        UserPlayer turnOwner = turnManager.getTurnOwner();
+        ArrayList<Ammo> ammoColors = scopeRequest.getAmmoColor();
+
+        for (int i = 0; i < 2; ++i) {
+            // impossible that there are payment powerups in this case!
+            tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeRequest.getSenderUsername(), scopeRequest.getToken(), new ArrayList<>(List.of(scopeRequest.getPowerup().get(i))))
+                    .targetPlayersUsername(new ArrayList<>(List.of(scopeRequest.getTargetPlayersUsername().get(0))))
+                    .ammoColor(new ArrayList<>(List.of(ammoColors.get(0))))
+                    .build();
+            ammoColors.remove(0);
+
+            try {
+                turnOwner.getPowerups()[i].use(tempRequest);
+                turnOwner.discardPowerupByIndex(i);
+            } catch (NotEnoughAmmoException e) {
+                return buildNegativeResponse("Not Enough Ammo");
+            } catch (EmptyHandException e) {
+                // can not happen here because powerup is already verified to be possessed
+            } catch (InvalidPowerupActionException e) {
+                return buildNegativeResponse(" Invalid Action");
+            }
+        }
+
+        tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeRequest.getSenderUsername(), scopeRequest.getToken(), new ArrayList<>(List.of(scopeRequest.getPowerup().get(2))))
+                .targetPlayersUsername(new ArrayList<>(List.of(scopeRequest.getTargetPlayersUsername().get(1))))
+                .ammoColor(new ArrayList<>(List.of(ammoColors.get(0))))
+                .build();
+        try {
+            turnOwner.getPowerups()[2].use(tempRequest);
+            turnOwner.discardPowerupByIndex(2);
+        } catch (NotEnoughAmmoException e) {
+            return buildNegativeResponse("Not Enough Ammo ");
+        } catch (InvalidPowerupActionException e) {
+            return buildNegativeResponse("Invalid Action  ");
+        } catch (EmptyHandException e) {
+            // can not happen here because powerup is already verified to be possessed
+        }
+
+        gameManager.changeState(handleAfterActionState(turnManager.isSecondAction()));
+        return buildPositiveResponse("Targeting Scope/s used");
+    }
+
+    /**
+     * Uses all targeting scopes on the same target
+     *
+     * @param scopeRequest the {@link PowerupRequest PowerupRequest} received
+     * @param numberOfScopes number of targeting scopes to be used
+     * @return positive or negative {@link Response Response} handled by the server
+     */
+    private Response allScopesForOneTarget(PowerupRequest scopeRequest, int numberOfScopes) {
+        PowerupRequest tempRequest;
+        UserPlayer turnOwner = turnManager.getTurnOwner();
+        ArrayList<Integer> paymentPowerups = scopeRequest.getPaymentPowerups();
+        ArrayList<Ammo> ammoColors = scopeRequest.getAmmoColor();
+
+        for (int i = 0; i < numberOfScopes; ++i) {
+            if (!paymentPowerups.isEmpty()) {
+                tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeRequest.getSenderUsername(), scopeRequest.getToken(), new ArrayList<>(List.of(scopeRequest.getPowerup().get(i))))
+                        .paymentPowerups(scopeRequest.getPaymentPowerups())
+                        .targetPlayersUsername(new ArrayList<>(List.of(scopeRequest.getTargetPlayersUsername().get(0))))
+                        .build();
+                paymentPowerups.remove(0);
+            } else {
+                tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeRequest.getSenderUsername(), scopeRequest.getToken(), new ArrayList<>(List.of(scopeRequest.getPowerup().get(i))))
+                        .ammoColor(new ArrayList<>(List.of(ammoColors.get(0))))
+                        .targetPlayersUsername(new ArrayList<>(List.of(scopeRequest.getTargetPlayersUsername().get(0))))
+                        .build();
+                ammoColors.remove(0);
+            }
+            try {
+                turnOwner.getPowerups()[i].use(tempRequest);
+                turnOwner.discardPowerupByIndex(i);
+            } catch (NotEnoughAmmoException e) {
+                return buildNegativeResponse("Not Enough Ammo ");
+            } catch (InvalidPowerupActionException e) {
+                return buildNegativeResponse("Invalid  Action");
+            } catch (EmptyHandException e) {
+                // cn not happen here because powerup is already verified to be possessed
+            }
+        }
+
+        gameManager.changeState(handleAfterActionState(turnManager.isSecondAction()));
+        return buildPositiveResponse("Targeting Scope/s used");
+    }
+
+    /**
+     * Validates all the indexes and dimensions in the Powerups Lists
+     *
+     * @param powerupsIndexes List of using SCOPEs
+     * @param paymentPowerups List of payment Powerups
+     * @return true if every check is consistent, otherwise false
+     */
+    private boolean checkScopeIndexes(List<Integer> powerupsIndexes, List<Integer> paymentPowerups) {
+        UserPlayer turnOwner = turnManager.getTurnOwner();
+
+        if(powerupsIndexes.size() < paymentPowerups.size()) {
+            return false;
+        }
 
         for (Integer index : powerupsIndexes) {
-            if (index < 0 || index > turnOwner.getPowerups().length - 1) {
-                return buildNegativeResponse("Invalid Index");
-            }
             for (Integer paymentIndex : paymentPowerups) {
                 if (index.equals(paymentIndex)) {
-                    return buildNegativeResponse("Invalid Payment indexes");
+                    return false;
                 }
             }
         }
 
         if (powerupsIndexes.size() > turnOwner.getPowerups().length) {
-            return buildNegativeResponse("Too many indexes");
+            return false;
         }
 
         for (Integer index : powerupsIndexes) {
             if (!turnOwner.getPowerups()[index].getName().equals(TARGETING_SCOPE)) {
-                return buildNegativeResponse("Invalid Scope Index");
+                return false;
             }
         }
 
-        switch (sizeDifference) {
-            case 0:
-                for (int i = 0; i < powerupsIndexes.size(); ++i) {
-                    if (!paymentPowerups.isEmpty()) {
-                        tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
-                                .paymentPowerups(scopeMessage.getPaymentPowerups())
-                                .targetPlayersUsername(new ArrayList<>(List.of(targets.get(i))))
-                                .build();
-                        paymentPowerups.remove(0);
-                    } else {
-                        tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
-                                .targetPlayersUsername(new ArrayList<>(List.of(targets.get(i))))
-                                .build();
-                    }
-                    try {
-                        turnOwner.getPowerups()[i].use(tempRequest);
-                        turnOwner.discardPowerupByIndex(i);
-                    } catch (NotEnoughAmmoException e) {
-                        return buildNegativeResponse("Not Enough Ammo");
-                    } catch (InvalidPowerupActionException e) {
-                        return buildNegativeResponse(" Invalid Action");
-                    } catch (EmptyHandException e) {
-                        // can not happen here because powerup is already verified to be possessed
-                    }
-                }
+        return true;
+    }
 
-                return buildPositiveResponse("Targeting Scope used");
-            case 1:
-                if (powerupsIndexes.size() == 3) {
-                    for (int i = 0; i < 2; ++i) {
-                        tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
-                                .targetPlayersUsername(new ArrayList<>(List.of(targets.get(0))))
-                                .build();
-                        try {
-                            turnOwner.getPowerups()[i].use(tempRequest);
-                            turnOwner.discardPowerupByIndex(i);
-                        } catch (NotEnoughAmmoException e) {
-                            return buildNegativeResponse("Not Enough Ammo");
-                        } catch (EmptyHandException e) {
-                            // can not happen here because powerup is already verified to be possessed
-                        } catch (InvalidPowerupActionException e) {
-                            return buildNegativeResponse(" Invalid Action");
-                        }
-                    }
+    /**
+     * Checks targets constraints given on the previous {@link ShootAction ShootAction}
+     *
+     * @param targetsUsernames the List of the SCOPE targets usernames
+     * @return true
+     */
+    private boolean checkScopeTargets(List<String> targetsUsernames) {
+        boolean targetPresent = true;
 
-                    tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(2))))
-                            .targetPlayersUsername(new ArrayList<>(List.of(targets.get(1))))
-                            .build();
-                    try {
-                        turnOwner.getPowerups()[2].use(tempRequest);
-                        turnOwner.discardPowerupByIndex(2);
-                    } catch (NotEnoughAmmoException e) {
-                        return buildNegativeResponse("Not Enough Ammo ");
-                    } catch (InvalidPowerupActionException e) {
-                        return buildNegativeResponse("Invalid Action  ");
-                    } catch (EmptyHandException e) {
-                        // can not happen here because powerup is already verified to be possessed
-                    }
-                } else if (powerupsIndexes.size() == 2) {
-                    for (int i = 0; i < 2; ++i) {
-                        if (!paymentPowerups.isEmpty()) {
-                            tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
-                                    .paymentPowerups(scopeMessage.getPaymentPowerups())
-                                    .targetPlayersUsername(new ArrayList<>(List.of(targets.get(0))))
-                                    .build();
-                            paymentPowerups.remove(0);
-                        } else {
-                            tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
-                                    .targetPlayersUsername(new ArrayList<>(List.of(targets.get(0))))
-                                    .build();
-                        }
-                        try {
-                            turnOwner.getPowerups()[i].use(tempRequest);
-                            turnOwner.discardPowerupByIndex(i);
-                        } catch (NotEnoughAmmoException e) {
-                            return buildNegativeResponse("Not Enough Ammo ");
-                        } catch (InvalidPowerupActionException e) {
-                            return buildNegativeResponse("Invalid  Action");
-                        } catch (EmptyHandException e) {
-                            // cn not happen here because powerup is already verified to be possessed
-                        }
-                    }
-                }
-
-                return buildPositiveResponse("Targeting Scopes Used");
-            case 2:
-                for (int i = 0; i < 3; ++i) {
-                    tempRequest = new PowerupRequest.PowerupRequestBuilder(scopeMessage.getSenderUsername(), scopeMessage.getToken(), new ArrayList<>(List.of(powerupsIndexes.get(i))))
-                            .targetPlayersUsername(new ArrayList<>(List.of(targets.get(0))))
-                            .build();
-                    try {
-                        turnOwner.getPowerups()[i].use(tempRequest);
-                        turnOwner.discardPowerupByIndex(i);
-                    } catch (EmptyHandException e) {
-                        // can not happen here because powerup is already verified to be possessed
-                    } catch (NotEnoughAmmoException e) {
-                        return buildNegativeResponse("Not Enough Ammo  ");
-                    } catch (InvalidPowerupActionException e) {
-                        return buildNegativeResponse("Invalid  Action ");
-                    }
-                }
-
-                return buildPositiveResponse("Targeting Scope Used");
-            default:
-                return buildNegativeResponse(" Invalid Action ");
+        if(targetsUsernames.isEmpty()) {
+            return false;
         }
+
+        for(int i = 0; i < targetsUsernames.size() && targetPresent; ++i) {
+            for(Player damagedPlayers : turnManager.getDamagedPlayers()) {
+                if(targetsUsernames.get(i).equals(damagedPlayers.getUsername())) {
+                    targetPresent = true;
+                    break;
+                }
+
+                targetPresent = false;
+            }
+        }
+
+        return targetPresent;
     }
 
     /**
@@ -593,17 +708,15 @@ public class RoundManager {
      * Method that handles a {@link ShootAction ShootAction} performed by the TurnOwner
      *
      * @param shootRequest the {@link ShootRequest ShootRequest} received before
-     * @param scopeRequest the {@link PowerupRequest ScopeRequest} just received, if <b>null</b> the TurnOwner can't or
-     *                     has decided not to use the TARGETING SCOPE
      * @param secondAction Boolean that specifies if the performing action is the second
      * @return a positive or negative {@link Response Response} handled by the server
      */
-    Response handleShootAction(ShootRequest shootRequest, PowerupRequest scopeRequest, boolean secondAction) {
+    Response handleShootAction(ShootRequest shootRequest, boolean secondAction) {
         UserPlayer turnOwner = turnManager.getTurnOwner();
-        Response response;
         ShootAction shootAction;
         PossibleAction actionType;
         Set<PossibleAction> ownersActions = turnOwner.getPossibleActions();
+        List<UserPlayer> beforeShootPlayers;
 
         if (ownersActions.contains(PossibleAction.SHOOT)) {
             actionType = PossibleAction.SHOOT;
@@ -623,7 +736,7 @@ public class RoundManager {
         // now I can try to validate and use the action, care, a shoot action can throw different exceptions, each will be returned with a different response
         try {
             if (shootAction.validate()) {
-                List<UserPlayer> beforeShootPlayers = gameInstance.getPlayers();
+                beforeShootPlayers = gameInstance.getPlayers();
                 shootAction.execute();
                 turnManager.setDamagedPlayers(buildDamagedPlayers(beforeShootPlayers));
             } else {
@@ -639,16 +752,12 @@ public class RoundManager {
             return buildNegativeResponse("Invalid Shoot Action");
         }
 
-        // targeting scope handler
-        if (scopeRequest != null) {
-            response = handleScopeUsage(scopeRequest);
-            if (response.getStatus() == MessageStatus.ERROR) {
-                return response;
-            } // else targeting scope can be used and granade usage is handled
-        }
+        if(checkScopeUsage(turnOwner)) {
+            turnManager.setSecondAction(secondAction);
+            gameManager.changeState(PossibleGameState.SCOPE_USAGE);
 
-        // tagback granade handler
-        if (!turnManager.getDamagedPlayers().isEmpty()) {
+            return buildScopePositiveResponse("Shoot Action done, shooter can use a Scope");
+        } else if(!turnManager.getDamagedPlayers().isEmpty()){
             gameManager.changeState(PossibleGameState.GRANADE_USAGE);
             turnManager.setMarkedByGrenadePlayer(turnManager.getTurnOwner());
             turnManager.setMarkingTerminator(false);
@@ -949,6 +1058,67 @@ public class RoundManager {
     }
 
     /**
+     * Method that simply checks if the TurnOwner has a SCOPE in his hand
+     *
+     * @param turnOwner the {@link UserPlayer UserPlayer} to be checked
+     * @return true if the shooter has a SCOPE, otherwis false
+     */
+    private boolean checkScopeUsage(UserPlayer turnOwner) {
+        for(PowerupCard powerupCard : turnOwner.getPowerups()) {
+            if(powerupCard.getName().equals(TARGETING_SCOPE)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Method that handles the spawn of a {@link UserPlayer UserPlayer} while he disconnects from the game on the very
+     * first round. If the {@link Bot Bot} is present his spawn is also managed
+     *
+     * @return always a positive response because this method always works alone
+     */
+    Response handleRandomSpawn() {
+        int randomIndex = Game.rand.nextInt(1);
+
+        PowerupCard spawningPowerup = getTurnManager().getTurnOwner().getPowerups()[randomIndex];
+        RoomColor spawnColor = null;
+
+        if (getTurnManager().getTurnOwner().getPossibleActions().contains(PossibleAction.SPAWN_BOT)) {
+            // terminator does not still exist!
+            try {
+                gameInstance.buildTerminator();
+                gameInstance.spawnTerminator(gameInstance.getGameMap().getSpawnSquare(RoomColor.getRandomSpawnColor()));
+            } catch (InvalidSpawnColorException e) {
+                // never reached random color is always a correct color
+            }
+        }
+
+        if(getTurnManager().getTurnOwner().getPossibleActions().contains(PossibleAction.CHOOSE_SPAWN)) {
+            try {
+                spawnColor = Ammo.toColor(spawningPowerup.getValue());
+                getTurnManager().getTurnOwner().discardPowerupByIndex(randomIndex);
+            } catch (EmptyHandException e) {
+                // never reached, in first spawn state every player always have two powerups!
+            }
+
+            try {
+                gameInstance.spawnPlayer(getTurnManager().getTurnOwner(), gameInstance.getGameMap().getSpawnSquare(spawnColor));
+            } catch (InvalidSpawnColorException e) {
+                // never reached, a powerup has always a corresponding spawning color!
+            }
+
+            // every player must see the powerup the spawning one choosed to spawn
+            gameManager.sendBroadcastMessage(new BroadcastSpawningPowerup(spawningPowerup));
+            getTurnManager().getTurnOwner().changePlayerState(PossiblePlayerState.PLAYING);
+            setInitialActions();
+        }
+
+        return buildPositiveResponse("Player randomly spawned because disconnected while very first round");
+    }
+
+    /**
      * Method that builds a Positive {@link Response Response}, that has {@link MessageStatus MessageStatus.OK}
      * For real this method is the most important one of this Class, infact, it also:
      * (i) send the new Game status to each player
@@ -975,6 +1145,19 @@ public class RoundManager {
         gameManager.sendGrenadePrivateUpdates();
         SaveGame.saveGame(gameManager);
         return new Response(reason, MessageStatus.OK);
+    }
+
+    /**
+     * Method that builds a {@link MessageStatus NEED_PLAYER_ACTION} {@link Response Response} after a targeting
+     * scope can be used by a shooting {@link UserPlayer UserPlayer}
+     *
+     * @param reason the reason coming from the {@link ShootAction ShootAction}
+     * @return the {@link MessageStatus NEED_PLAYER_ACTION} {@link Response Response} built
+     */
+    private Response buildScopePositiveResponse(String reason) {
+        gameManager.sendPrivateUpdates();
+        SaveGame.saveGame(gameManager);
+        return new Response(reason, MessageStatus.NEED_PLAYER_ACTION);
     }
 
     /**

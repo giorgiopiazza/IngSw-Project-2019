@@ -12,7 +12,7 @@ public class PowerupRequest extends EffectRequest {
     private static final long serialVersionUID = 8674157231024320484L;
 
     private final ArrayList<Integer> powerup;
-    private final Ammo ammoColor;
+    private final ArrayList<Ammo> ammoColor;
 
     public PowerupRequest(PowerupRequestBuilder builder) {
         super(
@@ -33,7 +33,7 @@ public class PowerupRequest extends EffectRequest {
         return powerup;
     }
 
-    public Ammo getAmmoColor() {
+    public ArrayList<Ammo> getAmmoColor() {
         return ammoColor;
     }
 
@@ -41,7 +41,7 @@ public class PowerupRequest extends EffectRequest {
         private String username;
         private String token;
         private ArrayList<Integer> powerup;
-        private Ammo ammoColor;
+        private ArrayList<Ammo> ammoColor;
 
         private ArrayList<String> targetPlayersUsername;
         private ArrayList<PlayerPosition> targetPositions;
@@ -88,7 +88,7 @@ public class PowerupRequest extends EffectRequest {
             return this;
         }
 
-        public PowerupRequestBuilder ammoColor(Ammo ammoColor) {
+        public PowerupRequestBuilder ammoColor(ArrayList<Ammo> ammoColor) {
             this.ammoColor = ammoColor;
             return this;
         }

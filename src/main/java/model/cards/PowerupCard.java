@@ -55,7 +55,7 @@ public class PowerupCard extends UsableCard {
 
             List<Integer> powerupsID = request.getPaymentPowerups();
 
-            Ammo colorCost = request.getAmmoColor();
+            Ammo colorCost = request.getAmmoColor().get(0);
 
             boolean paid = false;
 

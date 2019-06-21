@@ -374,7 +374,7 @@ public class Cli extends ClientGameManager {
 
     @Override
     public void displayActions(List<PossibleAction> possibleActions) {
-        Integer choose;
+        int choose = Integer.MIN_VALUE;
         printPlayers();
         printAmmo();
         out.println();
@@ -390,10 +390,13 @@ public class Cli extends ClientGameManager {
         LOGGER.log(INFO, "powerups: {0}", Arrays.toString(getGameSerialized().getPowerups().toArray()));
         LOGGER.log(INFO, "other players: {0}", Arrays.toString(getPlayers().toArray()));
 
-        choose = readInt(0, possibleActions.size() - 1, false);
-        if (choose != null) {
-            doAction(possibleActions.get(choose));
+        try {
+            choose = readInt(0, possibleActions.size() - 1, false);
+        } catch (CancelledActionException e) {
+            // Can't happen
         }
+
+        doAction(possibleActions.get(choose));
     }
 
     @Override
@@ -415,7 +418,7 @@ public class Cli extends ClientGameManager {
             }
         } while (!correctColor);
 
-        if (!sendRequest(MessageBuilder.buildTerminatorSpawnRequest(getClientToken(), getGameSerialized().getBot(), gameMap.getSquare(botSpawnPosition)))) {
+        if (!sendRequest(MessageBuilder.buildTerminatorSpawnRequest(getPlayer(), getClientToken(), gameMap.getSquare(botSpawnPosition)))) {
             promptError(SEND_ERROR, true);
         }
     }
@@ -431,11 +434,9 @@ public class Cli extends ClientGameManager {
         out.println();
         printPowerups();
 
-        out.println();
-        out.println("Where do you want to spawn?");
         PowerupCard powerupCard;
         try {
-            powerupCard = askPowerup();
+            powerupCard = askPowerupSpawn();
         } catch (CancelledActionException e) {
             cancelAction();
             return;
@@ -597,7 +598,7 @@ public class Cli extends ClientGameManager {
             return;
         }
 
-        if (!sendRequest(MessageBuilder.buildUseTerminatorRequest(getClientToken(), getGameSerialized().getBot(), newPos, (UserPlayer) getPlayerByName(target)))) {
+        if (!sendRequest(MessageBuilder.buildUseTerminatorRequest(getPlayer(), getClientToken(), newPos, (UserPlayer) getPlayerByName(target)))) {
             promptError(SEND_ERROR, true);
         }
     }
@@ -728,26 +729,25 @@ public class Cli extends ClientGameManager {
     public void powerup() {
         CliPrinter.clearConsole(out);
         printPowerups();
-
-        out.println();
-        out.println("Which power up do you want to use?");
-
-        PowerupCard powerupCard = askPowerup();
-
-        if (!powerupCard.getName().equals(NEWTON) && !powerupCard.getName().equals(TELEPORTER)) {
-            cancelAction("You can't use this powerup!");
-            return;
-        }
-
-        ArrayList<Integer> powerups = new ArrayList<>();
-        powerups.add(getPowerups().indexOf(powerupCard));
-
-        PowerupRequest.PowerupRequestBuilder powerupRequestBuilder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), powerups);
-
-        Effect baseEffect = powerupCard.getBaseEffect();
-        Map<String, String> effectProperties = baseEffect.getProperties();
+        PowerupRequest.PowerupRequestBuilder powerupRequestBuilder;
 
         try {
+            PowerupCard powerupCard = askPowerup();
+
+            if (!powerupCard.getName().equals(NEWTON) && !powerupCard.getName().equals(TELEPORTER)) {
+                cancelAction("You can't use this powerup!");
+                return;
+            }
+
+            ArrayList<Integer> powerups = new ArrayList<>();
+            powerups.add(getPowerups().indexOf(powerupCard));
+
+            powerupRequestBuilder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), powerups);
+
+            Effect baseEffect = powerupCard.getBaseEffect();
+            Map<String, String> effectProperties = baseEffect.getProperties();
+
+
             if (effectProperties.containsKey(Properties.TP.getJKey())) {
                 out.println("Choose your teleporting position:");
                 powerupRequestBuilder.senderMovePosition(readCoordinates());
@@ -831,8 +831,13 @@ public class Cli extends ClientGameManager {
      */
     private void askVoteMap() {
         out.println("Which map would you like to play with (1 - 4)?");
+        int mapVote = Integer.MIN_VALUE;
 
-        int mapVote = readInt(1, 4, false);
+        try {
+            mapVote = readInt(1, 4, false);
+        } catch (CancelledActionException e) {
+            // Can't happen
+        }
 
         if (!sendRequest(MessageBuilder.buildVoteMessage(getClientToken(), getUsername(), mapVote))) {
             promptError(SEND_ERROR, true);
@@ -846,7 +851,7 @@ public class Cli extends ClientGameManager {
      * @return -1 if no weapon was chosen, the index of the weapon otherwise
      * @throws CancelledActionException if the action was cancelled
      */
-    private int askWeapon(boolean optional) {
+    private int askWeapon(boolean optional) throws CancelledActionException {
         UserPlayer player = getPlayer();
         WeaponCard[] weapons = player.getWeapons();
         int choose;
@@ -871,7 +876,7 @@ public class Cli extends ClientGameManager {
      * @return the index of the weapon's effect
      * @throws CancelledActionException if the action was cancelled
      */
-    private Integer askWeaponEffect(WeaponCard weapon) {
+    private Integer askWeaponEffect(WeaponCard weapon) throws CancelledActionException {
         WeaponCard[] chosenWeapon = new WeaponCard[]{weapon};
         Integer choose;
 
@@ -890,7 +895,7 @@ public class Cli extends ClientGameManager {
      * @return the list of powerups read
      * @throws CancelledActionException if the action was cancelled
      */
-    private ArrayList<Integer> askPaymentPowerups() {
+    private ArrayList<Integer> askPaymentPowerups() throws CancelledActionException {
         ArrayList<Integer> paymentPowerups = new ArrayList<>();
         Integer tempChoose;
 
@@ -917,7 +922,7 @@ public class Cli extends ClientGameManager {
      * @return the list of username targets
      * @throws CancelledActionException if the action was cancelled
      */
-    private ArrayList<String> askTargetsUsername(Map<String, String> effectProperties) {
+    private ArrayList<String> askTargetsUsername(Map<String, String> effectProperties) throws CancelledActionException {
         ArrayList<String> targetsUsername;
 
         printMap();
@@ -942,7 +947,7 @@ public class Cli extends ClientGameManager {
      * @return the list of username targets
      * @throws CancelledActionException if the action was cancelled
      */
-    private ArrayList<String> askExactTargets(String exactStringNum) {
+    private ArrayList<String> askExactTargets(String exactStringNum) throws CancelledActionException {
         int exactIntNum = Integer.parseInt(exactStringNum);
         ArrayList<String> chosenTargets = new ArrayList<>();
 
@@ -964,7 +969,7 @@ public class Cli extends ClientGameManager {
      * @return the list of username targets
      * @throws CancelledActionException if the action was cancelled
      */
-    private ArrayList<String> askMaxTargets(String maxStringNum) {
+    private ArrayList<String> askMaxTargets(String maxStringNum) throws CancelledActionException {
         int maxIntNum = Integer.parseInt(maxStringNum);
         ArrayList<String> chosenTargets = new ArrayList<>();
         out.println("Choose up to " + maxIntNum + " target/s for your shoot action (-1 to stop choosing):");
@@ -990,7 +995,7 @@ public class Cli extends ClientGameManager {
      * @return the list of square targets
      * @throws CancelledActionException if the action was cancelled
      */
-    private ArrayList<PlayerPosition> askTargetSquaresPositions(Map<String, String> effectProperties) {
+    private ArrayList<PlayerPosition> askTargetSquaresPositions(Map<String, String> effectProperties) throws CancelledActionException {
         ArrayList<PlayerPosition> targetSquaresPositions;
 
         if (effectProperties.containsKey(Properties.TARGET_NUM.getJKey())) {
@@ -1011,7 +1016,7 @@ public class Cli extends ClientGameManager {
      * @return the list of square targets
      * @throws CancelledActionException if the action was cancelled
      */
-    private ArrayList<PlayerPosition> askExactSquares(String exactStringNum) {
+    private ArrayList<PlayerPosition> askExactSquares(String exactStringNum) throws CancelledActionException {
         int exactIntNum = Integer.parseInt(exactStringNum);
         ArrayList<PlayerPosition> chosenSquares = new ArrayList<>();
 
@@ -1031,7 +1036,7 @@ public class Cli extends ClientGameManager {
      * @return the list of square targets
      * @throws CancelledActionException if the action was cancelled
      */
-    private ArrayList<PlayerPosition> askMaxSquares(String maxStringNum) {
+    private ArrayList<PlayerPosition> askMaxSquares(String maxStringNum) throws CancelledActionException {
         int maxIntNum = Integer.parseInt(maxStringNum);
         ArrayList<PlayerPosition> chosenSquares = new ArrayList<>();
 
@@ -1056,7 +1061,7 @@ public class Cli extends ClientGameManager {
      * @return the room color read
      * @throws CancelledActionException if the action was cancelled
      */
-    private RoomColor askTargetRoomColor(Map<String, String> effectProperties) {
+    private RoomColor askTargetRoomColor(Map<String, String> effectProperties) throws CancelledActionException {
         if (effectProperties.containsKey(Properties.TARGET_NUM.getJKey())) {
             out.println("Choose the color of the target room for your shoot action:");
 
@@ -1072,7 +1077,7 @@ public class Cli extends ClientGameManager {
      * @return the position read
      * @throws CancelledActionException if the action was cancelled
      */
-    private PlayerPosition askMovePositionInShoot() {
+    private PlayerPosition askMovePositionInShoot() throws CancelledActionException {
         out.println("Choose the moving position for your shoot action:");
         return readCoordinates();
     }
@@ -1083,7 +1088,7 @@ public class Cli extends ClientGameManager {
      * @return the move decision read
      * @throws CancelledActionException if the action was cancelled
      */
-    private Boolean askBeforeAfterMove() {
+    private Boolean askBeforeAfterMove() throws CancelledActionException {
         out.println("Choose if you want to move 'before' or 'after' shooting:");
         return readMoveDecision();
     }
@@ -1095,7 +1100,7 @@ public class Cli extends ClientGameManager {
      * @return the list of positions
      * @throws CancelledActionException if the action was cancelled
      */
-    private ArrayList<PlayerPosition> askTargetsMovePositions(ArrayList<String> targetsChosen) {
+    private ArrayList<PlayerPosition> askTargetsMovePositions(ArrayList<String> targetsChosen) throws CancelledActionException {
         ArrayList<PlayerPosition> targetsMovePositions = new ArrayList<>();
 
         out.println("Choose each target moving position!");
@@ -1118,7 +1123,7 @@ public class Cli extends ClientGameManager {
      * @return the shoot request builder
      * @throws CancelledActionException if the action was cancelled
      */
-    private ShootRequest.ShootRequestBuilder buildShootRequest(Effect chosenEffect, ShootRequest.ShootRequestBuilder shootRequestBuilder) {
+    private ShootRequest.ShootRequestBuilder buildShootRequest(Effect chosenEffect, ShootRequest.ShootRequestBuilder shootRequestBuilder) throws CancelledActionException {
         Map<String, String> effectProperties = chosenEffect.getProperties();
         TargetType[] targets = chosenEffect.getTargets();
         ArrayList<String> targetsChosen = new ArrayList<>();
@@ -1169,26 +1174,30 @@ public class Cli extends ClientGameManager {
 
     /**
      * Creates and sends a frenzy shot request
-     *
-     * @throws CancelledActionException if the action was cancelled
      */
     private void buildFrenzyShoot() {
         ShootRequest.ShootRequestBuilder shootRequestBuilt;
         PlayerPosition frenzyMovePosition;
         ArrayList<Integer> rechargingWeapons = new ArrayList<>();
 
-        out.println("Choose the moving square for your frenzy shoot action (same position not to move):");
-        frenzyMovePosition = readCoordinates();
+        try {
+            out.println("Choose the moving square for your frenzy shoot action (same position not to move):");
+            frenzyMovePosition = readCoordinates();
 
-        out.println("Do you want to recharge your weapons before shooting (-1 to stop choosing)?");
-        for (int i = 0; i < getPlayer().getWeapons().length; ++i) {
-            int tempChoose = askWeapon(true);
-            if (tempChoose == -1) break;
-            rechargingWeapons.add(tempChoose);
+            out.println("Do you want to recharge your weapons before shooting (-1 to stop choosing)?");
+            for (int i = 0; i < getPlayer().getWeapons().length; ++i) {
+                int tempChoose = askWeapon(true);
+                if (tempChoose == -1) break;
+                rechargingWeapons.add(tempChoose);
+            }
+
+            // now that I have everything I need more for a frenzy shoot I build the normal shoot request, add these and send it
+            shootRequestBuilt = sharedShootBuilder();
+        } catch (CancelledActionException e) {
+            cancelAction();
+            return;
         }
 
-        // now that I have everything I need more for a frenzy shoot I build the normal shoot request, add these and send it
-        shootRequestBuilt = sharedShootBuilder();
         if (shootRequestBuilt == null) {
             return;
         } else {
@@ -1206,7 +1215,7 @@ public class Cli extends ClientGameManager {
      * @return the created builder
      * @throws CancelledActionException if the action was cancelled
      */
-    private ShootRequest.ShootRequestBuilder sharedShootBuilder() {
+    private ShootRequest.ShootRequestBuilder sharedShootBuilder() throws CancelledActionException {
         ShootRequest.ShootRequestBuilder shootRequestBuilder;
         ArrayList<Integer> paymentPowerups = new ArrayList<>();
         Effect chosenEffect;
@@ -1245,7 +1254,7 @@ public class Cli extends ClientGameManager {
      * @param newPos the position where the player is picking
      * @throws CancelledActionException if the action was cancelled
      */
-    private void buildPickWeaponRequest(PlayerPosition newPos) {
+    private void buildPickWeaponRequest(PlayerPosition newPos) throws CancelledActionException {
         SpawnSquare weaponSquare = (SpawnSquare) getGameSerialized().getGameMap().getSquare(newPos);
         ArrayList<Integer> paymentPowerups = new ArrayList<>();
         WeaponCard pickingWeapon;
@@ -1288,9 +1297,10 @@ public class Cli extends ClientGameManager {
      * @param powerups list of all powerups
      * @param newList  list of only targeting scopes
      * @return the builder of the powerup request
+     * @throws CancelledActionException if the action was cancelled
      */
     private PowerupRequest.PowerupRequestBuilder buildTargetingScopeRequest(List<PowerupCard> powerups,
-                                                                            List<PowerupCard> newList) {
+                                                                            List<PowerupCard> newList) throws CancelledActionException {
         List<PowerupCard> scopes = new ArrayList<>();
         ArrayList<String> targets = new ArrayList<>();
 
@@ -1336,7 +1346,7 @@ public class Cli extends ClientGameManager {
      * @return the picked weapon
      * @throws CancelledActionException if the action was cancelled
      */
-    private WeaponCard askPickWeapon(SpawnSquare weaponSquare) {
+    private WeaponCard askPickWeapon(SpawnSquare weaponSquare) throws CancelledActionException {
         WeaponCard[] weapons = weaponSquare.getWeapons();
         Integer choose;
 
@@ -1359,9 +1369,12 @@ public class Cli extends ClientGameManager {
      * @return the powerup chosen
      * @throws CancelledActionException if the action was cancelled
      */
-    private PowerupCard askPowerup() {
+    private PowerupCard askPowerup() throws CancelledActionException {
         List<PowerupCard> powerups = getPowerups();
         List<PowerupCard> newList = new ArrayList<>();
+
+        out.println();
+        out.println("Which power up do you want to use?");
 
         for (PowerupCard powerup : powerups) {
             if (powerup.getName().equals(ClientGameManager.NEWTON) || powerup.getName().equals(ClientGameManager.TELEPORTER)) {
@@ -1377,6 +1390,30 @@ public class Cli extends ClientGameManager {
 
         return newList.get(readInt(0, newList.size() - 1, true));
     }
+
+    /**
+     * Asks to choose a powerup for spawn
+     *
+     * @return the powerup chosen
+     * @throws CancelledActionException if the action was cancelled
+     */
+    private PowerupCard askPowerupSpawn() throws CancelledActionException {
+        List<PowerupCard> powerups = getPowerups();
+
+        out.println();
+        out.println("Where do you want to spawn?");
+
+        for (int i = 0; i < powerups.size(); i++) {
+            out.println("\t" + i + " - " + CliPrinter.toStringPowerUpCard(powerups.get(i)) + " (" + Ammo.toColor(powerups.get(i).getValue()) + " room)");
+        }
+
+        out.println();
+
+        int choose = readInt(0, powerups.size() - 1, true);
+
+        return powerups.get(choose);
+    }
+
 
     /**
      * @return a list of only tagback grenades
@@ -1432,7 +1469,7 @@ public class Cli extends ClientGameManager {
      * @return the coordinates read
      * @throws CancelledActionException if the action was cancelled
      */
-    private PlayerPosition readCoordinates() {
+    private PlayerPosition readCoordinates() throws CancelledActionException {
         boolean firstError = true;
         PlayerPosition coord = null;
 
@@ -1476,7 +1513,7 @@ public class Cli extends ClientGameManager {
      * @return the integer read
      * @throws CancelledActionException if the action was cancelled
      */
-    private Integer readInt(int minVal, int maxVal, boolean cancellable) {
+    private Integer readInt(int minVal, int maxVal, boolean cancellable) throws CancelledActionException {
         boolean firstError = true;
         boolean accepted = false;
         Integer choose = Integer.MIN_VALUE;
@@ -1512,7 +1549,7 @@ public class Cli extends ClientGameManager {
      * @return the target
      * @throws CancelledActionException if the action was cancelled
      */
-    private String readBotTarget(ArrayList<UserPlayer> inGamePlayers) {
+    private String readBotTarget(ArrayList<UserPlayer> inGamePlayers) throws CancelledActionException {
         boolean firstError = true;
         boolean accepted = false;
         String chosenTarget;
@@ -1546,7 +1583,7 @@ public class Cli extends ClientGameManager {
      * @return the username read
      * @throws CancelledActionException if the action was cancelled
      */
-    private String readTargetUsername(ArrayList<Player> inGamePlayers, boolean stoppable) {
+    private String readTargetUsername(ArrayList<Player> inGamePlayers, boolean stoppable) throws CancelledActionException {
         boolean firstError = true;
         boolean accepted = false;
         boolean isTerminatorPresent = getGameSerialized().isBotPresent();
@@ -1589,7 +1626,7 @@ public class Cli extends ClientGameManager {
      * @return the room color read
      * @throws CancelledActionException if the action was cancelled
      */
-    private RoomColor readRoomColor() {
+    private RoomColor readRoomColor() throws CancelledActionException {
         boolean firstError = true;
         boolean accepted = false;
         String stringColor;
@@ -1620,7 +1657,7 @@ public class Cli extends ClientGameManager {
      * @return the move decision read
      * @throws CancelledActionException if the action was cancelled
      */
-    private Boolean readMoveDecision() {
+    private Boolean readMoveDecision() throws CancelledActionException {
         boolean firstError = true;
         boolean accepted = false;
         final String BEFORE = "before";

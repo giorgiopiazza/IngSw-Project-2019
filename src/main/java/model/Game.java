@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Random;
 
 public class Game implements Serializable {
+    public static final Random rand = new Random();
     private static final int MAX_KILLSHOT = 8;
     private static final long serialVersionUID = -7643292361816314018L;
 
