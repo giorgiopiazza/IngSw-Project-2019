@@ -246,6 +246,10 @@ public class RoundManager {
     Response handleGranadeUsage(PowerupRequest granadeMessage) {
         Response tempResponse;
 
+        if(granadeMessage.getPowerup().size() > turnManager.getTurnOwner().getPowerups().length) {
+            return buildNegativeResponse("Too many powerups");
+        }
+
         for(Integer index : granadeMessage.getPowerup()) {
             tempResponse = grenadeUsage(index, granadeMessage);
             if(tempResponse.getStatus() == MessageStatus.ERROR) {
@@ -293,10 +297,6 @@ public class RoundManager {
 
         if(index > turnManager.getTurnOwner().getPowerups().length) {
             return buildNegativeResponse("Invalid Powerup Index");
-        }
-
-        if(granadeMessage.getPowerup().size() > turnManager.getTurnOwner().getPowerups().length) {
-            return buildNegativeResponse("Too many powerups!");
         }
 
         chosenGranade = turnManager.getTurnOwner().getPowerups()[index];
@@ -756,7 +756,7 @@ public class RoundManager {
             turnManager.setSecondAction(secondAction);
             gameManager.changeState(PossibleGameState.SCOPE_USAGE);
 
-            return buildScopePositiveResponse("Shoot Action done, shooter can use a Scope");
+            return buildScopePositiveResponse();
         } else if(!turnManager.getDamagedPlayers().isEmpty()){
             gameManager.changeState(PossibleGameState.GRANADE_USAGE);
             turnManager.setMarkedByGrenadePlayer(turnManager.getTurnOwner());
@@ -783,6 +783,10 @@ public class RoundManager {
         UserPlayer turnOwner = turnManager.getTurnOwner();
         ReloadAction reloadAction;
 
+        if(reloadRequest.getWeapons().size() > turnOwner.getWeapons().length) {
+            return buildNegativeResponse("Too many weapons");
+        }
+
         if (turnOwner.getPossibleActions().contains(PossibleAction.RELOAD)) {
             reloadAction = new ReloadAction(turnOwner, reloadRequest);
         } else {
@@ -799,6 +803,8 @@ public class RoundManager {
             return buildNegativeResponse("You are trying to recharge a weapon that is already charged");
         } catch (NotEnoughAmmoException e) {
             return buildNegativeResponse("Not enough ammo to reload");
+        } catch (InvalidActionException e) {
+            return buildNegativeResponse("Incorrect Payment powerups indexes");
         }
 
         // after a reload action a player always passes his turn and the game has to manage the death players
@@ -1151,13 +1157,12 @@ public class RoundManager {
      * Method that builds a {@link MessageStatus NEED_PLAYER_ACTION} {@link Response Response} after a targeting
      * scope can be used by a shooting {@link UserPlayer UserPlayer}
      *
-     * @param reason the reason coming from the {@link ShootAction ShootAction}
      * @return the {@link MessageStatus NEED_PLAYER_ACTION} {@link Response Response} built
      */
-    private Response buildScopePositiveResponse(String reason) {
+    private Response buildScopePositiveResponse() {
         gameManager.sendPrivateUpdates();
         SaveGame.saveGame(gameManager);
-        return new Response(reason, MessageStatus.NEED_PLAYER_ACTION);
+        return new Response("Shoot Action done, shooter can use a Scope", MessageStatus.NEED_PLAYER_ACTION);
     }
 
     /**
