@@ -517,8 +517,8 @@ class CliPrinter {
             out.print(
                     getWeapontTopRow(weaponCards) +
                             addWeaponName(weaponCards) +
-                            addWeaponGrabCost(weaponCards, 1) +
-                            addWeaponGrabCost(weaponCards, 2) +
+                            addWeaponGrabCost(weaponCards, 1, true) +
+                            addWeaponGrabCost(weaponCards, 2, false) +
                             addBaseEffect(weaponCards) +
                             addWeaponEffectDescription(weaponCards, 0, 0, 33) +
                             addWeaponEffectDescription(weaponCards, 0, 33, 66) +
@@ -611,12 +611,19 @@ class CliPrinter {
         return tempOut;
     }
 
-    private static String addWeaponGrabCost(WeaponCard[] weapons, int printAmmo) {
+    private static String addWeaponGrabCost(WeaponCard[] weapons, int printAmmo, boolean firstCost) {
         StringBuilder out = new StringBuilder();
 
         for (WeaponCard weapon : weapons) {
             if (weapon != null) {
-                out.append("║ ").append(addMissingCost(weapon.getCost(), printAmmo)).append("                                ║     ");
+                out.append("║ ").append(addMissingCost(weapon.getCost(), printAmmo));
+
+                if (firstCost) {
+                    out.append(" ").append(getWeaponRechargeStatus(weapon)).append("                           ║     ");
+                } else {
+                    out.append("                                ║     ");
+                }
+
             } else {
                 out.append("                                          ");
             }
@@ -624,6 +631,17 @@ class CliPrinter {
 
         out.append("\n");
         return out.toString();
+    }
+
+    private static String getWeaponRechargeStatus(WeaponCard weaponCard) {
+        switch (weaponCard.status()) {
+            case 0:
+                return "CHAR";
+            case 1:
+                return "UNCH";
+            default:
+                return "SEMI";
+        }
     }
 
     private static String addMissingCost(Ammo[] missingCost, int printAmmo) {

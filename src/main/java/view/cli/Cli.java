@@ -107,7 +107,7 @@ public class Cli extends ClientGameManager {
     }
 
     /**
-     * Asks the connection tpye
+     * Asks the connection type
      */
     private void doConnection() {
         boolean validConnection = false;
@@ -677,7 +677,7 @@ public class Cli extends ClientGameManager {
     @Override
     public void reload() {
         WeaponCard[] playersWeapons = getPlayer().getWeapons();
-        ArrayList<Integer> rechargingWeapons = new ArrayList<>();
+        List<Integer> rechargingWeapons = new ArrayList<>();
         ArrayList<Integer> paymentPowerups = new ArrayList<>();
 
         if (playersWeapons.length == 0) {
@@ -685,18 +685,32 @@ public class Cli extends ClientGameManager {
             return;
         }
 
-        CliPrinter.clearConsole(out);
-        printWeapons(playersWeapons);
-
-        out.println("Choose the weapons you want to reload (-1 to stop choosing). Your ammo are:");
-        printAmmo();
-
         try {
-            for (int i = 0; i < playersWeapons.length; ++i) {
-                int tempChoose = askWeapon(true);
-                if (tempChoose == -1) break;
-                else rechargingWeapons.add(tempChoose);
-            }
+            int tempChoose;
+            do {
+                CliPrinter.clearConsole(out);
+                out.println("Choose the weapons you want to reload (-1 to stop choosing). Your ammo are:");
+                printAmmo();
+                out.println();
+
+                if (!rechargingWeapons.isEmpty()) {
+                    out.println("You are reloading weapons: " + rechargingWeapons
+                            .stream()
+                            .map(Object::toString)
+                            .collect(Collectors.joining(", ")) + ".\n");
+                }
+
+                tempChoose = askWeapon(true);
+                if (tempChoose != -1) {
+                    rechargingWeapons.add(tempChoose);
+                    rechargingWeapons = rechargingWeapons.stream().distinct().collect(Collectors.toList());
+
+                    if (rechargingWeapons.size() == playersWeapons.length) {
+                        tempChoose = -1;
+                    }
+                }
+            } while(tempChoose != -1);
+
 
             if (rechargingWeapons.isEmpty()) {
                 cancelAction();
@@ -713,11 +727,11 @@ public class Cli extends ClientGameManager {
 
         try {
             if (paymentPowerups.isEmpty()) {
-                if (!sendRequest(MessageBuilder.buildReloadRequest(getClientToken(), getPlayer(), rechargingWeapons))) {
+                if (!sendRequest(MessageBuilder.buildReloadRequest(getClientToken(), getPlayer(), new ArrayList<>(rechargingWeapons)))) {
                     promptError(SEND_ERROR, true);
                 }
             } else {
-                if (!sendRequest(MessageBuilder.buildReloadRequest(getClientToken(), getPlayer(), rechargingWeapons, paymentPowerups))) {
+                if (!sendRequest(MessageBuilder.buildReloadRequest(getClientToken(), getPlayer(), new ArrayList<>(rechargingWeapons), paymentPowerups))) {
                     promptError(SEND_ERROR, true);
                 }
             }
@@ -897,7 +911,7 @@ public class Cli extends ClientGameManager {
      * @throws CancelledActionException if the action was cancelled
      */
     private ArrayList<Integer> askPaymentPowerups() throws CancelledActionException {
-        ArrayList<Integer> paymentPowerups = new ArrayList<>();
+        List<Integer> paymentPowerups = new ArrayList<>();
         Integer tempChoose;
 
         printPowerups();
@@ -907,13 +921,14 @@ public class Cli extends ClientGameManager {
             tempChoose = readInt(-1, getPowerups().size(), true);
 
             if (tempChoose == -1) {
-                return paymentPowerups;
+                return new ArrayList<>(paymentPowerups);
             }
 
             paymentPowerups.add(tempChoose);
+            paymentPowerups = paymentPowerups.stream().distinct().collect(Collectors.toList());
         } while (paymentPowerups.size() < getPowerups().size());
 
-        return paymentPowerups;
+        return new ArrayList<>(paymentPowerups);
     }
 
     /**
@@ -980,8 +995,10 @@ public class Cli extends ClientGameManager {
 
             if (target != null) {
                 chosenTargets.add(target);
-            } else if (chosenTargets.size() > 1) {
+            } else if (!chosenTargets.isEmpty()) {
                 return chosenTargets;
+            } else {
+                throw new CancelledActionException();
             }
 
         } while (chosenTargets.size() < maxIntNum);
