@@ -1,4 +1,4 @@
-package controller;
+package network.client;
 
 import enumerations.PlayerColor;
 import enumerations.PossibleAction;

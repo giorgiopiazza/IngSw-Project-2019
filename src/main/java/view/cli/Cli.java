@@ -1,6 +1,6 @@
 package view.cli;
 
-import controller.ClientGameManager;
+import network.client.ClientGameManager;
 import enumerations.*;
 import enumerations.Properties;
 import exceptions.actions.PowerupCardsNotFoundException;
@@ -9,7 +9,6 @@ import exceptions.client.CancelledActionException;
 import exceptions.game.InexistentColorException;
 import exceptions.map.InvalidSpawnColorException;
 import exceptions.utility.InvalidPropertiesException;
-import model.Game;
 import model.GameSerialized;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
@@ -1469,7 +1468,7 @@ public class Cli extends ClientGameManager {
     private void cancelAction(String message) {
         CliPrinter.clearConsole(out);
         out.println(message);
-        reSendActions();
+        makeMove();
     }
 
     /**
@@ -1477,7 +1476,7 @@ public class Cli extends ClientGameManager {
      */
     private void cancelAction() {
         CliPrinter.clearConsole(out);
-        reSendActions();
+        makeMove();
     }
 
     /**

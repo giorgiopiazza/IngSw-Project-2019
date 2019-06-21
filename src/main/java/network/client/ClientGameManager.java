@@ -1,15 +1,13 @@
-package controller;
+package network.client;
 
 import enumerations.*;
 import exceptions.player.ClientRoundManagerException;
 import exceptions.player.PlayerNotFoundException;
-import model.Game;
 import model.GameSerialized;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
 import model.player.Player;
 import model.player.UserPlayer;
-import network.client.*;
 import network.message.*;
 import utility.GameCostants;
 
@@ -21,15 +19,18 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * Handles the game advancement and listen for the reception of messages
+ */
 public abstract class ClientGameManager implements ClientGameManagerListener, ClientUpdateListener, Runnable {
     public static final String SEND_ERROR = "Error while sending the request";
-    public static final String INVALID_STRING = "Invalid String!";
     public static final String ERROR_DIALOG_TITLE = "Error";
+    protected static final String INVALID_STRING = "Invalid String!";
 
-    public static final String TAGBACK_GRENADE = "TAGBACK GRENADE";
     public static final String TELEPORTER = "TELEPORTER";
     public static final String NEWTON = "NEWTON";
-    public static final String TARGETING_SCOPE = "TARGETING SCOPE";
+    protected static final String TAGBACK_GRENADE = "TAGBACK GRENADE";
+    protected static final String TARGETING_SCOPE = "TARGETING SCOPE";
 
     private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
     private final Object gameSerializedLock = new Object(); // handles GameSerialized parallelism
@@ -74,6 +75,64 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
     }
 
+    @Override
+    public void onUpdate(Message message) {
+        switch (message.getContent()) {
+            case PLAYERS_IN_LOBBY:
+                handlePlayersInLobby((LobbyPlayersResponse) message);
+                break;
+
+            case CONNECTION_RESPONSE:
+                handleConnectionResponse((ConnectionResponse) message);
+                break;
+
+            case COLOR_RESPONSE:
+                handleColorResponse((ColorResponse) message);
+                break;
+
+            case VOTE_RESPONSE:
+                handleVoteResponse((GameVoteResponse) message);
+                break;
+
+            case RESPONSE:
+                handleResponse((Response) message);
+                break;
+
+            case GAME_STATE:
+                handleGameStateMessage((GameStateMessage) message);
+                break;
+
+            case READY:
+                handleGameStartMessage((GameStartMessage) message);
+                break;
+
+            case WINNER:
+                handleWinner((WinnersResponse) message);
+                break;
+
+            case RECONNECTION:
+                handleReconnection((ReconnectionMessage) message);
+                break;
+
+            case DISCONNECTION:
+                handleDisconnection((DisconnectionMessage) message);
+                break;
+            case GAME_LOAD:
+                handleGameLoad((GameLoadResponse) message);
+                break;
+            default:
+        }
+    }
+
+    /**
+     * Creates a connection with the server based on user input data
+     *
+     * @param connection type of connection (0 for Socket, 1 for RMI)
+     * @param username   username of the player
+     * @param address    address of the server
+     * @param port       port of the serve
+     * @throws Exception if something goes wrong with the creation of the connection
+     */
     public void createConnection(int connection, String username, String address, int port) throws Exception {
         if (connection == 0) {
             client = new ClientSocket(username, address, port);
@@ -85,6 +144,9 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         startUpdater();
     }
 
+    /**
+     * Closes the connection with the server
+     */
     public void closeConnection() {
         clientUpdater.stop();
         clientUpdater = null;
@@ -97,10 +159,16 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         client = null;
     }
 
+    /**
+     * Starts the updater for listening the reception of messages
+     */
     private void startUpdater() {
         clientUpdater = new ClientUpdater(client, this);
     }
 
+    /**
+     * Called when the game starts. It setups the state game machine
+     */
     private void startGame() {
         roundManager = new ClientRoundManager(isBotPresent);
 
@@ -110,6 +178,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
                 if (isBotPresent) {
                     roundManager.botSpawn();
+                    roundManager.setBotFirstTurn();
                 }
             }
 
@@ -120,6 +189,9 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         newTurn();
     }
 
+    /**
+     * Called when a change of turn owner happen
+     */
     private void newTurn() {
         if (yourTurn) {
             roundManager.beginRound();
@@ -129,7 +201,10 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
     }
 
-    private void makeMove() {
+    /**
+     * Show the client all the possible actions
+     */
+    protected void makeMove() {
         queue.add(() -> displayActions(getPossibleActions()));
     }
 
@@ -138,7 +213,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
      *
      * @param chosenAction action chosen by the user
      */
-    public void doAction(PossibleAction chosenAction) {
+    protected void doAction(PossibleAction chosenAction) {
         Runnable action;
 
         switch (chosenAction) {
@@ -226,59 +301,42 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         queue.add(action);
     }
 
-    @Override
-    public void onUpdate(Message message) {
-        switch (message.getContent()) {
-            case PLAYERS_IN_LOBBY:
-                handlePlayersInLobby((LobbyPlayersResponse) message);
-                break;
-
-            case CONNECTION_RESPONSE:
-                handleConnectionResponse((ConnectionResponse) message);
-                break;
-
-            case COLOR_RESPONSE:
-                handleColorResponse((ColorResponse) message);
-                break;
-
-            case VOTE_RESPONSE:
-                handleVoteResponse((GameVoteResponse) message);
-                break;
-
-            case RESPONSE:
-                handleResponse((Response) message);
-                break;
-
-            case GAME_STATE:
-                handleGameStateMessage((GameStateMessage) message);
-                break;
-
-            case READY:
-                handleGameStartMessage((GameStartMessage) message);
-                break;
-
-            case WINNER:
-                handleWinner((WinnersResponse) message);
-                break;
-
-            case RECONNECTION:
-                handleReconnection((ReconnectionMessage) message);
-                break;
-
-            case DISCONNECTION:
-                handleDisconnection((DisconnectionMessage) message);
-                break;
-            case GAME_LOAD:
-                handleGameLoad((GameLoadResponse) message);
-                break;
-            default:
+    /**
+     * Sends a request to the server
+     *
+     * @param message message to send to the server
+     * @return {@code true} if the message was sent successfully, {@code false} otherwise
+     */
+    public boolean sendRequest(Message message) {
+        if (roundManager != null) {
+            checkChangeStateRequest(message);
         }
+
+        try {
+            client.sendMessage(message);
+        } catch (IOException e) {
+            Logger.getGlobal().severe(e.getMessage());
+            return false;
+        }
+
+        return true;
     }
 
-    private void handlePlayersInLobby(LobbyPlayersResponse message) {
-        queue.add(() -> playersLobbyUpdate(message.getUsers()));
+    /**
+     * Checks if the message have to change the state of the machine in case of positive response
+     *
+     * @param message message to send to the server
+     */
+    private void checkChangeStateRequest(Message message) {
+        noChangeStateRequest = (roundManager.getUserPlayerState() != UserPlayerState.BOT_ACTION && message.getContent() == MessageContent.BOT_ACTION) ||
+                message.getContent() == MessageContent.POWERUP_USAGE;
     }
 
+    /**
+     * Handles the response to the server connection
+     *
+     * @param connectionResponse response received
+     */
     private void handleConnectionResponse(ConnectionResponse connectionResponse) {
         if (connectionResponse.getStatus().equals(MessageStatus.OK)) {
             client.setToken(connectionResponse.getNewToken());
@@ -289,14 +347,38 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         queue.add(() -> connectionResponse(connectionResponse));
     }
 
+    /**
+     * Handles the response to the color choose request
+     *
+     * @param colorResponse response received
+     */
     private void handleColorResponse(ColorResponse colorResponse) {
         queue.add(() -> askColor(colorResponse.getColorList()));
     }
 
+    /**
+     * Handles the vote response
+     *
+     * @param gameVoteResponse response received
+     */
     private void handleVoteResponse(GameVoteResponse gameVoteResponse) {
         queue.add(() -> voteResponse(gameVoteResponse));
     }
 
+    /**
+     * Handles the message of a new player in lobby
+     *
+     * @param message message received
+     */
+    private void handlePlayersInLobby(LobbyPlayersResponse message) {
+        queue.add(() -> playersLobbyUpdate(message.getUsers()));
+    }
+
+    /**
+     * Handles the generic response after a action request
+     *
+     * @param response response received
+     */
     private void handleResponse(Response response) {
         if (!joinedLobby) {
             joinedLobby = response.getStatus() == MessageStatus.OK;
@@ -305,11 +387,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             if (response.getStatus() == MessageStatus.ERROR) {
                 queue.add(() -> responseError(response.getMessage()));
             } else {
-                if (response.getStatus() == MessageStatus.NEED_PLAYER_ACTION) {
-                    roundManager.targetingScope();
-                } else {
-                    nextState();
-                }
+                onPositiveResponse(response);
             }
 
             if (roundManager.getUserPlayerState() != UserPlayerState.END) {
@@ -327,6 +405,11 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
     }
 
+    /**
+     * Handles the update of the game state
+     *
+     * @param gameStateMessage game state update received
+     */
     private void handleGameStateMessage(GameStateMessage gameStateMessage) {
         checkFrenzyMode(gameStateMessage);
 
@@ -339,6 +422,11 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         checkTurnChange(gameStateMessage);
     }
 
+    /**
+     * Handles the game start message
+     *
+     * @param gameStartMessage start message received
+     */
     private void handleGameStartMessage(GameStartMessage gameStartMessage) {
         synchronized (gameSerializedLock) {
             firstPlayer = gameStartMessage.getFirstPlayer();
@@ -350,12 +438,22 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
     }
 
+    /**
+     * Handles the message of end game
+     *
+     * @param winnerResponse winners message received
+     */
     private void handleWinner(WinnersResponse winnerResponse) {
         synchronized (gameSerializedLock) {
             queue.add(() -> notifyGameEnd(winnerResponse.getWinners()));
         }
     }
 
+    /**
+     * Handles a reconnection message
+     *
+     * @param reconnectionMessage reconnection message received
+     */
     private void handleReconnection(ReconnectionMessage reconnectionMessage) {
         turnOwner = "";
         firstTurn = false;
@@ -372,7 +470,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
         checkFrenzyMode(reconnectionMessage.getGameStateMessage());
 
-        roundManager.firstAction();
+        roundManager.reconnection();
 
         synchronized (gameSerializedLock) {
             queue.add(() -> gameStateUpdate(gameSerialized));
@@ -381,10 +479,20 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         checkTurnChange(reconnectionMessage.getGameStateMessage());
     }
 
+    /**
+     * Handles a disconnection message
+     *
+     * @param disconnectionMessage disconnection message received
+     */
     private void handleDisconnection(DisconnectionMessage disconnectionMessage) {
         queue.add(() -> onPlayerDisconnect(disconnectionMessage.getUsername()));
     }
 
+    /**
+     * Handles game load message
+     *
+     * @param gameLoadResponse game load message received
+     */
     private void handleGameLoad(GameLoadResponse gameLoadResponse) {
         turnOwner = "";
         firstTurn = false;
@@ -402,6 +510,27 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         queue.add(this::loadResponse);
     }
 
+    /**
+     * Changes next state of the game machine when a positive response is received
+     *
+     * @param response response received
+     */
+    private void onPositiveResponse(Response response) {
+        if (response.getStatus() == MessageStatus.NEED_PLAYER_ACTION) {
+            roundManager.targetingScope();
+        } else if (roundManager.getUserPlayerState() == UserPlayerState.ENDING_PHASE &&
+                isBotPresent && gameSerialized.getBot().isDead()) {
+            roundManager.botRespawn();
+        } else {
+            nextState();
+        }
+    }
+
+    /**
+     * Checks if the turn owner is changed
+     *
+     * @param stateMessage game state message received
+     */
     private void checkTurnChange(GameStateMessage stateMessage) {
         if (!firstTurn) {
             if (!stateMessage.getTurnOwner().equals(turnOwner)) {
@@ -422,17 +551,24 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
     }
 
+    /**
+     * Changes next state of the game machine when a special action needs to be done
+     *
+     * @param gameStateMessage game state message received
+     */
     private void checkSpecialState(GameStateMessage gameStateMessage) {
         if (gameStateMessage.isGrenadeUsage()) {
             roundManager.grenade();
         } else if (getPlayer().isDead()) {
             roundManager.death();
-        } else if (gameStateMessage.getGameSerialized().isBotPresent() &&
-                gameStateMessage.getGameSerialized().getBot().isDead()) {
-            roundManager.botRespawn();
         }
     }
 
+    /**
+     * Checks if frenzy mode is started and acts consequently
+     *
+     * @param stateMessage game state message received
+     */
     private void checkFrenzyMode(GameStateMessage stateMessage) {
         if (stateMessage.getGameSerialized().getCurrentState() == GameState.FINAL_FRENZY
                 && roundManager.getGameClientState() != GameClientState.FINAL_FRENZY) {
@@ -448,19 +584,21 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
     }
 
+    /**
+     * Handles the change of the current state to the next state
+     */
     private void nextState() {
-        if (noChangeStateRequest) {
+        if (noChangeStateRequest) { // In case of action that don't have to change the state of the game machine (e.g. powerup usage)
             noChangeStateRequest = false;
         } else {
             roundManager.nextState();
         }
     }
 
-    public void reSendActions() {
-        makeMove();
-    }
-
-    public List<PossibleAction> getPossibleActions() {
+    /**
+     * @return a list of possible actions based on the current state of the player
+     */
+    private List<PossibleAction> getPossibleActions() {
         switch (roundManager.getUserPlayerState()) {
             case BOT_SPAWN:
                 return List.of(PossibleAction.SPAWN_BOT);
@@ -498,6 +636,11 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
     }
 
+    /**
+     * Based on the game state returns a list of the normal game possible actions
+     *
+     * @return a list of the normal game possible actions
+     */
     private List<PossibleAction> getGameActions() {
         List<PossibleAction> actions;
 
@@ -511,7 +654,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             actions.add(PossibleAction.POWER_UP);
         }
 
-        if (roundManager.isBotPresent() && !roundManager.hasBotMoved()) {
+        if (roundManager.isBotPresent() && roundManager.isBotCanMove() && !roundManager.hasBotMoved()) {
             actions.add(PossibleAction.BOT_ACTION);
         }
 
@@ -519,12 +662,9 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     }
 
     /**
-     * This method return the possible actions that the player can be in this round.
-     * If in the list is present the PossibleAction.RELOAD, this action is not counted and another can be performed.
-     * If in the list is present the PossibleAction.BOT_ACTION, means that the next move can be the terminator one,
-     * if the round is in the UserPlayerState.SECOND_ACTION state, then the next move is necessarily the terminator one.
+     * Based on the state of the playerboard returns a list of the base three action of the game
      *
-     * @return a list with the possible actions that the player can perform in this round
+     * @return a list of the base three action of the game (MOVE, MOVE and PICK and SHOOT)
      */
     private List<PossibleAction> possibleActions() {
         List<PossibleAction> actions = new ArrayList<>();
@@ -562,29 +702,9 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     }
 
     /**
-     * check if all player except the current player are dead
+     * Returns the final frenzy actions based on who activated the frenzy mode
      *
-     * @return true if all player are dead (except the current player), otherwise false
-     */
-    private boolean allDead() {
-        boolean noOnePlayer;
-
-        int deadPlayers = 0;
-
-        for (Player player : getPlayers()) {
-            if (player.isDead() || player.getPosition() == null) deadPlayers++;
-        }
-
-        noOnePlayer = deadPlayers == getPlayers().size() - 1;
-
-        return noOnePlayer;
-    }
-
-    /**
-     * Returns the final frenzy actions based on who activated the frenzy mode and the position of the player
-     * in the game turn
-     *
-     * @return the list of possible possibleFinalFrenzyActions for {@code that} player
+     * @return the list of possible possible FinalFrenzy Actions
      */
     private List<PossibleAction> possibleFinalFrenzyActions() {
         List<PossibleAction> actions = new ArrayList<>();
@@ -601,6 +721,11 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         return actions;
     }
 
+    /**
+     * Returns the action of the ending turn phase
+     *
+     * @return the list of possible actions of the end of the turn
+     */
     private List<PossibleAction> getEndingActions() {
         List<PossibleAction> actions = new ArrayList<>();
 
@@ -617,6 +742,28 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         return actions;
     }
 
+    /**
+     * Checks if all player except the current player are dead
+     *
+     * @return {@code true} if all player are dead (except the current player), {@code false} otherwise
+     */
+    private boolean allDead() {
+        boolean noOnePlayer;
+
+        int deadPlayers = 0;
+
+        for (Player player : getPlayers()) {
+            if (player.isDead() || player.getPosition() == null) deadPlayers++;
+        }
+
+        noOnePlayer = deadPlayers == getPlayers().size() - 1;
+
+        return noOnePlayer;
+    }
+
+    /**
+     * @return a list of all the players
+     */
     public List<Player> getPlayers() {
         List<Player> players;
 
@@ -627,29 +774,50 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         return players;
     }
 
-    public GameSerialized getGameSerialized() {
+    /**
+     * @return the game state object
+     */
+    protected GameSerialized getGameSerialized() {
         synchronized (gameSerializedLock) {
             return gameSerialized;
         }
     }
 
+    /**
+     * @return the list of player's powerups
+     */
     public List<PowerupCard> getPowerups() {
         synchronized (gameSerializedLock) {
             return gameSerialized.getPowerups();
         }
     }
 
-    public List<WeaponCard> getPlayerWeapons(String username) {
+    /**
+     * Returns the weapon cards of the player passed
+     *
+     * @param username username of the interested player
+     * @return a list of weapon cards of the player
+     */
+    private List<WeaponCard> getPlayerWeapons(String username) {
         synchronized (gameSerializedLock) {
             return gameSerialized.getPlayerWeapons(username);
         }
     }
 
+    /**
+     * @return the player of the client
+     */
     public UserPlayer getPlayer() {
         return (UserPlayer) getPlayerByName(getUsername());
     }
 
-    public Player getPlayerByName(String username) {
+    /**
+     * Returns a player based on the provided username
+     *
+     * @param username username of the interested player
+     * @return the player requested
+     */
+    protected Player getPlayerByName(String username) {
         synchronized (gameSerializedLock) {
             Player player;
 
@@ -668,39 +836,31 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
     }
 
-    public String getFirstPlayer() {
-        return firstPlayer;
-    }
-
-    public boolean sendRequest(Message message) {
-        if (roundManager != null) {
-            checkChangeStateRequest(message);
-        }
-
-        try {
-            client.sendMessage(message);
-        } catch (IOException e) {
-            Logger.getGlobal().severe(e.getMessage());
-            return false;
-        }
-
-        return true;
-    }
-
-    private void checkChangeStateRequest(Message message) {
-        noChangeStateRequest = (roundManager.getUserPlayerState() != UserPlayerState.BOT_ACTION && message.getContent() == MessageContent.BOT_ACTION) ||
-                message.getContent() == MessageContent.POWERUP_USAGE;
-    }
-
-    public String getClientToken() {
-        return client.getToken();
-    }
-
+    /**
+     * @return the client username
+     */
     public String getUsername() {
         return client.getUsername();
     }
 
+    /**
+     * @return the client toke
+     */
+    public String getClientToken() {
+        return client.getToken();
+    }
+
+    /**
+     * @return the turn owner
+     */
     public String getTurnOwner() {
         return turnOwner;
+    }
+
+    /**
+     * @return the username of the first player of the game
+     */
+    public String getFirstPlayer() {
+        return firstPlayer;
     }
 }

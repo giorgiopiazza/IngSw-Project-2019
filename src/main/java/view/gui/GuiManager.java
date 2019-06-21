@@ -1,6 +1,6 @@
 package view.gui;
 
-import controller.ClientGameManager;
+import network.client.ClientGameManager;
 import enumerations.PlayerColor;
 import enumerations.PossibleAction;
 import javafx.application.Platform;
