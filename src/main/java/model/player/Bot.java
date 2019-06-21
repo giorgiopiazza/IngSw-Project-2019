@@ -2,11 +2,12 @@ package model.player;
 
 import enumerations.PlayerColor;
 import model.Game;
+import utility.GameCostants;
 
 public class Bot extends Player {
     private boolean spawnTurn;
     public Bot(PlayerColor color, PlayerBoard playerBoard) {
-        super(Game.BOT, color, playerBoard);
+        super(GameCostants.BOT_NAME, color, playerBoard);
     }
 
     public Bot(Bot other) {

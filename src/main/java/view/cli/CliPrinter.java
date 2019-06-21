@@ -29,7 +29,7 @@ class CliPrinter {
      * @param gameSerialized status of the game
      */
     static void printPlayerBoards(AdrenalinePrintStream out, GameSerialized gameSerialized) {
-        for (Player player : gameSerialized.getPlayers()) {
+        for (Player player : gameSerialized.getAllPlayers()) {
             printPlayerBoard(out, player, gameSerialized);
         }
     }
@@ -113,7 +113,7 @@ class CliPrinter {
     private static Map<String, PlayerColor> getPlayerColorMap(GameSerialized gameSerialized) {
         Map<String, PlayerColor> playerColorMap = new HashMap<>();
 
-        for (Player player : gameSerialized.getPlayers()) {
+        for (Player player : gameSerialized.getAllPlayers()) {
             playerColorMap.put(player.getUsername(), player.getColor());
         }
 

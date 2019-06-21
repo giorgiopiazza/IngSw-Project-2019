@@ -72,10 +72,10 @@ public class GameManager implements TimerRunListener, Serializable {
         this.gameState = savedGameManager.gameState;
         this.lobby = null;
         this.gameInstance = Game.getInstance();
-        this.roundManager = new RoundManager(savedGameManager);
         this.shootParameters = savedGameManager.shootParameters;
 
         this.lobbyTimeoutTime = lobbyTimeoutTime * 1000;
+        this.roundManager = new RoundManager(this);
     }
 
     /**
@@ -296,6 +296,9 @@ public class GameManager implements TimerRunListener, Serializable {
             if (gameEnded) {
                 return new Response("Player disconnected, game has now less then 3 players and then is ending...", MessageStatus.OK);
             } else if (getRoundManager().getTurnManager().getTurnOwner().getUsername().equals(receivedConnectionMessage.getSenderUsername())) {    // if game hasn't ended I check if the disconnected player is the turn owner, if so I change the state, otherwise nothing happens
+                if(roundManager.getTurnManager().isFirstTurn()) {
+                    return roundManager.handleRandomSpawn();
+                }
                 roundManager.handlePassAction();
                 return new Response("Turn Owner disconnected, turn is passed to next Player", MessageStatus.OK);
             } else {
@@ -664,6 +667,11 @@ public class GameManager implements TimerRunListener, Serializable {
         // then I can start adding players to the game with the color specified in their Lobby Message
         for (LobbyMessage player : lobby.getInLobbyPlayers()) {
             gameInstance.addPlayer(new UserPlayer(player.getSenderUsername(), player.getChosenColor(), new PlayerBoard()));
+        }
+
+        // added the players I can add the terminator, if present
+        if(gameInstance.isTerminatorPresent()) {
+            gameInstance.buildTerminator();
         }
 
         // in the end I set the map and the number of Skulls chosen

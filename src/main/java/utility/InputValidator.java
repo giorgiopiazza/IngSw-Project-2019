@@ -12,17 +12,17 @@ import java.util.List;
 public class InputValidator {
     private static final int MAX_POWERUPS = 3;
 
-    private InputValidator () {
+    private InputValidator() {
         throw new IllegalStateException("Utility class");
     }
 
     public static boolean validatePlayerUsername(List<UserPlayer> players, Message checkingMessage) {
-        if(!checkBaseMessage(checkingMessage)) {
+        if (!checkBaseMessage(checkingMessage)) {
             return false;
         }
 
-        for(UserPlayer player : players) {
-            if(player.getUsername().equals(checkingMessage.getSenderUsername())) {
+        for (UserPlayer player : players) {
+            if (player.getUsername().equals(checkingMessage.getSenderUsername())) {
                 return true;
             }
         }
@@ -96,7 +96,7 @@ public class InputValidator {
             return false;
         }
 
-        if(message.getSenderUsername().equals(Game.BOT) || message.getSenderUsername().equals(Game.GOD)) {
+        if (message.getSenderUsername().equalsIgnoreCase(GameCostants.GOD_NAME) || message.getSenderUsername().equalsIgnoreCase(GameCostants.BOT_NAME)) {
             return false;
         }
 
@@ -207,9 +207,9 @@ public class InputValidator {
             return false;
         }
 
-        if(!reloadRequest.getWeapons().isEmpty()) {
-            for(Integer index : reloadRequest.getWeapons()) {
-                if(index < 0 || index > 3) {
+        if (!reloadRequest.getWeapons().isEmpty()) {
+            for (Integer index : reloadRequest.getWeapons()) {
+                if (index < 0 || index > 3) {
                     return false;
                 }
             }

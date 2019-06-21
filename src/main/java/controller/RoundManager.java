@@ -20,6 +20,7 @@ import model.player.Bot;
 import model.player.Player;
 import model.player.UserPlayer;
 import network.message.*;
+import utility.GameCostants;
 import utility.persistency.SaveGame;
 
 import java.util.*;
@@ -99,7 +100,6 @@ public class RoundManager {
         if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.SPAWN_BOT)) {
             // terminator does not still exist!
             try {
-                gameInstance.buildTerminator();
                 gameInstance.spawnTerminator(gameInstance.getGameMap().getSpawnSquare(spawnRequest.getSpawnColor()));
             } catch (InvalidSpawnColorException e) {
                 return buildNegativeResponse("Invalid color for spawning!");
@@ -151,7 +151,7 @@ public class RoundManager {
 
         // every player must see the powerup the spawning one choosed to spawn
         gameManager.sendBroadcastMessage(new BroadcastSpawningPowerup(spawningPowerup));
-        turnManager.getTurnOwner().changePlayerState(PossiblePlayerState.PLAYING);
+        turnOwner.changePlayerState(PossiblePlayerState.PLAYING);
         setInitialActions();
         return buildPositiveResponse("Player spawned with chosen powerup");
     }
@@ -307,7 +307,7 @@ public class RoundManager {
 
         // now I can set the target for the usage of the TAGBACK GRENADE
         if(gameInstance.isTerminatorPresent() && turnManager.getMarkingTerminator()) {
-            granadeMessage.setGrenadeTarget(Game.BOT);
+            granadeMessage.setGrenadeTarget(GameCostants.BOT_NAME);
         } else {
             granadeMessage.setGrenadeTarget(turnManager.getMarkedByGrenadePlayer().getUsername());
         }
@@ -756,7 +756,7 @@ public class RoundManager {
             turnManager.setSecondAction(secondAction);
             gameManager.changeState(PossibleGameState.SCOPE_USAGE);
 
-            return buildPositiveResponse("Shoot Action done, shooter can use a Scope");
+            return buildScopePositiveResponse("Shoot Action done, shooter can use a Scope");
         } else if(!turnManager.getDamagedPlayers().isEmpty()){
             gameManager.changeState(PossibleGameState.GRANADE_USAGE);
             turnManager.setMarkedByGrenadePlayer(turnManager.getTurnOwner());
@@ -1074,6 +1074,51 @@ public class RoundManager {
     }
 
     /**
+     * Method that handles the spawn of a {@link UserPlayer UserPlayer} while he disconnects from the game on the very
+     * first round. If the {@link Bot Bot} is present his spawn is also managed
+     *
+     * @return always a positive response because this method always works alone
+     */
+    Response handleRandomSpawn() {
+        int randomIndex = Game.rand.nextInt(1);
+
+        PowerupCard spawningPowerup = getTurnManager().getTurnOwner().getPowerups()[randomIndex];
+        RoomColor spawnColor = null;
+
+        if (getTurnManager().getTurnOwner().getPossibleActions().contains(PossibleAction.SPAWN_BOT)) {
+            // terminator does not still exist!
+            try {
+                gameInstance.buildTerminator();
+                gameInstance.spawnTerminator(gameInstance.getGameMap().getSpawnSquare(RoomColor.getRandomSpawnColor()));
+            } catch (InvalidSpawnColorException e) {
+                // never reached random color is always a correct color
+            }
+        }
+
+        if(getTurnManager().getTurnOwner().getPossibleActions().contains(PossibleAction.CHOOSE_SPAWN)) {
+            try {
+                spawnColor = Ammo.toColor(spawningPowerup.getValue());
+                getTurnManager().getTurnOwner().discardPowerupByIndex(randomIndex);
+            } catch (EmptyHandException e) {
+                // never reached, in first spawn state every player always have two powerups!
+            }
+
+            try {
+                gameInstance.spawnPlayer(getTurnManager().getTurnOwner(), gameInstance.getGameMap().getSpawnSquare(spawnColor));
+            } catch (InvalidSpawnColorException e) {
+                // never reached, a powerup has always a corresponding spawning color!
+            }
+
+            // every player must see the powerup the spawning one choosed to spawn
+            gameManager.sendBroadcastMessage(new BroadcastSpawningPowerup(spawningPowerup));
+            getTurnManager().getTurnOwner().changePlayerState(PossiblePlayerState.PLAYING);
+            setInitialActions();
+        }
+
+        return buildPositiveResponse("Player randomly spawned because disconnected while very first round");
+    }
+
+    /**
      * Method that builds a Positive {@link Response Response}, that has {@link MessageStatus MessageStatus.OK}
      * For real this method is the most important one of this Class, infact, it also:
      * (i) send the new Game status to each player
@@ -1100,6 +1145,19 @@ public class RoundManager {
         gameManager.sendGrenadePrivateUpdates();
         SaveGame.saveGame(gameManager);
         return new Response(reason, MessageStatus.OK);
+    }
+
+    /**
+     * Method that builds a {@link MessageStatus NEED_PLAYER_ACTION} {@link Response Response} after a targeting
+     * scope can be used by a shooting {@link UserPlayer UserPlayer}
+     *
+     * @param reason the reason coming from the {@link ShootAction ShootAction}
+     * @return the {@link MessageStatus NEED_PLAYER_ACTION} {@link Response Response} built
+     */
+    private Response buildScopePositiveResponse(String reason) {
+        gameManager.sendPrivateUpdates();
+        SaveGame.saveGame(gameManager);
+        return new Response(reason, MessageStatus.NEED_PLAYER_ACTION);
     }
 
     /**

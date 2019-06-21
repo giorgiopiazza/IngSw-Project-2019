@@ -9,6 +9,7 @@ import exceptions.client.CancelledActionException;
 import exceptions.game.InexistentColorException;
 import exceptions.map.InvalidSpawnColorException;
 import exceptions.utility.InvalidPropertiesException;
+import model.Game;
 import model.GameSerialized;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
@@ -77,7 +78,6 @@ public class Cli extends ClientGameManager {
      * Asks the username
      */
     private String askUsername() {
-        boolean validUsername = false;
         boolean firstError = true;
         String username = null;
 
@@ -87,20 +87,19 @@ public class Cli extends ClientGameManager {
             out.print(">>> ");
 
             if (in.hasNextLine()) {
-                username = in.nextLine();
+                final String currentUsername = in.nextLine();
 
-                if (username.equals("") ||
-                        username.equalsIgnoreCase("god") ||
-                        username.equalsIgnoreCase("bot")) {
+                if (currentUsername.equals("") ||
+                        GameCostants.FORBIDDEN_USERNAME.stream().anyMatch(u -> u.equalsIgnoreCase(currentUsername))) {
                     firstError = promptInputError(firstError, "Invalid username!");
                 } else {
-                    validUsername = true;
+                    username = currentUsername;
                 }
             } else {
                 in.nextLine();
                 firstError = promptInputError(firstError, INVALID_STRING);
             }
-        } while (!validUsername);
+        } while (username == null);
 
         CliPrinter.clearConsole(out);
         return username;
@@ -419,7 +418,7 @@ public class Cli extends ClientGameManager {
             }
         } while (!correctColor);
 
-        if (!sendRequest(MessageBuilder.buildTerminatorSpawnRequest(getClientToken(), getGameSerialized().getBot(), gameMap.getSquare(botSpawnPosition)))) {
+        if (!sendRequest(MessageBuilder.buildTerminatorSpawnRequest(getPlayer(), getClientToken(), gameMap.getSquare(botSpawnPosition)))) {
             promptError(SEND_ERROR, true);
         }
     }
@@ -599,7 +598,7 @@ public class Cli extends ClientGameManager {
             return;
         }
 
-        if (!sendRequest(MessageBuilder.buildUseTerminatorRequest(getClientToken(), getGameSerialized().getBot(), newPos, (UserPlayer) getPlayerByName(target)))) {
+        if (!sendRequest(MessageBuilder.buildUseTerminatorRequest(getPlayer(), getClientToken(), newPos, (UserPlayer) getPlayerByName(target)))) {
             promptError(SEND_ERROR, true);
         }
     }
@@ -1498,7 +1497,7 @@ public class Cli extends ClientGameManager {
 
             String line = in.nextLine();
 
-            if (line.equalsIgnoreCase(CANCEL_KEYWORD)) {
+            if (line.equalsIgnoreCase(GameCostants.CANCEL_KEYWORD)) {
                 throw new CancelledActionException();
             }
 
@@ -1540,7 +1539,7 @@ public class Cli extends ClientGameManager {
             out.print(">>> ");
             String line = in.nextLine();
 
-            if (cancellable && line.equalsIgnoreCase(CANCEL_KEYWORD)) {
+            if (cancellable && line.equalsIgnoreCase(GameCostants.CANCEL_KEYWORD)) {
                 throw new CancelledActionException();
             }
 
@@ -1576,7 +1575,7 @@ public class Cli extends ClientGameManager {
             out.print(">>> ");
             chosenTarget = in.nextLine();
 
-            if (chosenTarget.equals(CANCEL_KEYWORD)) {
+            if (chosenTarget.equals(GameCostants.CANCEL_KEYWORD)) {
                 throw new CancelledActionException();
             } else if (!chosenTarget.equals("bot")) { // no one can shoot itself!
                 final String target = chosenTarget;
@@ -1613,7 +1612,7 @@ public class Cli extends ClientGameManager {
 
             chosenTarget = in.nextLine().trim();
 
-            if (chosenTarget.equalsIgnoreCase(CANCEL_KEYWORD)) {
+            if (chosenTarget.equalsIgnoreCase(GameCostants.CANCEL_KEYWORD)) {
                 throw new CancelledActionException();
             }
 
@@ -1654,7 +1653,7 @@ public class Cli extends ClientGameManager {
             out.print(">>> ");
             stringColor = in.nextLine();
 
-            if (stringColor.equalsIgnoreCase(CANCEL_KEYWORD)) {
+            if (stringColor.equalsIgnoreCase(GameCostants.CANCEL_KEYWORD)) {
                 throw new CancelledActionException();
             }
 
@@ -1687,7 +1686,7 @@ public class Cli extends ClientGameManager {
             out.print(">>> ");
             stringDecision = in.nextLine();
 
-            if (stringDecision.equalsIgnoreCase(CANCEL_KEYWORD)) {
+            if (stringDecision.equalsIgnoreCase(GameCostants.CANCEL_KEYWORD)) {
                 throw new CancelledActionException();
             } else if (stringDecision.equalsIgnoreCase(BEFORE)) {
                 finalDecision = true;

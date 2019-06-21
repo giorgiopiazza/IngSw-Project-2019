@@ -13,6 +13,7 @@ import javafx.stage.Stage;
 import model.Game;
 import network.client.Client;
 import network.message.ConnectionResponse;
+import utility.GameCostants;
 import utility.ServerAddressValidator;
 
 import java.net.URL;
@@ -86,13 +87,12 @@ public class ConnectionSceneController implements Initializable {
     }
 
     private void onConnectionButtonClick(int connection) {
-        String username = usernameField.getText();
-        String address = addressField.getText();
-        String port = portField.getText();
+        final String username = usernameField.getText();
+        final String address = addressField.getText();
+        final String port = portField.getText();
 
-        boolean isUsernameValid = !username.equalsIgnoreCase(Game.GOD) &&
-                !username.equalsIgnoreCase(Game.BOT) &&
-                !username.equals("");
+        boolean isUsernameValid = !username.equals("") &&
+                GameCostants.FORBIDDEN_USERNAME.stream().noneMatch(u -> u.equalsIgnoreCase(username));
 
         boolean isAddressValid = ServerAddressValidator.isAddressValid(address);
 
