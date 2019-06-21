@@ -7,7 +7,9 @@ import model.player.UserPlayer;
 import network.message.*;
 import network.server.Server;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class InputValidator {
     private static final int MAX_POWERUPS = 3;
@@ -114,6 +116,10 @@ public class InputValidator {
                     return false;
                 }
             }
+
+            if(!checkDuplicatesInArguments(effectRequest.getTargetPlayersUsername())) {
+                return false;
+            }
         }
 
         if (!effectRequest.getTargetPlayersMovePositions().isEmpty()) {
@@ -134,6 +140,8 @@ public class InputValidator {
                     return false;
                 }
             }
+
+            return checkDuplicatesInArguments(actionRequest.getPaymentPowerups());
         }
 
         return true;
@@ -213,8 +221,29 @@ public class InputValidator {
                     return false;
                 }
             }
+
+            return checkDuplicatesInArguments(reloadRequest.getWeapons());
         } else {
             return false;
+        }
+    }
+
+    private static boolean checkDuplicatesInArguments(ArrayList<?> checkingList) {
+        List<?> distinctList = checkingList.stream().distinct().collect(Collectors.toList());
+        return distinctList.size() == checkingList.size();
+    }
+
+    public static boolean validateIndexes(ActionRequest actionRequest, UserPlayer turnOwner) {
+        if(!actionRequest.getPaymentPowerups().isEmpty()) {
+            if(actionRequest.getPaymentPowerups().size() > turnOwner.getPowerups().length) {
+                return false;
+            }
+
+            for(Integer index : actionRequest.getPaymentPowerups()) {
+                if(index > turnOwner.getPowerups().length - 1) {
+                    return false;
+                }
+            }
         }
 
         return true;

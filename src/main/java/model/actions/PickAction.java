@@ -62,6 +62,10 @@ public class PickAction implements Action {
             throw new InvalidActionException();
         }
 
+        if(!InputValidator.validateIndexes(pickRequest, actingPlayer)) {
+            throw new InvalidActionException();
+        }
+
         int movingDistance = actingPlayer.getPosition().distanceOf(movingPos);
         int maxMove;
 

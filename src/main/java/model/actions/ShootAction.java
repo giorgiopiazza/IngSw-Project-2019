@@ -52,6 +52,10 @@ public class ShootAction implements Action {
             throw new InvalidActionException();
         }
 
+        if(!InputValidator.validateIndexes(shootRequest, actingPlayer)) {
+            throw new InvalidActionException();
+        }
+
         // moving validation
         int movingDistance = actingPlayer.getPosition().distanceOf(movingPos);
         switch (actionChosen) {
