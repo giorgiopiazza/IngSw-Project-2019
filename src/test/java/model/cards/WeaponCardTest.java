@@ -320,8 +320,80 @@ class WeaponCardTest {
     }
 
     @Test
-    void thor() {
+    void thor() throws MaxCardsInHandException, NotEnoughAmmoException, WeaponNotChargedException, WeaponAlreadyChargedException, InvalidActionException {
         WeaponCard thor = getWeaponByName("T.H.O.R.");
+        thor.setStatus(full);
+
+        shooter.addWeapon(thor);
+        shooter.setPosition(new PlayerPosition(0,0));
+        shooter.addPowerup(new PowerupCard("TAGBACK GRENADE", "/img/powerups/venom_yellow.png", BLUE, null));
+        shooter.addPowerup(new PowerupCard("TAGBACK GRENADE", "/img/powerups/venom_yellow.png", BLUE, null));
+
+        target1.setPosition(new PlayerPosition(0,2));
+        target2.setPosition(new PlayerPosition(1,2));
+        target3.setPosition(new PlayerPosition(1,3));
+
+        userTarget.add(target1.getUsername());
+        userTarget.add(target2.getUsername());
+        userTarget.add(target3.getUsername());
+
+        ArrayList<Integer> indexes = new ArrayList<>();
+        indexes.add(0);
+        indexes.add(1);
+
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 2, null);
+        builder = builder.targetPlayersUsernames(userTarget);
+        builder = builder.paymentPowerups(indexes);
+
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.SHOOT, request);
+
+        assertTrue(action.validate());
+        action.execute();
+
+        assertEquals(2, target1.getPlayerBoard().getDamageCount());
+        assertEquals(0, target1.getPlayerBoard().getMarkCount());
+
+        assertEquals(1, target2.getPlayerBoard().getDamageCount());
+        assertEquals(0, target2.getPlayerBoard().getMarkCount());
+
+        assertEquals(2, target3.getPlayerBoard().getDamageCount());
+        assertEquals(0, target3.getPlayerBoard().getMarkCount());
+    }
+
+    @Test
+    void plasmaGun() throws MaxCardsInHandException, NotEnoughAmmoException, WeaponNotChargedException, WeaponAlreadyChargedException, InvalidActionException {
+        WeaponCard plasmaGun = getWeaponByName("Plasma Gun");
+        plasmaGun.setStatus(full);
+
+        shooter.addWeapon(plasmaGun);
+        shooter.setPosition(new PlayerPosition(0,0));
+        shooter.addPowerup(new PowerupCard("TAGBACK GRENADE", "/img/powerups/venom_yellow.png", BLUE, null));
+
+        target1.setPosition(new PlayerPosition(0,0));
+        target2.setPosition(new PlayerPosition(2,1));
+        target3.setPosition(new PlayerPosition(0,0));
+
+        userTarget.add(target2.getUsername());
+
+        ArrayList<Integer> indexes = new ArrayList<>();
+        indexes.add(0);
+
+        // shooter can see the target
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 3, null);
+        builder = builder.targetPlayersUsernames(userTarget);
+        builder = builder.paymentPowerups(indexes);
+        builder = builder.moveSenderFirst(true);
+        builder = builder.senderMovePosition(new PlayerPosition(1,1));
+
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.SHOOT, request);
+
+        assertTrue(action.validate());
+        action.execute();
+
+        assertEquals(3, target2.getPlayerBoard().getDamageCount());
+        assertEquals(0, target2.getPlayerBoard().getMarkCount());
     }
 
     WeaponCard getWeaponByName(String name) {
