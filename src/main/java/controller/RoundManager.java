@@ -98,7 +98,6 @@ public class RoundManager {
      */
     Response handleTerminatorFirstSpawn(TerminatorSpawnRequest spawnRequest) {
         if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.SPAWN_BOT)) {
-            // terminator does not still exist!
             try {
                 gameInstance.spawnTerminator(gameInstance.getGameMap().getSpawnSquare(spawnRequest.getSpawnColor()));
             } catch (InvalidSpawnColorException e) {
@@ -587,7 +586,7 @@ public class RoundManager {
             return buildNegativeResponse("Too many powerups!");
         }
 
-        if (powerupRequest.getPowerup().get(0) < 0 || powerupRequest.getPowerup().get(0) > turnManager.getTurnOwner().getPowerups().length) {
+        if (powerupRequest.getPowerup().get(0) < 0 || powerupRequest.getPowerup().get(0) > turnManager.getTurnOwner().getPowerups().length - 1) {
             return buildNegativeResponse("Invalid Powerup index!");
         }
 
@@ -959,8 +958,9 @@ public class RoundManager {
             spawnPowerup = turnOwner.getPowerups()[powerupIndex];
             try {
                 turnOwner.discardPowerup(spawnPowerup);
-            } catch (EmptyHandException e) {
-                // can never occur! We have just verified that the turnOwner has this powerup!
+                turnOwner.addPowerup(spawnPowerup);
+            } catch (MaxCardsInHandException | EmptyHandException e) {
+              // never happen at this point
             }
         }
         spawnColor = Ammo.toColor(spawnPowerup.getValue());
@@ -1084,25 +1084,24 @@ public class RoundManager {
      * Method that handles the spawn of a {@link UserPlayer UserPlayer} while he disconnects from the game on the very
      * first round. If the {@link Bot Bot} is present his spawn is also managed
      *
-     * @return always a positive response because this method always works alone
+     * @param spawnPlayer if true the {@link UserPlayer UserPlayer} hasn't spawned yet
+     * @param spawnTerminator if true the {@link Bot Bot} hasn't spawned yet
      */
-    Response handleRandomSpawn() {
+    void handleRandomSpawn(boolean spawnPlayer, boolean spawnTerminator) {
         int randomIndex = Game.rand.nextInt(1);
 
         PowerupCard spawningPowerup = getTurnManager().getTurnOwner().getPowerups()[randomIndex];
         RoomColor spawnColor = null;
 
-        if (getTurnManager().getTurnOwner().getPossibleActions().contains(PossibleAction.SPAWN_BOT)) {
-            // terminator does not still exist!
+        if (spawnTerminator && getTurnManager().getTurnOwner().getPossibleActions().contains(PossibleAction.SPAWN_BOT)) {
             try {
-                gameInstance.buildTerminator();
                 gameInstance.spawnTerminator(gameInstance.getGameMap().getSpawnSquare(RoomColor.getRandomSpawnColor()));
             } catch (InvalidSpawnColorException e) {
                 // never reached random color is always a correct color
             }
         }
 
-        if(getTurnManager().getTurnOwner().getPossibleActions().contains(PossibleAction.CHOOSE_SPAWN)) {
+        if(spawnPlayer && getTurnManager().getTurnOwner().getPossibleActions().contains(PossibleAction.CHOOSE_SPAWN)) {
             try {
                 spawnColor = Ammo.toColor(spawningPowerup.getValue());
                 getTurnManager().getTurnOwner().discardPowerupByIndex(randomIndex);
@@ -1121,8 +1120,6 @@ public class RoundManager {
             getTurnManager().getTurnOwner().changePlayerState(PossiblePlayerState.PLAYING);
             setInitialActions();
         }
-
-        return buildPositiveResponse("Player randomly spawned because disconnected while very first round");
     }
 
     /**

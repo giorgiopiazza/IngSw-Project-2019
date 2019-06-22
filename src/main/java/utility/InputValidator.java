@@ -102,11 +102,7 @@ public class InputValidator {
             return false;
         }
 
-        if (message.getContent() == null) {
-            return false;
-        }
-
-        return message.getToken() != null;
+        return message.getContent() != null;
     }
 
     private static boolean checkBaseEffect(EffectRequest effectRequest) {
