@@ -59,6 +59,22 @@
     visibility: hidden;
 }
 
+.playerInfo {
+    visibility: hidden;
+}
+
+HBox.playerInfo {
+    -fx-padding: 10px;
+}
+
+VBox.playerInfo {
+    -fx-padding: 10px;
+}
+
+.playerInfoZoomEffect {
+    -fx-effect: dropshadow(gaussian, #222222, 15, 0.2, 0, 0);
+}
+
 .weaponZoomImageBlue {
     -fx-effect: dropshadow(gaussian, #536DFE, 15, 0.2, 0, 0);
 }

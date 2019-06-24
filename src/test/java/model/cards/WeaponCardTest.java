@@ -17,14 +17,11 @@ import model.cards.weaponstates.SemiChargedWeapon;
 import model.cards.weaponstates.UnchargedWeapon;
 import model.cards.weaponstates.WeaponState;
 import model.player.*;
-import network.message.EffectRequest;
 import network.message.ShootRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import utility.WeaponParser;
 
-import java.io.File;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 

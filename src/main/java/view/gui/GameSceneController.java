@@ -36,6 +36,8 @@ public class GameSceneController implements Initializable {
     private Map<String, Ammo> weaponColor;
 
     @FXML
+    FlowPane playerInfo;
+    @FXML
     Pane mainPane;
     @FXML
     StackPane boardArea;
@@ -72,7 +74,6 @@ public class GameSceneController implements Initializable {
     @FXML
     ImageView weaponZoomImage;
 
-
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         guiManager = GuiManager.getInstance();
@@ -91,8 +92,15 @@ public class GameSceneController implements Initializable {
 
         setPlayerIcons(gameSerialized);
         bindWeaponZoom();
+        bindPlayerInfoZoom();
 
         updateMap(gameSerialized);
+    }
+
+    private void bindPlayerInfoZoom() {
+        for (ImageView playerImage : playerFigures) {
+            playerImage.addEventHandler(MouseEvent.MOUSE_CLICKED, this::showPlayerInfo);
+        }
     }
 
     private void setPlayerIcons(GameSerialized gameSerialized) {
@@ -346,6 +354,11 @@ public class GameSceneController implements Initializable {
 
             actionList.getChildren().add(imageView);
         }
+    }
+
+    public void showPlayerInfo(Event event) {
+        ImageView playerIcon = (ImageView) event.getTarget();
+        playerIcon.getImage().getUrl();
     }
 
     private String getActionIDFromPossibleAction(PossibleAction possibleAction) {
