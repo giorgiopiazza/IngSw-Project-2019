@@ -14,6 +14,8 @@ import utility.MoveTimer;
 import utility.persistency.SaveGame;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
@@ -131,8 +133,11 @@ public class Server implements Runnable {
     }
 
     private void initLogger() {
+        Date date = GregorianCalendar.getInstance().getTime();
+        DateFormat dateFormat = new SimpleDateFormat("dd-mm_HH:mm:ss");
+
         try {
-            FileHandler fh = new FileHandler("server.log");
+            FileHandler fh = new FileHandler("server-" + dateFormat.format(date) + ".log");
             fh.setFormatter(new SimpleFormatter());
 
             LOGGER.addHandler(fh);
