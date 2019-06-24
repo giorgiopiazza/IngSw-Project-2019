@@ -12,8 +12,9 @@ import network.message.*;
 import utility.GameCostants;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.FileHandler;
@@ -21,8 +22,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.stream.Collectors;
-
-import java.util.UUID;
 
 /**
  * Handles the game advancement and listen for the reception of messages
@@ -67,8 +66,11 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
         joinedLobby = false;
 
+        Date date = GregorianCalendar.getInstance().getTime();
+        DateFormat dateFormat = new SimpleDateFormat("dd-mm_HH:mm:ss");
+
         try {
-            FileHandler fh = new FileHandler("client-" + UUID.randomUUID().toString() + ".log");
+            FileHandler fh = new FileHandler("client-" + dateFormat.format(date) + ".log");
             fh.setFormatter(new SimpleFormatter());
             LOGGER.setUseParentHandlers(false);
             LOGGER.addHandler(fh);

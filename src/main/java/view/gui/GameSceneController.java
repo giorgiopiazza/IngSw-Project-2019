@@ -332,6 +332,10 @@ public class GameSceneController implements Initializable {
         for (ImageView ammotile : ammoTiles) {
             ammotile.opacityProperty().setValue(value);
         }
+
+        for (ImageView playerFigure : playerFigures) {
+            playerFigure.opacityProperty().setValue(value);
+        }
     }
 
     void onError(String error) {
