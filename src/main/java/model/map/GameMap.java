@@ -62,6 +62,7 @@ public class GameMap implements Serializable {
 
     private static final long serialVersionUID = 1887000392810101907L;
 
+    private int mapID;
     private Square[][] rooms;
     private String imagePath;
 
@@ -105,11 +106,13 @@ public class GameMap implements Serializable {
 
         this.rooms = map;
         this.imagePath = mapObject.get("image").getAsString();
+        this.mapID = mapType;
     }
 
     public GameMap(@NotNull GameMap gameMap) {
         this.rooms = gameMap.rooms;
         this.imagePath = gameMap.imagePath;
+        this.mapID = gameMap.mapID;
     }
 
     private static void fillMap(JsonArray matrix, Square[][] map) {
@@ -316,6 +319,10 @@ public class GameMap implements Serializable {
         }
 
         return nullCounter;
+    }
+
+    public int getMapID() {
+        return mapID;
     }
 
     @Override

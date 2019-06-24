@@ -34,4 +34,8 @@ public class CardSquare extends Square {
         this.ammoTile = ammoTile;
         this.hasAmmoTile = true;
     }
+
+    public AmmoTile getAmmoTile() {
+        return ammoTile;
+    }
 }

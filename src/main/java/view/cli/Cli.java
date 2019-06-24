@@ -20,33 +20,21 @@ import model.player.*;
 import network.message.*;
 import utility.*;
 
-import java.io.IOException;
 import java.util.*;
-import java.util.logging.FileHandler;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 import java.util.stream.Collectors;
 
 import static java.util.logging.Level.INFO;
 
 public class Cli extends ClientGameManager {
-    private static final Logger LOGGER = Logger.getLogger("adrenaline_client");
-
     private Scanner in;
     private AdrenalinePrintStream out;
 
     public Cli() {
         super();
+
         this.in = new Scanner(System.in);
         this.out = new AdrenalinePrintStream();
-        try {
-            FileHandler fh = new FileHandler("client.log");
-            fh.setFormatter(new SimpleFormatter());
-            LOGGER.setUseParentHandlers(false);
-            LOGGER.addHandler(fh);
-        } catch (IOException e) {
-            LOGGER.severe(e.getMessage());
-        }
     }
 
     /**
@@ -707,7 +695,7 @@ public class Cli extends ClientGameManager {
                         tempChoose = -1;
                     }
                 }
-            } while(tempChoose != -1);
+            } while (tempChoose != -1);
 
 
             if (rechargingWeapons.isEmpty()) {

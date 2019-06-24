@@ -12,7 +12,7 @@
         <URL value="@../css/game.css"/>
     </stylesheets>
 
-    <StackPane styleClass="boardArea">
+    <StackPane fx:id="boardArea" styleClass="boardArea">
         <ImageView StackPane.alignment="CENTER" fx:id="map" styleClass="map"/>
 
         <!-- DECKS -->
@@ -108,8 +108,14 @@
             </StackPane.margin>
         </VBox>
 
-        <!-- WEAPON ZOOM -->
+        <!-- ACTION BUTTONS -->
+        <VBox StackPane.alignment="BOTTOM_RIGHT" alignment="BOTTOM_CENTER" fx:id="actionList" styleClass="actionList">
+            <StackPane.margin>
+                <Insets bottom="20.0" left="20.0"/>
+            </StackPane.margin>
+        </VBox>
 
+        <!-- WEAPON ZOOM -->
         <FlowPane alignment="CENTER" fx:id="weaponZoom" styleClass="weaponZoom">
             <ImageView fx:id="weaponZoomImage"/>
         </FlowPane>

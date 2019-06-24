@@ -16,13 +16,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 import java.util.stream.Collectors;
+
+import java.util.UUID;
 
 /**
  * Handles the game advancement and listen for the reception of messages
  */
 public abstract class ClientGameManager implements ClientGameManagerListener, ClientUpdateListener, Runnable {
+    public static final Logger LOGGER = Logger.getLogger("adrenaline_client");
+
     public static final String SEND_ERROR = "Error while sending the request";
     public static final String ERROR_DIALOG_TITLE = "Error";
     protected static final String INVALID_STRING = "Invalid String!";
@@ -60,6 +67,15 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
         joinedLobby = false;
 
+        try {
+            FileHandler fh = new FileHandler("client-" + UUID.randomUUID().toString() + ".log");
+            fh.setFormatter(new SimpleFormatter());
+            LOGGER.setUseParentHandlers(false);
+            LOGGER.addHandler(fh);
+        } catch (IOException e) {
+            LOGGER.severe(e.getMessage());
+        }
+
         new Thread(this).start();
     }
 
@@ -69,7 +85,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             try {
                 queue.take().run();
             } catch (InterruptedException e) {
-                Logger.getLogger("adrenaline_client").severe(e.getMessage());
+                LOGGER.severe(e.getMessage());
                 Thread.currentThread().interrupt();
             }
         }
@@ -122,6 +138,8 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 break;
             default:
         }
+
+        LOGGER.log(Level.INFO, "Received: {0}", message);
     }
 
     /**
@@ -148,8 +166,10 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
      * Closes the connection with the server
      */
     public void closeConnection() {
-        clientUpdater.stop();
-        clientUpdater = null;
+        if (clientUpdater != null) {
+            clientUpdater.stop();
+            clientUpdater = null;
+        }
 
         try {
             client.close();
@@ -213,7 +233,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
      *
      * @param chosenAction action chosen by the user
      */
-    protected void doAction(PossibleAction chosenAction) {
+    public void doAction(PossibleAction chosenAction) {
         Runnable action;
 
         switch (chosenAction) {

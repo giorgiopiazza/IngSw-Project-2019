@@ -64,6 +64,13 @@ interface ClientGameManagerListener {
     void notYourTurn();
 
     /**
+     * Tells the client what are the possible actions
+     *
+     * @param possibleActions list of possible actions
+     */
+    void displayActions(List<PossibleAction> possibleActions);
+
+    /**
      * Handles a game state update
      *
      * @param gameSerialized update of the game
@@ -76,13 +83,6 @@ interface ClientGameManagerListener {
      * @param error error message
      */
     void responseError(String error);
-
-    /**
-     * Tells the client what are the possible actions
-     *
-     * @param possibleActions list of possible actions
-     */
-    void displayActions(List<PossibleAction> possibleActions);
 
     /**
      * Requests the client the bot spawn

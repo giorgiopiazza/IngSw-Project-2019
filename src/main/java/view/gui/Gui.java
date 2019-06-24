@@ -28,4 +28,9 @@ public class Gui extends Application {
         //GuiManager.setLayout(stage.getScene(), "fxml/gameScene.fxml");
         stage.show();
     }
+
+    @Override
+    public void stop(){
+        GuiManager.getInstance().closeConnection();
+    }
 }

@@ -31,6 +31,10 @@
     -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.3), 20, 0.5, 0, 0);
 }
 
+.button:hover {
+    -fx-effect: dropshadow(gaussian, #F44336, 15, 0.2, 0, 0);
+}
+
 .powerupDeck {
     -fx-image: url("../img/powerups/powerup_back.png");
 }
@@ -80,6 +84,11 @@
     -fx-max-width: 120px;
 }
 
+.actionList {
+    -fx-min-width: 120px;
+    -fx-max-width: 120px;
+}
+
 #blue {
     -fx-image: url("../img/players/blueFigure.png");
 }
@@ -118,4 +127,76 @@
 
 #yellowIcon {
     -fx-image: url("../img/players/yellowIcon.png");
+}
+
+#spawnBotAction {
+    -fx-image: url("../img/actions/spawn_bot.png");
+}
+
+#playerSpawnAction {
+    -fx-image: url("../img/actions/spawn_player.png");
+}
+
+#powerupAction {
+    -fx-image: url("../img/actions/powerup.png");
+}
+
+#grenadeAction {
+    -fx-image: url("../img/actions/tagback_grenade.png");
+}
+
+#scopeAction {
+    -fx-image: url("../img/actions/targeting_scope.png");
+}
+
+#moveAction {
+    -fx-image: url("../img/actions/move.png");
+}
+
+#movePickAction {
+    -fx-image: url("../img/actions/move_pick.png");
+}
+
+#shootAction {
+    -fx-image: url("../img/actions/shoot.png");
+}
+
+#reloadAction {
+    -fx-image: url("../img/actions/reload.png");
+}
+
+#adrenalinePickAction {
+    -fx-image: url("../img/actions/adrenaline_pick.png");
+}
+
+#adrenalineShootAction {
+    -fx-image: url("../img/actions/adrenaline_shoot.png");
+}
+
+#frenzyMoveAction {
+    -fx-image: url("../img/actions/frenzy_move.png");
+}
+
+#frenzyPickAction {
+    -fx-image: url("../img/actions/frenzy_pick.png");
+}
+
+#frenzyShootAction {
+    -fx-image: url("../img/actions/frenzy_shoot.png");
+}
+
+#lightFrenzyPickAction {
+    -fx-image: url("../img/actions/light_frenzy_pick.png");
+}
+
+#lightFrenzyShootAction {
+    -fx-image: url("../img/actions/light_frenzy_shoot.png");
+}
+
+#botAction {
+    -fx-image: url("../img/actions/bot_action.png");
+}
+
+#passTurnAction {
+    -fx-image: url("../img/actions/pass_turn.png");
 }

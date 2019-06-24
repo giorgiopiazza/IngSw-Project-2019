@@ -40,22 +40,6 @@ public class GuiManager extends ClientGameManager {
         return instance;
     }
 
-    void setConnectionSceneController(ConnectionSceneController connectionSceneController) {
-        this.connectionSceneController = connectionSceneController;
-    }
-
-    void setColorPickSceneController(ColorPickSceneController colorPickSceneController) {
-        this.colorPickSceneController = colorPickSceneController;
-    }
-
-    void setLobbySceneController(LobbySceneController lobbySceneController) {
-        this.lobbySceneController = lobbySceneController;
-    }
-
-    void setGameSceneController(GameSceneController gameSceneController) {
-        this.gameSceneController = gameSceneController;
-    }
-
     static <T> T setLayout(Scene scene, String path) {
         FXMLLoader loader = new FXMLLoader(GuiManager.class.getClassLoader().getResource(path));
 
@@ -97,6 +81,22 @@ public class GuiManager extends ClientGameManager {
         dialog.showAndWait();
     }
 
+    void setConnectionSceneController(ConnectionSceneController connectionSceneController) {
+        this.connectionSceneController = connectionSceneController;
+    }
+
+    void setColorPickSceneController(ColorPickSceneController colorPickSceneController) {
+        this.colorPickSceneController = colorPickSceneController;
+    }
+
+    void setLobbySceneController(LobbySceneController lobbySceneController) {
+        this.lobbySceneController = lobbySceneController;
+    }
+
+    void setGameSceneController(GameSceneController gameSceneController) {
+        this.gameSceneController = gameSceneController;
+    }
+
     @Override
     public void connectionResponse(ConnectionResponse response) {
         Platform.runLater(() ->
@@ -128,12 +128,21 @@ public class GuiManager extends ClientGameManager {
 
     @Override
     public void firstPlayerCommunication(String username) {
-        // Not needed with GUI
+        Platform.runLater(() ->
+                gameSceneController.setTurnOwnerIcon(username));
     }
 
     @Override
     public void notYourTurn() {
+        Platform.runLater(() ->
+                gameSceneController.notYourTurn());
+    }
 
+    @Override
+    public void displayActions(List<PossibleAction> possibleActions) {
+        Platform.runLater(() ->
+                gameSceneController.displayAction(possibleActions)
+        );
     }
 
     @Override
@@ -156,11 +165,6 @@ public class GuiManager extends ClientGameManager {
             Platform.runLater(() ->
                     gameSceneController.onError(error));
         }
-    }
-
-    @Override
-    public void displayActions(List<PossibleAction> possibleActions) {
-
     }
 
     @Override
