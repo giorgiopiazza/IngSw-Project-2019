@@ -180,19 +180,28 @@ class MapInsetsHelper {
 
     static final Insets playerBoardInsets = new Insets(0, 0, 0, 310);
 
-    static final Insets startingFirstAmmoInsets = new Insets(28, 0, 0, 865);
-    static final Insets startingSecondAmmoInsets = new Insets(68, 0, 0, 865);
-    static final Insets startingThirdAmmoInsets = new Insets(108, 0, 0, 865);
+    static final Insets killShotTrackInsets = new Insets(72.5, 0, 0, 265);
+    static final double KILLSHOT_TRACK_HORIZONTAL_OFFSET = 38.5;
+    static final double KILLSHOT_TRACK_TINY_HORIZONTAL_OFFSET = 22.5;
+    static final double KILLSHOT_TRACK_VERTICAL_OFFSET = 10;
+
+    static final Insets firstAmmoInsets = new Insets(28, 0, 0, 865);
+    static final Insets secondAmmoInsets = new Insets(68, 0, 0, 865);
+    static final Insets thirdAmmoInsets = new Insets(108, 0, 0, 865);
     static final double AMMO_HORIZONTAL_OFFSET = 36.0;
 
-    static final Insets startingDamageInsets = new Insets(70, 0, 0, 375);
+    static final Insets damageInsets = new Insets(70, 0, 0, 375);
     static final double DAMAGE_HORIZONTAL_OFFSET = 38.7;
 
-    static final Insets startingMarksInsets = new Insets(2, 0, 0, 635);
+    static final Insets marksInsets = new Insets(2, 0, 0, 635);
     static final double MARKS_HORIZONTAL_OFFSET = 20.0;
 
     static final Insets weaponHBoxInsets = new Insets(200, 0, 0, 0);
     static final Insets powerupsHBoxInsets = new Insets(464, 0, 0, 0);
+
+    static final Insets playerBoardSkullInsets = new Insets(121, 0, 0, 455);
+    static final Insets playerBoardFrenzySkullInsets = new Insets(121, 0, 0, 500);
+    static final double PLAYER_BOARD_SKULL_HORIZONTAL_OFFSET = 36;
 
     static Insets getAmmoTileInsets(int map, int x, int y) {
         if (x < 0 || x >= GameMap.MAX_ROWS || y < 0 || y >= GameMap.MAX_COLUMNS || map < 1 || map > 4) {
