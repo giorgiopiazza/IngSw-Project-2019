@@ -6,6 +6,9 @@ import model.map.GameMap;
 import java.util.List;
 
 class MapInsetsHelper {
+    public static final double PADDING_TOP = 27.5;
+    public static final double PADDING_LEFT = 191;
+
     private final static List<List<Insets>> ammotileInsetsA1 = List.of(
             List.of(new Insets(203.5, 0, 0, 379.0),
                     new Insets(273.5, 0, 0, 520.0)),

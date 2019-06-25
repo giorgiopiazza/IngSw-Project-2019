@@ -1,8 +1,10 @@
 package view.gui;
 
 import enumerations.*;
+import exceptions.actions.PowerupCardsNotFoundException;
 import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -12,6 +14,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import model.GameSerialized;
+import model.cards.PowerupCard;
 import model.cards.WeaponCard;
 import model.map.CardSquare;
 import model.map.GameMap;
@@ -19,11 +22,16 @@ import model.map.SpawnSquare;
 import model.map.Square;
 import model.player.*;
 import utility.GameCostants;
+import utility.MessageBuilder;
 
 import java.util.*;
 
+import static network.client.ClientGameManager.SEND_ERROR;
+
 public class GameSceneController {
     private static final String USERNAME_PROPERTY = "username";
+    private static final double OPAQUE = 0.3;
+    private static final double NOT_OPAQUE = 1;
     private GuiManager guiManager;
 
     private List<ImageView> weaponSlotList;
@@ -67,6 +75,8 @@ public class GameSceneController {
     FlowPane zoomPanel;
     @FXML
     BorderPane infoPanel;
+    @FXML
+    StackPane spawnPanel;
 
     @FXML
     private void initialize() {
@@ -96,6 +106,14 @@ public class GameSceneController {
     private void bindPanels() {
         infoPanel.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> hideInfoPanel());
         zoomPanel.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> hideZoomPanel());
+        spawnPanel.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> hideSpawnPanel());
+    }
+
+    private void hideSpawnPanel() {
+        spawnPanel.getChildren().clear();
+        spawnPanel.setVisible(false);
+
+        setBoardOpaque(NOT_OPAQUE);
     }
 
     /**
@@ -345,7 +363,7 @@ public class GameSceneController {
         zoomPanel.getChildren().clear();
         zoomPanel.setVisible(false);
 
-        setBoardOpaque(1);
+        setBoardOpaque(NOT_OPAQUE);
     }
 
     /**
@@ -588,6 +606,73 @@ public class GameSceneController {
         infoPanel.getChildren().clear();
         infoPanel.setVisible(false);
 
-        setBoardOpaque(1);
+        setBoardOpaque(NOT_OPAQUE);
+    }
+
+    public void spawn() {
+        List<PowerupCard> powerups = guiManager.getPowerups();
+
+        for (int i = 0; i < powerups.size(); i++) {
+            ImageView img = new ImageView();
+            img.setImage(new Image(powerups.get(i).getImagePath()));
+            setPowerupSpawnPosition(img, i, powerups.size());
+            img.addEventHandler(MouseEvent.MOUSE_CLICKED, this::onClickPowerupSpawn);
+            spawnPanel.getChildren().add(img);
+        }
+
+        setBoardOpaque(OPAQUE);
+        spawnPanel.setVisible(true);
+    }
+
+    private void setPowerupSpawnPosition(ImageView img, int i, int size) {
+        double offset = ((i == 0) ? 0 : i * 169d + 20d);
+
+        double x = 0, y;
+
+        switch (size) {
+            case 1:
+                x = MapInsetsHelper.PADDING_LEFT + 374;
+                break;
+
+            case 2:
+                if (i != 0) offset = i * 169d + 20d;
+                x = MapInsetsHelper.PADDING_LEFT + 195 + offset;
+                break;
+
+            case 3:
+                x = MapInsetsHelper.PADDING_LEFT + 100.5 + offset;
+                break;
+
+            case 4:
+                x = MapInsetsHelper.PADDING_LEFT + 6 + offset;
+        }
+
+        y = MapInsetsHelper.PADDING_TOP + 215;
+        StackPane.setMargin(img, new Insets(x, 0, 0, y));
+    }
+
+    private void onClickPowerupSpawn(Event event) {
+        ImageView img = (ImageView) event.getTarget();
+        PowerupCard powerup = null;
+
+        for (PowerupCard power : guiManager.getPowerups()) {
+            String[] split = img.getImage().getUrl().split("/");
+            String imgName = split[split.length - 1];
+
+            split = power.getImagePath().split("/");
+            String powerImgName = split[split.length - 1];
+
+            if (imgName.equals(powerImgName)) powerup = power;
+        }
+
+        try {
+            if (!guiManager.sendRequest(MessageBuilder.buildDiscardPowerupRequest(guiManager.getClientToken(), guiManager.getPowerups(), powerup, guiManager.getUsername()))) {
+                // TODO: error alert
+            }
+        } catch (PowerupCardsNotFoundException e) {
+            // TODO: error alert
+        } finally {
+            hideSpawnPanel();
+        }
     }
 }

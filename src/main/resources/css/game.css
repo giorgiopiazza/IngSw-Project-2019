@@ -217,3 +217,7 @@
 #passTurnAction {
     -fx-image: url("../img/actions/pass_turn.png");
 }
+
+.spawnPanel {
+
+}

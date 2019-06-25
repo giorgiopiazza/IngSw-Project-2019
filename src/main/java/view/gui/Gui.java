@@ -13,7 +13,7 @@ public class Gui extends Application {
     @Override
     public void start(Stage stage) {
         stage.setMaximized(true);
-        stage.setFullScreen(true);
+        stage.setFullScreen(false);
         stage.setFullScreenExitHint("");
         stage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
 

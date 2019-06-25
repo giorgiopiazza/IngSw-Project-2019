@@ -184,7 +184,7 @@ public class GuiManager extends ClientGameManager {
 
     @Override
     public void spawn() {
-
+        Platform.runLater(gameSceneController::spawn);
     }
 
     @Override

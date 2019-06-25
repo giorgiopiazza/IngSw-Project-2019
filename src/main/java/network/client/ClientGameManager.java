@@ -68,7 +68,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         joinedLobby = false;
 
         Date date = GregorianCalendar.getInstance().getTime();
-        DateFormat dateFormat = new SimpleDateFormat("dd-mm_HH:mm:ss");
+        DateFormat dateFormat = new SimpleDateFormat("dd-mm_HH.mm.ss");
 
         try {
             FileHandler fh = new FileHandler("client-" + dateFormat.format(date) + ".log");

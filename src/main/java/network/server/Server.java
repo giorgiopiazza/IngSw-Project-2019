@@ -134,7 +134,7 @@ public class Server implements Runnable {
 
     private void initLogger() {
         Date date = GregorianCalendar.getInstance().getTime();
-        DateFormat dateFormat = new SimpleDateFormat("dd-mm_HH:mm:ss");
+        DateFormat dateFormat = new SimpleDateFormat("dd-mm_HH.mm.ss");
 
         try {
             FileHandler fh = new FileHandler("server-" + dateFormat.format(date) + ".log");
