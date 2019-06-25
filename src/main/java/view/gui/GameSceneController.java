@@ -3,9 +3,9 @@ package view.gui;
 import enumerations.*;
 import javafx.event.Event;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -17,13 +17,12 @@ import model.map.CardSquare;
 import model.map.GameMap;
 import model.map.SpawnSquare;
 import model.map.Square;
-import model.player.Player;
-import model.player.UserPlayer;
+import model.player.*;
+import utility.GameCostants;
 
-import java.net.URL;
 import java.util.*;
 
-public class GameSceneController implements Initializable {
+public class GameSceneController {
     private static final String USERNAME_PROPERTY = "username";
     private GuiManager guiManager;
 
@@ -32,8 +31,6 @@ public class GameSceneController implements Initializable {
     private List<ImageView> playerFigures;
     private Map<String, Ammo> weaponColor;
 
-    @FXML
-    FlowPane playerInfo;
     @FXML
     Pane mainPane;
     @FXML
@@ -71,8 +68,8 @@ public class GameSceneController implements Initializable {
     @FXML
     BorderPane infoPanel;
 
-    @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
+    @FXML
+    private void initialize() {
         guiManager = GuiManager.getInstance();
         guiManager.setGameSceneController(this);
 
@@ -89,12 +86,16 @@ public class GameSceneController implements Initializable {
         map.setImage(new Image(gameMap.getImagePath()));
 
         setPlayerIcons(gameSerialized);
-        bindWeaponZoom();
-        bindPlayerInfoZoom();
 
-        zoomPanel.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> hideZoomPanel());
+        bindWeaponZoom();
+        bindPanels();
 
         updateMap(gameSerialized);
+    }
+
+    private void bindPanels() {
+        infoPanel.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> hideInfoPanel());
+        zoomPanel.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> hideZoomPanel());
     }
 
     /**
@@ -103,15 +104,6 @@ public class GameSceneController implements Initializable {
     private void bindWeaponZoom() {
         for (ImageView weaponSlot : weaponSlotList) {
             weaponSlot.addEventHandler(MouseEvent.MOUSE_CLICKED, this::showWeaponZoom);
-        }
-    }
-
-    /**
-     * Binds player info zoom on icon click
-     */
-    private void bindPlayerInfoZoom() {
-        for (ImageView playerImage : playerFigures) {
-            playerImage.addEventHandler(MouseEvent.MOUSE_CLICKED, this::showPlayerInfo);
         }
     }
 
@@ -124,6 +116,7 @@ public class GameSceneController implements Initializable {
             imageView.getProperties().put(USERNAME_PROPERTY, player.getUsername());
 
             iconList.getChildren().add(imageView);
+            imageView.addEventHandler(MouseEvent.MOUSE_CLICKED, this::showPlayerInfo);
         }
 
         if (gameSerialized.isBotPresent()) {
@@ -132,6 +125,7 @@ public class GameSceneController implements Initializable {
             imageView.getProperties().put(USERNAME_PROPERTY, "bot");
 
             iconList.getChildren().add(imageView);
+            imageView.addEventHandler(MouseEvent.MOUSE_CLICKED, this::showPlayerInfo);
         }
     }
 
@@ -389,8 +383,9 @@ public class GameSceneController implements Initializable {
     /**
      * Empties the list of action buttons
      */
-    void notYourTurn() {
+    void notYourTurn(String turnOwner) {
         actionList.getChildren().clear();
+        setTurnOwnerIcon(turnOwner);
     }
 
     /**
@@ -468,6 +463,131 @@ public class GameSceneController implements Initializable {
      * @param event event of the click on a icon
      */
     private void showPlayerInfo(Event event) {
-        // TODO
+        ImageView playerIcon = (ImageView) event.getTarget();
+        String username = (String) playerIcon.getProperties().get(USERNAME_PROPERTY);
+
+        if (guiManager.getUsername().equals(username)) {
+            showMyPlayerInfo(guiManager.getPlayer());
+        } else if (username.equals(GameCostants.BOT_NAME)) {
+            showBotPlayerInfo((Bot) guiManager.getPlayerByName(username));
+        } else {
+            showOthersPlayerInfo((UserPlayer) guiManager.getPlayerByName(username));
+        }
+
+        setBoardOpaque(0.3);
+        infoPanel.toFront();
+        infoPanel.setVisible(true);
+
+    }
+
+    private void showMyPlayerInfo(UserPlayer me) {
+        setUsernamePlayerInfo(me.getUsername());
+        addPlayerBoardToPlayerInfo(me);
+        setDamages(me.getPlayerBoard());
+        setAmmo(me);
+    }
+
+    private void showBotPlayerInfo(Bot bot) {
+        setUsernamePlayerInfo(bot.getUsername());
+        addPlayerBoardToPlayerInfo(bot);
+        setDamages(bot.getPlayerBoard());
+    }
+
+    private void showOthersPlayerInfo(UserPlayer other) {
+        setUsernamePlayerInfo(other.getUsername());
+        addPlayerBoardToPlayerInfo(other);
+        setDamages(other.getPlayerBoard());
+        setAmmo(other);
+    }
+
+    private void setUsernamePlayerInfo(String username) {
+        Label label = new Label(username);
+        label.getStyleClass().add("infoTitle");
+
+        VBox vBox = new VBox();
+        vBox.getStyleClass().add("topInfoPanel");
+        vBox.getChildren().add(label);
+
+        infoPanel.setTop(vBox);
+    }
+
+    private void addPlayerBoardToPlayerInfo(Player player) {
+        PlayerColor playerColor = player.getColor();
+        PlayerBoard playerBoard = player.getPlayerBoard();
+
+        AnchorPane anchorPane = new AnchorPane();
+
+        ImageView playerBoardImageView = new ImageView(getPlayboardPath(playerColor, playerBoard));
+        playerBoardImageView.setFitWidth(680);
+        playerBoardImageView.setFitHeight(166);
+
+        AnchorPane.setLeftAnchor(playerBoardImageView, 310.0);
+
+        anchorPane.getChildren().add(playerBoardImageView);
+        infoPanel.setCenter(anchorPane);
+    }
+
+    private String getPlayboardPath(PlayerColor playerColor, PlayerBoard playerBoard) {
+        String suffix;
+
+        if (playerBoard.isBoardFlipped()) {
+            suffix = "back";
+        } else if (guiManager.getGameClientState() == GameClientState.NORMAL) {
+            suffix = "front";
+        } else {
+            suffix = "front_final";
+        }
+
+        return "/img/boards/" + playerColor.name().toLowerCase() + "_" + suffix + ".png";
+    }
+
+    private void setAmmo(UserPlayer player) {
+        AmmoQuantity ammoQuantity = player.getPlayerBoard().getAmmo();
+
+        for (int i = 0; i < ammoQuantity.getRedAmmo(); ++i) {
+            ImageView redAmmo = new ImageView("/img/ammo/redAmmo.png");
+            AnchorPane.setLeftAnchor(redAmmo, MapInsetsHelper.startingFirstAmmoInsets.getLeft() + i * MapInsetsHelper.AMMO_HORIZONTAL_OFFSET);
+            AnchorPane.setTopAnchor(redAmmo, MapInsetsHelper.startingFirstAmmoInsets.getTop());
+            ((AnchorPane) infoPanel.getCenter()).getChildren().add(redAmmo);
+        }
+
+        for (int i = 0; i < ammoQuantity.getYellowAmmo(); ++i) {
+            ImageView yellowAmmo = new ImageView("/img/ammo/yellowAmmo.png");
+            AnchorPane.setLeftAnchor(yellowAmmo, MapInsetsHelper.startingSecondAmmoInsets.getLeft() + i * MapInsetsHelper.AMMO_HORIZONTAL_OFFSET);
+            AnchorPane.setTopAnchor(yellowAmmo, MapInsetsHelper.startingSecondAmmoInsets.getTop());
+            ((AnchorPane) infoPanel.getCenter()).getChildren().add(yellowAmmo);
+        }
+
+        for (int i = 0; i < ammoQuantity.getBlueAmmo(); ++i) {
+            ImageView blueAmmo = new ImageView("/img/ammo/blueAmmo.png");
+            AnchorPane.setLeftAnchor(blueAmmo, MapInsetsHelper.startingThirdAmmoInsets.getLeft() + i * MapInsetsHelper.AMMO_HORIZONTAL_OFFSET);
+            AnchorPane.setTopAnchor(blueAmmo, MapInsetsHelper.startingThirdAmmoInsets.getTop());
+            ((AnchorPane) infoPanel.getCenter()).getChildren().add(blueAmmo);
+        }
+    }
+
+    private void setDamages(PlayerBoard playerBoard) {
+        List<String> damages =  playerBoard.getDamages();
+
+        for (int i = 0; i < damages.size(); ++i) {
+            String username = damages.get(i);
+            PlayerColor damageDealerColor = guiManager.getPlayerByName(username).getColor();
+
+            ImageView drop = new ImageView("/img/players/" + damageDealerColor.name().toLowerCase() + "Drop.png");
+            AnchorPane.setLeftAnchor(drop, MapInsetsHelper.startingDamageInsets.getLeft() + i * MapInsetsHelper.DAMAGE_HORIZONTAL_OFFSET);
+            AnchorPane.setTopAnchor(drop, MapInsetsHelper.startingDamageInsets.getTop());
+
+            ((AnchorPane) infoPanel.getCenter()).getChildren().add(drop);
+        }
+    }
+
+    /**
+     * Hides the info panel
+     */
+    private void hideInfoPanel() {
+        infoPanel.getChildren().clear();
+        infoPanel.setVisible(false);
+
+        setBoardOpaque(1);
     }
 }

@@ -133,9 +133,9 @@ public class GuiManager extends ClientGameManager {
     }
 
     @Override
-    public void notYourTurn() {
+    public void notYourTurn(String turnOwner) {
         Platform.runLater(() ->
-                gameSceneController.notYourTurn());
+                gameSceneController.notYourTurn(turnOwner));
     }
 
     @Override

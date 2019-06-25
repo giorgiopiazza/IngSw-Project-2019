@@ -342,8 +342,8 @@ public class Cli extends ClientGameManager {
     }
 
     @Override
-    public void notYourTurn() {
-        out.println("Wait for your turn...");
+    public void notYourTurn(String turnOwner) {
+        out.println(turnOwner + " is playing. Wait for your turn...");
     }
 
     @Override

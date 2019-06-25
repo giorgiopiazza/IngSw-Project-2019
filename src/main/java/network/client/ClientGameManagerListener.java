@@ -61,7 +61,7 @@ interface ClientGameManagerListener {
     /**
      * Tells the client that is not his turn
      */
-    void notYourTurn();
+    void notYourTurn(String turnOwner);
 
     /**
      * Tells the client what are the possible actions

@@ -64,6 +64,18 @@
     visibility: hidden;
 }
 
+.topInfoPanel {
+    -fx-padding: 20 0 20 0;
+    -fx-alignment: CENTER;
+}
+
+.infoTitle {
+    -fx-font-family: "Ethnocentric Rg";
+    -fx-font-style: italic;
+    -fx-font-size: 50px;
+    -fx-text-fill: #f3997b;
+}
+
 .weaponZoomImageBlue {
     -fx-effect: dropshadow(gaussian, #536DFE, 15, 0.2, 0, 0);
 }

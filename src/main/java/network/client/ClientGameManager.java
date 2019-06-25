@@ -1,5 +1,6 @@
 package network.client;
 
+import controller.RoundManager;
 import enumerations.*;
 import exceptions.player.ClientRoundManagerException;
 import exceptions.player.PlayerNotFoundException;
@@ -219,7 +220,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             roundManager.beginRound();
             makeMove();
         } else {
-            queue.add(this::notYourTurn);
+            queue.add(() -> notYourTurn(turnOwner));
         }
     }
 
@@ -839,7 +840,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
      * @param username username of the interested player
      * @return the player requested
      */
-    protected Player getPlayerByName(String username) {
+    public Player getPlayerByName(String username) {
         synchronized (gameSerializedLock) {
             Player player;
 
@@ -856,6 +857,13 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             if (player == null) throw new PlayerNotFoundException("player not found, cannot continue with the game");
             return player;
         }
+    }
+
+    /**
+     * @return the game client state
+     */
+    public GameClientState getGameClientState() {
+        return roundManager.getGameClientState();
     }
 
     /**
