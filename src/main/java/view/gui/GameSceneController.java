@@ -6,12 +6,14 @@ import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import model.GameSerialized;
+import model.cards.PowerupCard;
 import model.cards.WeaponCard;
 import model.map.CardSquare;
 import model.map.GameMap;
@@ -24,6 +26,18 @@ import java.util.*;
 
 public class GameSceneController {
     private static final String USERNAME_PROPERTY = "username";
+
+    private static final double PLAYERBOARD_WIDTH = 680;
+    private static final double PLAYERBOARD_HEIGHT = 166;
+
+    private static final double WEAPONCARD_WIDTH = 136;
+    private static final double WEAPONCARD_HEIGHT = 230;
+
+    private static final double POWERUPCARD_WIDTH = 128;
+    private static final double POWERUPCARD_HEIGHT = 200;
+
+    private static final double OPACITY_VALUE = 0.2;
+
     private GuiManager guiManager;
 
     private List<ImageView> weaponSlotList;
@@ -309,7 +323,7 @@ public class GameSceneController {
         ImageView weaponTarget = (ImageView) event.getTarget();
 
         if (weaponTarget != null) {
-            setBoardOpaque(0.3);
+            setBoardOpaque(OPACITY_VALUE);
 
             zoomPanel.toFront();
             ImageView weapon = new ImageView(weaponTarget.getImage());
@@ -474,7 +488,7 @@ public class GameSceneController {
             showOthersPlayerInfo((UserPlayer) guiManager.getPlayerByName(username));
         }
 
-        setBoardOpaque(0.3);
+        setBoardOpaque(OPACITY_VALUE);
         infoPanel.toFront();
         infoPanel.setVisible(true);
 
@@ -482,22 +496,34 @@ public class GameSceneController {
 
     private void showMyPlayerInfo(UserPlayer me) {
         setUsernamePlayerInfo(me.getUsername());
+
         addPlayerBoardToPlayerInfo(me);
         setDamages(me.getPlayerBoard());
+        setMarks(me.getPlayerBoard());
         setAmmo(me);
+
+        setWeapons(Arrays.asList(me.getWeapons()));
+
+        setPowerups(Arrays.asList(me.getPowerups()));
     }
 
     private void showBotPlayerInfo(Bot bot) {
         setUsernamePlayerInfo(bot.getUsername());
+
         addPlayerBoardToPlayerInfo(bot);
         setDamages(bot.getPlayerBoard());
+        setMarks(bot.getPlayerBoard());
     }
 
     private void showOthersPlayerInfo(UserPlayer other) {
         setUsernamePlayerInfo(other.getUsername());
+
         addPlayerBoardToPlayerInfo(other);
         setDamages(other.getPlayerBoard());
+        setMarks(other.getPlayerBoard());
         setAmmo(other);
+
+        setWeapons(Arrays.asList(other.getWeapons()));
     }
 
     private void setUsernamePlayerInfo(String username) {
@@ -518,10 +544,10 @@ public class GameSceneController {
         AnchorPane anchorPane = new AnchorPane();
 
         ImageView playerBoardImageView = new ImageView(getPlayboardPath(playerColor, playerBoard));
-        playerBoardImageView.setFitWidth(680);
-        playerBoardImageView.setFitHeight(166);
+        playerBoardImageView.setFitWidth(PLAYERBOARD_WIDTH);
+        playerBoardImageView.setFitHeight(PLAYERBOARD_HEIGHT);
 
-        AnchorPane.setLeftAnchor(playerBoardImageView, 310.0);
+        AnchorPane.setLeftAnchor(playerBoardImageView, MapInsetsHelper.playerBoardInsets.getLeft());
 
         anchorPane.getChildren().add(playerBoardImageView);
         infoPanel.setCenter(anchorPane);
@@ -567,7 +593,7 @@ public class GameSceneController {
     }
 
     private void setDamages(PlayerBoard playerBoard) {
-        List<String> damages =  playerBoard.getDamages();
+        List<String> damages = playerBoard.getDamages();
 
         for (int i = 0; i < damages.size(); ++i) {
             String username = damages.get(i);
@@ -579,6 +605,71 @@ public class GameSceneController {
 
             ((AnchorPane) infoPanel.getCenter()).getChildren().add(drop);
         }
+    }
+
+    private void setMarks(PlayerBoard playerBoard) {
+        List<String> marks = playerBoard.getMarks();
+
+        for (int i = 0; i < marks.size(); ++i) {
+            String username = marks.get(i);
+            PlayerColor damageDealerColor = guiManager.getPlayerByName(username).getColor();
+
+            ImageView drop = new ImageView("/img/players/" + damageDealerColor.name().toLowerCase() + "Drop.png");
+            AnchorPane.setLeftAnchor(drop, MapInsetsHelper.startingMarksInsets.getLeft() + i * MapInsetsHelper.MARKS_HORIZONTAL_OFFSET);
+            AnchorPane.setTopAnchor(drop, MapInsetsHelper.startingMarksInsets.getTop());
+
+            ((AnchorPane) infoPanel.getCenter()).getChildren().add(drop);
+        }
+    }
+
+    private void setWeapons(List<WeaponCard> weapons) {
+        if (weapons.isEmpty()) {
+            return;
+        }
+
+        HBox weaponHBox = new HBox();
+        weaponHBox.getStyleClass().add("infoHBOX");
+        weaponHBox.setAlignment(Pos.BASELINE_CENTER);
+        weaponHBox.setSpacing(20);
+
+        for (WeaponCard weapon : weapons) {
+            ImageView weaponImage = new ImageView(weapon.getImagePath());
+
+            weaponImage.setFitHeight(WEAPONCARD_HEIGHT);
+            weaponImage.setFitWidth(WEAPONCARD_WIDTH);
+
+            if (weapon.status() == 1) {
+                ColorAdjust monochrome = new ColorAdjust();
+                monochrome.setSaturation(-1);
+                weaponImage.setEffect(monochrome);
+            }
+
+            weaponHBox.getChildren().add(weaponImage);
+        }
+
+        AnchorPane.setTopAnchor(weaponHBox, MapInsetsHelper.weaponHBoxInsets.getTop());
+        ((AnchorPane) infoPanel.getCenter()).getChildren().add(weaponHBox);
+    }
+
+    private void setPowerups(List<PowerupCard> powerups) {
+        if (powerups.isEmpty()) {
+            return;
+        }
+
+        HBox powerupHBox = new HBox();
+        powerupHBox.getStyleClass().add("infoHBOX");
+        powerupHBox.setAlignment(Pos.BASELINE_CENTER);
+        powerupHBox.setSpacing(20);
+
+        for (PowerupCard powerup : powerups) {
+            ImageView powerupImage = new ImageView(powerup.getImagePath());
+            powerupImage.setFitWidth(POWERUPCARD_WIDTH);
+            powerupImage.setFitHeight(POWERUPCARD_HEIGHT);
+            powerupHBox.getChildren().add(powerupImage);
+        }
+
+        AnchorPane.setTopAnchor(powerupHBox, MapInsetsHelper.powerupsHBoxInsets.getTop());
+        ((AnchorPane) infoPanel.getCenter()).getChildren().add(powerupHBox);
     }
 
     /**

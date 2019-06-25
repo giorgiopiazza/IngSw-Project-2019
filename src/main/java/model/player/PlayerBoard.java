@@ -197,7 +197,9 @@ public class PlayerBoard implements Serializable {
             throw new NullPointerException("Player cannot be null");
         }
 
-        for (int i = 0; i < marksCount; i++) {
+        int marksNum = Collections.frequency(marks, markDealer.getUsername());
+
+        for (int i = 0; i < marksCount && marksNum < 4; i++, marksNum++) {
             marks.add(markDealer.getUsername());
         }
     }
