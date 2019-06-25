@@ -10,7 +10,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import model.Game;
+import model.GameSerialized;
 import network.client.Client;
 import network.message.ConnectionResponse;
 import utility.GameCostants;
@@ -126,6 +126,15 @@ public class ConnectionSceneController implements Initializable {
 
             guiManager.closeConnection();
             onBackButtonClick();
+        }
+    }
+
+    void onReconnectionResponse(GameSerialized gameSerialized) {
+        GameSceneController gameSceneController =
+                GuiManager.setLayout(mainPane.getScene(), "fxml/gameScene.fxml");
+
+        if (gameSceneController != null) {
+            gameSceneController.setupGame(gameSerialized);
         }
     }
 }

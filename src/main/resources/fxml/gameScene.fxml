@@ -5,7 +5,6 @@
 <?import javafx.geometry.Insets?>
 <?import java.net.URL?>
 
-<?import javafx.scene.image.Image?>
 <FlowPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
           fx:controller="view.gui.GameSceneController" fx:id="mainPane" styleClass="mainPane">
 
@@ -104,7 +103,7 @@
         <!-- PLAYER ICONS -->
 
         <VBox StackPane.alignment="BOTTOM_LEFT" alignment="BOTTOM_CENTER" fx:id="iconList" styleClass="iconList">
-             <StackPane.margin>
+            <StackPane.margin>
                 <Insets bottom="20.0" left="20.0"/>
             </StackPane.margin>
         </VBox>
@@ -116,66 +115,10 @@
             </StackPane.margin>
         </VBox>
 
-        <!-- WEAPON ZOOM -->
-        <FlowPane alignment="CENTER" fx:id="weaponZoom" styleClass="weaponZoom">
-            <ImageView fx:id="weaponZoomImage"/>
-        </FlowPane>
+        <!-- ZOOM PANEL -->
+        <FlowPane fx:id="zoomPanel" styleClass="zoomPanel"/>
 
-        <!-- PLAYER INFO ZOOM -->
-        <FlowPane alignment="CENTER" fx:id="playerInfo" styleClass="playerInfo, playerInfoZoomEffect">
-            <VBox fx:id="vboxPlayerInfo">
-                <HBox fx:id="hboxPlayerBoard">
-                    <ImageView fx:id="playerBoard" />
-                    <VBox fx:id="vboxPowerup">
-                        <ImageView fx:id="powerup1" />
-                        <ImageView fx:id="powerup2" />
-                        <ImageView fx:id="powerup3" />
-                        <ImageView fx:id="powerup4" />
-                    </VBox>
-                </HBox>
-                <HBox fx:id="hboxCards">
-                    <HBox fx:id="hboxWeapons">
-                        <ImageView fx:id="weapon1" />
-                        <ImageView fx:id="weapon2" />
-                        <ImageView fx:id="weapon3" />
-                    </HBox>
-                    <VBox fx:id="vboxAmmos">
-                        <HBox fx:id="hboxRedAmmos">
-                            <ImageView fx:id="redammo1" >
-                                <Image url="@../../resources/img/ammo/redAmmo.png" />
-                            </ImageView>
-                            <ImageView fx:id="redammo2" >
-                                <Image url="@../../resources/img/ammo/redAmmo.png" />
-                            </ImageView>
-                            <ImageView fx:id="redammo3" >
-                                <Image url="@../../resources/img/ammo/redAmmo.png" />
-                            </ImageView>
-                        </HBox>
-                        <HBox fx:id="hboxBlueAmmos">
-                            <ImageView fx:id="blueammo1" >
-                                <Image url="@../../resources/img/ammo/blueAmmo.png" />
-                            </ImageView>
-                            <ImageView fx:id="blueammo2" >
-                                <Image url="@../../resources/img/ammo/blueAmmo.png" />
-                            </ImageView>
-                            <ImageView fx:id="blueammo3" >
-                                <Image url="@../../resources/img/ammo/blueAmmo.png" />
-                            </ImageView>
-                        </HBox>
-                        <HBox fx:id="hboxYellowAmmos">
-                            <ImageView fx:id="yellowammo1" >
-                                <Image url="@../../resources/img/ammo/yellowAmmo.png" />
-                            </ImageView>
-                            <ImageView fx:id="yellowammo2" >
-                                <Image url="@../../resources/img/ammo/yellowAmmo.png" />
-                            </ImageView>
-                            <ImageView fx:id="yellowammo3" >
-                                <Image url="@../../resources/img/ammo/yellowAmmo.png" />
-                            </ImageView>
-                        </HBox>
-                    </VBox>
-                </HBox>
-            </VBox>
-        </FlowPane>
+        <!-- INFO PANEL -->
+        <BorderPane fx:id="infoPanel" styleClass="infoPanel"/>
     </StackPane>
 </FlowPane>

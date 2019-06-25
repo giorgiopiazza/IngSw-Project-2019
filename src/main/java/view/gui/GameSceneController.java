@@ -9,10 +9,7 @@ import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import model.GameSerialized;
 import model.cards.WeaponCard;
@@ -70,9 +67,9 @@ public class GameSceneController implements Initializable {
     @FXML
     VBox actionList;
     @FXML
-    FlowPane weaponZoom;
+    FlowPane zoomPanel;
     @FXML
-    ImageView weaponZoomImage;
+    BorderPane infoPanel;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -85,6 +82,7 @@ public class GameSceneController implements Initializable {
                 yellowWeapon0, yellowWeapon1, yellowWeapon2);
     }
 
+
     void setupGame(GameSerialized gameSerialized) {
         GameMap gameMap = gameSerialized.getGameMap();
 
@@ -94,9 +92,23 @@ public class GameSceneController implements Initializable {
         bindWeaponZoom();
         bindPlayerInfoZoom();
 
+        zoomPanel.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> hideZoomPanel());
+
         updateMap(gameSerialized);
     }
 
+    /**
+     * Binds weapon zoom on card click
+     */
+    private void bindWeaponZoom() {
+        for (ImageView weaponSlot : weaponSlotList) {
+            weaponSlot.addEventHandler(MouseEvent.MOUSE_CLICKED, this::showWeaponZoom);
+        }
+    }
+
+    /**
+     * Binds player info zoom on icon click
+     */
     private void bindPlayerInfoZoom() {
         for (ImageView playerImage : playerFigures) {
             playerImage.addEventHandler(MouseEvent.MOUSE_CLICKED, this::showPlayerInfo);
@@ -106,14 +118,6 @@ public class GameSceneController implements Initializable {
     private void setPlayerIcons(GameSerialized gameSerialized) {
         ImageView imageView;
 
-        if (gameSerialized.isBotPresent()) {
-            imageView = new ImageView();
-            imageView.setId(getIconIDFromColor(gameSerialized.getBot().getColor()));
-            imageView.getProperties().put(USERNAME_PROPERTY, "bot");
-
-            iconList.getChildren().add(imageView);
-        }
-
         for (UserPlayer player : gameSerialized.getPlayers()) {
             imageView = new ImageView();
             imageView.setId(getIconIDFromColor(player.getColor()));
@@ -122,6 +126,13 @@ public class GameSceneController implements Initializable {
             iconList.getChildren().add(imageView);
         }
 
+        if (gameSerialized.isBotPresent()) {
+            imageView = new ImageView();
+            imageView.setId(getIconIDFromColor(gameSerialized.getBot().getColor()));
+            imageView.getProperties().put(USERNAME_PROPERTY, "bot");
+
+            iconList.getChildren().add(imageView);
+        }
     }
 
     private String getIconIDFromColor(PlayerColor playerColor) {
@@ -139,14 +150,6 @@ public class GameSceneController implements Initializable {
             default:
                 return null;
         }
-    }
-
-    private void bindWeaponZoom() {
-        for (ImageView weaponSlot : weaponSlotList) {
-            weaponSlot.addEventHandler(MouseEvent.MOUSE_CLICKED, this::showWeaponZoom);
-        }
-
-        weaponZoom.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> hideWeaponZoom());
     }
 
     void setTurnOwnerIcon(String turnOwner) {
@@ -168,12 +171,22 @@ public class GameSceneController implements Initializable {
         updateMap(gameSerialized);
     }
 
+    /**
+     * Updates element on the map
+     *
+     * @param gameSerialized game update
+     */
     private void updateMap(GameSerialized gameSerialized) {
         setWeaponCards(gameSerialized.getGameMap());
         setPlayersOnMap(gameSerialized.getGameMap().getMapID(), gameSerialized.getAllPlayers());
         setAmmoTiles(gameSerialized.getGameMap());
     }
 
+    /**
+     * Sets weapon cards on the map
+     *
+     * @param gameMap map of the game
+     */
     private void setWeaponCards(GameMap gameMap) {
         List<WeaponCard> weaponCards;
         weaponColor = new HashMap<>();
@@ -204,6 +217,11 @@ public class GameSceneController implements Initializable {
         }
     }
 
+    /**
+     * Sets ammo tiles on the map
+     *
+     * @param gameMap map of the game
+     */
     private void setAmmoTiles(GameMap gameMap) {
         for (ImageView ammoTile : ammoTiles) {
             boardArea.getChildren().remove(ammoTile);
@@ -231,6 +249,12 @@ public class GameSceneController implements Initializable {
         }
     }
 
+    /**
+     * Sets players on the map
+     *
+     * @param mapID      id of the map
+     * @param allPlayers list of players
+     */
     private void setPlayersOnMap(int mapID, ArrayList<Player> allPlayers) {
         for (ImageView playerFigure : playerFigures) {
             boardArea.getChildren().remove(playerFigure);
@@ -259,6 +283,12 @@ public class GameSceneController implements Initializable {
         }
     }
 
+    /**
+     * Returns the path of the figure image based on color
+     *
+     * @param playerColor color of the player
+     * @return path of the figure image
+     */
     private String getColorFigurePath(PlayerColor playerColor) {
         switch (playerColor) {
             case BLUE:
@@ -276,15 +306,19 @@ public class GameSceneController implements Initializable {
         }
     }
 
+    /**
+     * Shows the zoom on a weapon in the zoom panel
+     *
+     * @param event of the click on a weapon
+     */
     private void showWeaponZoom(Event event) {
         ImageView weaponTarget = (ImageView) event.getTarget();
 
         if (weaponTarget != null) {
             setBoardOpaque(0.3);
 
-            weaponZoom.toFront();
-            weaponZoomImage.setImage(weaponTarget.getImage());
-            weaponZoom.setVisible(true);
+            zoomPanel.toFront();
+            ImageView weapon = new ImageView(weaponTarget.getImage());
 
             Ammo color = weaponColor.get(weaponTarget.getImage().getUrl());
             if (color != null) {
@@ -302,19 +336,29 @@ public class GameSceneController implements Initializable {
                         break;
                 }
 
-                weaponZoomImage.getStyleClass().add(className);
+                weapon.getStyleClass().add(className);
+
+                zoomPanel.getChildren().add(weapon);
+                zoomPanel.setVisible(true);
             }
         }
     }
 
-    private void hideWeaponZoom() {
-        weaponZoom.setVisible(false);
-        weaponZoomImage.setImage(null);
-        weaponZoomImage.getStyleClass().clear();
+    /**
+     * Hides the zoom panel
+     */
+    private void hideZoomPanel() {
+        zoomPanel.getChildren().clear();
+        zoomPanel.setVisible(false);
 
         setBoardOpaque(1);
     }
 
+    /**
+     * Sets a opacity value for every element on the board
+     *
+     * @param value opacity value
+     */
     private void setBoardOpaque(double value) {
         map.opacityProperty().setValue(value);
         powerupDeck.opacityProperty().setValue(value);
@@ -342,15 +386,22 @@ public class GameSceneController implements Initializable {
         GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), "Error", error);
     }
 
+    /**
+     * Empties the list of action buttons
+     */
     void notYourTurn() {
         actionList.getChildren().clear();
     }
 
+    /**
+     * Displays action buttons
+     *
+     * @param possibleActions possible actions
+     */
     void displayAction(List<PossibleAction> possibleActions) {
         actionList.getChildren().clear();
 
         for (PossibleAction possibleAction : possibleActions) {
-
             ImageView imageView = new ImageView();
             imageView.setId(getActionIDFromPossibleAction(possibleAction));
             imageView.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> guiManager.doAction(possibleAction));
@@ -360,11 +411,12 @@ public class GameSceneController implements Initializable {
         }
     }
 
-    public void showPlayerInfo(Event event) {
-        ImageView playerIcon = (ImageView) event.getTarget();
-        playerIcon.getImage().getUrl();
-    }
-
+    /**
+     * Returns the CSS ID of the action based on the PossibleAction
+     *
+     * @param possibleAction possible action passed
+     * @return the CSS ID
+     */
     private String getActionIDFromPossibleAction(PossibleAction possibleAction) {
         switch (possibleAction) {
             case SPAWN_BOT:
@@ -408,5 +460,14 @@ public class GameSceneController implements Initializable {
             default:
                 return null;
         }
+    }
+
+    /**
+     * Shows the player info in the info panel
+     *
+     * @param event event of the click on a icon
+     */
+    private void showPlayerInfo(Event event) {
+        // TODO
     }
 }
