@@ -8,6 +8,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -32,10 +33,30 @@ public class GameSceneController {
     private static final String USERNAME_PROPERTY = "username";
     private static final double OPAQUE = 0.3;
     private static final double NOT_OPAQUE = 1;
+
+    private static final double KILLSHOT_TRACK_SKULL_WIDTH = 20;
+    private static final double KILLSHOT_TRACK_SKULL_HEIGHT = 28;
+
+    private static final double PLAYER_BOARD_WIDTH = 680;
+    private static final double PLAYER_BOARD_HEIGHT = 166;
+
+    private static final double PLAYER_BOARD_SKULL_WIDTH = 25;
+    private static final double PLAYER_BOARD_SKULL_HEIGHT = 38;
+
+    private static final double WEAPON_CARD_WIDTH = 136;
+    private static final double WEAPON_CARD_HEIGHT = 230;
+
+    private static final double POWERUP_CARD_WIDTH = 128;
+    private static final double POWERUP_CARD_HEIGHT = 200;
+
+
+    private static final double OPACITY_VALUE = 0.2;
+
     private GuiManager guiManager;
 
     private List<ImageView> weaponSlotList;
     private List<ImageView> ammoTiles;
+    private List<ImageView> killshotsImages;
     private List<ImageView> playerFigures;
     private Map<String, Ammo> weaponColor;
 
@@ -85,6 +106,7 @@ public class GameSceneController {
 
         ammoTiles = new ArrayList<>();
         playerFigures = new ArrayList<>();
+        killshotsImages = new ArrayList<>();
         weaponSlotList = List.of(blueWeapon0, blueWeapon1, blueWeapon2, redWeapon0, redWeapon1, redWeapon2,
                 yellowWeapon0, yellowWeapon1, yellowWeapon2);
     }
@@ -192,6 +214,7 @@ public class GameSceneController {
         setWeaponCards(gameSerialized.getGameMap());
         setPlayersOnMap(gameSerialized.getGameMap().getMapID(), gameSerialized.getAllPlayers());
         setAmmoTiles(gameSerialized.getGameMap());
+        setKillshotTrack(gameSerialized);
     }
 
     /**
@@ -238,6 +261,7 @@ public class GameSceneController {
         for (ImageView ammoTile : ammoTiles) {
             boardArea.getChildren().remove(ammoTile);
         }
+        ammoTiles.clear();
 
         for (int y = 0; y < GameMap.MAX_COLUMNS; ++y) {
             for (int x = 0; x < GameMap.MAX_ROWS; ++x) {
@@ -272,6 +296,8 @@ public class GameSceneController {
             boardArea.getChildren().remove(playerFigure);
         }
 
+        playerFigures.clear();
+
         for (int i = 0; i < allPlayers.size(); ++i) {
             Player player = allPlayers.get(i);
 
@@ -293,6 +319,66 @@ public class GameSceneController {
                 playerFigures.add(playerFigure);
             }
         }
+    }
+
+    private void setKillshotTrack(GameSerialized gameSerialized) {
+        List<KillShot> killShots = new ArrayList<>(Arrays.asList(gameSerialized.getKillShotsTrack()));
+        int killShotNum = gameSerialized.getKillShotNum();
+
+        killShots.subList(killShotNum - 1 , killShots.size() - 1).clear();
+
+        for (ImageView killShot : killshotsImages) {
+            boardArea.getChildren().remove(killShot);
+        }
+
+        killshotsImages.clear();
+        // TODO ADD FRENZY
+
+
+        double startingLeftMargin = MapInsetsHelper.killShotTrackInsets.getLeft() + (8 - killShotNum) * MapInsetsHelper.KILLSHOT_TRACK_HORIZONTAL_OFFSET;
+        double topMargin = MapInsetsHelper.killShotTrackInsets.getTop();
+
+        for (int i = 0; i < killShots.size(); ++i) {
+            KillShot killShot = killShots.get(i);
+            double horizontalOffset = (killShotNum - i <= 0) ? MapInsetsHelper.KILLSHOT_TRACK_TINY_HORIZONTAL_OFFSET : MapInsetsHelper.KILLSHOT_TRACK_HORIZONTAL_OFFSET;
+
+            if (killShot == null) {
+                ImageView skull = new ImageView("/img/skull.png");
+                skull.setFitWidth(KILLSHOT_TRACK_SKULL_WIDTH);
+                skull.setFitHeight(KILLSHOT_TRACK_SKULL_HEIGHT);
+
+                StackPane.setAlignment(skull, Pos.TOP_LEFT);
+                StackPane.setMargin(skull, new Insets(topMargin, 0, 0, startingLeftMargin));
+
+                boardArea.getChildren().add(skull);
+                killshotsImages.add(skull);
+            } else {
+                PlayerColor playerColor = guiManager.getPlayerByName(killShot.getKiller()).getColor();
+                String dropPath = getDropPath(playerColor);
+
+                if (killShot.getPoints() > 1) {
+                    addDropToKillshotTrack(dropPath, topMargin - MapInsetsHelper.KILLSHOT_TRACK_VERTICAL_OFFSET, startingLeftMargin);
+                }
+
+                addDropToKillshotTrack(dropPath, topMargin, startingLeftMargin);
+
+                if (killShot.getPoints() > 2) {
+                    addDropToKillshotTrack(dropPath, topMargin + MapInsetsHelper.KILLSHOT_TRACK_VERTICAL_OFFSET, startingLeftMargin);
+                }
+            }
+
+            startingLeftMargin += horizontalOffset;
+        }
+
+    }
+
+    private void addDropToKillshotTrack(String dropPath, double topMargin, double leftMargin) {
+        ImageView drop = new ImageView(dropPath);
+        StackPane.setAlignment(drop, Pos.TOP_LEFT);
+        StackPane.setMargin(drop, new Insets(topMargin, 0, 0, leftMargin));
+
+        boardArea.getChildren().add(drop);
+        killshotsImages.add(drop);
     }
 
     /**
@@ -327,7 +413,7 @@ public class GameSceneController {
         ImageView weaponTarget = (ImageView) event.getTarget();
 
         if (weaponTarget != null) {
-            setBoardOpaque(0.3);
+            setBoardOpaque(OPACITY_VALUE);
 
             zoomPanel.toFront();
             ImageView weapon = new ImageView(weaponTarget.getImage());
@@ -363,7 +449,7 @@ public class GameSceneController {
         zoomPanel.getChildren().clear();
         zoomPanel.setVisible(false);
 
-        setBoardOpaque(NOT_OPAQUE);
+        setBoardOpaque(1);
     }
 
     /**
@@ -492,7 +578,7 @@ public class GameSceneController {
             showOthersPlayerInfo((UserPlayer) guiManager.getPlayerByName(username));
         }
 
-        setBoardOpaque(0.3);
+        setBoardOpaque(OPACITY_VALUE);
         infoPanel.toFront();
         infoPanel.setVisible(true);
 
@@ -500,22 +586,41 @@ public class GameSceneController {
 
     private void showMyPlayerInfo(UserPlayer me) {
         setUsernamePlayerInfo(me.getUsername());
+
         addPlayerBoardToPlayerInfo(me);
         setDamages(me.getPlayerBoard());
+        setMarks(me.getPlayerBoard());
         setAmmo(me);
+        setPlayerboardSkulls(me.getPlayerBoard());
+
+        setWeapons(Arrays.asList(me.getWeapons()));
+
+        try {
+            setPowerups(Arrays.asList(me.getPowerups()));
+        } catch (NullPointerException e) {
+            // No issues
+        }
     }
 
     private void showBotPlayerInfo(Bot bot) {
         setUsernamePlayerInfo(bot.getUsername());
+
         addPlayerBoardToPlayerInfo(bot);
         setDamages(bot.getPlayerBoard());
+        setMarks(bot.getPlayerBoard());
+        setPlayerboardSkulls(bot.getPlayerBoard());
     }
 
     private void showOthersPlayerInfo(UserPlayer other) {
         setUsernamePlayerInfo(other.getUsername());
+
         addPlayerBoardToPlayerInfo(other);
         setDamages(other.getPlayerBoard());
+        setMarks(other.getPlayerBoard());
         setAmmo(other);
+        setPlayerboardSkulls(other.getPlayerBoard());
+
+        setWeapons(Arrays.asList(other.getWeapons()));
     }
 
     private void setUsernamePlayerInfo(String username) {
@@ -536,10 +641,10 @@ public class GameSceneController {
         AnchorPane anchorPane = new AnchorPane();
 
         ImageView playerBoardImageView = new ImageView(getPlayboardPath(playerColor, playerBoard));
-        playerBoardImageView.setFitWidth(680);
-        playerBoardImageView.setFitHeight(166);
+        playerBoardImageView.setFitWidth(PLAYER_BOARD_WIDTH);
+        playerBoardImageView.setFitHeight(PLAYER_BOARD_HEIGHT);
 
-        AnchorPane.setLeftAnchor(playerBoardImageView, 310.0);
+        AnchorPane.setLeftAnchor(playerBoardImageView, MapInsetsHelper.playerBoardInsets.getLeft());
 
         anchorPane.getChildren().add(playerBoardImageView);
         infoPanel.setCenter(anchorPane);
@@ -564,38 +669,125 @@ public class GameSceneController {
 
         for (int i = 0; i < ammoQuantity.getRedAmmo(); ++i) {
             ImageView redAmmo = new ImageView("/img/ammo/redAmmo.png");
-            AnchorPane.setLeftAnchor(redAmmo, MapInsetsHelper.startingFirstAmmoInsets.getLeft() + i * MapInsetsHelper.AMMO_HORIZONTAL_OFFSET);
-            AnchorPane.setTopAnchor(redAmmo, MapInsetsHelper.startingFirstAmmoInsets.getTop());
+            AnchorPane.setLeftAnchor(redAmmo, MapInsetsHelper.firstAmmoInsets.getLeft() + i * MapInsetsHelper.AMMO_HORIZONTAL_OFFSET);
+            AnchorPane.setTopAnchor(redAmmo, MapInsetsHelper.firstAmmoInsets.getTop());
             ((AnchorPane) infoPanel.getCenter()).getChildren().add(redAmmo);
         }
 
         for (int i = 0; i < ammoQuantity.getYellowAmmo(); ++i) {
             ImageView yellowAmmo = new ImageView("/img/ammo/yellowAmmo.png");
-            AnchorPane.setLeftAnchor(yellowAmmo, MapInsetsHelper.startingSecondAmmoInsets.getLeft() + i * MapInsetsHelper.AMMO_HORIZONTAL_OFFSET);
-            AnchorPane.setTopAnchor(yellowAmmo, MapInsetsHelper.startingSecondAmmoInsets.getTop());
+            AnchorPane.setLeftAnchor(yellowAmmo, MapInsetsHelper.secondAmmoInsets.getLeft() + i * MapInsetsHelper.AMMO_HORIZONTAL_OFFSET);
+            AnchorPane.setTopAnchor(yellowAmmo, MapInsetsHelper.secondAmmoInsets.getTop());
             ((AnchorPane) infoPanel.getCenter()).getChildren().add(yellowAmmo);
         }
 
         for (int i = 0; i < ammoQuantity.getBlueAmmo(); ++i) {
             ImageView blueAmmo = new ImageView("/img/ammo/blueAmmo.png");
-            AnchorPane.setLeftAnchor(blueAmmo, MapInsetsHelper.startingThirdAmmoInsets.getLeft() + i * MapInsetsHelper.AMMO_HORIZONTAL_OFFSET);
-            AnchorPane.setTopAnchor(blueAmmo, MapInsetsHelper.startingThirdAmmoInsets.getTop());
+            AnchorPane.setLeftAnchor(blueAmmo, MapInsetsHelper.thirdAmmoInsets.getLeft() + i * MapInsetsHelper.AMMO_HORIZONTAL_OFFSET);
+            AnchorPane.setTopAnchor(blueAmmo, MapInsetsHelper.thirdAmmoInsets.getTop());
             ((AnchorPane) infoPanel.getCenter()).getChildren().add(blueAmmo);
         }
     }
 
     private void setDamages(PlayerBoard playerBoard) {
-        List<String> damages =  playerBoard.getDamages();
+        List<String> damages = playerBoard.getDamages();
 
         for (int i = 0; i < damages.size(); ++i) {
             String username = damages.get(i);
             PlayerColor damageDealerColor = guiManager.getPlayerByName(username).getColor();
 
-            ImageView drop = new ImageView("/img/players/" + damageDealerColor.name().toLowerCase() + "Drop.png");
-            AnchorPane.setLeftAnchor(drop, MapInsetsHelper.startingDamageInsets.getLeft() + i * MapInsetsHelper.DAMAGE_HORIZONTAL_OFFSET);
-            AnchorPane.setTopAnchor(drop, MapInsetsHelper.startingDamageInsets.getTop());
+            ImageView drop = new ImageView(getDropPath(damageDealerColor));
+            AnchorPane.setLeftAnchor(drop, MapInsetsHelper.damageInsets.getLeft() + i * MapInsetsHelper.DAMAGE_HORIZONTAL_OFFSET);
+            AnchorPane.setTopAnchor(drop, MapInsetsHelper.damageInsets.getTop());
 
             ((AnchorPane) infoPanel.getCenter()).getChildren().add(drop);
+        }
+    }
+
+    private void setMarks(PlayerBoard playerBoard) {
+        List<String> marks = playerBoard.getMarks();
+
+        for (int i = 0; i < marks.size(); ++i) {
+            String username = marks.get(i);
+            PlayerColor markDealerColor = guiManager.getPlayerByName(username).getColor();
+
+            ImageView drop = new ImageView(getDropPath(markDealerColor));
+            AnchorPane.setLeftAnchor(drop, MapInsetsHelper.marksInsets.getLeft() + i * MapInsetsHelper.MARKS_HORIZONTAL_OFFSET);
+            AnchorPane.setTopAnchor(drop, MapInsetsHelper.marksInsets.getTop());
+
+            ((AnchorPane) infoPanel.getCenter()).getChildren().add(drop);
+        }
+    }
+
+    private void setWeapons(List<WeaponCard> weapons) {
+        if (weapons.isEmpty()) {
+            return;
+        }
+
+        HBox weaponHBox = new HBox();
+        weaponHBox.getStyleClass().add("infoHBOX");
+        weaponHBox.setAlignment(Pos.BASELINE_CENTER);
+        weaponHBox.setSpacing(20);
+
+        for (WeaponCard weapon : weapons) {
+            ImageView weaponImage = new ImageView(weapon.getImagePath());
+
+            weaponImage.setFitHeight(WEAPON_CARD_HEIGHT);
+            weaponImage.setFitWidth(WEAPON_CARD_WIDTH);
+
+            if (weapon.status() == 1) {
+                ColorAdjust monochrome = new ColorAdjust();
+                monochrome.setSaturation(-1);
+                weaponImage.setEffect(monochrome);
+            }
+
+            weaponHBox.getChildren().add(weaponImage);
+        }
+
+        AnchorPane.setTopAnchor(weaponHBox, MapInsetsHelper.weaponHBoxInsets.getTop());
+        ((AnchorPane) infoPanel.getCenter()).getChildren().add(weaponHBox);
+    }
+
+    private void setPowerups(List<PowerupCard> powerups) {
+        if (powerups.isEmpty()) {
+            return;
+        }
+
+        HBox powerupHBox = new HBox();
+        powerupHBox.getStyleClass().add("infoHBOX");
+        powerupHBox.setAlignment(Pos.BASELINE_CENTER);
+        powerupHBox.setSpacing(20);
+
+        for (PowerupCard powerup : powerups) {
+            ImageView powerupImage = new ImageView(powerup.getImagePath());
+            powerupImage.setFitWidth(POWERUP_CARD_WIDTH);
+            powerupImage.setFitHeight(POWERUP_CARD_HEIGHT);
+            powerupHBox.getChildren().add(powerupImage);
+        }
+
+        AnchorPane.setTopAnchor(powerupHBox, MapInsetsHelper.powerupsHBoxInsets.getTop());
+        ((AnchorPane) infoPanel.getCenter()).getChildren().add(powerupHBox);
+    }
+
+    private void setPlayerboardSkulls(PlayerBoard playerBoard) {
+        Insets startingInsets;
+        if (playerBoard.isBoardFlipped()) {
+            startingInsets = MapInsetsHelper.playerBoardFrenzySkullInsets;
+        } else {
+            startingInsets = MapInsetsHelper.playerBoardSkullInsets;
+        }
+
+        int skullNum = playerBoard.getSkulls();
+
+        for (int i = 0; i < skullNum; ++i) {
+            ImageView skull = new ImageView("/img/skull.png");
+            skull.setFitWidth(PLAYER_BOARD_SKULL_WIDTH);
+            skull.setFitHeight(PLAYER_BOARD_SKULL_HEIGHT);
+
+            AnchorPane.setLeftAnchor(skull, startingInsets.getLeft() + i * MapInsetsHelper.PLAYER_BOARD_SKULL_HORIZONTAL_OFFSET);
+            AnchorPane.setTopAnchor(skull, startingInsets.getTop());
+
+            ((AnchorPane) infoPanel.getCenter()).getChildren().add(skull);
         }
     }
 
@@ -674,5 +866,9 @@ public class GameSceneController {
         } finally {
             hideSpawnPanel();
         }
+    }
+
+    private String getDropPath(PlayerColor playerColor) {
+        return "/img/players/" + playerColor.name().toLowerCase() + "Drop.png";
     }
 }

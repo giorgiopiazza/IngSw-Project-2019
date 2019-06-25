@@ -45,7 +45,6 @@ public class Game implements Serializable {
     private ArrayList<KillShot> finalFrenzyKillShots;
     private final List<Integer> trackerPoints = new ArrayList<>(Arrays.asList(8, 6, 4, 2, 1, 1));
 
-    // TODO if does not work for persistency create new classes to contain decks and other parameters
     private Deck weaponsCardsDeck;
     private Deck powerupCardsDeck;
     private Deck ammoTileDeck;

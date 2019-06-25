@@ -9,7 +9,7 @@ class MapInsetsHelper {
     public static final double PADDING_TOP = 27.5;
     public static final double PADDING_LEFT = 191;
 
-    private final static List<List<Insets>> ammotileInsetsA1 = List.of(
+    private static final List<List<Insets>> ammotileInsetsA1 = List.of(
             List.of(new Insets(203.5, 0, 0, 379.0),
                     new Insets(273.5, 0, 0, 520.0)),
             List.of(new Insets(0, 0, 0, 0),
@@ -17,7 +17,7 @@ class MapInsetsHelper {
             List.of(new Insets(0, 0, 0, 0),
                     new Insets(570.5, 0, 0, 512.0)));
 
-    private final static List<List<Insets>> ammotileInsetsB1 = List.of(
+    private static final List<List<Insets>> ammotileInsetsB1 = List.of(
             List.of(new Insets(278.5, 0, 0, 382.0),
                     new Insets(198.5, 0, 0, 520.0)),
             List.of(new Insets(0, 0, 0, 0),
@@ -25,7 +25,7 @@ class MapInsetsHelper {
             List.of(new Insets(570.5, 0, 0, 384.0),
                     new Insets(570.5, 0, 0, 512.0)));
 
-    private final static List<List<Insets>> ammotileInsetsA2 = List.of(
+    private static final List<List<Insets>> ammotileInsetsA2 = List.of(
             List.of(new Insets(0, 0, 0, 0),
                     new Insets(0, 0, 0, 0)),
             List.of(new Insets(409.5, 0, 0, 688.0),
@@ -33,7 +33,7 @@ class MapInsetsHelper {
             List.of(new Insets(570.5, 0, 0, 670.0),
                     new Insets(0, 0, 0, 0)));
 
-    private final static List<List<Insets>> ammotileInsetsB2 = List.of(
+    private static final List<List<Insets>> ammotileInsetsB2 = List.of(
             List.of(new Insets(0, 0, 0, 0),
                     new Insets(271.5, 0, 0, 896.0)),
             List.of(new Insets(437.5, 0, 0, 686.0),
@@ -41,7 +41,7 @@ class MapInsetsHelper {
             List.of(new Insets(566.5, 0, 0, 695.0),
                     new Insets(0, 0, 0, 0)));
 
-    private final static List<List<List<Insets>>> playerInsetsA1 = List.of(
+    private static final List<List<List<Insets>>> playerInsetsA1 = List.of(
             List.of(
                     List.of(new Insets(190.5, 0, 0, 433.0),
                             new Insets(236.5, 0, 0, 375.0),
@@ -76,7 +76,7 @@ class MapInsetsHelper {
                             new Insets(568.5, 0, 0, 556.0),
                             new Insets(568.5, 0, 0, 603.0))));
 
-    private final static List<List<List<Insets>>> playerInsetsB1 = List.of(
+    private static final List<List<List<Insets>>> playerInsetsB1 = List.of(
             List.of(
                     List.of(new Insets(192.5, 0, 0, 360.0),
                             new Insets(192.5, 0, 0, 430.0),
@@ -111,7 +111,7 @@ class MapInsetsHelper {
                             new Insets(552.5, 0, 0, 587.0),
                             new Insets(592.5, 0, 0, 587.0))));
 
-    private final static List<List<List<Insets>>> playerInsetsA2 = List.of(
+    private static final List<List<List<Insets>>> playerInsetsA2 = List.of(
             List.of(
                     List.of(new Insets(191.5, 0, 0, 679.0),
                             new Insets(231.5, 0, 0, 679.0),
@@ -146,7 +146,7 @@ class MapInsetsHelper {
                             new Insets(587.5, 0, 0, 835.0),
                             new Insets(587.5, 0, 0, 892.0))));
 
-    private final static List<List<List<Insets>>> playerInsetsB2 = List.of(
+    private static final List<List<List<Insets>>> playerInsetsB2 = List.of(
             List.of(
                     List.of(new Insets(188.5, 0, 0, 664.0),
                             new Insets(188.5, 0, 0, 734.0),
@@ -181,13 +181,30 @@ class MapInsetsHelper {
                             new Insets(587.5, 0, 0, 835.0),
                             new Insets(587.5, 0, 0, 892.0))));
 
-    static final Insets startingFirstAmmoInsets = new Insets(28, 0, 0, 865);
-    static final Insets startingSecondAmmoInsets = new Insets(68, 0, 0, 865);
-    static final Insets startingThirdAmmoInsets = new Insets(108, 0, 0, 865);
+    static final Insets playerBoardInsets = new Insets(0, 0, 0, 310);
+
+    static final Insets killShotTrackInsets = new Insets(72.5, 0, 0, 265);
+    static final double KILLSHOT_TRACK_HORIZONTAL_OFFSET = 38.5;
+    static final double KILLSHOT_TRACK_TINY_HORIZONTAL_OFFSET = 22.5;
+    static final double KILLSHOT_TRACK_VERTICAL_OFFSET = 10;
+
+    static final Insets firstAmmoInsets = new Insets(28, 0, 0, 865);
+    static final Insets secondAmmoInsets = new Insets(68, 0, 0, 865);
+    static final Insets thirdAmmoInsets = new Insets(108, 0, 0, 865);
     static final double AMMO_HORIZONTAL_OFFSET = 36.0;
 
-    static final Insets startingDamageInsets = new Insets(70, 0, 0, 375);
+    static final Insets damageInsets = new Insets(70, 0, 0, 375);
     static final double DAMAGE_HORIZONTAL_OFFSET = 38.7;
+
+    static final Insets marksInsets = new Insets(2, 0, 0, 635);
+    static final double MARKS_HORIZONTAL_OFFSET = 20.0;
+
+    static final Insets weaponHBoxInsets = new Insets(200, 0, 0, 0);
+    static final Insets powerupsHBoxInsets = new Insets(464, 0, 0, 0);
+
+    static final Insets playerBoardSkullInsets = new Insets(121, 0, 0, 455);
+    static final Insets playerBoardFrenzySkullInsets = new Insets(121, 0, 0, 500);
+    static final double PLAYER_BOARD_SKULL_HORIZONTAL_OFFSET = 36;
 
     static Insets getAmmoTileInsets(int map, int x, int y) {
         if (x < 0 || x >= GameMap.MAX_ROWS || y < 0 || y >= GameMap.MAX_COLUMNS || map < 1 || map > 4) {
