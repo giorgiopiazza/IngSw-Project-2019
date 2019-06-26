@@ -815,6 +815,12 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
     }
 
+    public PowerupCard getSpawnPowerup() {
+        synchronized (gameSerializedLock) {
+            return gameSerialized.getSpawnPowerup();
+        }
+    }
+
     /**
      * Returns the weapon cards of the player passed
      *

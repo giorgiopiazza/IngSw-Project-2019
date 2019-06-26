@@ -432,7 +432,7 @@ public class Cli extends ClientGameManager {
         List<PowerupCard> powerupCards = getPowerups();
 
         try {
-            if (!sendRequest(MessageBuilder.buildDiscardPowerupRequest(getClientToken(), powerupCards, powerupCard, getUsername()))) {
+            if (!sendRequest(MessageBuilder.buildSpawnDiscardPowerupRequest(getClientToken(), powerupCards, getSpawnPowerup(), powerupCard, getUsername()))) {
                 promptError(SEND_ERROR, true);
             }
         } catch (PowerupCardsNotFoundException e) {
