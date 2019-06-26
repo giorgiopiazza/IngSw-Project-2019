@@ -24,16 +24,21 @@ public enum Ammo {
     public static RoomColor getColor(String colorChosen) throws InexistentColorException {
         Ammo[] enumColors = values();
         for(Ammo color : enumColors) {
-            if(color.toString().equals(colorChosen)) {
-                return RoomColor.RED;
-            }
-
-            if(color.toString().equals(colorChosen)) {
-                return RoomColor.YELLOW;
-            }
-
-            if(color.toString().equals(colorChosen)) {
-                return RoomColor.BLUE;
+            switch (color) {
+                case RED:
+                    if(color.toString().equalsIgnoreCase(colorChosen)) {
+                        return RoomColor.RED;
+                    }
+                    break;
+                case YELLOW:
+                    if(color.toString().equalsIgnoreCase(colorChosen)) {
+                        return RoomColor.YELLOW;
+                    }
+                    break;
+                default:    // BLUE
+                    if(color.toString().equalsIgnoreCase(colorChosen)) {
+                        return RoomColor.BLUE;
+                    }
             }
         }
 

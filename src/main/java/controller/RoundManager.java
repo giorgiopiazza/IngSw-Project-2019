@@ -29,10 +29,10 @@ import java.util.*;
  * This class contains all the methods needed to handle entirely the Round of a player's turn
  */
 public class RoundManager {
-    private static final String TAGBACK_GRANADE = "TAGBACK_GRENADE";
+    private static final String TAGBACK_GRANADE = "TAGBACK GRENADE";
     private static final String TELEPORTER = "TELEPORTER";
     private static final String NEWTON = "NEWTON";
-    private static final String TARGETING_SCOPE = "TARGETING_SCOPE";
+    private static final String TARGETING_SCOPE = "TARGETING SCOPE";
 
     private Game gameInstance;
     private GameManager gameManager;
@@ -953,7 +953,6 @@ public class RoundManager {
 
         if (powerupIndex == 3) {
             spawnPowerup = turnOwner.getSpawningCard();
-            turnOwner.setSpawningCard(null);
         } else {
             spawnPowerup = turnOwner.getPowerups()[powerupIndex];
             try {
@@ -963,6 +962,8 @@ public class RoundManager {
               // never happen at this point
             }
         }
+
+        turnOwner.setSpawningCard(null);
         spawnColor = Ammo.toColor(spawnPowerup.getValue());
 
         // now that I know the color of the spawning square I can respawn the player and set his initial actions
