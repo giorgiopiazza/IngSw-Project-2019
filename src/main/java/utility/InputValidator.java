@@ -203,7 +203,7 @@ public class InputValidator {
             return false;
         }
 
-        return shootRequest.getEffect() > 0 && shootRequest.getEffect() < 4;
+        return shootRequest.getEffect() >= 0 && shootRequest.getEffect() < 4;
     }
 
     private static boolean checkIndexesInReloadAction(ReloadRequest reloadRequest) {
