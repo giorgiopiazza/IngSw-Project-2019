@@ -203,6 +203,10 @@ public class InputValidator {
             return false;
         }
 
+        if(!checkDuplicatesInArguments(shootRequest.getTargetPlayersUsername())) {
+            return false;
+        }
+
         return shootRequest.getEffect() > 0 && shootRequest.getEffect() < 4;
     }
 

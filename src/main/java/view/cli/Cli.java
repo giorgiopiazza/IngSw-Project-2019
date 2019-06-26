@@ -21,7 +21,6 @@ import network.message.*;
 import utility.*;
 
 import java.util.*;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static java.util.logging.Level.INFO;
@@ -593,18 +592,21 @@ public class Cli extends ClientGameManager {
     @Override
     public void targetingScope() {
         List<PowerupCard> powerups = getPowerups();
-        List<PowerupCard> newList = new ArrayList<>();
+        List<PowerupCard> scopeList = new ArrayList<>();
+        List<PowerupCard> othersList = new ArrayList<>();
         PowerupRequest.PowerupRequestBuilder builder;
 
         for (PowerupCard powerup : powerups) {
             if (powerup.getName().equals(TARGETING_SCOPE)) {
-                newList.add(powerup);
+                scopeList.add(powerup);
+            } else {
+                othersList.add(powerup);
             }
         }
 
-        if (!newList.isEmpty()) {
+        if (!scopeList.isEmpty()) {
             try {
-                builder = buildTargetingScopeRequest(powerups, newList);
+                builder = buildTargetingScopeRequest(powerups, scopeList, othersList);
             } catch (CancelledActionException e) {
                 cancelAction();
                 return;
@@ -1299,19 +1301,23 @@ public class Cli extends ClientGameManager {
      * Builds a powerup request builder
      *
      * @param powerups list of all powerups
-     * @param newList  list of only targeting scopes
+     * @param scopeList  list of only targeting scopes
+     * @param othersList list of powerups different from targeting scope
      * @return the builder of the powerup request
      * @throws CancelledActionException if the action was cancelled
      */
     private PowerupRequest.PowerupRequestBuilder buildTargetingScopeRequest(List<PowerupCard> powerups,
-                                                                            List<PowerupCard> newList) throws CancelledActionException {
+                                                                            List<PowerupCard> scopeList,
+                                                                            List<PowerupCard> othersList) throws CancelledActionException {
         List<PowerupCard> scopes = new ArrayList<>();
         ArrayList<String> targets = new ArrayList<>();
+        ArrayList<Ammo> payingColors = new ArrayList<>();
+        ArrayList<Integer> payingPowerups = new ArrayList<>();
 
         out.println();
 
-        for (int i = 0; i < newList.size(); i++) {
-            out.println("\t" + i + " - " + CliPrinter.toStringPowerUpCard(newList.get(i)));
+        for (int i = 0; i < scopeList.size(); i++) {
+            out.println("\t" + i + " - " + CliPrinter.toStringPowerUpCard(scopeList.get(i)));
         }
 
         out.println("Do you want to use some scope(s)? (-1 none or finish scope(s) selection)");
@@ -1321,26 +1327,95 @@ public class Cli extends ClientGameManager {
         int cycles = 0;
 
         do {
-            readVal = readInt(-1, newList.size() - 1, true);
+            readVal = readInt(-1, scopeList.size() - 1, true);
 
             if (readVal != -1) {
                 out.println("Choose the target player:");
                 String user = readTargetUsername((ArrayList<Player>) getPlayers(), false);
 
-                scopes.add(newList.get(readVal));
+                scopes.add(scopeList.get(readVal));
                 targets.add(user);
             }
             cycles++;
-        } while (readVal != -1 && cycles < newList.size());
+        } while (readVal != -1 && cycles < scopeList.size());
+
+        // after the targets have been chosen, how to pay the scopes is required
+        if(othersList.isEmpty()) {
+            askOnlyAmmos(scopes.size(), payingColors);
+        } else {
+            askPaymentMethod(scopes.size(), payingColors, payingPowerups, powerups, othersList);
+        }
 
         ArrayList<Integer> indexes = new ArrayList<>(getPowerupsIndexesFromList(powerups, scopes));
 
         LOGGER.log(INFO, "indexes: {0}", Arrays.toString(indexes.toArray()));
 
         PowerupRequest.PowerupRequestBuilder builder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), indexes);
-        builder.targetPlayersUsername(targets);
+        builder.targetPlayersUsername(targets).ammoColor(payingColors).paymentPowerups(payingPowerups);
 
         return builder;
+    }
+
+    private void askOnlyAmmos(int scopesUsed, ArrayList<Ammo> payingColors) {
+        int cycles = 0;
+
+        do {
+            printAmmo();
+            out.println("Choose the Ammo color you want to pay with:");
+            payingColors.add(askAmmoColor());
+
+            ++cycles;
+        } while (cycles < scopesUsed);
+    }
+
+    private Ammo askAmmoColor() {
+        Ammo chosenAmmo = null;
+        String chosenColor;
+        boolean correctColor;
+
+        do {
+            out.println(">>>");
+            chosenColor = in.nextLine();
+
+            try {
+                Ammo.getColor(chosenColor);
+                chosenAmmo = Ammo.valueOf(chosenColor.toUpperCase());
+                correctColor = true;
+            } catch (InexistentColorException e) {
+                correctColor = false;
+            }
+        } while (!correctColor);
+
+        return chosenAmmo;
+    }
+
+    private Integer askPowerupIndex(List<PowerupCard> possiblePowerups, List<PowerupCard> powerups) throws CancelledActionException {
+        Integer chosenPowerup;
+
+        chosenPowerup = readInt(0, possiblePowerups.size(), true);
+
+        return getPowerupsIndexesFromList(Collections.singletonList(possiblePowerups.get(chosenPowerup)), powerups).get(0);
+    }
+
+    private void askPaymentMethod(int scopesUsed, ArrayList<Ammo> payingColors, ArrayList<Integer> payingPowerups, List<PowerupCard> powerups, List<PowerupCard> possiblePowerups) {
+        int cycles = 0;
+
+        do {
+            printAmmo();
+            CliPrinter.printPowerups(out, possiblePowerups.toArray(PowerupCard[]::new));
+            out.println("Choose to pay with Ammos(0) or Powerups(1):");
+            try {
+                if(readInt(0,1, true) == 0) {
+                    payingColors.add(askAmmoColor());
+                    ++cycles;
+                } else if (payingPowerups.size() < possiblePowerups.size()){
+                    payingPowerups.add(askPowerupIndex(possiblePowerups, powerups));
+                    ++cycles;
+                }
+            } catch (CancelledActionException e) {
+                // can't happen
+            }
+        } while (cycles < scopesUsed);
     }
 
     /**
