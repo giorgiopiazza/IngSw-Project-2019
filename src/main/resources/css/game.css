@@ -69,7 +69,16 @@
     visibility: hidden;
 }
 
+.actionPanel {
+    visibility: hidden;
+}
+
 .topInfoPanel {
+    -fx-padding: 0 0 20 0;
+    -fx-alignment: CENTER;
+}
+
+.topActionPanel {
     -fx-padding: 0 0 20 0;
     -fx-alignment: CENTER;
 }
@@ -114,6 +123,46 @@
 .actionList {
     -fx-min-width: 120px;
     -fx-max-width: 120px;
+}
+
+.squareClickButton {
+    -fx-max-height: 134px;
+    -fx-min-height: 134px;
+
+    -fx-max-width: 134px;
+    -fx-min-width: 134px;
+
+    -fx-background-color: rgba(136, 188, 231, .5);
+}
+
+.squareOwnerClickButton {
+    -fx-max-height: 134px;
+    -fx-min-height: 134px;
+
+    -fx-max-width: 134px;
+    -fx-min-width: 134px;
+
+    -fx-background-color: rgba(51, 51, 255, .5);
+}
+
+.paymentPowerup > .box {
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-background-color: transparent;
+}
+
+.paymentPowerup > .box > .mark {
+    -fx-background-position: center;
+    -fx-background-repeat: stretch;
+    -fx-shape: none;
+}
+
+.paymentPowerup:selected > .box > .mark {
+    -fx-background-color: transparent;
+}
+
+.paymentPowerup:selected {
+    -fx-effect: dropshadow(gaussian, #F44336, 15, 0.2, 0, 0);
 }
 
 #blue {
@@ -226,8 +275,4 @@
 
 #passTurnAction {
     -fx-image: url("../img/actions/pass_turn.png");
-}
-
-.spawnPanel {
-
 }

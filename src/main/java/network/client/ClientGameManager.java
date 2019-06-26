@@ -7,6 +7,7 @@ import exceptions.player.PlayerNotFoundException;
 import model.GameSerialized;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
+import model.map.GameMap;
 import model.player.Player;
 import model.player.UserPlayer;
 import network.message.*;
@@ -136,9 +137,11 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             case DISCONNECTION:
                 handleDisconnection((DisconnectionMessage) message);
                 break;
+
             case GAME_LOAD:
                 handleGameLoad((GameLoadResponse) message);
                 break;
+
             default:
         }
 
@@ -493,7 +496,10 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
         checkFrenzyMode(reconnectionMessage.getGameStateMessage());
 
-        roundManager.reconnection();
+        if (getPlayer().getPosition() != null) {
+            roundManager.reconnection();
+        }
+
 
         synchronized (gameSerializedLock) {
             queue.add(() -> gameStateUpdate(gameSerialized));
@@ -826,6 +832,13 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             return gameSerialized.getPlayerWeapons(username);
         }
     }
+
+    public GameMap getGameMap() {
+        synchronized (gameSerializedLock) {
+            return gameSerialized.getGameMap();
+        }
+    }
+
 
     /**
      * @return the player of the client

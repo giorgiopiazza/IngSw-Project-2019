@@ -21,7 +21,6 @@ import network.message.*;
 import utility.*;
 
 import java.util.*;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static java.util.logging.Level.INFO;
@@ -405,7 +404,7 @@ public class Cli extends ClientGameManager {
             }
         } while (!correctColor);
 
-        if (!sendRequest(MessageBuilder.buildTerminatorSpawnRequest(getPlayer(), getClientToken(), gameMap.getSquare(botSpawnPosition)))) {
+        if (!sendRequest(MessageBuilder.buildBotSpawnRequest(getPlayer(), getClientToken(), gameMap.getSquare(botSpawnPosition)))) {
             promptError(SEND_ERROR, true);
         }
     }
@@ -470,16 +469,20 @@ public class Cli extends ClientGameManager {
             return;
         }
 
-        if (square.getSquareType() == SquareType.TILE) {
-            if (!sendRequest(MessageBuilder.buildMovePickRequest(getClientToken(), getPlayer(), newPos))) {
-                promptError(SEND_ERROR, true);
+        if (square != null) {
+            if (square.getSquareType() == SquareType.TILE) {
+                if (!sendRequest(MessageBuilder.buildMovePickRequest(getClientToken(), getPlayer(), newPos))) {
+                    promptError(SEND_ERROR, true);
+                }
+            } else {
+                try {
+                    buildPickWeaponRequest(newPos);
+                } catch (CancelledActionException e) {
+                    cancelAction();
+                }
             }
         } else {
-            try {
-                buildPickWeaponRequest(newPos);
-            } catch (CancelledActionException e) {
-                cancelAction();
-            }
+            cancelAction("Invalid Pick Square");
         }
     }
 
@@ -1266,7 +1269,7 @@ public class Cli extends ClientGameManager {
 
         if (weaponSquare.getWeapons().length == 0) { // very particular case in which a spawn square has no powerups
             // pick action not allowed
-            return;
+            throw new CancelledActionException();
         }
 
         pickingWeapon = askPickWeapon(weaponSquare);

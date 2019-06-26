@@ -189,11 +189,11 @@ public class MessageBuilder {
 
     @NotNull
     @Contract("_, null, _ -> fail; _, !null, null -> fail; _, !null, !null -> new")
-    public static TerminatorSpawnRequest buildTerminatorSpawnRequest(UserPlayer player, String token, Square spawnSquare) {
+    public static BotSpawnRequest buildBotSpawnRequest(UserPlayer player, String token, Square spawnSquare) {
         if (player == null || spawnSquare == null)
             throw new NullPointerException("Player and spawnSquare cannot be null");
 
-        return new TerminatorSpawnRequest(player.getUsername(), token, spawnSquare.getRoomColor());
+        return new BotSpawnRequest(player.getUsername(), token, spawnSquare.getRoomColor());
     }
 
     @NotNull

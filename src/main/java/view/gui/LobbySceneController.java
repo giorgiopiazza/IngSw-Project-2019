@@ -1,8 +1,6 @@
 package view.gui;
 
 import enumerations.MessageStatus;
-import javafx.application.Platform;
-import javafx.beans.Observable;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -114,6 +112,6 @@ public class LobbySceneController implements Initializable {
     }
 
     void onError(String error) {
-        GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), "Error", error);
+        GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, error);
     }
 }

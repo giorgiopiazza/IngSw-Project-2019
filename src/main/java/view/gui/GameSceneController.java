@@ -7,6 +7,8 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.Image;
@@ -27,11 +29,9 @@ import utility.MessageBuilder;
 
 import java.util.*;
 
-import static network.client.ClientGameManager.SEND_ERROR;
-
 public class GameSceneController {
     private static final String USERNAME_PROPERTY = "username";
-    private static final double OPAQUE = 0.3;
+    private static final double OPAQUE = 0.2;
     private static final double NOT_OPAQUE = 1;
 
     private static final double KILLSHOT_TRACK_SKULL_WIDTH = 20;
@@ -48,9 +48,6 @@ public class GameSceneController {
 
     private static final double POWERUP_CARD_WIDTH = 128;
     private static final double POWERUP_CARD_HEIGHT = 200;
-
-
-    private static final double OPACITY_VALUE = 0.2;
 
     private GuiManager guiManager;
 
@@ -97,7 +94,7 @@ public class GameSceneController {
     @FXML
     BorderPane infoPanel;
     @FXML
-    StackPane spawnPanel;
+    BorderPane actionPanel;
 
     @FXML
     private void initialize() {
@@ -128,12 +125,11 @@ public class GameSceneController {
     private void bindPanels() {
         infoPanel.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> hideInfoPanel());
         zoomPanel.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> hideZoomPanel());
-        spawnPanel.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> hideSpawnPanel());
     }
 
-    private void hideSpawnPanel() {
-        spawnPanel.getChildren().clear();
-        spawnPanel.setVisible(false);
+    private void hideActionPanel() {
+        actionPanel.getChildren().clear();
+        actionPanel.setVisible(false);
 
         setBoardOpaque(NOT_OPAQUE);
     }
@@ -325,7 +321,7 @@ public class GameSceneController {
         List<KillShot> killShots = new ArrayList<>(Arrays.asList(gameSerialized.getKillShotsTrack()));
         int killShotNum = gameSerialized.getKillShotNum();
 
-        killShots.subList(killShotNum - 1 , killShots.size() - 1).clear();
+        killShots.subList(killShotNum - 1, killShots.size() - 1).clear();
 
         for (ImageView killShot : killshotsImages) {
             boardArea.getChildren().remove(killShot);
@@ -413,7 +409,7 @@ public class GameSceneController {
         ImageView weaponTarget = (ImageView) event.getTarget();
 
         if (weaponTarget != null) {
-            setBoardOpaque(OPACITY_VALUE);
+            setBoardOpaque(OPAQUE);
 
             zoomPanel.toFront();
             ImageView weapon = new ImageView(weaponTarget.getImage());
@@ -478,10 +474,22 @@ public class GameSceneController {
         for (ImageView playerFigure : playerFigures) {
             playerFigure.opacityProperty().setValue(value);
         }
+
+        for (ImageView killshots : killshotsImages) {
+            killshots.opacityProperty().setValue(value);
+        }
+
+        for (Node node : actionList.getChildren()) {
+            node.opacityProperty().setValue(value);
+        }
+
+        for (Node node : iconList.getChildren()) {
+            node.opacityProperty().setValue(value);
+        }
     }
 
     void onError(String error) {
-        GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), "Error", error);
+        GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, error);
     }
 
     /**
@@ -578,7 +586,7 @@ public class GameSceneController {
             showOthersPlayerInfo((UserPlayer) guiManager.getPlayerByName(username));
         }
 
-        setBoardOpaque(OPACITY_VALUE);
+        setBoardOpaque(OPAQUE);
         infoPanel.toFront();
         infoPanel.setVisible(true);
 
@@ -594,12 +602,7 @@ public class GameSceneController {
         setPlayerboardSkulls(me.getPlayerBoard());
 
         setWeapons(Arrays.asList(me.getWeapons()));
-
-        try {
-            setPowerups(Arrays.asList(me.getPowerups()));
-        } catch (NullPointerException e) {
-            // No issues
-        }
+        setPowerups(guiManager.getPowerups());
     }
 
     private void showBotPlayerInfo(Bot bot) {
@@ -791,6 +794,11 @@ public class GameSceneController {
         }
     }
 
+
+    private String getDropPath(PlayerColor playerColor) {
+        return "/img/players/" + playerColor.name().toLowerCase() + "Drop.png";
+    }
+
     /**
      * Hides the info panel
      */
@@ -801,74 +809,351 @@ public class GameSceneController {
         setBoardOpaque(NOT_OPAQUE);
     }
 
-    public void spawn() {
+    private void setActionPanelTitle(String title) {
+        Label label = new Label(title);
+        label.getStyleClass().add("infoTitle");
+
+        VBox vBox = new VBox();
+        vBox.getStyleClass().add("topActionPanel");
+        vBox.getChildren().add(label);
+
+        actionPanel.setTop(vBox);
+    }
+
+    private void setActionPanelBottom() {
+
+        HBox botHBox = new HBox();
+        botHBox.setAlignment(Pos.BASELINE_CENTER);
+        botHBox.setSpacing(20);
+
+        ImageView backButton = new ImageView("/img/scenes/backbutton.png");
+        backButton.getStyleClass().add("button");
+        backButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> hideActionPanel());
+        botHBox.getChildren().add(backButton);
+
+        actionPanel.setBottom(botHBox);
+    }
+
+    void spawn() {
         List<PowerupCard> powerups = guiManager.getPowerups();
 
+        setActionPanelTitle("Player Spawn");
+
+        VBox vBox = new VBox();
+        vBox.setAlignment(Pos.CENTER);
+
+        HBox hBox = new HBox();
+        hBox.setAlignment(Pos.BASELINE_CENTER);
+        hBox.setSpacing(20);
+        vBox.getChildren().add(hBox);
+
         for (int i = 0; i < powerups.size(); i++) {
-            ImageView img = new ImageView();
-            img.setImage(new Image(powerups.get(i).getImagePath()));
-            setPowerupSpawnPosition(img, i, powerups.size());
-            img.addEventHandler(MouseEvent.MOUSE_CLICKED, this::onClickPowerupSpawn);
-            spawnPanel.getChildren().add(img);
+            final int powerupIndex = i;
+
+            ImageView img = new ImageView(powerups.get(i).getImagePath());
+            img.getStyleClass().add("button");
+            img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onClickPowerupSpawn(powerupIndex));
+            hBox.getChildren().add(img);
         }
+
+        actionPanel.setCenter(vBox);
+
+        setActionPanelBottom();
 
         setBoardOpaque(OPAQUE);
-        spawnPanel.setVisible(true);
+        actionPanel.setVisible(true);
     }
 
-    private void setPowerupSpawnPosition(ImageView img, int i, int size) {
-        double offset = ((i == 0) ? 0 : i * 169d + 20d);
-
-        double x = 0, y;
-
-        switch (size) {
-            case 1:
-                x = MapInsetsHelper.PADDING_LEFT + 374;
-                break;
-
-            case 2:
-                if (i != 0) offset = i * 169d + 20d;
-                x = MapInsetsHelper.PADDING_LEFT + 195 + offset;
-                break;
-
-            case 3:
-                x = MapInsetsHelper.PADDING_LEFT + 100.5 + offset;
-                break;
-
-            case 4:
-                x = MapInsetsHelper.PADDING_LEFT + 6 + offset;
-        }
-
-        y = MapInsetsHelper.PADDING_TOP + 215;
-        StackPane.setMargin(img, new Insets(x, 0, 0, y));
-    }
-
-    private void onClickPowerupSpawn(Event event) {
-        ImageView img = (ImageView) event.getTarget();
-        PowerupCard powerup = null;
-
-        for (PowerupCard power : guiManager.getPowerups()) {
-            String[] split = img.getImage().getUrl().split("/");
-            String imgName = split[split.length - 1];
-
-            split = power.getImagePath().split("/");
-            String powerImgName = split[split.length - 1];
-
-            if (imgName.equals(powerImgName)) powerup = power;
-        }
-
+    private void onClickPowerupSpawn(int powerupIndex) {
         try {
-            if (!guiManager.sendRequest(MessageBuilder.buildDiscardPowerupRequest(guiManager.getClientToken(), guiManager.getPowerups(), powerup, guiManager.getUsername()))) {
-                // TODO: error alert
+            if (!guiManager.sendRequest(MessageBuilder.buildDiscardPowerupRequest(guiManager.getClientToken(), guiManager.getPowerups(), guiManager.getPowerups().get(powerupIndex), guiManager.getUsername()))) {
+                GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
             }
         } catch (PowerupCardsNotFoundException e) {
-            // TODO: error alert
+            GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, e.getMessage());
         } finally {
-            hideSpawnPanel();
+            hideActionPanel();
         }
     }
 
-    private String getDropPath(PlayerColor playerColor) {
-        return "/img/players/" + playerColor.name().toLowerCase() + "Drop.png";
+
+    void move(String title, int distance) {
+        setActionPanelTitle(title);
+        GameMap gameMap = guiManager.getGameMap();
+        PlayerPosition playerPosition = guiManager.getPlayer().getPosition();
+
+        AnchorPane anchorPane = new AnchorPane();
+
+        for (int y = 0; y < GameMap.MAX_COLUMNS; ++y) {
+            for (int x = 0; x < GameMap.MAX_ROWS; ++x) {
+                Square square = gameMap.getSquare(x, y);
+                PlayerPosition tempPos = new PlayerPosition(x, y);
+
+                if (square != null) {
+                    Button mapButton = new Button();
+                    mapButton.getStyleClass().add(tempPos.equals(playerPosition) ? "squareOwnerClickButton" : "squareClickButton");
+
+                    mapButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onMoveMapSlotClick(tempPos));
+
+                    AnchorPane.setLeftAnchor(mapButton, MapInsetsHelper.squareButtonInsets.getLeft() + y * MapInsetsHelper.SQUARE_BUTTON_HORIZONTAL_OFFSET);
+                    AnchorPane.setTopAnchor(mapButton, MapInsetsHelper.squareButtonInsets.getTop() + x * MapInsetsHelper.SQUARE_BUTTON_VERTICAL_OFFSET);
+
+                    anchorPane.getChildren().add(mapButton);
+                }
+            }
+        }
+
+        actionPanel.setCenter(anchorPane);
+
+        setActionPanelBottom();
+
+        setBoardOpaque(OPAQUE);
+        actionPanel.setVisible(true);
+    }
+
+    private void onMoveMapSlotClick(PlayerPosition playerPosition) {
+        try {
+            if (!guiManager.sendRequest(MessageBuilder.buildMoveRequest(guiManager.getClientToken(), guiManager.getPlayer(), playerPosition))) {
+                GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
+            }
+        } finally {
+            hideActionPanel();
+        }
+    }
+
+    void passTurn() {
+        if (!guiManager.sendRequest(MessageBuilder.buildPassTurnRequest(guiManager.getClientToken(), guiManager.getPlayer()))) {
+            GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
+        }
+    }
+
+    void spawnBot(boolean respawn) {
+        setActionPanelTitle((respawn) ? "Respawn Bot" : "Spawn bot");
+        GameMap gameMap = guiManager.getGameMap();
+
+        AnchorPane anchorPane = new AnchorPane();
+
+        for (int y = 0; y < GameMap.MAX_COLUMNS; ++y) {
+            for (int x = 0; x < GameMap.MAX_ROWS; ++x) {
+                Square square = gameMap.getSquare(x, y);
+                PlayerPosition tempPos = new PlayerPosition(x, y);
+
+                if (square != null && square.getSquareType() == SquareType.SPAWN) {
+                    Button mapButton = new Button();
+                    mapButton.getStyleClass().add("squareClickButton");
+
+                    mapButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onSpawnBotClick(tempPos));
+
+                    AnchorPane.setLeftAnchor(mapButton, MapInsetsHelper.squareButtonInsets.getLeft() + y * MapInsetsHelper.SQUARE_BUTTON_HORIZONTAL_OFFSET);
+                    AnchorPane.setTopAnchor(mapButton, MapInsetsHelper.squareButtonInsets.getTop() + x * MapInsetsHelper.SQUARE_BUTTON_VERTICAL_OFFSET);
+
+                    anchorPane.getChildren().add(mapButton);
+                }
+            }
+        }
+
+        actionPanel.setCenter(anchorPane);
+
+        setActionPanelBottom();
+
+        setBoardOpaque(OPAQUE);
+        actionPanel.setVisible(true);
+    }
+
+    private void onSpawnBotClick(PlayerPosition botSpawnPosition) {
+        if (!guiManager.sendRequest(MessageBuilder.buildBotSpawnRequest(guiManager.getPlayer(), guiManager.getClientToken(), guiManager.getGameMap().getSquare(botSpawnPosition)))) {
+            GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
+        }
+
+        hideActionPanel();
+    }
+
+    void moveAndPick(String title, int distance) {
+        setActionPanelTitle(title);
+        GameMap gameMap = guiManager.getGameMap();
+        PlayerPosition playerPosition = guiManager.getPlayer().getPosition();
+
+        AnchorPane anchorPane = new AnchorPane();
+
+        for (int y = 0; y < GameMap.MAX_COLUMNS; ++y) {
+            for (int x = 0; x < GameMap.MAX_ROWS; ++x) {
+                Square square = gameMap.getSquare(x, y);
+                PlayerPosition tempPos = new PlayerPosition(x, y);
+
+                if (square != null) {
+                    Button mapButton = new Button();
+                    mapButton.getStyleClass().add(tempPos.equals(playerPosition) ? "squareOwnerClickButton" : "squareClickButton");
+
+                    if (square.getSquareType() == SquareType.TILE) {
+                        mapButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onTilePickClick(tempPos));
+                    } else {
+                        mapButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onWeaponPickClick(tempPos));
+                    }
+
+                    AnchorPane.setLeftAnchor(mapButton, MapInsetsHelper.squareButtonInsets.getLeft() + y * MapInsetsHelper.SQUARE_BUTTON_HORIZONTAL_OFFSET);
+                    AnchorPane.setTopAnchor(mapButton, MapInsetsHelper.squareButtonInsets.getTop() + x * MapInsetsHelper.SQUARE_BUTTON_VERTICAL_OFFSET);
+
+                    anchorPane.getChildren().add(mapButton);
+                }
+            }
+        }
+
+        actionPanel.setCenter(anchorPane);
+
+        setActionPanelBottom();
+
+        setBoardOpaque(OPAQUE);
+        actionPanel.setVisible(true);
+    }
+
+    private void onTilePickClick(PlayerPosition pickPosition) {
+        if (!guiManager.sendRequest(MessageBuilder.buildMovePickRequest(guiManager.getClientToken(), guiManager.getPlayer(), pickPosition))) {
+            GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
+        }
+    }
+
+    private void onWeaponPickClick(final PlayerPosition pickPosition) {
+        SpawnSquare weaponSquare = (SpawnSquare) guiManager.getGameMap().getSquare(pickPosition);
+        List<WeaponCard> weaponCards = Arrays.asList(weaponSquare.getWeapons());
+
+        if (weaponCards.isEmpty()) {
+            GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, "Invalid move and pick action");
+            return;
+        }
+
+        actionPanel.getChildren().clear();
+
+        setActionPanelTitle("Weapon Pick");
+
+        VBox vBox = new VBox();
+        vBox.setAlignment(Pos.CENTER);
+
+        HBox hBox = new HBox();
+        hBox.setAlignment(Pos.BASELINE_CENTER);
+        hBox.setSpacing(20);
+        vBox.getChildren().add(hBox);
+
+        for (int i = 0; i < weaponCards.size(); i++) {
+            final int weaponIndex = i;
+
+            ImageView img = new ImageView(weaponCards.get(i).getImagePath());
+            img.getStyleClass().add("button");
+            img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onWeaponCardPickClick(pickPosition, weaponCards.get(weaponIndex)));
+            hBox.getChildren().add(img);
+        }
+
+        actionPanel.setCenter(vBox);
+
+        setActionPanelBottom();
+
+        setBoardOpaque(OPAQUE);
+        actionPanel.setVisible(true);
+    }
+
+    private void onWeaponCardPickClick(final PlayerPosition pickPosition, final WeaponCard weaponCard) {
+        ArrayList<Integer> paymentPowerups = new ArrayList<>();
+        ArrayList<PowerupCard> powerupCards = new ArrayList<>(guiManager.getPowerups());
+
+        if (guiManager.getPowerups().isEmpty()) {
+            onCheckWeaponSwap(pickPosition, weaponCard, paymentPowerups);
+        } else {
+            actionPanel.getChildren().clear();
+
+            setActionPanelTitle("Payment Powerups");
+
+            VBox vBox = new VBox();
+            vBox.setAlignment(Pos.CENTER);
+
+            HBox hBox = new HBox();
+            hBox.setAlignment(Pos.BASELINE_CENTER);
+            hBox.setSpacing(20);
+            vBox.getChildren().add(hBox);
+
+            for (PowerupCard powerupCard : powerupCards) {
+                CheckBox powCheckbox = new CheckBox();
+                powCheckbox.getStyleClass().add("paymentPowerup");
+                powCheckbox.setStyle("-fx-graphic:  url('" + powerupCard.getImagePath() + "')");
+                StackPane.setAlignment(powCheckbox, Pos.CENTER);
+                hBox.getChildren().add(powCheckbox);
+            }
+
+            actionPanel.setCenter(vBox);
+
+            setActionPanelBottom();
+
+            HBox botHBox = (HBox) actionPanel.getBottom();
+            ImageView nextButton = new ImageView("/img/scenes/nextbutton.png");
+            nextButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> calcPowerupIndexesWeaponPick(pickPosition, weaponCard));
+            botHBox.getChildren().add(nextButton);
+
+            setBoardOpaque(OPAQUE);
+            actionPanel.setVisible(true);
+
+        }
+    }
+
+    private void calcPowerupIndexesWeaponPick(final PlayerPosition pickPosition, final WeaponCard weaponCard) {
+        ArrayList<Integer> paymentPowerups = new ArrayList<>();
+
+        VBox centerVBox = (VBox) actionPanel.getCenter();
+        HBox centerHBox = (HBox) centerVBox.getChildren().get(0);
+
+        for (int i = 0; i < centerHBox.getChildren().size(); ++i) {
+            CheckBox childrenCheck = (CheckBox) centerHBox.getChildren().get(i);
+
+            if (childrenCheck.isSelected()) {
+                paymentPowerups.add(i);
+            }
+        }
+
+        onCheckWeaponSwap(pickPosition, weaponCard, paymentPowerups);
+    }
+
+    private void onCheckWeaponSwap(final PlayerPosition pickPosition, final WeaponCard weaponCard, final ArrayList<Integer> paymentPowerups) {
+        if (guiManager.getPlayer().getWeapons().length < 3) {
+            sendPickRequest(pickPosition, weaponCard, paymentPowerups, null);
+        } else {
+            List<WeaponCard> weaponCards = new ArrayList<>(Arrays.asList(guiManager.getPlayer().getWeapons()));
+
+            actionPanel.getChildren().clear();
+
+            setActionPanelTitle("Weapon Swap");
+
+            VBox vBox = new VBox();
+            vBox.setAlignment(Pos.CENTER);
+
+            HBox hBox = new HBox();
+            hBox.setAlignment(Pos.BASELINE_CENTER);
+            hBox.setSpacing(20);
+            vBox.getChildren().add(hBox);
+
+            for (WeaponCard discardingWeap : weaponCards) {
+
+                ImageView img = new ImageView(discardingWeap.getImagePath());
+                img.getStyleClass().add("button");
+                img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> sendPickRequest(pickPosition, weaponCard, paymentPowerups, discardingWeap));
+                hBox.getChildren().add(img);
+            }
+
+            actionPanel.setCenter(vBox);
+
+            setActionPanelBottom();
+
+            setBoardOpaque(OPAQUE);
+            actionPanel.setVisible(true);
+        }
+    }
+
+    private void sendPickRequest(final PlayerPosition pickPosition, final WeaponCard weaponCard, final ArrayList<Integer> paymentPowerups, final WeaponCard discardingWeapon) {
+        try {
+            if (!guiManager.sendRequest(MessageBuilder.buildMovePickRequest(guiManager.getClientToken(), guiManager.getPlayer(), pickPosition, paymentPowerups, weaponCard, discardingWeapon))) {
+                GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
+            }
+        } catch (
+                PowerupCardsNotFoundException e) {
+            GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, e.getMessage());
+        } finally {
+            hideActionPanel();
+        }
     }
 }

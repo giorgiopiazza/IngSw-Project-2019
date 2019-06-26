@@ -441,7 +441,7 @@ public class GameManager implements TimerRunListener, Serializable {
     private Response checkTerminatorRespawn(Message receivedMessage) {
         Response tempResponse;
         if (receivedMessage.getContent() == MessageContent.BOT_SPAWN) {
-            tempResponse = roundManager.handleTerminatorRespawn((TerminatorSpawnRequest) receivedMessage);
+            tempResponse = roundManager.handleTerminatorRespawn((BotSpawnRequest) receivedMessage);
             if (tempResponse.getStatus() == MessageStatus.OK) {
                 // if the Respawn message is validated I can distribute the points of the terminator's playerboard, move the skull from the tracker and then reset his playerboard
                 distributePoints(gameInstance.getTerminator());
@@ -507,7 +507,7 @@ public class GameManager implements TimerRunListener, Serializable {
     private Response terminatorSpawnCheckState(Message receivedMessage) {
         if (gameState == PossibleGameState.GAME_STARTED && roundManager.getTurnManager().getTurnOwner().getPlayerState() == PossiblePlayerState.SPAWN_TERMINATOR) {
             // remember a player must see the powerups he has drawn before spawning the terminator!
-            return roundManager.handleTerminatorFirstSpawn((TerminatorSpawnRequest) receivedMessage);
+            return roundManager.handleTerminatorFirstSpawn((BotSpawnRequest) receivedMessage);
         } else {
             return buildInvalidResponse();
         }

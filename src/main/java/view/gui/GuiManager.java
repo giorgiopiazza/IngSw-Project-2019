@@ -174,12 +174,12 @@ public class GuiManager extends ClientGameManager {
 
     @Override
     public void botSpawn() {
-
+        Platform.runLater(() -> gameSceneController.spawnBot(false));
     }
 
     @Override
     public void botRespawn() {
-
+        Platform.runLater(() -> gameSceneController.spawnBot(true));
     }
 
     @Override
@@ -189,12 +189,12 @@ public class GuiManager extends ClientGameManager {
 
     @Override
     public void move() {
-
+        Platform.runLater(() -> gameSceneController.move("Move", 3));
     }
 
     @Override
     public void moveAndPick() {
-
+        Platform.runLater(() -> gameSceneController.moveAndPick("Move and Pick", 1));
     }
 
     @Override
@@ -204,7 +204,7 @@ public class GuiManager extends ClientGameManager {
 
     @Override
     public void adrenalinePick() {
-
+        Platform.runLater(() -> gameSceneController.moveAndPick("Adrenaline Move and Pick", 2));
     }
 
     @Override
@@ -214,12 +214,12 @@ public class GuiManager extends ClientGameManager {
 
     @Override
     public void frenzyMove() {
-
+        Platform.runLater(() -> gameSceneController.move("Frenzy Move", 4));
     }
 
     @Override
     public void frenzyPick() {
-
+        Platform.runLater(() -> gameSceneController.moveAndPick("Frenzy Move and Pick", 2));
     }
 
     @Override
@@ -229,7 +229,7 @@ public class GuiManager extends ClientGameManager {
 
     @Override
     public void lightFrenzyPick() {
-
+        Platform.runLater(() -> gameSceneController.moveAndPick("Light Frenzy Move and Pick", 3));
     }
 
     @Override
@@ -259,7 +259,7 @@ public class GuiManager extends ClientGameManager {
 
     @Override
     public void passTurn() {
-
+        Platform.runLater(gameSceneController::passTurn);
     }
 
     @Override

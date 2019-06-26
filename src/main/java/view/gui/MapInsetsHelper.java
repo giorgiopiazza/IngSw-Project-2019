@@ -206,6 +206,10 @@ class MapInsetsHelper {
     static final Insets playerBoardFrenzySkullInsets = new Insets(121, 0, 0, 500);
     static final double PLAYER_BOARD_SKULL_HORIZONTAL_OFFSET = 36;
 
+    static final Insets squareButtonInsets = new Insets(110, 0 , 0, 354);
+    static final double SQUARE_BUTTON_HORIZONTAL_OFFSET = 155;
+    static final double SQUARE_BUTTON_VERTICAL_OFFSET = 155;
+
     static Insets getAmmoTileInsets(int map, int x, int y) {
         if (x < 0 || x >= GameMap.MAX_ROWS || y < 0 || y >= GameMap.MAX_COLUMNS || map < 1 || map > 4) {
             throw new IndexOutOfBoundsException();

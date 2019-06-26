@@ -93,10 +93,10 @@ public class RoundManager {
      * Method that handles the FirstSpawn of the {@link Bot Terminator}, performed by the First
      * {@link UserPlayer Player} that starts the {@link Game Game}
      *
-     * @param spawnRequest the {@link TerminatorSpawnRequest TerminatorSpawnRequest} received
+     * @param spawnRequest the {@link BotSpawnRequest TerminatorSpawnRequest} received
      * @return a positive or negative {@link Response Response} handled by the server
      */
-    Response handleTerminatorFirstSpawn(TerminatorSpawnRequest spawnRequest) {
+    Response handleTerminatorFirstSpawn(BotSpawnRequest spawnRequest) {
         if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.SPAWN_BOT)) {
             try {
                 gameInstance.spawnTerminator(gameInstance.getGameMap().getSpawnSquare(spawnRequest.getSpawnColor()));
@@ -899,10 +899,10 @@ public class RoundManager {
     /**
      * Method that handles the Respawn of the {@link Bot Terminatore} performed by the TurnOwner
      *
-     * @param respawnRequest the {@link TerminatorSpawnRequest TerminatorRespawnRequest} received
+     * @param respawnRequest the {@link BotSpawnRequest TerminatorRespawnRequest} received
      * @return a positive or negative {@link Response Response} handled by the server
      */
-    Response handleTerminatorRespawn(TerminatorSpawnRequest respawnRequest) {
+    Response handleTerminatorRespawn(BotSpawnRequest respawnRequest) {
         ArrayList<UserPlayer> deathPlayers = gameInstance.getDeathPlayers();
 
         try {

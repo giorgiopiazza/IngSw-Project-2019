@@ -68,7 +68,7 @@ public class InputValidator {
                 case LOBBY_VOTE:
                     return checkNullsInVote((GameVoteMessage) checkingMessage);
                 case BOT_SPAWN:
-                    return checkNullsInBotSpawn((TerminatorSpawnRequest) checkingMessage);
+                    return checkNullsInBotSpawn((BotSpawnRequest) checkingMessage);
                 case DISCARD_POWERUP:
                     return checkIndexesInDiscard((DiscardPowerupRequest) checkingMessage);
                 case POWERUP_USAGE:
@@ -151,8 +151,8 @@ public class InputValidator {
         return true;
     }
 
-    private static boolean checkNullsInBotSpawn(TerminatorSpawnRequest terminatorSpawnRequest) {
-        return terminatorSpawnRequest.getSpawnColor() != null;
+    private static boolean checkNullsInBotSpawn(BotSpawnRequest botSpawnRequest) {
+        return botSpawnRequest.getSpawnColor() != null;
     }
 
     private static boolean checkIndexesInDiscard(DiscardPowerupRequest discardPowerupRequest) {

@@ -121,7 +121,7 @@
         <!-- INFO PANEL -->
         <BorderPane fx:id="infoPanel" styleClass="infoPanel"/>
 
-        <!-- SPAWN PANEL -->
-        <StackPane fx:id="spawnPanel" styleClass="spawnPanel"/>
+        <!-- ACTION PANEL -->
+        <BorderPane fx:id="actionPanel" styleClass="actionPanel"/>
     </StackPane>
 </FlowPane>
