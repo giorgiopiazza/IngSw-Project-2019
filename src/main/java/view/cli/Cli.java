@@ -1304,7 +1304,7 @@ public class Cli extends ClientGameManager {
     /**
      * Builds a powerup request builder
      *
-     * @param powerups list of all powerups
+     * @param powerups   list of all powerups
      * @param scopeList  list of only targeting scopes
      * @param othersList list of powerups different from targeting scope
      * @return the builder of the powerup request
@@ -1344,7 +1344,7 @@ public class Cli extends ClientGameManager {
         } while (readVal != -1 && cycles < scopeList.size());
 
         // after the targets have been chosen, how to pay the scopes is required
-        if(othersList.isEmpty()) {
+        if (othersList.isEmpty()) {
             askOnlyAmmos(scopes.size(), payingColors);
         } else {
             askPaymentMethod(scopes.size(), payingColors, payingPowerups, powerups, othersList);
@@ -1401,24 +1401,22 @@ public class Cli extends ClientGameManager {
         return getPowerupsIndexesFromList(Collections.singletonList(possiblePowerups.get(chosenPowerup)), powerups).get(0);
     }
 
-    private void askPaymentMethod(int scopesUsed, ArrayList<Ammo> payingColors, ArrayList<Integer> payingPowerups, List<PowerupCard> powerups, List<PowerupCard> possiblePowerups) {
+    private void askPaymentMethod(int scopesUsed, ArrayList<Ammo> payingColors, ArrayList<Integer> payingPowerups, List<PowerupCard> powerups, List<PowerupCard> possiblePowerups) throws CancelledActionException {
         int cycles = 0;
 
         do {
             printAmmo();
             CliPrinter.printPowerups(out, possiblePowerups.toArray(PowerupCard[]::new));
             out.println("Choose to pay with Ammos(0) or Powerups(1):");
-            try {
-                if(readInt(0,1, true) == 0) {
-                    payingColors.add(askAmmoColor());
-                    ++cycles;
-                } else if (payingPowerups.size() < possiblePowerups.size()){
-                    payingPowerups.add(askPowerupIndex(possiblePowerups, powerups));
-                    ++cycles;
-                }
-            } catch (CancelledActionException e) {
-                // can't happen
+
+            if (readInt(0, 1, true) == 0) {
+                payingColors.add(askAmmoColor());
+                ++cycles;
+            } else if (payingPowerups.size() < possiblePowerups.size()) {
+                payingPowerups.add(askPowerupIndex(possiblePowerups, powerups));
+                ++cycles;
             }
+
         } while (cycles < scopesUsed);
     }
 
