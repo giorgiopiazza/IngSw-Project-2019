@@ -169,7 +169,7 @@ public class Server implements Runnable {
         if (args.length > 0 && args.length < 7) {
             int i = 0;
             while (i < args.length) {
-                if (args[i].charAt(0) == '-' && args[i].length() == 2 && args.length >= i + 1 && args[i + 1].charAt(0) != '-') {
+                if (args[i].charAt(0) == '-' && args[i].length() == 2 && args.length >= i + 1) {
                     switch (args[i].charAt(1)) {
                         case 'l':
                             confFilePath = args[i + 1];

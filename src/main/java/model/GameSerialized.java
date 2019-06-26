@@ -95,6 +95,10 @@ public class GameSerialized implements Serializable {
         return powerupList;
     }
 
+    public PowerupCard getSpawnPowerup() {
+        return spawningPowerup;
+    }
+
     public List<WeaponCard> getPlayerWeapons(String username) {
         for (UserPlayer p : players) {
             if (p.getUsername().equalsIgnoreCase(username)) {

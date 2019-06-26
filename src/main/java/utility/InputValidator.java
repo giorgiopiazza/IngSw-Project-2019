@@ -156,7 +156,7 @@ public class InputValidator {
     }
 
     private static boolean checkIndexesInDiscard(DiscardPowerupRequest discardPowerupRequest) {
-        return discardPowerupRequest.getPowerup() > 0 && discardPowerupRequest.getPowerup() <= MAX_POWERUPS;
+        return discardPowerupRequest.getPowerup() >= 0 && discardPowerupRequest.getPowerup() <= MAX_POWERUPS;
     }
 
     private static boolean checkNullsInPowerup(PowerupRequest powerupRequest) {
@@ -207,7 +207,7 @@ public class InputValidator {
             return false;
         }
 
-        return shootRequest.getEffect() > 0 && shootRequest.getEffect() < 4;
+        return shootRequest.getEffect() >= 0 && shootRequest.getEffect() < 4;
     }
 
     private static boolean checkIndexesInReloadAction(ReloadRequest reloadRequest) {

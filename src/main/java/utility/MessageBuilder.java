@@ -73,6 +73,16 @@ public class MessageBuilder {
         throw new PowerupCardsNotFoundException("powerupCard not found in " + powerupCards);
     }
 
+    public static DiscardPowerupRequest buildSpawnDiscardPowerupRequest(String token, List<PowerupCard> powerups, PowerupCard spawnPowerup, PowerupCard choosen, String username) throws PowerupCardsNotFoundException {
+        if (powerups == null || choosen == null)
+            throw new NullPointerException("powerups and choosen powerup cannot be null");
+
+        if (spawnPowerup == null || !spawnPowerup.equals(choosen))
+            return buildDiscardPowerupRequest(token, powerups, choosen, username);
+
+        return new DiscardPowerupRequest(username, token, 3);
+    }
+
     public static MovePickRequest buildMovePickRequest(String token, UserPlayer player, PlayerPosition newPos) {
         if(player == null || newPos == null) {
             throw new NullPointerException("player and newPos cannot be null");
