@@ -24,6 +24,8 @@ import model.map.GameMap;
 import model.map.SpawnSquare;
 import model.map.Square;
 import model.player.*;
+import network.client.ClientGameManager;
+import network.message.PowerupRequest;
 import utility.GameCostants;
 import utility.MessageBuilder;
 
@@ -301,7 +303,7 @@ public class GameSceneController {
 
                 int count = 0;
                 for (int j = i - 1; j >= 0; --j) {
-                    if (allPlayers.get(j).getPosition().equals(player.getPosition())) {
+                    if (allPlayers.get(j).getPosition() != null && allPlayers.get(j).getPosition().equals(player.getPosition())) {
                         ++count;
                     }
                 }
@@ -889,7 +891,7 @@ public class GameSceneController {
                 Square square = gameMap.getSquare(x, y);
                 PlayerPosition tempPos = new PlayerPosition(x, y);
 
-                if (square != null) {
+                if (square != null && tempPos.distanceOf(playerPosition, gameMap) <= distance && tempPos.distanceOf(playerPosition, gameMap) > 0) {
                     Button mapButton = new Button();
                     mapButton.getStyleClass().add(tempPos.equals(playerPosition) ? "squareOwnerClickButton" : "squareClickButton");
 
@@ -980,7 +982,7 @@ public class GameSceneController {
                 Square square = gameMap.getSquare(x, y);
                 PlayerPosition tempPos = new PlayerPosition(x, y);
 
-                if (square != null) {
+                if (square != null && tempPos.distanceOf(playerPosition, gameMap) <= distance) {
                     Button mapButton = new Button();
                     mapButton.getStyleClass().add(tempPos.equals(playerPosition) ? "squareOwnerClickButton" : "squareClickButton");
 
@@ -1010,6 +1012,8 @@ public class GameSceneController {
         if (!guiManager.sendRequest(MessageBuilder.buildMovePickRequest(guiManager.getClientToken(), guiManager.getPlayer(), pickPosition))) {
             GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
         }
+
+        hideActionPanel();
     }
 
     private void onWeaponPickClick(final PlayerPosition pickPosition) {
@@ -1154,6 +1158,94 @@ public class GameSceneController {
             GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, e.getMessage());
         } finally {
             hideActionPanel();
+        }
+    }
+/*
+    void usePowerup() {
+        List<PowerupCard> powerupCards = guiManager.getPowerups();
+
+        if (powerupCards.isEmpty()) {
+            GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, "Invalid powerup action");
+            return;
+        }
+
+        actionPanel.getChildren().clear();
+
+        setActionPanelTitle("Powerup use");
+
+        VBox vBox = new VBox();
+        vBox.setAlignment(Pos.CENTER);
+
+        HBox hBox = new HBox();
+        hBox.setAlignment(Pos.BASELINE_CENTER);
+        hBox.setSpacing(20);
+        vBox.getChildren().add(hBox);
+
+        for (int i = 0; i < powerupCards.size(); i++) {
+            if (powerupCards.get(i).getName().equals(GuiManager.TELEPORTER) || powerupCards.get(i).getName().equals(GuiManager.NEWTON)) {
+                final int powerupIndex = i;
+
+                ImageView img = new ImageView(powerupCards.get(i).getImagePath());
+                img.getStyleClass().add("button");
+                img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onPowerupUseClick(List.of(powerupIndex)));
+                hBox.getChildren().add(img);
+            }
+        }
+
+        actionPanel.setCenter(vBox);
+
+        setActionPanelBottom();
+
+        setBoardOpaque(OPAQUE);
+        actionPanel.setVisible(true);
+    }
+
+    private void onPowerupUseClick(List<Integer> powerupIndexes) {
+        if (!powerupIndexes.isEmpty()) {
+            PowerupCard powerupCard = guiManager.getPowerups().get(powerupIndexes.get(0));
+
+            switch (powerupCard.getName()) {
+                case ClientGameManager.NEWTON:
+                    onNewtonClick(powerupIndexex);
+                    break;
+                case ClientGameManager.TELEPORTER:
+
+                    break;
+                case ClientGameManager.TAGBACK_GRENADE:
+                    break;
+                case ClientGameManager.TARGETING_SCOPE:
+                    break;
+                default:
+                    throw new IllegalStateException();
+            }
+        }
+    }
+
+    private void onNewtonClick(int powerupIndex) {
+
+    }
+
+    private void onTeleporterClick(int powerupIndex) {
+
+    }
+
+    private void onTagbackClick(int powerupIndex) {
+
+    }
+
+    private void onScopeClick(int powerupIndex) {
+
+    }*/
+
+    void tagbackGrenade() {
+        PowerupRequest.PowerupRequestBuilder grenadeRequestBuilder = new PowerupRequest.PowerupRequestBuilder(guiManager.getUsername(), guiManager.getClientToken(), new ArrayList<>());
+
+        try {
+            if (!guiManager.sendRequest(MessageBuilder.buildPowerupRequest(grenadeRequestBuilder))) {
+                GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
+            }
+        } catch (PowerupCardsNotFoundException e) {
+            GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, e.getMessage());
         }
     }
 }

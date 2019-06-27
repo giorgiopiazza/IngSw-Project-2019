@@ -254,7 +254,7 @@ public class GuiManager extends ClientGameManager {
 
     @Override
     public void tagbackGrenade() {
-
+        Platform.runLater(gameSceneController::tagbackGrenade);
     }
 
     @Override

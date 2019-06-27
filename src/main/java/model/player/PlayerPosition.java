@@ -115,7 +115,7 @@ public class PlayerPosition implements Serializable {
         return "(" + coordX + "," + coordY + ")";
     }
 
-    public boolean clientCanSee(PlayerPosition pos, GameMap map) {
+    public boolean canSee(PlayerPosition pos, GameMap map) {
         if (pos == null) {
             throw new NullPointerException("Target can't be null");
         }
@@ -159,12 +159,12 @@ public class PlayerPosition implements Serializable {
     }
 
     public boolean canSee(PlayerPosition pos) {
-        return clientCanSee(pos, Game.getInstance().getGameMap());
+        return canSee(pos, Game.getInstance().getGameMap());
     }
 
-    public boolean clientCanSeeSomeone(Player actingPlayer, GameMap map, List<Player> players) {
+    public boolean canSeeSomeone(Player actingPlayer, GameMap map, List<Player> players) {
         for (Player target : players) {
-            if (target.getPosition() != null && !target.equals(actingPlayer) && this.clientCanSee(target.getPosition(), map)) {
+            if (target.getPosition() != null && !target.equals(actingPlayer) && this.canSee(target.getPosition(), map)) {
                 return true;
             }
         }
@@ -182,10 +182,10 @@ public class PlayerPosition implements Serializable {
     public boolean canSeeSomeone(Player actingPlayer) {
         List<Player> players = new ArrayList<>(Game.getInstance().getPlayers());
         if (Game.getInstance().isTerminatorPresent()) players.add(Game.getInstance().getTerminator());
-        return clientCanSeeSomeone(actingPlayer, Game.getInstance().getGameMap(), players);
+        return canSeeSomeone(actingPlayer, Game.getInstance().getGameMap(), players);
     }
 
-    public int clientDistanceOf(PlayerPosition other, GameMap map) {
+    public int distanceOf(PlayerPosition other, GameMap map) {
         // list with possible paths, one for every path
         List<Integer> cases = new ArrayList<>();
         // list with the number of steps of a completed journey, the same for all paths
@@ -238,7 +238,7 @@ public class PlayerPosition implements Serializable {
      * @return the minimum distance between two players
      */
     public int distanceOf(PlayerPosition other) {
-        return clientDistanceOf(other, Game.getInstance().getGameMap());
+        return distanceOf(other, Game.getInstance().getGameMap());
     }
 
     /**

@@ -72,13 +72,13 @@ public abstract class Player implements Serializable, Comparable<Player> {
         return p1.distanceOf(p2);
     }
 
-    public int clientDistanceOf(Player other, GameMap map) {
+    public int distanceOf(Player other, GameMap map) {
         if (this.samePosition(other)) return 0;
 
         PlayerPosition p1 = new PlayerPosition(this.position);
         PlayerPosition p2 = new PlayerPosition(other.position);
 
-        return p1.clientDistanceOf(p2, map);
+        return p1.distanceOf(p2, map);
     }
 
     /**
