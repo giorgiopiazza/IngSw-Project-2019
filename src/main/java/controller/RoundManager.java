@@ -220,11 +220,11 @@ public class RoundManager {
             return buildNegativeResponse("Player can not do this Action");
         }
 
-        if (!turnManager.getDamagedPlayers().isEmpty()) {
+        if (!turnManager.getGrenadePossibleUsers().isEmpty()) {
             gameManager.changeState(PossibleGameState.GRANADE_USAGE);
             turnManager.setMarkedByGrenadePlayer(turnManager.getTurnOwner());
             turnManager.setMarkingTerminator(true);
-            turnManager.giveTurn(turnManager.getDamagedPlayers().get(0));
+            turnManager.giveTurn(turnManager.getGrenadePossibleUsers().get(0));
             turnManager.resetCount();
             turnManager.setArrivingGameState(gameState);
 
@@ -269,7 +269,7 @@ public class RoundManager {
 
         turnManager.increaseCount();
         // if the player is the last one to use the granade I set back the state to the previous one and give the turn to the next player
-        if (turnManager.getTurnCount() > turnManager.getDamagedPlayers().size() - 1) {
+        if (turnManager.getTurnCount() > turnManager.getGrenadePossibleUsers().size() - 1) {
             turnManager.giveTurn(turnManager.getMarkedByGrenadePlayer());
             if(turnManager.getMarkingTerminator()) {
                 afterTerminatorActionHandler(turnManager.getArrivingGameState());
@@ -279,7 +279,7 @@ public class RoundManager {
         }
 
         // then I give the turn to the next damaged player
-        turnManager.giveTurn(turnManager.getDamagedPlayers().get(turnManager.getTurnCount()));
+        turnManager.giveTurn(turnManager.getGrenadePossibleUsers().get(turnManager.getTurnCount()));
 
         return buildGrenadePositiveResponse("Grenade has been Used, turn passed to the next possible user");
     }
@@ -335,6 +335,10 @@ public class RoundManager {
         List<String> targets = scopeMessage.getTargetPlayersUsername();
 
         // checks over every constraint of a SCOPE usage
+        if(scopeMessage.getPowerup().isEmpty()) {
+            gameManager.changeState(handleAfterActionState(turnManager.isSecondAction()));
+            return buildPositiveResponse("Targeting Scope Not Used");
+        }
 
         // index Check
         if(!checkScopeIndexes(powerupsIndexes, paymentPowerups)) {
@@ -342,7 +346,7 @@ public class RoundManager {
         }
 
         // targets Check
-        if(!checkScopeTargets(targets)) {
+        if(!checkScopeTargets(scopeMessage)) {
             return buildNegativeResponse("Invalid Targets in Request");
         }
 
@@ -549,13 +553,14 @@ public class RoundManager {
     /**
      * Checks targets constraints given on the previous {@link ShootAction ShootAction}
      *
-     * @param targetsUsernames the List of the SCOPE targets usernames
+     * @param scopeMessage the Message received
      * @return true
      */
-    private boolean checkScopeTargets(List<String> targetsUsernames) {
+    private boolean checkScopeTargets(PowerupRequest scopeMessage) {
+        List<String> targetsUsernames = scopeMessage.getTargetPlayersUsername();
         boolean targetPresent = true;
 
-        if(targetsUsernames.isEmpty()) {
+        if(targetsUsernames.isEmpty() && !scopeMessage.getPowerup().isEmpty()) {
             return false;
         }
 
@@ -715,7 +720,7 @@ public class RoundManager {
         ShootAction shootAction;
         PossibleAction actionType;
         Set<PossibleAction> ownersActions = turnOwner.getPossibleActions();
-        List<UserPlayer> beforeShootPlayers;
+        List<Integer> beforeShootPlayers;
 
         if (ownersActions.contains(PossibleAction.SHOOT)) {
             actionType = PossibleAction.SHOOT;
@@ -735,7 +740,7 @@ public class RoundManager {
         // now I can try to validate and use the action, care, a shoot action can throw different exceptions, each will be returned with a different response
         try {
             if (shootAction.validate()) {
-                beforeShootPlayers = gameInstance.getPlayers();
+                beforeShootPlayers = new ArrayList<>(gameInstance.getPlayersDamage());
                 shootAction.execute();
                 turnManager.setDamagedPlayers(buildDamagedPlayers(beforeShootPlayers));
             } else {
@@ -756,11 +761,11 @@ public class RoundManager {
             gameManager.changeState(PossibleGameState.SCOPE_USAGE);
 
             return buildScopePositiveResponse();
-        } else if(!turnManager.getDamagedPlayers().isEmpty()){
+        } else if(!turnManager.getGrenadePossibleUsers().isEmpty()){
             gameManager.changeState(PossibleGameState.GRANADE_USAGE);
             turnManager.setMarkedByGrenadePlayer(turnManager.getTurnOwner());
             turnManager.setMarkingTerminator(false);
-            turnManager.giveTurn(turnManager.getDamagedPlayers().get(0));
+            turnManager.giveTurn(turnManager.getGrenadePossibleUsers().get(0));
             turnManager.resetCount();
             turnManager.setSecondAction(secondAction);
 
@@ -816,17 +821,15 @@ public class RoundManager {
      * used by the {@link #handleScopeUsage(PowerupRequest) handleScopeUsage} method to verify that the TARGETING SCOPE
      * is used only on a damaged {@link UserPlayer UserPlayer}
      *
-     * @param beforeShootPlayers the List of {@link UserPlayer UserPlayers} before the {@link ShootAction ShootAction}
+     * @param beforeShootDamage the List of damage before the {@link ShootAction ShootAction}
      * @return the ArrayList of damaged {@link UserPlayer UserPlayers}
      */
-    private ArrayList<UserPlayer> buildDamagedPlayers(List<UserPlayer> beforeShootPlayers) {
+    private ArrayList<UserPlayer> buildDamagedPlayers(List<Integer> beforeShootDamage) {
         ArrayList<UserPlayer> reallyDamagedPlayers = new ArrayList<>();
 
-        for (UserPlayer afterPlayer : gameInstance.getPlayers()) {
-            for (UserPlayer beforePlayer : beforeShootPlayers) {
-                if (afterPlayer.equals(beforePlayer) && afterPlayer.getPlayerBoard().getDamageCount() > beforePlayer.getPlayerBoard().getDamageCount()) {
-                    reallyDamagedPlayers.add(afterPlayer);
-                }
+        for (int i = 0; i < gameInstance.getPlayers().size(); ++i) {
+            if(gameInstance.getPlayers().get(i).getPlayerBoard().getDamageCount() > beforeShootDamage.get(i)) {
+                reallyDamagedPlayers.add(gameInstance.getPlayers().get(i));
             }
         }
 

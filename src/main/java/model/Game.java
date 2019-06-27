@@ -539,6 +539,19 @@ public class Game implements Serializable {
         return deathPlayers;
     }
 
+    /**
+     * @return an ArrayList containing the damage of each {@link UserPlayer UserPlayer's} {@link PlayerBoard PlayerBoard}
+     */
+    public List<Integer> getPlayersDamage() {
+        List<Integer> playersDamage = new ArrayList<>();
+
+        for(UserPlayer player : players) {
+            playersDamage.add(player.getPlayerBoard().getDamageCount());
+        }
+
+        return playersDamage;
+    }
+
     public Deck getWeaponsCardsDeck() {
         return weaponsCardsDeck;
     }

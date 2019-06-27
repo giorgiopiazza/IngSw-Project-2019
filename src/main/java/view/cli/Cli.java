@@ -631,7 +631,7 @@ public class Cli extends ClientGameManager {
     @Override
     public void tagbackGrenade() {
         List<PowerupCard> newList = getOnlyGrenades();
-        ArrayList<Integer> chosenGrenades = new ArrayList<>();
+        ArrayList<PowerupCard> chosenGrenades = new ArrayList<>();
 
         CliPrinter.clearConsole(out);
         CliPrinter.printPowerups(out, newList.toArray(PowerupCard[]::new));
@@ -648,14 +648,16 @@ public class Cli extends ClientGameManager {
                 int tempChoose = readInt(-1, newList.size() - 1, true);
 
                 if (tempChoose == -1 && !chosenGrenades.isEmpty()) break;
-                if (tempChoose != -1) chosenGrenades.add(tempChoose);
+                if (tempChoose != -1) chosenGrenades.add(newList.get(tempChoose));
             }
         } catch (CancelledActionException e) {
             cancelAction();
             return;
         }
 
-        PowerupRequest.PowerupRequestBuilder grenadeRequestBuilder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), chosenGrenades);
+        ArrayList<Integer> indexes = new ArrayList<>(getPowerupsIndexesFromList(getPowerups(), chosenGrenades));
+
+        PowerupRequest.PowerupRequestBuilder grenadeRequestBuilder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), indexes);
 
         try {
             if (!sendRequest(MessageBuilder.buildPowerupRequest(grenadeRequestBuilder))) {
@@ -1324,8 +1326,8 @@ public class Cli extends ClientGameManager {
             out.println("\t" + i + " - " + CliPrinter.toStringPowerUpCard(scopeList.get(i)));
         }
 
-        out.println("Do you want to use some scope(s)? (-1 none or finish scope(s) selection)");
         out.println();
+        out.println("Do you want to use some scope(s)? (-1 none or finish scope(s) selection)");
 
         int readVal;
         int cycles = 0;
@@ -1344,10 +1346,12 @@ public class Cli extends ClientGameManager {
         } while (readVal != -1 && cycles < scopeList.size());
 
         // after the targets have been chosen, how to pay the scopes is required
-        if (othersList.isEmpty()) {
-            askOnlyAmmos(scopes.size(), payingColors);
-        } else {
-            askPaymentMethod(scopes.size(), payingColors, payingPowerups, powerups, othersList);
+        if(!(readVal == -1 && scopes.isEmpty())) {
+            if (othersList.isEmpty()) {
+                askOnlyAmmos(scopes.size(), payingColors);
+            } else {
+                askPaymentMethod(scopes.size(), payingColors, payingPowerups, powerups, othersList);
+            }
         }
 
         ArrayList<Integer> indexes = new ArrayList<>(getPowerupsIndexesFromList(powerups, scopes));
@@ -1398,7 +1402,7 @@ public class Cli extends ClientGameManager {
 
         chosenPowerup = readInt(0, possiblePowerups.size(), true);
 
-        return getPowerupsIndexesFromList(Collections.singletonList(possiblePowerups.get(chosenPowerup)), powerups).get(0);
+        return getPowerupsIndexesFromList(powerups, Collections.singletonList(possiblePowerups.get(chosenPowerup))).get(0);
     }
 
     private void askPaymentMethod(int scopesUsed, ArrayList<Ammo> payingColors, ArrayList<Integer> payingPowerups, List<PowerupCard> powerups, List<PowerupCard> possiblePowerups) throws CancelledActionException {

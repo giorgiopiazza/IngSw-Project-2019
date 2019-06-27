@@ -864,14 +864,14 @@ public class GameManager implements TimerRunListener, Serializable {
                 // implementation then goes directly here
 
                 // if the player is the last one to use the granade I set back the state to the previous one and give the turn to the next player
-                if (roundManager.getTurnManager().getTurnCount() > roundManager.getTurnManager().getDamagedPlayers().size() - 1) {
+                if (roundManager.getTurnManager().getTurnCount() > roundManager.getTurnManager().getGrenadePossibleUsers().size() - 1) {
                     roundManager.getTurnManager().giveTurn(roundManager.getTurnManager().getMarkedByGrenadePlayer());
                     changeState(roundManager.handleAfterActionState(roundManager.getTurnManager().isSecondAction()));
                     return new Response("Granade not used, shooting player is going back to play", MessageStatus.OK);
                 }
 
                 roundManager.getTurnManager().increaseCount();
-                roundManager.getTurnManager().giveTurn(roundManager.getTurnManager().getDamagedPlayers().get(roundManager.getTurnManager().getTurnCount()));
+                roundManager.getTurnManager().giveTurn(roundManager.getTurnManager().getGrenadePossibleUsers().get(roundManager.getTurnManager().getTurnCount()));
                 return new Response("Granade not used", MessageStatus.OK);
             default:
                 return new Response("Invalid Message while in granade state", MessageStatus.ERROR);

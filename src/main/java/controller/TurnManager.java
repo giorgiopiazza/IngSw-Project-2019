@@ -114,11 +114,26 @@ public class TurnManager implements Serializable {
     }
 
     /**
-     * @return the ArrayList of damaged {@link UserPlayer UserPlayers}, used to verify when a TAGBACK GRANADE or TARGETING SCOPE
+     * @return the ArrayList of damaged {@link UserPlayer UserPlayers}, used to verify when TARGETING SCOPE
      * can be used
      */
     ArrayList<UserPlayer> getDamagedPlayers() {
         return this.damagedPlayers;
+    }
+
+    /**
+     * @return the ArrayList of the {@link UserPlayer UserPlayers} that can use a TAGBACK GRENADE
+     */
+    ArrayList<UserPlayer> getGrenadePossibleUsers() {
+        ArrayList<UserPlayer> grenadePossessors = new ArrayList<>();
+
+        for(UserPlayer player : damagedPlayers) {
+            if(player.getPowerupOccurrences("TAGBACK GRENADE") > 0) {
+                grenadePossessors.add(player);
+            }
+        }
+
+        return grenadePossessors;
     }
 
     /**

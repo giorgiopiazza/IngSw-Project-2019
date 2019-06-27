@@ -354,7 +354,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
      */
     private void checkChangeStateRequest(Message message) {
         noChangeStateRequest = (roundManager.getUserPlayerState() != UserPlayerState.BOT_ACTION && message.getContent() == MessageContent.BOT_ACTION) ||
-                (message.getContent() == MessageContent.POWERUP_USAGE &&
+                (message.getContent() == MessageContent.POWERUP_USAGE && !((PowerupRequest) message).getPowerup().isEmpty() &&
                         (getPowerups().get(((PowerupRequest) message).getPowerup().get(0)).getName().equals(TELEPORTER) ||
                                 getPowerups().get(((PowerupRequest) message).getPowerup().get(0)).getName().equals(NEWTON)));
     }
