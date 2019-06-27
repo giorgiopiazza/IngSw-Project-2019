@@ -1,6 +1,5 @@
 package network.client;
 
-import controller.RoundManager;
 import enumerations.*;
 import exceptions.player.ClientRoundManagerException;
 import exceptions.player.PlayerNotFoundException;
@@ -37,8 +36,8 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
     public static final String TELEPORTER = "TELEPORTER";
     public static final String NEWTON = "NEWTON";
-    protected static final String TAGBACK_GRENADE = "TAGBACK GRENADE";
-    protected static final String TARGETING_SCOPE = "TARGETING SCOPE";
+    public static final String TAGBACK_GRENADE = "TAGBACK GRENADE";
+    public static final String TARGETING_SCOPE = "TARGETING SCOPE";
 
     private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
     private final Object gameSerializedLock = new Object(); // handles GameSerialized parallelism
@@ -355,7 +354,9 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
      */
     private void checkChangeStateRequest(Message message) {
         noChangeStateRequest = (roundManager.getUserPlayerState() != UserPlayerState.BOT_ACTION && message.getContent() == MessageContent.BOT_ACTION) ||
-                message.getContent() == MessageContent.POWERUP_USAGE;
+                (message.getContent() == MessageContent.POWERUP_USAGE &&
+                        (getPowerups().get(((PowerupRequest) message).getPowerup().get(0)).getName().equals(TELEPORTER) ||
+                                getPowerups().get(((PowerupRequest) message).getPowerup().get(0)).getName().equals(NEWTON)));
     }
 
     /**
