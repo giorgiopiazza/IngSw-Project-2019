@@ -115,13 +115,13 @@ public class PlayerPosition implements Serializable {
         return "(" + coordX + "," + coordY + ")";
     }
 
-    public boolean canSee(PlayerPosition pos) {
+    public boolean clientCanSee(PlayerPosition pos, GameMap map) {
         if (pos == null) {
             throw new NullPointerException("Target can't be null");
         }
 
-        Square targetSquare = Game.getInstance().getGameMap().getSquare(pos.getCoordX(), pos.getCoordY());
-        Square playerSquare = Game.getInstance().getGameMap().getSquare(getCoordX(), getCoordY());
+        Square targetSquare = map.getSquare(pos.getCoordX(), pos.getCoordY());
+        Square playerSquare = map.getSquare(getCoordX(), getCoordY());
 
         if (targetSquare.getRoomColor().equals(playerSquare.getRoomColor())) {
             return true;
@@ -130,29 +130,43 @@ public class PlayerPosition implements Serializable {
         Square tempSquare;
 
         if (playerSquare.getNorth() == SquareAdjacency.DOOR) {
-            tempSquare = Game.getInstance().getGameMap().getSquare(getCoordX() - 1, getCoordY());
+            tempSquare = map.getSquare(getCoordX() - 1, getCoordY());
             if (tempSquare.getRoomColor() == targetSquare.getRoomColor()) {
                 return true;
             }
         }
 
         if (playerSquare.getEast() == SquareAdjacency.DOOR) {
-            tempSquare = Game.getInstance().getGameMap().getSquare(getCoordX(), getCoordY() + 1);
+            tempSquare = map.getSquare(getCoordX(), getCoordY() + 1);
             if (tempSquare.getRoomColor() == targetSquare.getRoomColor()) {
                 return true;
             }
         }
 
         if (playerSquare.getSouth() == SquareAdjacency.DOOR) {
-            tempSquare = Game.getInstance().getGameMap().getSquare(getCoordX() + 1, getCoordY());
+            tempSquare = map.getSquare(getCoordX() + 1, getCoordY());
             if (tempSquare.getRoomColor() == targetSquare.getRoomColor()) {
                 return true;
             }
         }
 
         if (playerSquare.getWest() == SquareAdjacency.DOOR) {
-            tempSquare = Game.getInstance().getGameMap().getSquare(getCoordX(), getCoordY() - 1);
+            tempSquare = map.getSquare(getCoordX(), getCoordY() - 1);
             return tempSquare.getRoomColor() == targetSquare.getRoomColor();
+        }
+
+        return false;
+    }
+
+    public boolean canSee(PlayerPosition pos) {
+        return clientCanSee(pos, Game.getInstance().getGameMap());
+    }
+
+    public boolean clientCanSeeSomeone(Player actingPlayer, GameMap map, List<Player> players) {
+        for (Player target : players) {
+            if (target.getPosition() != null && !target.equals(actingPlayer) && this.clientCanSee(target.getPosition(), map)) {
+                return true;
+            }
         }
 
         return false;
@@ -165,24 +179,13 @@ public class PlayerPosition implements Serializable {
      * @param actingPlayer the UserPlayer acting
      * @return true if the position can see any other target, otherwise false
      */
-    public boolean canSeeSomeone(UserPlayer actingPlayer) {
-        List<UserPlayer> players = Game.getInstance().getPlayers();
-        for (UserPlayer target : players) {
-            if (target.getPosition() != null && !target.equals(actingPlayer) && this.canSee(target.getPosition())) {
-                return true;
-            }
-        }
-
-        return false;
+    public boolean canSeeSomeone(Player actingPlayer) {
+        List<Player> players = new ArrayList<>(Game.getInstance().getPlayers());
+        if (Game.getInstance().isTerminatorPresent()) players.add(Game.getInstance().getTerminator());
+        return clientCanSeeSomeone(actingPlayer, Game.getInstance().getGameMap(), players);
     }
 
-    /**
-     * This method calculates the minimum distance between {@code this} position and {@code other} position
-     *
-     * @param other another position
-     * @return the minimum distance between two players
-     */
-    public int distanceOf(PlayerPosition other) {
+    public int clientDistanceOf(PlayerPosition other, GameMap map) {
         // list with possible paths, one for every path
         List<Integer> cases = new ArrayList<>();
         // list with the number of steps of a completed journey, the same for all paths
@@ -202,7 +205,7 @@ public class PlayerPosition implements Serializable {
         do {
             alreadyVisited.add(new PlayerPosition(p2));
 
-            selectCases(cases, alreadyVisited, p2); // need to minify the code complexity
+            selectCases(cases, alreadyVisited, p2, map); // need to minify the code complexity
 
             // increment the counter of the steps performed
             steps++;
@@ -211,7 +214,7 @@ public class PlayerPosition implements Serializable {
                 steps = 1000;
                 break;
             } else {
-                subProcessSwitches(alreadyVisited, stepsList, cases, p1, p2, steps);
+                subProcessSwitches(alreadyVisited, stepsList, cases, p1, p2, steps, map);
             }
             cases.clear();
         } while (!p1.equals(p2));
@@ -226,6 +229,16 @@ public class PlayerPosition implements Serializable {
         }
 
         return minSteps;
+    }
+
+    /**
+     * This method calculates the minimum distance between {@code this} position and {@code other} position
+     *
+     * @param other another position
+     * @return the minimum distance between two players
+     */
+    public int distanceOf(PlayerPosition other) {
+        return clientDistanceOf(other, Game.getInstance().getGameMap());
     }
 
     /**
@@ -246,20 +259,20 @@ public class PlayerPosition implements Serializable {
      * @param p1             player 1 position
      * @param p2             player 2 position
      */
-    private static void subProcessDistanceOf(List<PlayerPosition> alreadyVisited, List<Integer> stepsList, PlayerPosition p1, PlayerPosition p2, int steps) {
+    private static void subProcessDistanceOf(List<PlayerPosition> alreadyVisited, List<Integer> stepsList, PlayerPosition p1, PlayerPosition p2, int steps, GameMap map) {
         List<Integer> cases = new ArrayList<>();
 
         while (!p1.equals(p2)) {
             alreadyVisited.add(new PlayerPosition(p2));
             // increment the counter of the steps performed
-            selectCases(cases, alreadyVisited, p2);
+            selectCases(cases, alreadyVisited, p2, map);
             steps++;
 
             if (cases.isEmpty()) {
                 stepsList.add(1000);
                 return;
             } else {
-                subProcessSwitches(alreadyVisited, stepsList, cases, p1, p2, steps);
+                subProcessSwitches(alreadyVisited, stepsList, cases, p1, p2, steps, map);
             }
             cases.clear();
         }
@@ -276,21 +289,21 @@ public class PlayerPosition implements Serializable {
      * @param p2             player 2 position
      * @param steps          number of steps already made
      */
-    private static void subProcessSwitches(List<PlayerPosition> alreadyVisited, List<Integer> stepsList, List<Integer> cases, PlayerPosition p1, PlayerPosition p2, int steps) {
+    private static void subProcessSwitches(List<PlayerPosition> alreadyVisited, List<Integer> stepsList, List<Integer> cases, PlayerPosition p1, PlayerPosition p2, int steps, GameMap map) {
         // other paths
         for (int i = 1; i < cases.size(); i++) {
             switch (cases.get(i)) {
                 case 1:
-                    subProcessDistanceOf(new ArrayList<>(alreadyVisited), stepsList, p1, new PlayerPosition(p2.getCoordX() + 1, p2.getCoordY()), steps);
+                    subProcessDistanceOf(new ArrayList<>(alreadyVisited), stepsList, p1, new PlayerPosition(p2.getCoordX() + 1, p2.getCoordY()), steps, map);
                     break;
                 case 2:
-                    subProcessDistanceOf(new ArrayList<>(alreadyVisited), stepsList, p1, new PlayerPosition(p2.getCoordX(), p2.getCoordY() + 1), steps);
+                    subProcessDistanceOf(new ArrayList<>(alreadyVisited), stepsList, p1, new PlayerPosition(p2.getCoordX(), p2.getCoordY() + 1), steps, map);
                     break;
                 case 3:
-                    subProcessDistanceOf(new ArrayList<>(alreadyVisited), stepsList, p1, new PlayerPosition(p2.getCoordX() - 1, p2.getCoordY()), steps);
+                    subProcessDistanceOf(new ArrayList<>(alreadyVisited), stepsList, p1, new PlayerPosition(p2.getCoordX() - 1, p2.getCoordY()), steps, map);
                     break;
                 default:
-                    subProcessDistanceOf(new ArrayList<>(alreadyVisited), stepsList, p1, new PlayerPosition(p2.getCoordX(), p2.getCoordY() - 1), steps);
+                    subProcessDistanceOf(new ArrayList<>(alreadyVisited), stepsList, p1, new PlayerPosition(p2.getCoordX(), p2.getCoordY() - 1), steps, map);
             }
         }
         // path that is examined by this process
@@ -315,8 +328,8 @@ public class PlayerPosition implements Serializable {
      * @param cases list with cases accepted
      * @param pos   the position of player
      */
-    private static void selectCases(List<Integer> cases, List<PlayerPosition> alreadyVisited, PlayerPosition pos) {
-        Square current = Game.getInstance().getGameMap().getSquare(pos.getCoordX(), pos.getCoordY());
+    private static void selectCases(List<Integer> cases, List<PlayerPosition> alreadyVisited, PlayerPosition pos, GameMap map) {
+        Square current = map.getSquare(pos.getCoordX(), pos.getCoordY());
 
         if ((current.getSouth() == SquareAdjacency.DOOR || current.getSouth() == SquareAdjacency.SQUARE) && !alreadyVisited.contains(new PlayerPosition(pos.getCoordX() + 1, pos.getCoordY()))) {
             cases.add(1);

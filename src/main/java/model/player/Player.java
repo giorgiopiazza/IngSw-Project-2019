@@ -1,6 +1,7 @@
 package model.player;
 
 import enumerations.*;
+import model.map.GameMap;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -69,6 +70,15 @@ public abstract class Player implements Serializable, Comparable<Player> {
         PlayerPosition p2 = new PlayerPosition(other.position);
 
         return p1.distanceOf(p2);
+    }
+
+    public int clientDistanceOf(Player other, GameMap map) {
+        if (this.samePosition(other)) return 0;
+
+        PlayerPosition p1 = new PlayerPosition(this.position);
+        PlayerPosition p2 = new PlayerPosition(other.position);
+
+        return p1.clientDistanceOf(p2, map);
     }
 
     /**
