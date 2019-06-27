@@ -52,6 +52,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     private String firstPlayer;
     private String turnOwner;
     private boolean turnOwnerChanged;
+    private boolean waitingGrenade = false;
 
     private boolean firstTurn;
     private boolean yourTurn;
@@ -417,10 +418,14 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 onPositiveResponse(response);
             }
 
-            if (roundManager.getUserPlayerState() != UserPlayerState.END) {
-                makeMove();
+            if (!waitingGrenade) {
+                if (roundManager.getUserPlayerState() != UserPlayerState.END) {
+                    makeMove();
+                } else {
+                    roundManager.endRound();
+                }
             } else {
-                roundManager.endRound();
+                waitingGrenade = false;
             }
 
             if (yourTurn && turnOwnerChanged) { // Use to wait the response before calling newTurn()
@@ -566,6 +571,10 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             if (!stateMessage.getTurnOwner().equals(turnOwner)) {
                 turnOwner = stateMessage.getTurnOwner();
                 turnOwnerChanged = true;
+
+                if (yourTurn) {
+                    waitingGrenade = stateMessage.isGrenadeUsage();
+                }
             }
 
             if (!yourTurn) { // If you are not the turn owner you don't need to wait a response
