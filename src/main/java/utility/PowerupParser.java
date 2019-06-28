@@ -23,6 +23,7 @@ import static utility.WeaponParser.parseIntJsonArray;
 
 public class PowerupParser {
     private static final String TARGET = "target";
+    private static int ids = 0;
 
     private PowerupParser() {
         throw new IllegalStateException("Utility class");
@@ -105,7 +106,8 @@ public class PowerupParser {
             Ammo ammo = Ammo.valueOf(jo.get("color").getAsString());
 
             for (int i = 0; i < quantity; ++i) {
-                cards.add(new PowerupCard(name, imagePath, ammo, effect));
+                cards.add(new PowerupCard(name, imagePath, ammo, effect, ids));
+                ++ids;
             }
         }
 

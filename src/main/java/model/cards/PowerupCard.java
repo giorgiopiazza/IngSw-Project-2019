@@ -3,7 +3,6 @@ package model.cards;
 import enumerations.Ammo;
 import exceptions.cards.InvalidPowerupActionException;
 import exceptions.command.InvalidCommandException;
-import exceptions.player.EmptyHandException;
 import exceptions.playerboard.NotEnoughAmmoException;
 import model.Game;
 import model.cards.effects.Effect;
@@ -12,16 +11,17 @@ import model.player.UserPlayer;
 import network.message.EffectRequest;
 import network.message.PowerupRequest;
 
-import java.util.List;
 import java.util.Objects;
 
 public class PowerupCard extends UsableCard {
     private static final long serialVersionUID = -8499317938860478314L;
 
+    private final int id;
     private final Ammo value;
 
-    public PowerupCard(String name, String imagePath, Ammo value, Effect baseEffect) {
+    public PowerupCard(String name, String imagePath, Ammo value, Effect baseEffect, int id) {
         super(name, imagePath, baseEffect);
+        this.id = id;
         this.value = value;
     }
 
@@ -58,14 +58,7 @@ public class PowerupCard extends UsableCard {
                 colorCost = request.getAmmoColor().get(0);
             }
 
-            if(request.getPowerup() != null && !request.getPowerup().isEmpty()) {
-                Integer paymentIndex = request.getPowerup().get(0);
-                try {
-                    shootingPlayer.discardPowerupByIndex(paymentIndex);
-                } catch (EmptyHandException e) {
-                    // never reached
-                }
-
+            if(request.getPaymentPowerups() != null && !request.getPaymentPowerups().isEmpty()) {
                 paid = true;
             }
 
@@ -90,7 +83,8 @@ public class PowerupCard extends UsableCard {
         PowerupCard that = (PowerupCard) o;
         if (!this.getName().equals(that.getName())) return false;
         if (!Objects.equals(this.imagePath, that.imagePath)) return false;
-        return value == that.value;
+        if(value != that.value) return false;
+        return id == that.id;
     }
 
     @Override

@@ -97,7 +97,7 @@ class WeaponCardTest {
 
         shooter.addWeapon(lockRifle);
         shooter.setPosition(new PlayerPosition(0,0));
-        shooter.addPowerup(new PowerupCard("TAGBACK GRENADE", "/img/powerups/venom_yellow.png", Ammo.RED, null));
+        shooter.addPowerup(new PowerupCard("TAGBACK GRENADE", "/img/powerups/venom_yellow.png", Ammo.RED, null, 0));
 
         target1.setPosition(new PlayerPosition(0,0));
         target2.setPosition(new PlayerPosition(2,1));
@@ -166,8 +166,8 @@ class WeaponCardTest {
 
         shooter.addWeapon(machineGun);
         shooter.setPosition(new PlayerPosition(0,0));
-        shooter.addPowerup(new PowerupCard("TAGBACK GRENADE", "/img/powerups/venom_blue.png", BLUE, null));
-        shooter.addPowerup(new PowerupCard("TAGBACK GRENADE", "/img/powerups/venom_yellow.png", YELLOW, null));
+        shooter.addPowerup(new PowerupCard("TAGBACK GRENADE", "/img/powerups/venom_blue.png", BLUE, null, 1));
+        shooter.addPowerup(new PowerupCard("TAGBACK GRENADE", "/img/powerups/venom_yellow.png", YELLOW, null, 2));
 
         target1.setPosition(new PlayerPosition(0,0));
         target2.setPosition(new PlayerPosition(2,1));
@@ -209,7 +209,7 @@ class WeaponCardTest {
         action.execute();
 
         // first & second effect
-        shooter.addPowerup(new PowerupCard("TAGBACK GRENADE", "/img/powerups/venom_yellow.png", YELLOW, null));
+        shooter.addPowerup(new PowerupCard("TAGBACK GRENADE", "/img/powerups/venom_yellow.png", YELLOW, null, 3));
 
         powerups.clear();
         powerups.add(0);
@@ -262,8 +262,8 @@ class WeaponCardTest {
 
         shooter.addWeapon(flameThrower);
         shooter.setPosition(new PlayerPosition(1,0));
-        shooter.addPowerup(new PowerupCard("TAGBACK GRENADE", "/img/powerups/venom_yellow.png", YELLOW, null));
-        shooter.addPowerup(new PowerupCard("TAGBACK GRENADE", "/img/powerups/venom_yellow.png", YELLOW, null));
+        shooter.addPowerup(new PowerupCard("TAGBACK GRENADE", "/img/powerups/venom_yellow.png", YELLOW, null, 4));
+        shooter.addPowerup(new PowerupCard("TAGBACK GRENADE", "/img/powerups/venom_yellow.png", YELLOW, null, 5));
 
         target1.setPosition(new PlayerPosition(1,1));
         target2.setPosition(new PlayerPosition(1,2));
@@ -323,8 +323,8 @@ class WeaponCardTest {
 
         shooter.addWeapon(thor);
         shooter.setPosition(new PlayerPosition(0,0));
-        shooter.addPowerup(new PowerupCard("TAGBACK GRENADE", "/img/powerups/venom_yellow.png", BLUE, null));
-        shooter.addPowerup(new PowerupCard("TAGBACK GRENADE", "/img/powerups/venom_yellow.png", BLUE, null));
+        shooter.addPowerup(new PowerupCard("TAGBACK GRENADE", "/img/powerups/venom_yellow.png", BLUE, null, 6));
+        shooter.addPowerup(new PowerupCard("TAGBACK GRENADE", "/img/powerups/venom_yellow.png", BLUE, null, 7));
 
         target1.setPosition(new PlayerPosition(0,2));
         target2.setPosition(new PlayerPosition(1,2));
@@ -365,7 +365,7 @@ class WeaponCardTest {
 
         shooter.addWeapon(plasmaGun);
         shooter.setPosition(new PlayerPosition(0,0));
-        shooter.addPowerup(new PowerupCard("TAGBACK GRENADE", "/img/powerups/venom_yellow.png", BLUE, null));
+        shooter.addPowerup(new PowerupCard("TAGBACK GRENADE", "/img/powerups/venom_yellow.png", BLUE, null, 8));
 
         target1.setPosition(new PlayerPosition(0,0));
         target2.setPosition(new PlayerPosition(2,1));
