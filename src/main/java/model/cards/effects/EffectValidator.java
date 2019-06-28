@@ -153,7 +153,7 @@ class EffectValidator {
     private static boolean canMove(String senderUsername, PlayerPosition position, int move) {
         Player movingPlayer = Game.getInstance().getUserPlayerByUsername(senderUsername);
 
-        return (movingPlayer.getPosition().distanceOf(position) == move);
+        return (movingPlayer.getPosition().distanceOf(position) > 0 && movingPlayer.getPosition().distanceOf(position) <= move);
     }
 
     /**

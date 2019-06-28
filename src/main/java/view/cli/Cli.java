@@ -597,20 +597,17 @@ public class Cli extends ClientGameManager {
     public void targetingScope() {
         List<PowerupCard> powerups = getPowerups();
         List<PowerupCard> scopeList = new ArrayList<>();
-        List<PowerupCard> othersList = new ArrayList<>();
         PowerupRequest.PowerupRequestBuilder builder;
 
         for (PowerupCard powerup : powerups) {
             if (powerup.getName().equals(TARGETING_SCOPE)) {
                 scopeList.add(powerup);
-            } else {
-                othersList.add(powerup);
             }
         }
 
         if (!scopeList.isEmpty()) {
             try {
-                builder = buildTargetingScopeRequest(powerups, scopeList, othersList);
+                builder = buildTargetingScopeRequest(powerups, scopeList);
             } catch (CancelledActionException e) {
                 cancelAction();
                 return;
@@ -1308,13 +1305,11 @@ public class Cli extends ClientGameManager {
      *
      * @param powerups   list of all powerups
      * @param scopeList  list of only targeting scopes
-     * @param othersList list of powerups different from targeting scope
      * @return the builder of the powerup request
      * @throws CancelledActionException if the action was cancelled
      */
     private PowerupRequest.PowerupRequestBuilder buildTargetingScopeRequest(List<PowerupCard> powerups,
-                                                                            List<PowerupCard> scopeList,
-                                                                            List<PowerupCard> othersList) throws CancelledActionException {
+                                                                            List<PowerupCard> scopeList) throws CancelledActionException {
         List<PowerupCard> scopes = new ArrayList<>();
         ArrayList<String> targets = new ArrayList<>();
         ArrayList<Ammo> payingColors = new ArrayList<>();
@@ -1346,6 +1341,7 @@ public class Cli extends ClientGameManager {
         } while (readVal != -1 && cycles < scopeList.size());
 
         // after the targets have been chosen, how to pay the scopes is required
+        List<PowerupCard> othersList = powerups.stream().filter(notUsed -> !scopeList.contains(notUsed)).collect(Collectors.toList());
         if(!(readVal == -1 && scopes.isEmpty())) {
             if (othersList.isEmpty()) {
                 askOnlyAmmos(scopes.size(), payingColors);
@@ -1367,9 +1363,8 @@ public class Cli extends ClientGameManager {
     private void askOnlyAmmos(int scopesUsed, ArrayList<Ammo> payingColors) {
         int cycles = 0;
 
+        printAmmo();
         do {
-            printAmmo();
-            out.println("Choose the Ammo color you want to pay with:");
             payingColors.add(askAmmoColor());
 
             ++cycles;
@@ -1382,7 +1377,8 @@ public class Cli extends ClientGameManager {
         boolean correctColor;
 
         do {
-            out.println(">>>");
+            out.println("Choose the Ammo color you want to pay with");
+            out.println(">>> ");
             chosenColor = in.nextLine();
 
             try {
@@ -1400,6 +1396,7 @@ public class Cli extends ClientGameManager {
     private Integer askPowerupIndex(List<PowerupCard> possiblePowerups, List<PowerupCard> powerups) throws CancelledActionException {
         Integer chosenPowerup;
 
+        out.println("Choose the powerup index");
         chosenPowerup = readInt(0, possiblePowerups.size(), true);
 
         return getPowerupsIndexesFromList(powerups, Collections.singletonList(possiblePowerups.get(chosenPowerup))).get(0);
