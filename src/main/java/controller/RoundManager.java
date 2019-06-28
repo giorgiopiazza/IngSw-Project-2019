@@ -24,6 +24,8 @@ import utility.GameCostants;
 import utility.persistency.SaveGame;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This class contains all the methods needed to handle entirely the Round of a player's turn
@@ -73,7 +75,7 @@ public class RoundManager {
      * {@link GameState GameState}
      */
     private void setInitialActions() {
-        if(gameInstance.getState() == GameState.NORMAL && turnManager.getTurnOwner().getPlayerState() == PossiblePlayerState.FIRST_SPAWN) {
+        if (gameInstance.getState() == GameState.NORMAL && turnManager.getTurnOwner().getPlayerState() == PossiblePlayerState.FIRST_SPAWN) {
             ActionManager.setStartingPossibleActions(turnManager.getTurnOwner(), gameInstance.isTerminatorPresent());
         } else if (gameInstance.getState() == GameState.NORMAL && turnManager.getTurnOwner().getPlayerState() == PossiblePlayerState.PLAYING) {
             ActionManager.setPossibleActions(turnManager.getTurnOwner());
@@ -245,13 +247,20 @@ public class RoundManager {
     Response handleGranadeUsage(PowerupRequest granadeMessage) {
         Response tempResponse;
 
-        if(granadeMessage.getPowerup().size() > turnManager.getTurnOwner().getPowerups().length) {
+        if (granadeMessage.getPowerup().size() > turnManager.getTurnOwner().getPowerups().length) {
             return buildNegativeResponse("Too many powerups");
         }
 
-        for(Integer index : granadeMessage.getPowerup()) {
+        // before marking I save the marks of each player as If a multiple action does not work I can set them back
+        List<List<String>> oldMarks = gameInstance.getPlayers().stream().map(player -> player.getPlayerBoard().getMarks()).collect(Collectors.toList());
+        if(gameInstance.isTerminatorPresent()) {
+            oldMarks.add(gameInstance.getTerminator().getPlayerBoard().getMarks());
+        }
+
+        for (Integer index : granadeMessage.getPowerup()) {
             tempResponse = grenadeUsage(index, granadeMessage);
-            if(tempResponse.getStatus() == MessageStatus.ERROR) {
+            if (tempResponse.getStatus() == MessageStatus.ERROR) {
+                resetMarks(oldMarks);
                 return tempResponse;
             }
 
@@ -259,19 +268,13 @@ public class RoundManager {
         }
 
         // after having used all the grenades I discard them
-        for(Integer index : granadeMessage.getPowerup()) {
-            try {
-                turnManager.getTurnOwner().discardPowerupByIndex(index);
-            } catch (EmptyHandException e) {
-                // never reached if the player has the powerup!
-            }
-        }
+        discardPowerups(granadeMessage.getPowerup());
 
         turnManager.increaseCount();
         // if the player is the last one to use the granade I set back the state to the previous one and give the turn to the next player
         if (turnManager.getTurnCount() > turnManager.getGrenadePossibleUsers().size() - 1) {
             turnManager.giveTurn(turnManager.getMarkedByGrenadePlayer());
-            if(turnManager.getMarkingTerminator()) {
+            if (turnManager.getMarkingTerminator()) {
                 afterTerminatorActionHandler(turnManager.getArrivingGameState());
             }
             gameManager.changeState(handleAfterActionState(turnManager.isSecondAction()));
@@ -287,14 +290,14 @@ public class RoundManager {
     /**
      * Handles the usage of the grenade passed as an integer index
      *
-     * @param index the index of the grenade to be used
+     * @param index          the index of the grenade to be used
      * @param granadeMessage the {@link PowerupRequest GranadeRequest} received
      * @return a positive or negative {@link Response Response} handled by the server
      */
     private Response grenadeUsage(int index, PowerupRequest granadeMessage) {
         PowerupCard chosenGranade;
 
-        if(index > turnManager.getTurnOwner().getPowerups().length) {
+        if (index > turnManager.getTurnOwner().getPowerups().length) {
             return buildNegativeResponse("Invalid Powerup Index");
         }
 
@@ -305,7 +308,7 @@ public class RoundManager {
         }
 
         // now I can set the target for the usage of the TAGBACK GRENADE
-        if(gameInstance.isTerminatorPresent() && turnManager.getMarkingTerminator()) {
+        if (gameInstance.isTerminatorPresent() && turnManager.getMarkingTerminator()) {
             granadeMessage.setGrenadeTarget(GameCostants.BOT_NAME);
         } else {
             granadeMessage.setGrenadeTarget(turnManager.getMarkedByGrenadePlayer().getUsername());
@@ -329,54 +332,121 @@ public class RoundManager {
      * @return a positive or negative {@link Response Response} handled by the server
      */
     Response handleScopeUsage(PowerupRequest scopeMessage) {
+        Response tempResponse;
         int sizeDifference;
         List<Integer> powerupsIndexes = scopeMessage.getPowerup();
         ArrayList<Integer> paymentPowerups = scopeMessage.getPaymentPowerups();
         List<String> targets = scopeMessage.getTargetPlayersUsername();
 
         // checks over every constraint of a SCOPE usage
-        if(scopeMessage.getPowerup().isEmpty()) {
+        if (scopeMessage.getPowerup().isEmpty()) {
             gameManager.changeState(handleAfterActionState(turnManager.isSecondAction()));
             return buildPositiveResponse("Targeting Scope Not Used");
         }
 
         // index Check
-        if(!checkScopeIndexes(powerupsIndexes, paymentPowerups)) {
+        if (!checkScopeIndexes(powerupsIndexes, paymentPowerups)) {
             return buildNegativeResponse("Invalid Indexes in Request");
         }
 
         // targets Check
-        if(!checkScopeTargets(scopeMessage)) {
+        if (!checkScopeTargets(scopeMessage)) {
             return buildNegativeResponse("Invalid Targets in Request");
         }
 
-        if(powerupsIndexes.size() < targets.size()) {
+        if (powerupsIndexes.size() < targets.size()) {
             return buildNegativeResponse("Too many Targets");
         } else {
             sizeDifference = powerupsIndexes.size() - targets.size();
         }
 
         // ammo check
-        if(powerupsIndexes.size() - paymentPowerups.size() != scopeMessage.getAmmoColor().size()) {
+        if (powerupsIndexes.size() - paymentPowerups.size() != scopeMessage.getAmmoColor().size()) {
             return buildNegativeResponse("Missing Ammo Colors to pay");
+        }
+
+        // before going to use a SCOPE I save the damages on each player's board as I can reset them back in case one scope does not work
+        List<List<String>> oldDamage = gameInstance.getPlayers().stream().map(player -> player.getPlayerBoard().getDamages()).collect(Collectors.toList());
+        if(gameInstance.isTerminatorPresent()) {
+            oldDamage.add(gameInstance.getTerminator().getPlayerBoard().getDamages());
         }
 
         switch (sizeDifference) {
             case 0:
-                return oneScopeForEachTarget(scopeMessage);
+                tempResponse = oneScopeForEachTarget(scopeMessage);
+                break;
             case 1:
                 if (powerupsIndexes.size() == 3) {
-                    return moreScopesForFirstTarget(scopeMessage);
+                    tempResponse = moreScopesForFirstTarget(scopeMessage);
                 } else if (powerupsIndexes.size() == 2) {
-                    return allScopesForOneTarget(scopeMessage,2);
+                    tempResponse = allScopesForOneTarget(scopeMessage, 2);
+                } else {
+                    tempResponse = new Response("", MessageStatus.ERROR);
                 }
-
-                // here is never reached because of previous checks
-                return buildNegativeResponse(" Invalid Action ");
+                break;
             case 2:
-                return allScopesForOneTarget(scopeMessage, 3);
+                tempResponse = allScopesForOneTarget(scopeMessage, 3);
+                break;
             default:
                 return buildNegativeResponse(" Invalid Action ");
+        }
+
+        if (tempResponse.getStatus() == MessageStatus.OK) {
+            discardPowerups(Stream.of(powerupsIndexes, paymentPowerups).flatMap(Collection::stream).collect(Collectors.toList()));
+            return buildPositiveResponse(tempResponse.getMessage());
+        } else {
+            resetDamage(oldDamage);
+            return tempResponse;
+        }
+    }
+
+    /**
+     * Method that discards the powerups after actions that can be multiple: SCOPE and GRENADE
+     *
+     * @param discardingIndexes the ArrayList of the indexes of the {@link PowerupCard Powerups} to be discarded
+     */
+    private void discardPowerups(List<Integer> discardingIndexes) {
+        List<Integer> reverseSort = discardingIndexes.stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
+        UserPlayer powerUpper = turnManager.getTurnOwner();
+
+        for (Integer index : reverseSort) {
+            try {
+                powerUpper.discardPowerupByIndex(index);
+            } catch (EmptyHandException e) {
+                // never reached here
+            }
+        }
+    }
+
+    /**
+     * Method that sets back the damages of each player if a multiple action did not work
+     *
+     * @param oldDamage the List of ArrayLists of Strings containing the damages
+     */
+    private void resetDamage(List<List<String>> oldDamage) {
+        if(oldDamage.size() > gameInstance.getPlayers().size()) {
+            gameInstance.getTerminator().getPlayerBoard().setDamages(oldDamage.get(oldDamage.size() - 1));
+            oldDamage.remove(oldDamage.size() - 1);
+        }
+
+        for(int i = 0; i < oldDamage.size(); ++i) {
+            gameInstance.getPlayers().get(i).getPlayerBoard().setDamages(oldDamage.get(i));
+        }
+    }
+
+    /**
+     * Method that sets back the damages of each player if a multiple action did not work
+     *
+     * @param oldMarks the List of ArrayLists of Strings containing the marks
+     */
+    private void resetMarks(List<List<String>> oldMarks) {
+        if(oldMarks.size() > gameInstance.getPlayers().size()) {
+            gameInstance.getTerminator().getPlayerBoard().setMarks(oldMarks.get(oldMarks.size() - 1));
+            oldMarks.remove(oldMarks.size() - 1);
+        }
+
+        for(int i = 0; i < oldMarks.size(); ++i) {
+            gameInstance.getPlayers().get(i).getPlayerBoard().setMarks(oldMarks.get(i));
         }
     }
 
@@ -408,18 +478,14 @@ public class RoundManager {
             }
             try {
                 turnOwner.getPowerups()[i].use(tempRequest);
-                turnOwner.discardPowerupByIndex(i);
             } catch (NotEnoughAmmoException e) {
                 return buildNegativeResponse("Not Enough Ammo");
             } catch (InvalidPowerupActionException e) {
                 return buildNegativeResponse(" Invalid Action");
-            } catch (EmptyHandException e) {
-                // can not happen here because powerup is already verified to be possessed
             }
         }
 
-        gameManager.changeState(handleAfterActionState(turnManager.isSecondAction()));
-        return buildPositiveResponse("Targeting Scope/s used ");
+        return new Response("Targeting Scope/s used ", MessageStatus.NO_RESPONSE);
     }
 
     /**
@@ -443,11 +509,8 @@ public class RoundManager {
 
             try {
                 turnOwner.getPowerups()[i].use(tempRequest);
-                turnOwner.discardPowerupByIndex(i);
             } catch (NotEnoughAmmoException e) {
                 return buildNegativeResponse("Not Enough Ammo");
-            } catch (EmptyHandException e) {
-                // can not happen here because powerup is already verified to be possessed
             } catch (InvalidPowerupActionException e) {
                 return buildNegativeResponse(" Invalid Action");
             }
@@ -459,23 +522,19 @@ public class RoundManager {
                 .build();
         try {
             turnOwner.getPowerups()[2].use(tempRequest);
-            turnOwner.discardPowerupByIndex(2);
         } catch (NotEnoughAmmoException e) {
             return buildNegativeResponse("Not Enough Ammo ");
         } catch (InvalidPowerupActionException e) {
             return buildNegativeResponse("Invalid Action  ");
-        } catch (EmptyHandException e) {
-            // can not happen here because powerup is already verified to be possessed
         }
 
-        gameManager.changeState(handleAfterActionState(turnManager.isSecondAction()));
-        return buildPositiveResponse("Targeting Scope/s used");
+        return new Response("Targeting Scope/s used", MessageStatus.NO_RESPONSE);
     }
 
     /**
      * Uses all targeting scopes on the same target
      *
-     * @param scopeRequest the {@link PowerupRequest PowerupRequest} received
+     * @param scopeRequest   the {@link PowerupRequest PowerupRequest} received
      * @param numberOfScopes number of targeting scopes to be used
      * @return positive or negative {@link Response Response} handled by the server
      */
@@ -501,18 +560,14 @@ public class RoundManager {
             }
             try {
                 turnOwner.getPowerups()[i].use(tempRequest);
-                turnOwner.discardPowerupByIndex(i);
             } catch (NotEnoughAmmoException e) {
                 return buildNegativeResponse("Not Enough Ammo ");
             } catch (InvalidPowerupActionException e) {
                 return buildNegativeResponse("Invalid  Action");
-            } catch (EmptyHandException e) {
-                // cn not happen here because powerup is already verified to be possessed
             }
         }
 
-        gameManager.changeState(handleAfterActionState(turnManager.isSecondAction()));
-        return buildPositiveResponse("Targeting Scope/s used");
+        return new Response("Targeting Scope/s used", MessageStatus.NO_RESPONSE);
     }
 
     /**
@@ -525,7 +580,7 @@ public class RoundManager {
     private boolean checkScopeIndexes(List<Integer> powerupsIndexes, List<Integer> paymentPowerups) {
         UserPlayer turnOwner = turnManager.getTurnOwner();
 
-        if(powerupsIndexes.size() < paymentPowerups.size()) {
+        if (powerupsIndexes.size() < paymentPowerups.size()) {
             return false;
         }
 
@@ -560,13 +615,13 @@ public class RoundManager {
         List<String> targetsUsernames = scopeMessage.getTargetPlayersUsername();
         boolean targetPresent = true;
 
-        if(targetsUsernames.isEmpty() && !scopeMessage.getPowerup().isEmpty()) {
+        if (targetsUsernames.isEmpty() && !scopeMessage.getPowerup().isEmpty()) {
             return false;
         }
 
-        for(int i = 0; i < targetsUsernames.size() && targetPresent; ++i) {
-            for(Player damagedPlayers : turnManager.getDamagedPlayers()) {
-                if(targetsUsernames.get(i).equals(damagedPlayers.getUsername())) {
+        for (int i = 0; i < targetsUsernames.size() && targetPresent; ++i) {
+            for (Player damagedPlayers : turnManager.getDamagedPlayers()) {
+                if (targetsUsernames.get(i).equals(damagedPlayers.getUsername())) {
                     targetPresent = true;
                     break;
                 }
@@ -756,12 +811,12 @@ public class RoundManager {
             return buildNegativeResponse("Invalid Shoot Action");
         }
 
-        if(checkScopeUsage(turnOwner)) {
+        if (checkScopeUsage(turnOwner)) {
             turnManager.setSecondAction(secondAction);
             gameManager.changeState(PossibleGameState.SCOPE_USAGE);
 
             return buildScopePositiveResponse();
-        } else if(!turnManager.getGrenadePossibleUsers().isEmpty()){
+        } else if (!turnManager.getGrenadePossibleUsers().isEmpty()) {
             gameManager.changeState(PossibleGameState.GRANADE_USAGE);
             turnManager.setMarkedByGrenadePlayer(turnManager.getTurnOwner());
             turnManager.setMarkingTerminator(false);
@@ -787,7 +842,7 @@ public class RoundManager {
         UserPlayer turnOwner = turnManager.getTurnOwner();
         ReloadAction reloadAction;
 
-        if(reloadRequest.getWeapons().size() > turnOwner.getWeapons().length) {
+        if (reloadRequest.getWeapons().size() > turnOwner.getWeapons().length) {
             return buildNegativeResponse("Too many weapons");
         }
 
@@ -828,7 +883,7 @@ public class RoundManager {
         ArrayList<UserPlayer> reallyDamagedPlayers = new ArrayList<>();
 
         for (int i = 0; i < gameInstance.getPlayers().size(); ++i) {
-            if(gameInstance.getPlayers().get(i).getPlayerBoard().getDamageCount() > beforeShootDamage.get(i)) {
+            if (gameInstance.getPlayers().get(i).getPlayerBoard().getDamageCount() > beforeShootDamage.get(i)) {
                 reallyDamagedPlayers.add(gameInstance.getPlayers().get(i));
             }
         }
@@ -962,7 +1017,7 @@ public class RoundManager {
                 turnOwner.discardPowerup(spawnPowerup);
                 turnOwner.addPowerup(spawnPowerup);
             } catch (MaxCardsInHandException | EmptyHandException e) {
-              // never happen at this point
+                // never happen at this point
             }
         }
 
@@ -1075,8 +1130,8 @@ public class RoundManager {
      * @return true if the shooter has a SCOPE, otherwis false
      */
     private boolean checkScopeUsage(UserPlayer turnOwner) {
-        for(PowerupCard powerupCard : turnOwner.getPowerups()) {
-            if(powerupCard.getName().equals(TARGETING_SCOPE)) {
+        for (PowerupCard powerupCard : turnOwner.getPowerups()) {
+            if (powerupCard.getName().equals(TARGETING_SCOPE)) {
                 return true;
             }
         }
@@ -1088,7 +1143,7 @@ public class RoundManager {
      * Method that handles the spawn of a {@link UserPlayer UserPlayer} while he disconnects from the game on the very
      * first round. If the {@link Bot Bot} is present his spawn is also managed
      *
-     * @param spawnPlayer if true the {@link UserPlayer UserPlayer} hasn't spawned yet
+     * @param spawnPlayer     if true the {@link UserPlayer UserPlayer} hasn't spawned yet
      * @param spawnTerminator if true the {@link Bot Bot} hasn't spawned yet
      */
     void handleRandomSpawn(boolean spawnPlayer, boolean spawnTerminator) {
@@ -1105,7 +1160,7 @@ public class RoundManager {
             }
         }
 
-        if(spawnPlayer && getTurnManager().getTurnOwner().getPossibleActions().contains(PossibleAction.CHOOSE_SPAWN)) {
+        if (spawnPlayer && getTurnManager().getTurnOwner().getPossibleActions().contains(PossibleAction.CHOOSE_SPAWN)) {
             try {
                 spawnColor = Ammo.toColor(spawningPowerup.getValue());
                 getTurnManager().getTurnOwner().discardPowerupByIndex(randomIndex);

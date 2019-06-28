@@ -94,6 +94,24 @@ public class PlayerBoard implements Serializable {
     }
 
     /**
+     * Method used to set back the damages of a {@link PlayerBoard PlayerBoard} in case an Action did not work
+     *
+     * @param damages the Damages to set back
+     */
+    public void setDamages(List<String> damages) {
+        this.damages = damages;
+    }
+
+    /**
+     * Method used to set back the marks of a {@link PlayerBoard PlayerBoard} in case an Action did not worl
+     *
+     * @param marks the Marks to set back
+     */
+    public void setMarks(List<String> marks) {
+        this.marks = marks;
+    }
+
+    /**
      * Return an array of Integer made from a sublist of the board points.
      * The sublist is the board points list without the first N elements.
      * N is equals to the number of skull placed on the board.
