@@ -34,7 +34,7 @@ public class GameManager implements TimerRunListener, Serializable {
     private final transient Server server;
     private PossibleGameState gameState;
     private final Game gameInstance;
-    private transient GameLobby lobby;
+    private final GameLobby lobby;
     private transient RoundManager roundManager;
     private ShootParameters shootParameters;
 
@@ -70,7 +70,7 @@ public class GameManager implements TimerRunListener, Serializable {
     public GameManager(Server server, GameManager savedGameManager, int lobbyTimeoutTime) {
         this.server = server;
         this.gameState = savedGameManager.gameState;
-        this.lobby = null;
+        this.lobby = savedGameManager.lobby;
         this.gameInstance = Game.getInstance();
         this.shootParameters = savedGameManager.shootParameters;
 

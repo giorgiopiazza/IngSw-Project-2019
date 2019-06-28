@@ -51,27 +51,22 @@ public class PowerupCard extends UsableCard {
 
     private void payEffectCost(PowerupRequest request, UserPlayer shootingPlayer, AmmoQuantity cost) throws NotEnoughAmmoException {
         if (!cost.noAmmo()) {
-            PowerupCard[] powerupCards = shootingPlayer.getPowerups();
-            List<Integer> powerupsID = request.getPaymentPowerups();
             Ammo colorCost = null;
+            boolean paid = false;
 
-            if(!request.getAmmoColor().isEmpty()) {
+            if(request.getAmmoColor() != null && !request.getAmmoColor().isEmpty()) {
                 colorCost = request.getAmmoColor().get(0);
             }
 
-            boolean paid = false;
-
-            for (Integer i : powerupsID) {
-                if (powerupCards[i].getValue() == colorCost) {
-                    try {
-                        shootingPlayer.discardPowerupByIndex(i);
-                    } catch (EmptyHandException e) {
-                        throw new InvalidCommandException();
-                    }
-
-                    paid = true;
-                    break;
+            if(request.getPowerup() != null && !request.getPowerup().isEmpty()) {
+                Integer paymentIndex = request.getPowerup().get(0);
+                try {
+                    shootingPlayer.discardPowerupByIndex(paymentIndex);
+                } catch (EmptyHandException e) {
+                    // never reached
                 }
+
+                paid = true;
             }
 
             if (!paid && colorCost != null) {
