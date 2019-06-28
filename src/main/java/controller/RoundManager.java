@@ -391,7 +391,8 @@ public class RoundManager {
                 return buildNegativeResponse(" Invalid Action ");
         }
 
-        if (tempResponse.getStatus() == MessageStatus.OK) {
+        if (tempResponse.getStatus() == MessageStatus.NO_RESPONSE) {
+            gameManager.changeState(handleAfterActionState(turnManager.isSecondAction()));
             discardPowerups(Stream.of(powerupsIndexes, paymentPowerups).flatMap(Collection::stream).collect(Collectors.toList()));
             return buildPositiveResponse(tempResponse.getMessage());
         } else {

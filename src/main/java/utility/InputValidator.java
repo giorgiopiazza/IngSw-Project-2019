@@ -63,6 +63,9 @@ public class InputValidator {
 
         try {
             switch (checkingMessage.getContent()) {
+                case COLOR:
+                case PASS_TURN:
+                    return true;
                 case GET_IN_LOBBY:
                     return checkNullsInLobby((LobbyMessage) checkingMessage);
                 case LOBBY_VOTE:
@@ -111,10 +114,6 @@ public class InputValidator {
                 if (userName == null) {
                     return false;
                 }
-            }
-
-            if(!checkDuplicatesInArguments(effectRequest.getTargetPlayersUsername())) {
-                return false;
             }
         }
 

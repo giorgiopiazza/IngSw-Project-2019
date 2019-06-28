@@ -202,7 +202,7 @@ public class GameManager implements TimerRunListener, Serializable {
      */
     public Message onMessage(Message receivedMessage) {
         if (!InputValidator.validateInput(receivedMessage)) {
-            buildInvalidResponse();
+            return buildInvalidResponse();
         }
 
         Response tempResponse;
