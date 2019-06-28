@@ -145,23 +145,23 @@
     -fx-background-color: rgba(51, 51, 255, .5);
 }
 
-.paymentPowerup > .box {
+.checkboxImage > .box {
     -fx-background-insets: 0;
     -fx-background-radius: 0;
     -fx-background-color: transparent;
 }
 
-.paymentPowerup > .box > .mark {
+.checkboxImage > .box > .mark {
     -fx-background-position: center;
     -fx-background-repeat: stretch;
     -fx-shape: none;
 }
 
-.paymentPowerup:selected > .box > .mark {
+.checkboxImage:selected > .box > .mark {
     -fx-background-color: transparent;
 }
 
-.paymentPowerup:selected {
+.checkboxImage:selected {
     -fx-effect: dropshadow(gaussian, #F44336, 15, 0.2, 0, 0);
 }
 

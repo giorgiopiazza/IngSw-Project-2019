@@ -244,12 +244,12 @@ public class GuiManager extends ClientGameManager {
 
     @Override
     public void reload() {
-
+        Platform.runLater(gameSceneController::reload);
     }
 
     @Override
     public void powerup() {
-
+        Platform.runLater(gameSceneController::powerup);
     }
 
     @Override
@@ -274,7 +274,7 @@ public class GuiManager extends ClientGameManager {
 
     @Override
     public void targetingScope() {
-
+        Platform.runLater(gameSceneController::targetingScope);
     }
 
     @Override

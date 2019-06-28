@@ -1,7 +1,9 @@
 package view.gui;
 
 import enumerations.*;
+import enumerations.Properties;
 import exceptions.actions.PowerupCardsNotFoundException;
+import exceptions.actions.WeaponCardsNotFoundException;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -19,6 +21,7 @@ import javafx.stage.Stage;
 import model.GameSerialized;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
+import model.cards.effects.Effect;
 import model.map.CardSquare;
 import model.map.GameMap;
 import model.map.SpawnSquare;
@@ -26,15 +29,25 @@ import model.map.Square;
 import model.player.*;
 import network.client.ClientGameManager;
 import network.message.PowerupRequest;
+import network.message.ReloadRequest;
 import utility.GameCostants;
 import utility.MessageBuilder;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class GameSceneController {
     private static final String USERNAME_PROPERTY = "username";
+
     private static final double OPAQUE = 0.2;
     private static final double NOT_OPAQUE = 1;
+
+    private static final String CSS_CHECKBOX_IMAGE = "checkboxImage";
+    private static final String CSS_BUTTON_CLASS = "button";
+    private static final String CSS_SQUARE_CLICK_BUTTON = "squareClickButton";
+    private static final String CSS_SQUARE_OWNER_CLICK_BUTTON = "squareOwnerClickButton";
+
+    private static final String NEXT_BUTTON_PATH = "/img/scenes/nextbutton.png";
 
     private static final double KILLSHOT_TRACK_SKULL_WIDTH = 20;
     private static final double KILLSHOT_TRACK_SKULL_HEIGHT = 28;
@@ -109,7 +122,6 @@ public class GameSceneController {
         weaponSlotList = List.of(blueWeapon0, blueWeapon1, blueWeapon2, redWeapon0, redWeapon1, redWeapon2,
                 yellowWeapon0, yellowWeapon1, yellowWeapon2);
     }
-
 
     void setupGame(GameSerialized gameSerialized) {
         GameMap gameMap = gameSerialized.getGameMap();
@@ -514,7 +526,7 @@ public class GameSceneController {
             ImageView imageView = new ImageView();
             imageView.setId(getActionIDFromPossibleAction(possibleAction));
             imageView.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> guiManager.doAction(possibleAction));
-            imageView.getStyleClass().add("button");
+            imageView.getStyleClass().add(CSS_BUTTON_CLASS);
 
             actionList.getChildren().add(imageView);
         }
@@ -796,7 +808,6 @@ public class GameSceneController {
         }
     }
 
-
     private String getDropPath(PlayerColor playerColor) {
         return "/img/players/" + playerColor.name().toLowerCase() + "Drop.png";
     }
@@ -829,7 +840,7 @@ public class GameSceneController {
         botHBox.setSpacing(20);
 
         ImageView backButton = new ImageView("/img/scenes/backbutton.png");
-        backButton.getStyleClass().add("button");
+        backButton.getStyleClass().add(CSS_BUTTON_CLASS);
         backButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> hideActionPanel());
         botHBox.getChildren().add(backButton);
 
@@ -853,7 +864,7 @@ public class GameSceneController {
             final int powerupIndex = i;
 
             ImageView img = new ImageView(powerups.get(i).getImagePath());
-            img.getStyleClass().add("button");
+            img.getStyleClass().add(CSS_BUTTON_CLASS);
             img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onClickPowerupSpawn(powerupIndex));
             hBox.getChildren().add(img);
         }
@@ -893,7 +904,7 @@ public class GameSceneController {
 
                 if (square != null && tempPos.distanceOf(playerPosition, gameMap) <= distance && tempPos.distanceOf(playerPosition, gameMap) > 0) {
                     Button mapButton = new Button();
-                    mapButton.getStyleClass().add(tempPos.equals(playerPosition) ? "squareOwnerClickButton" : "squareClickButton");
+                    mapButton.getStyleClass().add(tempPos.equals(playerPosition) ? CSS_SQUARE_OWNER_CLICK_BUTTON : CSS_SQUARE_CLICK_BUTTON);
 
                     mapButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onMoveMapSlotClick(tempPos));
 
@@ -942,7 +953,7 @@ public class GameSceneController {
 
                 if (square != null && square.getSquareType() == SquareType.SPAWN) {
                     Button mapButton = new Button();
-                    mapButton.getStyleClass().add("squareClickButton");
+                    mapButton.getStyleClass().add(CSS_SQUARE_CLICK_BUTTON);
 
                     mapButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onSpawnBotClick(tempPos));
 
@@ -984,13 +995,9 @@ public class GameSceneController {
 
                 if (square != null && tempPos.distanceOf(playerPosition, gameMap) <= distance) {
                     Button mapButton = new Button();
-                    mapButton.getStyleClass().add(tempPos.equals(playerPosition) ? "squareOwnerClickButton" : "squareClickButton");
+                    mapButton.getStyleClass().add(tempPos.equals(playerPosition) ? CSS_SQUARE_OWNER_CLICK_BUTTON : CSS_SQUARE_CLICK_BUTTON);
 
-                    if (square.getSquareType() == SquareType.TILE) {
-                        mapButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onTilePickClick(tempPos));
-                    } else {
-                        mapButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onWeaponPickClick(tempPos));
-                    }
+                    setMovePickSquareClickEvent(square, mapButton, tempPos);
 
                     AnchorPane.setLeftAnchor(mapButton, MapInsetsHelper.squareButtonInsets.getLeft() + y * MapInsetsHelper.SQUARE_BUTTON_HORIZONTAL_OFFSET);
                     AnchorPane.setTopAnchor(mapButton, MapInsetsHelper.squareButtonInsets.getTop() + x * MapInsetsHelper.SQUARE_BUTTON_VERTICAL_OFFSET);
@@ -1006,6 +1013,14 @@ public class GameSceneController {
 
         setBoardOpaque(OPAQUE);
         actionPanel.setVisible(true);
+    }
+
+    private void setMovePickSquareClickEvent(Square square, Button mapButton, PlayerPosition tempPos) {
+        if (square.getSquareType() == SquareType.TILE) {
+            mapButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onTilePickClick(tempPos));
+        } else {
+            mapButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onWeaponPickClick(tempPos));
+        }
     }
 
     private void onTilePickClick(PlayerPosition pickPosition) {
@@ -1041,7 +1056,7 @@ public class GameSceneController {
             final int weaponIndex = i;
 
             ImageView img = new ImageView(weaponCards.get(i).getImagePath());
-            img.getStyleClass().add("button");
+            img.getStyleClass().add(CSS_BUTTON_CLASS);
             img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onWeaponCardPickClick(pickPosition, weaponCards.get(weaponIndex)));
             hBox.getChildren().add(img);
         }
@@ -1065,52 +1080,20 @@ public class GameSceneController {
 
             setActionPanelTitle("Payment Powerups");
 
-            VBox vBox = new VBox();
-            vBox.setAlignment(Pos.CENTER);
-
-            HBox hBox = new HBox();
-            hBox.setAlignment(Pos.BASELINE_CENTER);
-            hBox.setSpacing(20);
-            vBox.getChildren().add(hBox);
-
-            for (PowerupCard powerupCard : powerupCards) {
-                CheckBox powCheckbox = new CheckBox();
-                powCheckbox.getStyleClass().add("paymentPowerup");
-                powCheckbox.setStyle("-fx-graphic:  url('" + powerupCard.getImagePath() + "')");
-                StackPane.setAlignment(powCheckbox, Pos.CENTER);
-                hBox.getChildren().add(powCheckbox);
-            }
-
-            actionPanel.setCenter(vBox);
+            setMultiplePowerupSelectLayout(powerupCards);
 
             setActionPanelBottom();
 
             HBox botHBox = (HBox) actionPanel.getBottom();
-            ImageView nextButton = new ImageView("/img/scenes/nextbutton.png");
-            nextButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> calcPowerupIndexesWeaponPick(pickPosition, weaponCard));
+            ImageView nextButton = new ImageView(NEXT_BUTTON_PATH);
+            nextButton.getStyleClass().add(CSS_BUTTON_CLASS);
+
+            nextButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onCheckWeaponSwap(pickPosition, weaponCard, getMultiplePowerupIndexes()));
             botHBox.getChildren().add(nextButton);
 
             setBoardOpaque(OPAQUE);
             actionPanel.setVisible(true);
-
         }
-    }
-
-    private void calcPowerupIndexesWeaponPick(final PlayerPosition pickPosition, final WeaponCard weaponCard) {
-        ArrayList<Integer> paymentPowerups = new ArrayList<>();
-
-        VBox centerVBox = (VBox) actionPanel.getCenter();
-        HBox centerHBox = (HBox) centerVBox.getChildren().get(0);
-
-        for (int i = 0; i < centerHBox.getChildren().size(); ++i) {
-            CheckBox childrenCheck = (CheckBox) centerHBox.getChildren().get(i);
-
-            if (childrenCheck.isSelected()) {
-                paymentPowerups.add(i);
-            }
-        }
-
-        onCheckWeaponSwap(pickPosition, weaponCard, paymentPowerups);
     }
 
     private void onCheckWeaponSwap(final PlayerPosition pickPosition, final WeaponCard weaponCard, final ArrayList<Integer> paymentPowerups) {
@@ -1134,7 +1117,7 @@ public class GameSceneController {
             for (WeaponCard discardingWeap : weaponCards) {
 
                 ImageView img = new ImageView(discardingWeap.getImagePath());
-                img.getStyleClass().add("button");
+                img.getStyleClass().add(CSS_BUTTON_CLASS);
                 img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> sendPickRequest(pickPosition, weaponCard, paymentPowerups, discardingWeap));
                 hBox.getChildren().add(img);
             }
@@ -1160,8 +1143,8 @@ public class GameSceneController {
             hideActionPanel();
         }
     }
-/*
-    void usePowerup() {
+
+    void powerup() {
         List<PowerupCard> powerupCards = guiManager.getPowerups();
 
         if (powerupCards.isEmpty()) {
@@ -1186,8 +1169,8 @@ public class GameSceneController {
                 final int powerupIndex = i;
 
                 ImageView img = new ImageView(powerupCards.get(i).getImagePath());
-                img.getStyleClass().add("button");
-                img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onPowerupUseClick(List.of(powerupIndex)));
+                img.getStyleClass().add(CSS_BUTTON_CLASS);
+                img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onPowerupUseClick(powerupIndex));
                 hBox.getChildren().add(img);
             }
         }
@@ -1200,52 +1183,561 @@ public class GameSceneController {
         actionPanel.setVisible(true);
     }
 
-    private void onPowerupUseClick(List<Integer> powerupIndexes) {
-        if (!powerupIndexes.isEmpty()) {
-            PowerupCard powerupCard = guiManager.getPowerups().get(powerupIndexes.get(0));
+    void tagbackGrenade() {
+        askMultiplePowerupUsage(ClientGameManager.TAGBACK_GRENADE);
+    }
 
-            switch (powerupCard.getName()) {
-                case ClientGameManager.NEWTON:
-                    onNewtonClick(powerupIndexex);
-                    break;
-                case ClientGameManager.TELEPORTER:
+    void targetingScope() {
+        askMultiplePowerupUsage(ClientGameManager.TARGETING_SCOPE);
+    }
 
-                    break;
-                case ClientGameManager.TAGBACK_GRENADE:
-                    break;
-                case ClientGameManager.TARGETING_SCOPE:
-                    break;
-                default:
-                    throw new IllegalStateException();
+    private void askMultiplePowerupUsage(String powerupName) {
+        ArrayList<PowerupCard> powerupCards = new ArrayList<>(guiManager.getPowerups());
+
+        actionPanel.getChildren().clear();
+
+        setActionPanelTitle(powerupName);
+
+        setMultiplePowerupSelectLayout(powerupCards.stream().filter(p -> p.getName().equals(powerupName)).collect(Collectors.toList()));
+
+        setActionPanelBottom();
+
+        HBox botHBox = (HBox) actionPanel.getBottom();
+        ImageView nextButton = new ImageView(NEXT_BUTTON_PATH);
+        nextButton.getStyleClass().add(CSS_BUTTON_CLASS);
+
+        nextButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+            ArrayList<Integer> powerupIndexes = getMultiplePowerupIndexes();
+
+            PowerupRequest.PowerupRequestBuilder powerupRequestBuilder =
+                    new PowerupRequest.PowerupRequestBuilder(guiManager.getUsername(), guiManager.getClientToken(), powerupIndexes);
+
+            if (powerupIndexes.isEmpty() || powerupName.equals(ClientGameManager.TAGBACK_GRENADE)) {
+                sendPowerupRequest(powerupRequestBuilder);
+            } else {
+                onScopeClick(powerupRequestBuilder);
             }
+        });
+
+        botHBox.getChildren().add(nextButton);
+
+        setBoardOpaque(OPAQUE);
+        actionPanel.setVisible(true);
+    }
+
+    private void onPowerupUseClick(int powerupIndex) {
+        PowerupRequest.PowerupRequestBuilder powerupRequestBuilder =
+                new PowerupRequest.PowerupRequestBuilder(guiManager.getUsername(), guiManager.getClientToken(), new ArrayList<>(List.of(powerupIndex)));
+
+        PowerupCard powerupCard = guiManager.getPowerups().get(powerupIndex);
+
+        Effect baseEffect = powerupCard.getBaseEffect();
+        Map<String, String> effectProperties = baseEffect.getProperties();
+
+
+        if (effectProperties.containsKey(Properties.TP.getJKey())) {
+            onTeleporterClick(powerupRequestBuilder);
+        } else {
+            onNewtonClick(powerupRequestBuilder);
         }
     }
 
-    private void onNewtonClick(int powerupIndex) {
+    private void onNewtonClick(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
+        actionPanel.getChildren().clear();
 
+        setActionPanelTitle("Newton Target");
+
+        VBox vBox = new VBox();
+        vBox.setAlignment(Pos.CENTER);
+
+        HBox hBox = new HBox();
+        hBox.setAlignment(Pos.BASELINE_CENTER);
+        hBox.setSpacing(20);
+        vBox.getChildren().add(hBox);
+
+        for (Player player : guiManager.getPlayers()) {
+            if (!player.getUsername().equals(guiManager.getUsername())) {
+                ImageView img = new ImageView();
+                img.setId(getIconIDFromColor(player.getColor()));
+                img.getProperties().put(USERNAME_PROPERTY, player.getUsername());
+
+                img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+                    ImageView imageView = (ImageView) event.getTarget();
+                    String targetUsername = (String) imageView.getProperties().get(USERNAME_PROPERTY);
+                    askNewtonMovePosition(powerupRequestBuilder.targetPlayersUsername(new ArrayList<>(List.of(targetUsername))));
+                });
+
+                hBox.getChildren().add(img);
+            }
+        }
+
+        actionPanel.setCenter(vBox);
+
+        setActionPanelBottom();
+
+        setBoardOpaque(OPAQUE);
+        actionPanel.setVisible(true);
     }
 
-    private void onTeleporterClick(int powerupIndex) {
+    private void askNewtonMovePosition(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
+        setActionPanelTitle("Newton target move");
+        GameMap gameMap = guiManager.getGameMap();
+        PlayerPosition playerPosition = guiManager.getPlayerByName(powerupRequestBuilder.build().getTargetPlayersUsername().get(0)).getPosition();
 
+        AnchorPane anchorPane = new AnchorPane();
+
+        List<PlayerPosition> directionalPositions = getDirectionalMove(gameMap, playerPosition, 2);
+
+        for (int y = 0; y < GameMap.MAX_COLUMNS; ++y) {
+            for (int x = 0; x < GameMap.MAX_ROWS; ++x) {
+                Square square = gameMap.getSquare(x, y);
+                PlayerPosition tempPos = new PlayerPosition(x, y);
+
+                if (square != null && directionalPositions.contains(tempPos)) {
+                    Button mapButton = new Button();
+                    mapButton.getStyleClass().add(CSS_SQUARE_CLICK_BUTTON);
+
+                    mapButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> sendPowerupRequest(powerupRequestBuilder.targetPlayersMovePositions(new ArrayList<>(List.of(tempPos)))));
+
+                    AnchorPane.setLeftAnchor(mapButton, MapInsetsHelper.squareButtonInsets.getLeft() + y * MapInsetsHelper.SQUARE_BUTTON_HORIZONTAL_OFFSET);
+                    AnchorPane.setTopAnchor(mapButton, MapInsetsHelper.squareButtonInsets.getTop() + x * MapInsetsHelper.SQUARE_BUTTON_VERTICAL_OFFSET);
+
+                    anchorPane.getChildren().add(mapButton);
+                }
+            }
+        }
+
+        actionPanel.setCenter(anchorPane);
+
+        setActionPanelBottom();
+
+        setBoardOpaque(OPAQUE);
+        actionPanel.setVisible(true);
     }
 
-    private void onTagbackClick(int powerupIndex) {
+    private void onTeleporterClick(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
+        setActionPanelTitle("Teleporter");
+        GameMap gameMap = guiManager.getGameMap();
+        PlayerPosition playerPosition = guiManager.getPlayer().getPosition();
 
+        AnchorPane anchorPane = new AnchorPane();
+
+        for (int y = 0; y < GameMap.MAX_COLUMNS; ++y) {
+            for (int x = 0; x < GameMap.MAX_ROWS; ++x) {
+                Square square = gameMap.getSquare(x, y);
+                PlayerPosition tempPos = new PlayerPosition(x, y);
+
+                if (square != null && tempPos.distanceOf(playerPosition, gameMap) > 0) {
+                    Button mapButton = new Button();
+                    mapButton.getStyleClass().add(tempPos.equals(playerPosition) ? CSS_SQUARE_OWNER_CLICK_BUTTON : CSS_SQUARE_CLICK_BUTTON);
+
+                    mapButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> sendPowerupRequest(powerupRequestBuilder.senderMovePosition(tempPos)));
+
+                    AnchorPane.setLeftAnchor(mapButton, MapInsetsHelper.squareButtonInsets.getLeft() + y * MapInsetsHelper.SQUARE_BUTTON_HORIZONTAL_OFFSET);
+                    AnchorPane.setTopAnchor(mapButton, MapInsetsHelper.squareButtonInsets.getTop() + x * MapInsetsHelper.SQUARE_BUTTON_VERTICAL_OFFSET);
+
+                    anchorPane.getChildren().add(mapButton);
+                }
+            }
+        }
+
+        actionPanel.setCenter(anchorPane);
+
+        setActionPanelBottom();
+
+        setBoardOpaque(OPAQUE);
+        actionPanel.setVisible(true);
     }
 
-    private void onScopeClick(int powerupIndex) {
+    private void onScopeClick(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
+        actionPanel.getChildren().clear();
 
-    }*/
+        PowerupRequest tempRequest = powerupRequestBuilder.build();
 
-    void tagbackGrenade() {
-        PowerupRequest.PowerupRequestBuilder grenadeRequestBuilder = new PowerupRequest.PowerupRequestBuilder(guiManager.getUsername(), guiManager.getClientToken(), new ArrayList<>());
+        if (tempRequest.getTargetPlayersUsername() == null) {
+            powerupRequestBuilder = powerupRequestBuilder.targetPlayersUsername(new ArrayList<>());
+            tempRequest = powerupRequestBuilder.build();
+        }
 
+        setActionPanelTitle("Scope Target #" + tempRequest.getTargetPlayersUsername().size() + 1);
+
+        VBox vBox = new VBox();
+        vBox.setAlignment(Pos.CENTER);
+
+        HBox hBox = new HBox();
+        hBox.setAlignment(Pos.BASELINE_CENTER);
+        hBox.setSpacing(20);
+        vBox.getChildren().add(hBox);
+
+        final PowerupRequest.PowerupRequestBuilder finalPowerupRequestBuilder = powerupRequestBuilder;
+
+        for (Player player : guiManager.getPlayers()) {
+            final String currentUsername = player.getUsername();
+            if (!currentUsername.equals(guiManager.getUsername())) {
+                ImageView img = new ImageView();
+                img.setId(getIconIDFromColor(player.getColor()));
+                img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+                    PowerupRequest currTempRequest = finalPowerupRequestBuilder.build();
+
+                    ArrayList<String> targetUsernames = currTempRequest.getTargetPlayersUsername();
+                    targetUsernames.add(currentUsername);
+
+                    if (currTempRequest.getPowerup().size() == targetUsernames.size()) {
+                        onScopeClick(finalPowerupRequestBuilder.targetPlayersUsername(targetUsernames));
+                    } else {
+                        askScopePaymentPowerups(finalPowerupRequestBuilder.targetPlayersUsername(targetUsernames));
+                    }
+                });
+
+                hBox.getChildren().add(img);
+            }
+        }
+
+        actionPanel.setCenter(vBox);
+
+        setActionPanelBottom();
+
+        setBoardOpaque(OPAQUE);
+        actionPanel.setVisible(true);
+    }
+
+    private void askScopePaymentPowerups(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
+        ArrayList<PowerupCard> powerupCards = new ArrayList<>(guiManager.getPowerups());
+
+        PowerupRequest tempRequest = powerupRequestBuilder.build();
+        List<Integer> powerupIndexes = tempRequest.getPowerup();
+
+        for (int i = powerupIndexes.size() - 1; i >= 0; --i) {
+            int index = powerupIndexes.get(i);
+            powerupCards.remove(index);
+        }
+
+        actionPanel.getChildren().clear();
+
+        setActionPanelTitle("Scope payment Powerup");
+
+        setMultiplePowerupSelectLayout(powerupCards);
+
+        setActionPanelBottom();
+
+        HBox botHBox = (HBox) actionPanel.getBottom();
+        ImageView nextButton = new ImageView(NEXT_BUTTON_PATH);
+        nextButton.getStyleClass().add(CSS_BUTTON_CLASS);
+
+        nextButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+            ArrayList<Integer> paymentPowerups = getMultiplePowerupIndexes();
+            PowerupRequest.PowerupRequestBuilder currPowerupRequestBuilder = powerupRequestBuilder.paymentPowerups(paymentPowerups);
+            PowerupRequest currPowerupRequest = currPowerupRequestBuilder.build();
+
+            if (currPowerupRequest.getPowerup().size() == currPowerupRequest.getPaymentPowerups().size()) {
+                sendPowerupRequest(currPowerupRequestBuilder);
+            } else {
+                askScopeAmmoColor(currPowerupRequestBuilder);
+            }
+        });
+
+        botHBox.getChildren().add(nextButton);
+
+        setBoardOpaque(OPAQUE);
+        actionPanel.setVisible(true);
+    }
+
+    private void askScopeAmmoColor(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
+        actionPanel.getChildren().clear();
+
+        PowerupRequest tempRequest = powerupRequestBuilder.build();
+
+        if (tempRequest.getAmmoColor() == null) {
+            powerupRequestBuilder = powerupRequestBuilder.targetPlayersUsername(new ArrayList<>());
+            tempRequest = powerupRequestBuilder.build();
+        }
+
+        setActionPanelTitle("Scope Ammo Color #" + tempRequest.getTargetPlayersUsername().size() + 1);
+
+        VBox vBox = new VBox();
+        vBox.setAlignment(Pos.CENTER);
+
+        HBox hBox = new HBox();
+        hBox.setAlignment(Pos.BASELINE_CENTER);
+        hBox.setSpacing(20);
+        vBox.getChildren().add(hBox);
+
+        List<Ammo> ammoList = List.of(Ammo.RED, Ammo.BLUE, Ammo.YELLOW);
+        final PowerupRequest.PowerupRequestBuilder finalPowerupRequestBuilder = powerupRequestBuilder;
+
+        for (Ammo ammo : ammoList) {
+            ImageView img = new ImageView(ammo.name().toLowerCase() + "Ammo.png");
+
+            img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+                PowerupRequest currTempRequest = finalPowerupRequestBuilder.build();
+
+                ArrayList<Ammo> ammoColorList = currTempRequest.getAmmoColor();
+                ammoColorList.add(ammo);
+
+                if (currTempRequest.getPowerup().size() == (ammoColorList.size() + currTempRequest.getPaymentPowerups().size())) {
+                    sendPowerupRequest(finalPowerupRequestBuilder.ammoColor(ammoColorList));
+                } else {
+                    askScopeAmmoColor(finalPowerupRequestBuilder.ammoColor(ammoColorList));
+                }
+            });
+
+            hBox.getChildren().add(img);
+
+        }
+
+        actionPanel.setCenter(vBox);
+
+        setActionPanelBottom();
+
+        setBoardOpaque(OPAQUE);
+        actionPanel.setVisible(true);
+    }
+
+    private void sendPowerupRequest(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
         try {
-            if (!guiManager.sendRequest(MessageBuilder.buildPowerupRequest(grenadeRequestBuilder))) {
+            if (!guiManager.sendRequest(MessageBuilder.buildPowerupRequest(powerupRequestBuilder))) {
                 GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
             }
         } catch (PowerupCardsNotFoundException e) {
             GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, e.getMessage());
         }
+    }
+
+    void reload() {
+        actionPanel.getChildren().clear();
+
+        List<WeaponCard> weapons = new ArrayList<>(Arrays.asList(guiManager.getPlayer().getWeapons()));
+
+        setActionPanelTitle("Reload Weapons");
+
+        VBox vBox = new VBox();
+        vBox.setAlignment(Pos.CENTER);
+
+        HBox hBox = new HBox();
+        hBox.setAlignment(Pos.BASELINE_CENTER);
+        hBox.setSpacing(20);
+        vBox.getChildren().add(hBox);
+
+        for (WeaponCard weaponCard : weapons) {
+            if (weaponCard.status() == 1) {
+                CheckBox weapCheckbox = new CheckBox();
+                weapCheckbox.getStyleClass().add(CSS_CHECKBOX_IMAGE);
+                weapCheckbox.setStyle("-fx-graphic:  url('" + weaponCard.getImagePath() + "')");
+
+                ColorAdjust monochrome = new ColorAdjust();
+                monochrome.setSaturation(-1);
+                weapCheckbox.setEffect(monochrome);
+
+                weapCheckbox.setUserData(weaponCard);
+
+                StackPane.setAlignment(weapCheckbox, Pos.CENTER);
+                hBox.getChildren().add(weapCheckbox);
+            }
+        }
+
+        actionPanel.setCenter(vBox);
+
+        setActionPanelBottom();
+
+        HBox botHBox = (HBox) actionPanel.getBottom();
+        ImageView nextButton = new ImageView(NEXT_BUTTON_PATH);
+        nextButton.getStyleClass().add(CSS_BUTTON_CLASS);
+
+        nextButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> reloadPaymentPowerups(getReloadWeaponIndexes()));
+        botHBox.getChildren().add(nextButton);
+
+        setBoardOpaque(OPAQUE);
+        actionPanel.setVisible(true);
+    }
+
+    private ArrayList<Integer> getReloadWeaponIndexes() {
+        List<WeaponCard> weaponCards = new ArrayList<>(Arrays.asList(guiManager.getPlayer().getWeapons()));
+        ArrayList<Integer> reloadWeapons = new ArrayList<>();
+
+        VBox centerVBox = (VBox) actionPanel.getCenter();
+        HBox centerHBox = (HBox) centerVBox.getChildren().get(0);
+
+        for (Node check : centerHBox.getChildren()) {
+            CheckBox childrenCheck = (CheckBox) check;
+
+            if (childrenCheck.isSelected()) {
+                WeaponCard weaponCard = (WeaponCard) childrenCheck.getUserData();
+
+                int weapIndex = weaponCards.indexOf(weaponCard);
+
+                if (weapIndex != -1) {
+                    reloadWeapons.add(weapIndex);
+                }
+            }
+        }
+
+        return reloadWeapons;
+    }
+
+    private void reloadPaymentPowerups(ArrayList<Integer> reloadWeapons) {
+        ArrayList<PowerupCard> powerupCards = new ArrayList<>(guiManager.getPowerups());
+
+        actionPanel.getChildren().clear();
+
+        setActionPanelTitle("Reload Payment Powerups");
+
+        setMultiplePowerupSelectLayout(powerupCards);
+
+        setActionPanelBottom();
+
+        HBox botHBox = (HBox) actionPanel.getBottom();
+        ImageView nextButton = new ImageView(NEXT_BUTTON_PATH);
+        nextButton.getStyleClass().add(CSS_BUTTON_CLASS);
+
+        nextButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+            ArrayList<Integer> paymentPowerups = getMultiplePowerupIndexes();
+            ReloadRequest reloadRequest;
+
+            try {
+                if (paymentPowerups.isEmpty()) {
+                    reloadRequest = MessageBuilder.buildReloadRequest(guiManager.getClientToken(), guiManager.getPlayer(), new ArrayList<>(reloadWeapons));
+                } else {
+                    reloadRequest = MessageBuilder.buildReloadRequest(guiManager.getClientToken(), guiManager.getPlayer(), new ArrayList<>(reloadWeapons), paymentPowerups);
+                }
+            } catch (WeaponCardsNotFoundException | PowerupCardsNotFoundException e) {
+                GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, e.getMessage());
+                return;
+            }
+
+            if (!guiManager.sendRequest(reloadRequest)) {
+                GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
+            }
+        });
+
+
+        botHBox.getChildren().add(nextButton);
+
+        setBoardOpaque(OPAQUE);
+        actionPanel.setVisible(true);
+    }
+
+    private void setMultiplePowerupSelectLayout(List<PowerupCard> powerupCards) {
+        VBox vBox = new VBox();
+        vBox.setAlignment(Pos.CENTER);
+
+        HBox hBox = new HBox();
+        hBox.setAlignment(Pos.BASELINE_CENTER);
+        hBox.setSpacing(20);
+        vBox.getChildren().add(hBox);
+
+        for (PowerupCard powerupCard : powerupCards) {
+            CheckBox powCheckbox = new CheckBox();
+            powCheckbox.getStyleClass().add(CSS_CHECKBOX_IMAGE);
+            powCheckbox.setStyle("-fx-graphic:  url('" + powerupCard.getImagePath() + "')");
+            powCheckbox.setUserData(powerupCard);
+
+            StackPane.setAlignment(powCheckbox, Pos.CENTER);
+            hBox.getChildren().add(powCheckbox);
+        }
+
+        actionPanel.setCenter(vBox);
+    }
+
+    private ArrayList<Integer> getMultiplePowerupIndexes() {
+        List<PowerupCard> powerupCards = guiManager.getPowerups();
+        ArrayList<Integer> paymentPowerups = new ArrayList<>();
+
+        VBox centerVBox = (VBox) actionPanel.getCenter();
+        HBox centerHBox = (HBox) centerVBox.getChildren().get(0);
+
+        for (Node check : centerHBox.getChildren()) {
+            CheckBox childrenCheck = (CheckBox) check;
+
+            if (childrenCheck.isSelected()) {
+                PowerupCard powerupCard = (PowerupCard) childrenCheck.getUserData();
+
+                int powIndex = powerupCards.indexOf(powerupCard);
+
+                if (powIndex != -1) {
+                    paymentPowerups.add(powIndex);
+                }
+            }
+        }
+
+        return paymentPowerups;
+    }
+
+    private List<PlayerPosition> getDirectionalMove(GameMap gameMap, PlayerPosition startingSquare, int distance) {
+        List<PlayerPosition> returnPositions = new ArrayList<>();
+
+        returnPositions.addAll(getNorthDirectionalMove(gameMap, startingSquare, distance));
+        returnPositions.addAll(getSouthDirectionalMove(gameMap, startingSquare, distance));
+        returnPositions.addAll(getEastDirectionalMove(gameMap, startingSquare, distance));
+        returnPositions.addAll(getWestDirectionalMove(gameMap, startingSquare, distance));
+
+        return returnPositions;
+    }
+
+    private List<PlayerPosition> getNorthDirectionalMove(GameMap gameMap, PlayerPosition startingSquare, int distance) {
+        List<PlayerPosition> returnPositions = new ArrayList<>();
+        Square tempsquare = gameMap.getSquare(startingSquare);
+        int x = startingSquare.getCoordX();
+        int y = startingSquare.getCoordY();
+
+        while (x >= 0 && tempsquare.getNorth() != SquareAdjacency.WALL) {
+            PlayerPosition tempPosition = new PlayerPosition(x, y);
+            if (!startingSquare.equals(tempPosition) && startingSquare.distanceOf(tempPosition, gameMap) <= distance) {
+                returnPositions.add(tempPosition);
+                x--;
+            }
+        }
+
+        return returnPositions;
+    }
+
+    private List<PlayerPosition> getSouthDirectionalMove(GameMap gameMap, PlayerPosition startingSquare, int distance) {
+        List<PlayerPosition> returnPositions = new ArrayList<>();
+        Square tempsquare = gameMap.getSquare(startingSquare);
+        int x = startingSquare.getCoordX();
+        int y = startingSquare.getCoordY();
+
+        while (x < GameMap.MAX_ROWS && tempsquare.getSouth() != SquareAdjacency.WALL) {
+            PlayerPosition tempPosition = new PlayerPosition(x, y);
+            if (!startingSquare.equals(tempPosition) && startingSquare.distanceOf(tempPosition, gameMap) <= distance) {
+                returnPositions.add(tempPosition);
+                x++;
+            }
+        }
+
+        return returnPositions;
+    }
+
+    private List<PlayerPosition> getEastDirectionalMove(GameMap gameMap, PlayerPosition startingSquare, int distance) {
+        List<PlayerPosition> returnPositions = new ArrayList<>();
+        Square tempsquare = gameMap.getSquare(startingSquare);
+        int x = startingSquare.getCoordX();
+        int y = startingSquare.getCoordY();
+
+        while (y >= 0 && tempsquare.getEast() != SquareAdjacency.WALL) {
+            PlayerPosition tempPosition = new PlayerPosition(x, y);
+            if (!startingSquare.equals(tempPosition) && startingSquare.distanceOf(tempPosition, gameMap) <= distance) {
+                returnPositions.add(tempPosition);
+                y--;
+            }
+        }
+
+        return returnPositions;
+    }
+
+    private List<PlayerPosition> getWestDirectionalMove(GameMap gameMap, PlayerPosition startingSquare, int distance) {
+        List<PlayerPosition> returnPositions = new ArrayList<>();
+        Square tempsquare = gameMap.getSquare(startingSquare);
+        int x = startingSquare.getCoordX();
+        int y = startingSquare.getCoordY();
+
+        while (y < GameMap.MAX_COLUMNS && tempsquare.getWest() != SquareAdjacency.WALL) {
+            PlayerPosition tempPosition = new PlayerPosition(x, y);
+            if (!startingSquare.equals(tempPosition) && startingSquare.distanceOf(tempPosition, gameMap) <= distance) {
+                returnPositions.add(tempPosition);
+                y++;
+            }
+        }
+
+        return returnPositions;
     }
 }
