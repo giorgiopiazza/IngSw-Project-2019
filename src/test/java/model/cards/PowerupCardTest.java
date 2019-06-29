@@ -16,7 +16,7 @@ class PowerupCardTest {
         PowerupBaseEffect effect = mock(PowerupBaseEffect.class);
 
         p1 = new PowerupCard("nome", "", Ammo.BLUE, effect, 0);
-        p2 = new PowerupCard("nome", "", Ammo.BLUE, effect, 1);
+        p2 = new PowerupCard("nome", "", Ammo.BLUE, effect, 0);
 
         assertEquals(p1, p2);
     }

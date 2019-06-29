@@ -437,7 +437,7 @@
         },
         {
           "id": 1,
-          "description": "Deal 1 damage to everyone on a visible square. This can be used before or after the move.          ",
+          "description": "Deal 1 damage to everyone on a visible square . This is used after the move.                       ",
           "cost": ["RED"],
           "properties": {
             "visible": true,
@@ -449,6 +449,22 @@
               "moveTargetBefore": false
             }, {
               "damageDistribution": [1]
+            }]
+          }
+        },
+        {
+          "id": 2,
+          "description": "Deal 1 damage to everyone on a visible square . This is used before the move                       ",
+          "properties": {
+            "visible": true,
+            "targetNum": 1,
+            "target": ["SQUARE", "PLAYER"],
+            "subEffects": [{
+              "damageDistribution": [1]
+            }, {
+              "maxMoveTarget": 1,
+              "damageDistribution": [1],
+              "moveTargetBefore": false
             }]
           }
         }
@@ -588,12 +604,13 @@
         },
         {
           "id": 2,
-          "description": "Deal 2 damage to another target on your square. The move may be used before or after this effect.  ",
+          "description": "Deal 2 damage to another target on your square.                                                    ",
           "cost": ["YELLOW"],
           "properties": {
             "visible": true,
             "target": ["PLAYER"],
             "targetNum": 2,
+            "move": 1,
             "damageDistribution": [2, 2],
             "distance": 0
           }
@@ -606,8 +623,9 @@
             "visible": true,
             "target": ["PLAYER"],
             "targetNum": 2,
-            "damageDistribution": [2, 2],
+            "moveInMiddle": true,
             "move": 1,
+            "damageDistribution": [2, 2],
             "distance": 0
           }
         }

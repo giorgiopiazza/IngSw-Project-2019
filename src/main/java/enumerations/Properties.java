@@ -11,6 +11,7 @@ public enum Properties {
     MAX_TARGET_NUM("maxTargetNum"),
     MOVE_INLINE("moveInLine"),
     MOVE("move"),
+    MOVE_IN_MIDDLE("moveInMiddle"),
     MOVE_TARGET("moveTarget"),
     MAX_MOVE_TARGET("maxMoveTarget"),
     MOVE_TARGET_BEFORE("moveTargetBefore"),

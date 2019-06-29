@@ -54,9 +54,11 @@ public class WeaponBaseEffect extends Effect {
         if (!EffectValidator.isMoveValid(request, properties))
             return false;
 
-        // Simulates player movement before shooting
+        // Simulates player movement before or while shooting
         if (request.isMoveSenderFirst()) {
             shooterPosition = request.getSenderMovePosition();
+        } else if (request.isMoveInMiddle()) {
+            return EffectValidator.isMoveInMiddleValid(request);
         }
 
         // Move before validation

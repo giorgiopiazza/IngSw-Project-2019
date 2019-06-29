@@ -1103,6 +1103,21 @@ public class Cli extends ClientGameManager {
     }
 
     /**
+     * Asks if the player wants to move during the shoot action
+     *
+     * @return the move decision read
+     * @throws CancelledActionException if the action was cancelled
+     */
+    private Boolean askMiddleMove() throws CancelledActionException {
+        out.println("Choose if you want to do a: 'inMiddle'(0) or 'before'/'after'(1) movement");
+        if(readInt(0,1,true) == 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Ask for each target the moving position
      *
      * @param targetsChosen list of targets
@@ -1163,7 +1178,11 @@ public class Cli extends ClientGameManager {
         if (effectProperties.containsKey(Properties.MOVE.getJKey())) {
             // move is always permitted both before and after, decision is then always asked
             shootRequestBuilder.senderMovePosition(askMovePositionInShoot());
-            shootRequestBuilder.moveSenderFirst(askBeforeAfterMove());
+            if(effectProperties.containsKey(Properties.MOVE_IN_MIDDLE.getJKey()) && askMiddleMove()) {
+                shootRequestBuilder.moveInMiddle(true);
+            } else {
+                shootRequestBuilder.moveSenderFirst(askBeforeAfterMove());
+            }
         }
 
         // now that I have handled the Turn Owner movement I have to handle the targets ones
