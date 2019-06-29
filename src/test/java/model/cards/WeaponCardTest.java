@@ -393,6 +393,177 @@ class WeaponCardTest {
         assertEquals(0, target2.getPlayerBoard().getMarkCount());
     }
 
+    @Test
+    void cyberBlade() throws MaxCardsInHandException, NotEnoughAmmoException, WeaponNotChargedException, WeaponAlreadyChargedException, InvalidActionException {
+        WeaponCard cyberBlade = getWeaponByName("Cyberblade");
+        cyberBlade.setStatus(full);
+
+        shooter.addWeapon(cyberBlade);
+        shooter.setPosition(new PlayerPosition(0,0));
+        shooter.addPowerup(new PowerupCard("TAGBACK GRENADE", "/img/powerups/venom_yellow.png", YELLOW, null, 9));
+
+        target1.setPosition(new PlayerPosition(0,0));
+
+        userTarget.add(target1.getUsername());
+
+
+        // first effect
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 0, null);
+        builder = builder.targetPlayersUsernames(userTarget);
+
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.SHOOT, request);
+
+        assertTrue(action.validate());
+        action.execute();
+
+        assertEquals(2, target1.getPlayerBoard().getDamageCount());
+        assertEquals(0, target1.getPlayerBoard().getMarkCount());
+
+
+        // second effect, move before
+        cyberBlade.setStatus(full);
+        shooter.changePosition(0, 1);
+        target1.getPlayerBoard().setDamages(new ArrayList<>());
+
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 1, null);
+        builder = builder.targetPlayersUsernames(userTarget);
+        builder = builder.moveSenderFirst(true);
+        builder = builder.senderMovePosition(new PlayerPosition(0,0));
+
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.SHOOT, request);
+
+        assertTrue(action.validate());
+        action.execute();
+
+        assertEquals(2, target1.getPlayerBoard().getDamageCount());
+        assertEquals(0, target1.getPlayerBoard().getMarkCount());
+        assertEquals(new PlayerPosition(0,0), shooter.getPosition());
+
+
+        // second effect, move after
+        cyberBlade.setStatus(full);
+        shooter.changePosition(0, 0);
+        target1.getPlayerBoard().setDamages(new ArrayList<>());
+
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 1, null);
+        builder = builder.targetPlayersUsernames(userTarget);
+        builder = builder.moveSenderFirst(false);
+        builder = builder.senderMovePosition(new PlayerPosition(0,1));
+
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.SHOOT, request);
+
+        assertTrue(action.validate());
+        action.execute();
+
+        assertEquals(2, target1.getPlayerBoard().getDamageCount());
+        assertEquals(0, target1.getPlayerBoard().getMarkCount());
+        assertEquals(new PlayerPosition(0,1), shooter.getPosition());
+
+
+        // third effect
+        cyberBlade.setStatus(full);
+        shooter.changePosition(0, 0);
+        target1.getPlayerBoard().setDamages(new ArrayList<>());
+        target2.setPosition(new PlayerPosition(0,0));
+        userTarget.add(target2.getUsername());
+        ArrayList<Integer> indexes = new ArrayList<>();
+        indexes.add(0);
+
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 2, null);
+        builder = builder.targetPlayersUsernames(userTarget);
+        builder = builder.paymentPowerups(indexes);
+
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.SHOOT, request);
+
+        assertTrue(action.validate());
+        action.execute();
+
+        assertEquals(2, target1.getPlayerBoard().getDamageCount());
+        assertEquals(0, target1.getPlayerBoard().getMarkCount());
+        assertEquals(2, target2.getPlayerBoard().getDamageCount());
+        assertEquals(0, target2.getPlayerBoard().getMarkCount());
+        assertEquals(new PlayerPosition(0,0), shooter.getPosition());
+
+
+        // fourth effect, move before
+        cyberBlade.setStatus(full);
+        target1.getPlayerBoard().setDamages(new ArrayList<>());
+        target2.getPlayerBoard().setDamages(new ArrayList<>());
+        shooter.changePosition(0, 1);
+
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 3, null);
+        builder = builder.targetPlayersUsernames(userTarget);
+        builder = builder.moveSenderFirst(true);
+        builder = builder.senderMovePosition(new PlayerPosition(0,0));
+
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.SHOOT, request);
+
+        assertTrue(action.validate());
+        action.execute();
+
+        assertEquals(2, target1.getPlayerBoard().getDamageCount());
+        assertEquals(0, target1.getPlayerBoard().getMarkCount());
+        assertEquals(2, target2.getPlayerBoard().getDamageCount());
+        assertEquals(0, target2.getPlayerBoard().getMarkCount());
+        assertEquals(new PlayerPosition(0,0), shooter.getPosition());
+
+
+        // fourth effect, move in middle
+        cyberBlade.setStatus(full);
+        target1.getPlayerBoard().setDamages(new ArrayList<>());
+        target2.getPlayerBoard().setDamages(new ArrayList<>());
+        shooter.changePosition(0, 1);
+        shooter.getPlayerBoard().addAmmo(YELLOW);
+        target1.changePosition(0,1);
+
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 3, null);
+        builder = builder.targetPlayersUsernames(userTarget);
+        builder = builder.moveInMiddle(true);
+        builder = builder.senderMovePosition(new PlayerPosition(0,0));
+
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.SHOOT, request);
+
+        assertTrue(action.validate());
+        action.execute();
+
+        assertEquals(2, target1.getPlayerBoard().getDamageCount());
+        assertEquals(0, target1.getPlayerBoard().getMarkCount());
+        assertEquals(2, target2.getPlayerBoard().getDamageCount());
+        assertEquals(0, target2.getPlayerBoard().getMarkCount());
+        assertEquals(new PlayerPosition(0,0), shooter.getPosition());
+
+        // fourth effect, move after
+        cyberBlade.setStatus(full);
+        target1.getPlayerBoard().setDamages(new ArrayList<>());
+        target2.getPlayerBoard().setDamages(new ArrayList<>());
+        shooter.changePosition(0, 0);
+        shooter.getPlayerBoard().addAmmo(YELLOW);
+        target1.changePosition(0,0);
+
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 3, null);
+        builder = builder.targetPlayersUsernames(userTarget);
+        builder = builder.moveSenderFirst(false);
+        builder = builder.senderMovePosition(new PlayerPosition(0,1));
+
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.SHOOT, request);
+
+        assertTrue(action.validate());
+        action.execute();
+
+        assertEquals(2, target1.getPlayerBoard().getDamageCount());
+        assertEquals(0, target1.getPlayerBoard().getMarkCount());
+        assertEquals(2, target2.getPlayerBoard().getDamageCount());
+        assertEquals(0, target2.getPlayerBoard().getMarkCount());
+        assertEquals(new PlayerPosition(0,1), shooter.getPosition());
+    }
+
     WeaponCard getWeaponByName(String name) {
         WeaponCard weaponCard = null;
 
@@ -407,4 +578,6 @@ class WeaponCardTest {
 
         return weaponCard;
     }
+
+
 }

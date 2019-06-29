@@ -610,7 +610,6 @@
             "visible": true,
             "target": ["PLAYER"],
             "targetNum": 2,
-            "move": 1,
             "damageDistribution": [2, 2],
             "distance": 0
           }
