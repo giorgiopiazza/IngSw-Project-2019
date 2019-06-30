@@ -89,6 +89,28 @@ public class AmmoQuantity implements Serializable {
         return redAmmo == 0 && blueAmmo == 0 && yellowAmmo == 0;
     }
 
+    public Ammo[] toArray() {
+        Ammo[] ammoArray = new Ammo[getAmmoCount()];
+        int count = 0;
+
+        for (int blue = blueAmmo; blue > 0; blue--) {
+            ammoArray[count] = Ammo.BLUE;
+            count++;
+        }
+
+        for (int red = redAmmo; red > 0; red--) {
+            ammoArray[count] = Ammo.RED;
+            count++;
+        }
+
+        for (int yellow = yellowAmmo; yellow > 0; yellow--) {
+            ammoArray[count] = Ammo.YELLOW;
+            count++;
+        }
+
+        return ammoArray;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

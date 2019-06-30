@@ -621,8 +621,8 @@ class EffectValidator {
      * @return the correct {@link PlayerPosition PlayerPosition} for the {@link model.actions.ShootAction ShootAction}
      */
     static PlayerPosition checkAdrenalineMove(ShootRequest request) {
-        if(request.getAdrenalineMovePosition() != null) {
-            return request.getAdrenalineMovePosition();
+        if(request.getMoveBeforeShootPosition() != null) {
+            return request.getMoveBeforeShootPosition();
         } else {
             return Game.getInstance().getUserPlayerByUsername(request.getSenderUsername()).getPosition();
         }

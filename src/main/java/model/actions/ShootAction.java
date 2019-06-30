@@ -32,7 +32,7 @@ public class ShootAction implements Action {
         this.actingPlayer = actingPlayer;
         this.shootingWeapon = actingPlayer.getWeapons()[shootRequest.getWeaponID()];
         this.actionChosen = actionChosen;
-        this.movingPos = shootRequest.getAdrenalineMovePosition();
+        this.movingPos = shootRequest.getMoveBeforeShootPosition();
         this.shootRequest = shootRequest;
 
         if (shootRequest.getRechargingWeapons() != null) {
@@ -52,7 +52,7 @@ public class ShootAction implements Action {
             throw new InvalidActionException();
         }
 
-        if(!InputValidator.validateIndexes(shootRequest, actingPlayer)) {
+        if (!InputValidator.validateIndexes(shootRequest, actingPlayer)) {
             throw new InvalidActionException();
         }
 

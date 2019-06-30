@@ -82,7 +82,6 @@ class ClientRoundManager {
                 break;
 
             case END:
-
                 throw new ClientRoundManagerException("Error, in the UserPlayerState.END state you must call the endRound() method");
 
             default:
@@ -201,6 +200,7 @@ class ClientRoundManager {
         roundStarted = false;
 
         botMoved = false;
+        botCanMove = true;
     }
 
     /**
@@ -256,6 +256,13 @@ class ClientRoundManager {
      */
     void setBotFirstTurn() {
         this.botCanMove = false;
+    }
+
+    /**
+     * Sets that the bot move has been done
+     */
+    void setBotMoved() {
+        this.botMoved = true;
     }
 
     /**

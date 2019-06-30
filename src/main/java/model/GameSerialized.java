@@ -56,7 +56,7 @@ public class GameSerialized implements Serializable {
         this.spawningPowerup = receivingPlayer.getSpawningCard();
     }
 
-    public ArrayList<UserPlayer> getPlayers() {
+    public List<UserPlayer> getPlayers() {
         return players;
     }
 
@@ -113,8 +113,8 @@ public class GameSerialized implements Serializable {
         return bot;
     }
 
-    public ArrayList<Player> getAllPlayers() {
-        ArrayList<Player> allPlayers = new ArrayList<>(players);
+    public List<Player> getAllPlayers() {
+        List<Player> allPlayers = new ArrayList<>(players);
 
         if (botPresent) {
             allPlayers.add(bot);

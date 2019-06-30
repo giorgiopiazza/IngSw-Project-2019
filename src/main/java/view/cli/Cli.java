@@ -536,7 +536,7 @@ public class Cli extends ClientGameManager {
             cancelAction();
             return;
         } else {
-            shootRequestBuilt.adrenalineMovePosition(adrenalineMovePosition);
+            shootRequestBuilt.moveBeforeShootPosition(adrenalineMovePosition);
         }
 
         if (!sendRequest(MessageBuilder.buildShootRequest(shootRequestBuilt))) {
@@ -964,7 +964,7 @@ public class Cli extends ClientGameManager {
 
         do {
             out.println("Choose exactly " + exactIntNum + " target/s for your shoot action:");
-            String target = readTargetUsername((ArrayList<Player>) getPlayers(), false);
+            String target = readTargetUsername(getPlayersWithBot(), false);
 
             chosenTargets.add(target);
 
@@ -986,7 +986,7 @@ public class Cli extends ClientGameManager {
         out.println("Choose up to " + maxIntNum + " target/s for your shoot action (-1 to stop choosing):");
 
         do {
-            String target = readTargetUsername((ArrayList<Player>) getPlayers(), true);
+            String target = readTargetUsername(getPlayersWithBot(), true);
 
             if (target != null) {
                 chosenTargets.add(target);
@@ -1233,7 +1233,7 @@ public class Cli extends ClientGameManager {
         if (shootRequestBuilt == null) {
             return;
         } else {
-            shootRequestBuilt.adrenalineMovePosition(frenzyMovePosition).rechargingWeapons(rechargingWeapons);
+            shootRequestBuilt.moveBeforeShootPosition(frenzyMovePosition).rechargingWeapons(rechargingWeapons);
         }
 
         if (!sendRequest(MessageBuilder.buildShootRequest(shootRequestBuilt))) {
@@ -1355,7 +1355,7 @@ public class Cli extends ClientGameManager {
 
             if (readVal != -1) {
                 out.println("Choose the target player:");
-                String user = readTargetUsername((ArrayList<Player>) getPlayers(), false);
+                String user = readTargetUsername(getPlayersWithBot(), false);
 
                 scopes.add(scopeList.get(readVal));
                 targets.add(user);
@@ -1654,7 +1654,7 @@ public class Cli extends ClientGameManager {
      * @return the target
      * @throws CancelledActionException if the action was cancelled
      */
-    private String readBotTarget(ArrayList<UserPlayer> inGamePlayers) throws CancelledActionException {
+    private String readBotTarget(List<UserPlayer> inGamePlayers) throws CancelledActionException {
         boolean firstError = true;
         boolean accepted = false;
         String chosenTarget;
@@ -1690,7 +1690,7 @@ public class Cli extends ClientGameManager {
      * @return the username read
      * @throws CancelledActionException if the action was cancelled
      */
-    private String readTargetUsername(ArrayList<Player> inGamePlayers, boolean stoppable) throws CancelledActionException {
+    private String readTargetUsername(List<Player> inGamePlayers, boolean stoppable) throws CancelledActionException {
         boolean firstError = true;
         boolean accepted = false;
         boolean isTerminatorPresent = getGameSerialized().isBotPresent();
