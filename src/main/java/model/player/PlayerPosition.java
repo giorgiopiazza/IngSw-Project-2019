@@ -66,7 +66,7 @@ public class PlayerPosition implements Serializable {
         if(this.getColumn() == endingPos.getColumn()) {
             return this.getRow() > endingPos.getRow() ? Direction.NORTH : Direction.SOUTH;
         } else {
-            return this.getRow() > endingPos.getRow() ? Direction.WEST : Direction.EAST;
+            return this.getColumn() > endingPos.getColumn() ? Direction.WEST : Direction.EAST;
         }
     }
 
