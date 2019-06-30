@@ -153,7 +153,7 @@ class EffectValidator {
     private static boolean canMove(String senderUsername, PlayerPosition position, int move) {
         Player movingPlayer = Game.getInstance().getUserPlayerByUsername(senderUsername);
 
-        return (movingPlayer.getPosition().distanceOf(position) == move);
+        return (movingPlayer.getPosition().distanceOf(position) > 0 && movingPlayer.getPosition().distanceOf(position) <= move);
     }
 
     /**
@@ -294,7 +294,7 @@ class EffectValidator {
      * @param properties Map of effect properties
      * @return {@code true} if target moves are valid {@code false} otherwise
      */
-    static boolean  isMoveValid(EffectRequest request, Map<String, String> properties) {
+    static boolean isMoveValid(EffectRequest request, Map<String, String> properties) {
         // Player move validation
         if (properties.containsKey(Properties.MOVE.getJKey())) {
             PlayerPosition playerMovingPos = request.getSenderMovePosition();
@@ -330,6 +330,21 @@ class EffectValidator {
 
         // Target MoveInLine validation
         return !(properties.containsKey(Properties.MOVE_INLINE.getJKey()) && !EffectValidator.isMovingDirectionally(request));
+    }
+
+    /**
+     * Checks if the Weapon acts correctly with a movement done in the middle of the same damaging action
+     *
+     * @param request containing the effect request
+     * @return {@code true} if the movement is correct, otherwise {@code false}
+     */
+    static boolean isMoveInMiddleValid(EffectRequest request) {
+        PlayerPosition shooterStartingPos = Game.getInstance().getPlayerByName(request.getSenderUsername()).getPosition();
+        PlayerPosition shooterEndingPos = request.getSenderMovePosition();
+        PlayerPosition startingTargetPos = Game.getInstance().getPlayerByName(request.getTargetPlayersUsername().get(0)).getPosition();
+        PlayerPosition arrivingTargetPos = Game.getInstance().getPlayerByName(request.getTargetPlayersUsername().get(1)).getPosition();
+
+        return shooterStartingPos.equals(startingTargetPos) && shooterEndingPos.equals(arrivingTargetPos);
     }
 
     /**

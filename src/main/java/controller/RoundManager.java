@@ -935,9 +935,9 @@ public class RoundManager {
             turnManager.setArrivingGameState(nextPassState);
             gameManager.changeState(PossibleGameState.TERMINATOR_RESPAWN);
             return buildPositiveResponse("Terminator has died respawn him before passing");
-        } else if (!gameInstance.getDeathPlayers().isEmpty()) {
+        } else if (!deathPlayers.isEmpty()) {
             // first of all I control if the current player has done a double kill
-            if (gameInstance.getDeathPlayers().size() > 1) {
+            if (deathPlayers.size() > 1) {
                 turnManager.getTurnOwner().addPoints(1);
             }
 
