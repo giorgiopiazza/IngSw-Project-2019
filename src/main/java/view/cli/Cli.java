@@ -1268,7 +1268,7 @@ public class Cli extends ClientGameManager {
         }
 
         // normal shoot does not require recharging weapons
-        shootRequestBuilder = new ShootRequest.ShootRequestBuilder(getUsername(), getClientToken(), weapon, effect, null).paymentPowerups(paymentPowerups);
+        shootRequestBuilder = new ShootRequest.ShootRequestBuilder(getUsername(), getClientToken(), weapon, effect).paymentPowerups(paymentPowerups);
 
         // now we can build the fireRequest specific to each chosen weapon
         if (effect == 0) {

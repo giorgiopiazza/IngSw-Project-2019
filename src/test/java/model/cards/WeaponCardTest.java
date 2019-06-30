@@ -106,7 +106,7 @@ class WeaponCardTest {
         userTarget.add(target1.getUsername());
 
         // shooter can see the target
-        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, lockRifle.getId(), 0, null);
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, lockRifle.getId(), 0);
         builder = builder.targetPlayersUsernames(userTarget);
 
         request = new ShootRequest(builder);
@@ -120,7 +120,7 @@ class WeaponCardTest {
         userTarget.add(target2.getUsername());
 
         lockRifle.setStatus(full);
-        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 0, null);
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 0);
         builder = builder.targetPlayersUsernames(userTarget);
 
         request = new ShootRequest(builder);
@@ -137,7 +137,7 @@ class WeaponCardTest {
         powerup.add(0);
 
         lockRifle.setStatus(full);
-        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, lockRifle.getId(), 1, null);
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, lockRifle.getId(), 1);
         builder = builder.targetPlayersUsernames(userTarget);
         builder = builder.paymentPowerups(powerup);
 
@@ -179,7 +179,7 @@ class WeaponCardTest {
         userTarget.add(target3.getUsername());
 
         // shooter can see targets
-        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 0, null);
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 0);
         builder = builder.targetPlayersUsernames(userTarget);
 
         request = new ShootRequest(builder);
@@ -198,7 +198,7 @@ class WeaponCardTest {
         userTarget.add(target1.getUsername());
         userTarget.add(target3.getUsername());
 
-        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 1, null);
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 1);
         builder = builder.targetPlayersUsernames(userTarget);
         builder = builder.paymentPowerups(powerups);
 
@@ -222,7 +222,7 @@ class WeaponCardTest {
         userTarget.add(target3.getUsername());
         userTarget.add(target4.getUsername());
 
-        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 3, null);
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 3);
         builder = builder.targetPlayersUsernames(userTarget);
         builder = builder.paymentPowerups(powerups);
 
@@ -238,7 +238,7 @@ class WeaponCardTest {
         userTarget.clear();
         userTarget.add(target2.getUsername());
 
-        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 3, null);
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 3);
         builder = builder.targetPlayersUsernames(userTarget);
 
         request = new ShootRequest(builder);
@@ -274,7 +274,7 @@ class WeaponCardTest {
         userTarget.add(target1.getUsername());
         userTarget.add(target2.getUsername());
 
-        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 0, null);
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 0);
         builder = builder.targetPlayersUsernames(userTarget);
 
         request = new ShootRequest(builder);
@@ -296,7 +296,7 @@ class WeaponCardTest {
 
         flameThrower.setStatus(full);
 
-        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 1, null);
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 1);
         builder = builder.targetPositions(positions);
         builder = builder.paymentPowerups(indexes);
 
@@ -338,7 +338,7 @@ class WeaponCardTest {
         indexes.add(0);
         indexes.add(1);
 
-        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 2, null);
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 2);
         builder = builder.targetPlayersUsernames(userTarget);
         builder = builder.paymentPowerups(indexes);
 
@@ -377,7 +377,7 @@ class WeaponCardTest {
         indexes.add(0);
 
         // shooter can see the target
-        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 3, null);
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 3);
         builder = builder.targetPlayersUsernames(userTarget);
         builder = builder.paymentPowerups(indexes);
         builder = builder.moveSenderFirst(true);
@@ -408,7 +408,7 @@ class WeaponCardTest {
 
 
         // first effect
-        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 0, null);
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 0);
         builder = builder.targetPlayersUsernames(userTarget);
 
         request = new ShootRequest(builder);
@@ -426,7 +426,7 @@ class WeaponCardTest {
         shooter.changePosition(0, 1);
         target1.getPlayerBoard().setDamages(new ArrayList<>());
 
-        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 1, null);
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 1);
         builder = builder.targetPlayersUsernames(userTarget);
         builder = builder.moveSenderFirst(true);
         builder = builder.senderMovePosition(new PlayerPosition(0,0));
@@ -447,7 +447,7 @@ class WeaponCardTest {
         shooter.changePosition(0, 0);
         target1.getPlayerBoard().setDamages(new ArrayList<>());
 
-        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 1, null);
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 1);
         builder = builder.targetPlayersUsernames(userTarget);
         builder = builder.moveSenderFirst(false);
         builder = builder.senderMovePosition(new PlayerPosition(0,1));
@@ -472,7 +472,7 @@ class WeaponCardTest {
         ArrayList<Integer> indexes = new ArrayList<>();
         indexes.add(0);
 
-        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 2, null);
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 2);
         builder = builder.targetPlayersUsernames(userTarget);
         builder = builder.paymentPowerups(indexes);
 
@@ -495,7 +495,7 @@ class WeaponCardTest {
         target2.getPlayerBoard().setDamages(new ArrayList<>());
         shooter.changePosition(0, 1);
 
-        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 3, null);
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 3);
         builder = builder.targetPlayersUsernames(userTarget);
         builder = builder.moveSenderFirst(true);
         builder = builder.senderMovePosition(new PlayerPosition(0,0));
@@ -521,7 +521,7 @@ class WeaponCardTest {
         shooter.getPlayerBoard().addAmmo(YELLOW);
         target1.changePosition(0,1);
 
-        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 3, null);
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 3);
         builder = builder.targetPlayersUsernames(userTarget);
         builder = builder.moveInMiddle(true);
         builder = builder.senderMovePosition(new PlayerPosition(0,0));
@@ -546,7 +546,7 @@ class WeaponCardTest {
         shooter.getPlayerBoard().addAmmo(YELLOW);
         target1.changePosition(0,0);
 
-        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 3, null);
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 3);
         builder = builder.targetPlayersUsernames(userTarget);
         builder = builder.moveSenderFirst(false);
         builder = builder.senderMovePosition(new PlayerPosition(0,1));

@@ -1294,8 +1294,12 @@ public class GameSceneController {
                 int weaponIndex = Arrays.asList(guiManager.getPlayer().getWeapons()).indexOf(weaponCard);
 
                 if (weaponIndex != -1) {
-                    ShootRequest.ShootRequestBuilder shootRequestBuilder = new ShootRequest.ShootRequestBuilder(guiManager.getUsername(), guiManager.getClientToken(), weaponIndex, weaponEffectIndex, rechargingWeapons)
+                    ShootRequest.ShootRequestBuilder shootRequestBuilder = new ShootRequest.ShootRequestBuilder(guiManager.getUsername(), guiManager.getClientToken(), weaponIndex, weaponEffectIndex)
                             .moveBeforeShootPosition(moveBeforeShoot);
+
+                    if(rechargingWeapons != null) {
+                        shootRequestBuilder.rechargingWeapons(rechargingWeapons);
+                    }
 
                     askShootPaymentPowerups(shootRequestBuilder, weaponEffect);
                 }
