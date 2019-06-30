@@ -467,7 +467,7 @@ public class Cli extends ClientGameManager {
         out.println("\nChoose the moving square for your pick action (same position not to move):");
         try {
             newPos = readCoordinates();
-            square = getGameSerialized().getGameMap().getSquare(newPos.getCoordX(), newPos.getCoordY());
+            square = getGameSerialized().getGameMap().getSquare(newPos.getRow(), newPos.getColumn());
         } catch (CancelledActionException e) {
             cancelAction();
             return;
@@ -1057,7 +1057,7 @@ public class Cli extends ClientGameManager {
             out.println("Choose up to " + maxIntNum + " target/s squares for your shoot action (-1 to stop choosing):");
             PlayerPosition coord = readCoordinates();
 
-            if (coord.getCoordX() == -1 && chosenSquares.size() > 1) {
+            if (coord.getRow() == -1 && chosenSquares.size() > 1) {
                 return chosenSquares;
             }
 

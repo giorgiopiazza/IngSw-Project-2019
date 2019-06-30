@@ -34,14 +34,14 @@ public class ExtraMoveDecorator extends ExtraEffectDecorator {
         if (moveTarget == MoveTarget.PLAYER) {
             Player shooter = Game.getInstance().getUserPlayerByUsername(request.getSenderUsername());
             PlayerPosition shooterMovement = request.getSenderMovePosition();
-            shooter.changePosition(shooterMovement.getCoordX(), shooterMovement.getCoordY());
+            shooter.changePosition(shooterMovement.getRow(), shooterMovement.getColumn());
         } else { // MoveTarget.TARGET
             List<String> targetsUsername = request.getTargetPlayersUsername();
             List<PlayerPosition> movingPositions = request.getTargetPlayersMovePositions();
 
             for (int i = 0; i < movingPositions.size(); ++i) {
                 Game.getInstance().getUserPlayerByUsername(targetsUsername.get(i)).changePosition(
-                        movingPositions.get(i).getCoordX(), movingPositions.get(i).getCoordY());
+                        movingPositions.get(i).getRow(), movingPositions.get(i).getColumn());
             }
         }
     }

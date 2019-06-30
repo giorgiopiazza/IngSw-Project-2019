@@ -2,8 +2,6 @@ package model.actions;
 
 import enumerations.PossibleAction;
 import exceptions.actions.InvalidActionException;
-import model.Game;
-import model.map.GameMap;
 import model.player.PlayerPosition;
 import model.player.UserPlayer;
 import utility.InputValidator;
@@ -42,6 +40,6 @@ public class MoveAction implements Action {
 
     @Override
     public void execute() {
-        actingPlayer.changePosition(movingPos.getCoordX(), movingPos.getCoordY());
+        actingPlayer.changePosition(movingPos.getRow(), movingPos.getColumn());
     }
 }

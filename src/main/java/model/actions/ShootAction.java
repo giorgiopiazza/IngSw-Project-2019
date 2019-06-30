@@ -91,7 +91,7 @@ public class ShootAction implements Action {
     public void execute() throws InvalidActionException, WeaponAlreadyChargedException, NotEnoughAmmoException, WeaponNotChargedException {
         // first I move the shooter saving his position in case after the weapon validate it can not be used
         PlayerPosition startingPos = actingPlayer.getPosition();
-        actingPlayer.changePosition(movingPos.getCoordX(), movingPos.getCoordY());
+        actingPlayer.changePosition(movingPos.getRow(), movingPos.getColumn());
 
         // if the shooting action is a frenzy one I can also recharge my weapons before shooting
         if (actionChosen == PossibleAction.FRENZY_SHOOT || actionChosen == PossibleAction.LIGHT_FRENZY_SHOOT) {
@@ -108,10 +108,10 @@ public class ShootAction implements Action {
         } catch (WeaponNotChargedException e) {
             // the weapon can not be used, then I set back the shooting position to his starting position because this
             // action can not be executed
-            actingPlayer.changePosition(startingPos.getCoordX(), startingPos.getCoordY());
+            actingPlayer.changePosition(startingPos.getRow(), startingPos.getColumn());
             throw new WeaponNotChargedException();
         } catch (InvalidCommandException e) {
-            actingPlayer.changePosition(startingPos.getCoordX(), startingPos.getCoordY());
+            actingPlayer.changePosition(startingPos.getRow(), startingPos.getColumn());
             throw new InvalidActionException();
         }
     }

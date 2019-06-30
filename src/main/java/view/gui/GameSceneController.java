@@ -326,7 +326,7 @@ public class GameSceneController {
                 ImageView playerFigure = new ImageView(getColorFigurePath(player.getColor()));
 
                 StackPane.setAlignment(playerFigure, Pos.TOP_LEFT);
-                StackPane.setMargin(playerFigure, MapInsetsHelper.getPlayerInsets(mapID, player.getPosition().getCoordX(), player.getPosition().getCoordY(), count));
+                StackPane.setMargin(playerFigure, MapInsetsHelper.getPlayerInsets(mapID, player.getPosition().getRow(), player.getPosition().getColumn(), count));
 
                 boardArea.getChildren().add(playerFigure);
                 playerFigures.add(playerFigure);
@@ -2003,8 +2003,8 @@ public class GameSceneController {
     private List<PlayerPosition> getNorthDirectionalMove(GameMap gameMap, PlayerPosition startingSquare, int distance) {
         List<PlayerPosition> returnPositions = new ArrayList<>();
         Square tempsquare = gameMap.getSquare(startingSquare);
-        int x = startingSquare.getCoordX();
-        int y = startingSquare.getCoordY();
+        int x = startingSquare.getRow();
+        int y = startingSquare.getColumn();
 
         while (x >= 0 && tempsquare.getNorth() != SquareAdjacency.WALL) {
             PlayerPosition tempPosition = new PlayerPosition(x, y);
@@ -2020,8 +2020,8 @@ public class GameSceneController {
     private List<PlayerPosition> getSouthDirectionalMove(GameMap gameMap, PlayerPosition startingSquare, int distance) {
         List<PlayerPosition> returnPositions = new ArrayList<>();
         Square tempsquare = gameMap.getSquare(startingSquare);
-        int x = startingSquare.getCoordX();
-        int y = startingSquare.getCoordY();
+        int x = startingSquare.getRow();
+        int y = startingSquare.getColumn();
 
         while (x < GameMap.MAX_ROWS && tempsquare.getSouth() != SquareAdjacency.WALL) {
             PlayerPosition tempPosition = new PlayerPosition(x, y);
@@ -2037,8 +2037,8 @@ public class GameSceneController {
     private List<PlayerPosition> getEastDirectionalMove(GameMap gameMap, PlayerPosition startingSquare, int distance) {
         List<PlayerPosition> returnPositions = new ArrayList<>();
         Square tempsquare = gameMap.getSquare(startingSquare);
-        int x = startingSquare.getCoordX();
-        int y = startingSquare.getCoordY();
+        int x = startingSquare.getRow();
+        int y = startingSquare.getColumn();
 
         while (y >= 0 && tempsquare.getEast() != SquareAdjacency.WALL) {
             PlayerPosition tempPosition = new PlayerPosition(x, y);
@@ -2054,8 +2054,8 @@ public class GameSceneController {
     private List<PlayerPosition> getWestDirectionalMove(GameMap gameMap, PlayerPosition startingSquare, int distance) {
         List<PlayerPosition> returnPositions = new ArrayList<>();
         Square tempsquare = gameMap.getSquare(startingSquare);
-        int x = startingSquare.getCoordX();
-        int y = startingSquare.getCoordY();
+        int x = startingSquare.getRow();
+        int y = startingSquare.getColumn();
 
         while (y < GameMap.MAX_COLUMNS && tempsquare.getWest() != SquareAdjacency.WALL) {
             PlayerPosition tempPosition = new PlayerPosition(x, y);

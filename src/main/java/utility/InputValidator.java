@@ -38,12 +38,12 @@ public class InputValidator {
         }
 
         // check that the built position has a valid X coordinate
-        if (position.getCoordX() < 0 || position.getCoordX() > GameMap.MAX_ROWS - 1) {
+        if (position.getRow() < 0 || position.getRow() > GameMap.MAX_ROWS - 1) {
             return false;
         }
 
         // check that the built position has a valid Y coordinate
-        if (position.getCoordY() < 0 || position.getCoordY() > GameMap.MAX_COLUMNS - 1) {
+        if (position.getColumn() < 0 || position.getColumn() > GameMap.MAX_COLUMNS - 1) {
             return false;
         }
 
