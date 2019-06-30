@@ -137,7 +137,7 @@ public class Server implements Runnable {
         DateFormat dateFormat = new SimpleDateFormat("dd-mm_HH.mm.ss");
 
         try {
-            FileHandler fh = new FileHandler("server-" + dateFormat.format(date) + ".log");
+            FileHandler fh = new FileHandler("log/server-" + dateFormat.format(date) + ".log");
             fh.setFormatter(new SimpleFormatter());
 
             LOGGER.addHandler(fh);
