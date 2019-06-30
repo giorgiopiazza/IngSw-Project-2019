@@ -2,6 +2,7 @@ package model.actions;
 
 import exceptions.actions.InvalidActionException;
 import model.Game;
+import model.player.Bot;
 import model.player.Player;
 import model.player.PlayerPosition;
 import model.player.UserPlayer;
@@ -21,7 +22,7 @@ public class TerminatorAction implements Action {
         this.actingPlayer = actingPlayer;
         this.targetPlayer = targetPlayer;
 
-        if (terminator.getPosition().equals(movingPos) || movingPos == null) {
+        if (terminator.getPosition().equals(movingPos)) {
             this.movingPos = terminator.getPosition();
         } else {
             this.movingPos = movingPos;
@@ -41,7 +42,7 @@ public class TerminatorAction implements Action {
         }
 
         // check that the built position has a valid X coordinate
-        if (movingPos.getCoordX() < 0 || movingPos.getCoordY() > 2) {
+        if (movingPos.getCoordX() < 0 || movingPos.getCoordX() > 2) {
             throw new InvalidActionException();
         }
 
@@ -59,7 +60,7 @@ public class TerminatorAction implements Action {
             return terminator.canSee(targetPlayer);
         } else if (movingDistance == MAX_TERMINATOR_MOVE) {
             if (targetPlayer == null) {
-                if (movingPos.canSeeSomeone(actingPlayer)) {
+                if (movingPos.canSeeSomeone((Bot) terminator, actingPlayer)) {
                     throw new InvalidActionException();
                 } else {
                     return true;

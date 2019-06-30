@@ -6,6 +6,7 @@ import model.player.PlayerPosition;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class ShootRequest extends EffectRequest {
     private static final long serialVersionUID = -9183566520524697764L;
@@ -13,7 +14,7 @@ public class ShootRequest extends EffectRequest {
     private final int weaponID;
     private final int effect;
 
-    private PlayerPosition adrenalineMovePosition;
+    private PlayerPosition moveBeforeShootPosition;
 
     private final boolean moveSenderFirst;
     private final boolean moveInMiddle;
@@ -34,7 +35,7 @@ public class ShootRequest extends EffectRequest {
 
         this.weaponID = builder.weaponID;
         this.effect = builder.effect;
-        this.adrenalineMovePosition = builder.addingMovePosition;
+        this.moveBeforeShootPosition = builder.moveBeforeShootPosition;
         this.moveSenderFirst = builder.moveSenderFirst;
         this.moveInMiddle = builder.moveInMiddle;
         this.moveTargetsFirst = builder.moveTargetsFirst;
@@ -49,8 +50,8 @@ public class ShootRequest extends EffectRequest {
         return effect;
     }
 
-    public PlayerPosition getAdrenalineMovePosition() {
-        return this.adrenalineMovePosition;
+    public PlayerPosition getMoveBeforeShootPosition() {
+        return this.moveBeforeShootPosition;
     }
 
     public boolean isMoveSenderFirst() {
@@ -79,7 +80,7 @@ public class ShootRequest extends EffectRequest {
         private ArrayList<PlayerPosition> targetPositions;
         private RoomColor targetRoomColor;
 
-        private PlayerPosition addingMovePosition;
+        private PlayerPosition moveBeforeShootPosition;
         private PlayerPosition senderMovePosition;
         private ArrayList<PlayerPosition> targetPlayersMovePositions;
 
@@ -90,12 +91,11 @@ public class ShootRequest extends EffectRequest {
         private ArrayList<Integer> paymentPowerups;
         private ArrayList<Integer> rechargingWeapons;
 
-        public ShootRequestBuilder(String username, String token, int weaponID, int effect, ArrayList<Integer> rechargingWeapons) {
+        public ShootRequestBuilder(String username, String token, int weaponID, int effect) {
             this.username = username;
             this.token = token;
             this.weaponID = weaponID;
             this.effect = effect;
-            this.rechargingWeapons = rechargingWeapons;
         }
 
         public ShootRequestBuilder targetPlayersUsernames(ArrayList<String> targetPlayersUsernames) {
@@ -113,8 +113,8 @@ public class ShootRequest extends EffectRequest {
             return this;
         }
 
-        public ShootRequestBuilder adrenalineMovePosition(PlayerPosition adrenalineMovePosition) {
-            this.addingMovePosition = adrenalineMovePosition;
+        public ShootRequestBuilder moveBeforeShootPosition(PlayerPosition moveBeforeShootPosition) {
+            this.moveBeforeShootPosition = moveBeforeShootPosition;
             return this;
         }
 
@@ -171,7 +171,7 @@ public class ShootRequest extends EffectRequest {
                 ", targetRoomColor=" + getTargetRoomColor() +
                 ", weaponID=" + weaponID +
                 ", effect=" + effect +
-                ", adrenalineMovePosition=" + adrenalineMovePosition +
+                ", moveBeforeShootPosition=" + moveBeforeShootPosition +
                 ", moveSenderFirst=" + moveSenderFirst +
                 ", moveTargetsFirst=" + moveTargetsFirst +
                 ", rechargingWeapons=" + (rechargingWeapons == null ? "null" : Arrays.toString(rechargingWeapons.toArray())) +

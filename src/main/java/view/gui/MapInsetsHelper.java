@@ -210,6 +210,9 @@ class MapInsetsHelper {
     static final double SQUARE_BUTTON_HORIZONTAL_OFFSET = 155;
     static final double SQUARE_BUTTON_VERTICAL_OFFSET = 155;
 
+    static final Insets ammoEffectCostInsets = new Insets(4, 0, 0, 135);
+    static final double AMMO_EFFECT_COST_HORIZONTAL_OFFSET = 32;
+
     static Insets getAmmoTileInsets(int map, int x, int y) {
         if (x < 0 || x >= GameMap.MAX_ROWS || y < 0 || y >= GameMap.MAX_COLUMNS || map < 1 || map > 4) {
             throw new IndexOutOfBoundsException();

@@ -153,7 +153,12 @@ public class RoundManager {
         // every player must see the powerup the spawning one choosed to spawn
         gameManager.sendBroadcastMessage(new BroadcastSpawningPowerup(spawningPowerup));
         turnOwner.changePlayerState(PossiblePlayerState.PLAYING);
+
+        // actions are set to every player after he has spawned, if terminator is present, first player's turn hasn't the BOT ACTION!
         setInitialActions();
+        if (gameInstance.isTerminatorPresent() && turnOwner.isFirstPlayer()) {
+            turnOwner.removeAction(PossibleAction.BOT_ACTION);
+        }
         return buildPositiveResponse("Player spawned with chosen powerup");
     }
 
@@ -164,7 +169,7 @@ public class RoundManager {
      * @param gameState the {@link GameState GameState} in which the {@link GameManager GameManager} needs to evolve
      */
     private void afterTerminatorActionHandler(PossibleGameState gameState) {
-        if (gameState == PossibleGameState.GAME_STARTED) {
+        if (gameState == PossibleGameState.GAME_STARTED || gameState == PossibleGameState.FINAL_FRENZY || gameState == PossibleGameState.SECOND_ACTION) {
             // if terminator action is done before the 2 actions the game state does not change, otherwise it must be done before passing the turn
             turnManager.getTurnOwner().removeAction(PossibleAction.BOT_ACTION);
         } else if (gameState == PossibleGameState.MISSING_TERMINATOR_ACTION) {
@@ -205,13 +210,16 @@ public class RoundManager {
      */
     Response handleTerminatorAction(UseTerminatorRequest terminatorRequest, PossibleGameState gameState) {
         TerminatorAction terminatorAction;
+        UserPlayer botTarget = terminatorRequest.getTargetPlayer() == null ? null : gameInstance.getUserPlayerByUsername(terminatorRequest.getTargetPlayer());
 
         if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.BOT_ACTION)) {
             try {
-                terminatorAction = new TerminatorAction(turnManager.getTurnOwner(), gameInstance.getUserPlayerByUsername(terminatorRequest.getTargetPlayer()), terminatorRequest.getMovingPosition());
+                terminatorAction = new TerminatorAction(turnManager.getTurnOwner(), botTarget, terminatorRequest.getMovingPosition());
                 if (terminatorAction.validate()) {
                     terminatorAction.execute();
-                    turnManager.setDamagedPlayers(new ArrayList<>(List.of(gameInstance.getUserPlayerByUsername(terminatorRequest.getTargetPlayer()))));
+                    if (botTarget != null) {
+                        turnManager.setDamagedPlayers(new ArrayList<>(List.of(gameInstance.getUserPlayerByUsername(terminatorRequest.getTargetPlayer()))));
+                    }
                 } else {
                     return buildNegativeResponse("Terminator action not valid");
                 }
@@ -253,7 +261,7 @@ public class RoundManager {
 
         // before marking I save the marks of each player as If a multiple action does not work I can set them back
         List<List<String>> oldMarks = gameInstance.getPlayers().stream().map(player -> player.getPlayerBoard().getMarks()).collect(Collectors.toList());
-        if(gameInstance.isTerminatorPresent()) {
+        if (gameInstance.isTerminatorPresent()) {
             oldMarks.add(gameInstance.getTerminator().getPlayerBoard().getMarks());
         }
 
@@ -367,7 +375,7 @@ public class RoundManager {
 
         // before going to use a SCOPE I save the damages on each player's board as I can reset them back in case one scope does not work
         List<List<String>> oldDamage = gameInstance.getPlayers().stream().map(player -> player.getPlayerBoard().getDamages()).collect(Collectors.toList());
-        if(gameInstance.isTerminatorPresent()) {
+        if (gameInstance.isTerminatorPresent()) {
             oldDamage.add(gameInstance.getTerminator().getPlayerBoard().getDamages());
         }
 
@@ -425,12 +433,12 @@ public class RoundManager {
      * @param oldDamage the List of ArrayLists of Strings containing the damages
      */
     private void resetDamage(List<List<String>> oldDamage) {
-        if(oldDamage.size() > gameInstance.getPlayers().size()) {
+        if (oldDamage.size() > gameInstance.getPlayers().size()) {
             gameInstance.getTerminator().getPlayerBoard().setDamages(oldDamage.get(oldDamage.size() - 1));
             oldDamage.remove(oldDamage.size() - 1);
         }
 
-        for(int i = 0; i < oldDamage.size(); ++i) {
+        for (int i = 0; i < oldDamage.size(); ++i) {
             gameInstance.getPlayers().get(i).getPlayerBoard().setDamages(oldDamage.get(i));
         }
     }
@@ -441,12 +449,12 @@ public class RoundManager {
      * @param oldMarks the List of ArrayLists of Strings containing the marks
      */
     private void resetMarks(List<List<String>> oldMarks) {
-        if(oldMarks.size() > gameInstance.getPlayers().size()) {
+        if (oldMarks.size() > gameInstance.getPlayers().size()) {
             gameInstance.getTerminator().getPlayerBoard().setMarks(oldMarks.get(oldMarks.size() - 1));
             oldMarks.remove(oldMarks.size() - 1);
         }
 
-        for(int i = 0; i < oldMarks.size(); ++i) {
+        for (int i = 0; i < oldMarks.size(); ++i) {
             gameInstance.getPlayers().get(i).getPlayerBoard().setMarks(oldMarks.get(i));
         }
     }

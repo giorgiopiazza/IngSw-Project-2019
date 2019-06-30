@@ -58,6 +58,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     private boolean yourTurn;
 
     private boolean isBotPresent;
+    private boolean botRequest;
 
     private boolean noChangeStateRequest; // Identify a request that doesn't have to change the player state
 
@@ -358,7 +359,10 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 (message.getContent() == MessageContent.POWERUP_USAGE && !((PowerupRequest) message).getPowerup().isEmpty() &&
                         (getPowerups().get(((PowerupRequest) message).getPowerup().get(0)).getName().equals(TELEPORTER) ||
                                 getPowerups().get(((PowerupRequest) message).getPowerup().get(0)).getName().equals(NEWTON)));
+
+        botRequest = message.getContent() == MessageContent.BOT_ACTION;
     }
+
 
     /**
      * Handles the response to the server connection
@@ -551,6 +555,11 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
      * @param response response received
      */
     private void onPositiveResponse(Response response) {
+        if (botRequest) {
+            botRequest = false;
+            roundManager.setBotMoved();
+        }
+
         if (response.getStatus() == MessageStatus.NEED_PLAYER_ACTION) {
             roundManager.targetingScope();
         } else if (roundManager.getUserPlayerState() == UserPlayerState.ENDING_PHASE &&
@@ -803,14 +812,19 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     /**
      * @return a list of all the players
      */
-    public List<Player> getPlayers() {
-        List<Player> players;
-
+    public List<UserPlayer> getPlayers() {
         synchronized (gameSerializedLock) {
-            players = new ArrayList<>(gameSerialized.getPlayers());
+            return gameSerialized.getPlayers();
         }
+    }
 
-        return players;
+    /**
+     * @return a list of all the players plus the bot if present
+     */
+    public List<Player> getPlayersWithBot() {
+        synchronized (gameSerializedLock) {
+            return gameSerialized.getAllPlayers();
+        }
     }
 
     /**
@@ -873,7 +887,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         synchronized (gameSerializedLock) {
             Player player;
 
-            if (username.equalsIgnoreCase(GameCostants.GOD_NAME)) {
+            if (username.equalsIgnoreCase(GameCostants.BOT_NAME)) {
                 if (isBotPresent) {
                     return gameSerialized.getBot();
                 } else {

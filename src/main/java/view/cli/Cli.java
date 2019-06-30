@@ -391,6 +391,10 @@ public class Cli extends ClientGameManager {
         PlayerPosition botSpawnPosition = null;
         boolean correctColor;
 
+        printMap();
+        out.println("You drew these two powerups, care where to spawn the bot!");
+        printPowerups();
+
         out.println("Choose the Color of the square where to Spawn the bot:");
         do {
             try {
@@ -532,7 +536,7 @@ public class Cli extends ClientGameManager {
             cancelAction();
             return;
         } else {
-            shootRequestBuilt.adrenalineMovePosition(adrenalineMovePosition);
+            shootRequestBuilt.moveBeforeShootPosition(adrenalineMovePosition);
         }
 
         if (!sendRequest(MessageBuilder.buildShootRequest(shootRequestBuilt))) {
@@ -588,7 +592,7 @@ public class Cli extends ClientGameManager {
             return;
         }
 
-        if (!sendRequest(MessageBuilder.buildUseTerminatorRequest(getPlayer(), getClientToken(), newPos, (UserPlayer) getPlayerByName(target)))) {
+        if (!sendRequest(MessageBuilder.buildUseTerminatorRequest(getPlayer(), getClientToken(), newPos, target == null ? null : (UserPlayer) getPlayerByName(target)))) {
             promptError(SEND_ERROR, true);
         }
     }
@@ -960,7 +964,7 @@ public class Cli extends ClientGameManager {
 
         do {
             out.println("Choose exactly " + exactIntNum + " target/s for your shoot action:");
-            String target = readTargetUsername((ArrayList<Player>) getPlayers(), false);
+            String target = readTargetUsername(getPlayersWithBot(), false);
 
             chosenTargets.add(target);
 
@@ -982,7 +986,7 @@ public class Cli extends ClientGameManager {
         out.println("Choose up to " + maxIntNum + " target/s for your shoot action (-1 to stop choosing):");
 
         do {
-            String target = readTargetUsername((ArrayList<Player>) getPlayers(), true);
+            String target = readTargetUsername(getPlayersWithBot(), true);
 
             if (target != null) {
                 chosenTargets.add(target);
@@ -1110,7 +1114,7 @@ public class Cli extends ClientGameManager {
      */
     private Boolean askMiddleMove() throws CancelledActionException {
         out.println("Choose if you want to do a: 'inMiddle'(0) or 'before'/'after'(1) movement");
-        if(readInt(0,1,true) == 0) {
+        if (readInt(0, 1, true) == 0) {
             return true;
         } else {
             return false;
@@ -1178,7 +1182,7 @@ public class Cli extends ClientGameManager {
         if (effectProperties.containsKey(Properties.MOVE.getJKey())) {
             // move is always permitted both before and after, decision is then always asked
             shootRequestBuilder.senderMovePosition(askMovePositionInShoot());
-            if(effectProperties.containsKey(Properties.MOVE_IN_MIDDLE.getJKey()) && askMiddleMove()) {
+            if (effectProperties.containsKey(Properties.MOVE_IN_MIDDLE.getJKey()) && askMiddleMove()) {
                 shootRequestBuilder.moveInMiddle(true);
             } else {
                 shootRequestBuilder.moveSenderFirst(askBeforeAfterMove());
@@ -1229,7 +1233,7 @@ public class Cli extends ClientGameManager {
         if (shootRequestBuilt == null) {
             return;
         } else {
-            shootRequestBuilt.adrenalineMovePosition(frenzyMovePosition).rechargingWeapons(rechargingWeapons);
+            shootRequestBuilt.moveBeforeShootPosition(frenzyMovePosition).rechargingWeapons(rechargingWeapons);
         }
 
         if (!sendRequest(MessageBuilder.buildShootRequest(shootRequestBuilt))) {
@@ -1264,7 +1268,7 @@ public class Cli extends ClientGameManager {
         }
 
         // normal shoot does not require recharging weapons
-        shootRequestBuilder = new ShootRequest.ShootRequestBuilder(getUsername(), getClientToken(), weapon, effect, null).paymentPowerups(paymentPowerups);
+        shootRequestBuilder = new ShootRequest.ShootRequestBuilder(getUsername(), getClientToken(), weapon, effect).paymentPowerups(paymentPowerups);
 
         // now we can build the fireRequest specific to each chosen weapon
         if (effect == 0) {
@@ -1322,8 +1326,8 @@ public class Cli extends ClientGameManager {
     /**
      * Builds a powerup request builder
      *
-     * @param powerups   list of all powerups
-     * @param scopeList  list of only targeting scopes
+     * @param powerups  list of all powerups
+     * @param scopeList list of only targeting scopes
      * @return the builder of the powerup request
      * @throws CancelledActionException if the action was cancelled
      */
@@ -1351,7 +1355,7 @@ public class Cli extends ClientGameManager {
 
             if (readVal != -1) {
                 out.println("Choose the target player:");
-                String user = readTargetUsername((ArrayList<Player>) getPlayers(), false);
+                String user = readTargetUsername(getPlayersWithBot(), false);
 
                 scopes.add(scopeList.get(readVal));
                 targets.add(user);
@@ -1361,7 +1365,7 @@ public class Cli extends ClientGameManager {
 
         // after the targets have been chosen, how to pay the scopes is required
         List<PowerupCard> othersList = powerups.stream().filter(notUsed -> !scopeList.contains(notUsed)).collect(Collectors.toList());
-        if(!(readVal == -1 && scopes.isEmpty())) {
+        if (!(readVal == -1 && scopes.isEmpty())) {
             if (othersList.isEmpty()) {
                 askOnlyAmmos(scopes.size(), payingColors);
             } else {
@@ -1650,7 +1654,7 @@ public class Cli extends ClientGameManager {
      * @return the target
      * @throws CancelledActionException if the action was cancelled
      */
-    private String readBotTarget(ArrayList<UserPlayer> inGamePlayers) throws CancelledActionException {
+    private String readBotTarget(List<UserPlayer> inGamePlayers) throws CancelledActionException {
         boolean firstError = true;
         boolean accepted = false;
         String chosenTarget;
@@ -1661,7 +1665,9 @@ public class Cli extends ClientGameManager {
 
             if (chosenTarget.equals(GameCostants.CANCEL_KEYWORD)) {
                 throw new CancelledActionException();
-            } else if (!chosenTarget.equals("bot")) { // no one can shoot itself!
+            } else if (chosenTarget.equals("-1")) {
+                return null;
+            } else if (!chosenTarget.equals("bot") && !chosenTarget.equals(getTurnOwner())) { // no one can shoot itself, and the bot can't shoot the turn owner!
                 final String target = chosenTarget;
                 if (inGamePlayers.stream().anyMatch(p -> p.getUsername().equals(target))) {
                     accepted = true;
@@ -1684,7 +1690,7 @@ public class Cli extends ClientGameManager {
      * @return the username read
      * @throws CancelledActionException if the action was cancelled
      */
-    private String readTargetUsername(ArrayList<Player> inGamePlayers, boolean stoppable) throws CancelledActionException {
+    private String readTargetUsername(List<Player> inGamePlayers, boolean stoppable) throws CancelledActionException {
         boolean firstError = true;
         boolean accepted = false;
         boolean isTerminatorPresent = getGameSerialized().isBotPresent();

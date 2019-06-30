@@ -162,27 +162,23 @@ public class PlayerPosition implements Serializable {
         return canSee(pos, Game.getInstance().getGameMap());
     }
 
-    public boolean canSeeSomeone(Player actingPlayer, GameMap map, List<Player> players) {
-        for (Player target : players) {
-            if (target.getPosition() != null && !target.equals(actingPlayer) && this.canSee(target.getPosition(), map)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     /**
      * Method that verifies if a position can see any other target verifying that this target is not
      * the same that is "shooting"
      *
-     * @param actingPlayer the UserPlayer acting
+     * @param bot          the {@link Bot Bot} shooting
+     * @param actingPlayer the UserPlayer using the bot action
      * @return true if the position can see any other target, otherwise false
      */
-    public boolean canSeeSomeone(Player actingPlayer) {
-        List<Player> players = new ArrayList<>(Game.getInstance().getPlayers());
-        if (Game.getInstance().isTerminatorPresent()) players.add(Game.getInstance().getTerminator());
-        return canSeeSomeone(actingPlayer, Game.getInstance().getGameMap(), players);
+    public boolean canSeeSomeone(Bot bot, Player actingPlayer) {
+        List<UserPlayer> players = new ArrayList<>(Game.getInstance().getPlayers());
+
+        for (UserPlayer target : players) {
+            if (target.getPosition() != null && !target.equals(actingPlayer) && bot.getPosition().canSee(target.getPosition())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public int distanceOf(PlayerPosition other, GameMap map) {
@@ -247,7 +243,7 @@ public class PlayerPosition implements Serializable {
      * @param other another player in game
      * @return true if {@code this} player is in the same position as {@code other} player, otherwise false
      */
-    public boolean samePosition(PlayerPosition other) {
+    boolean samePosition(PlayerPosition other) {
         return other.coordX == this.coordX && other.coordY == this.coordY;
     }
 
