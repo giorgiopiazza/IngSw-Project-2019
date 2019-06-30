@@ -244,8 +244,8 @@ public class GameManager implements TimerRunListener, Serializable {
                 return reloadCheckState(receivedMessage);
             case PASS_TURN:
                 return passCheckState();
-            default:
-                throw new InvalidGameStateException();
+            default:    // this must never be reached in a normal Game!
+                return new Response("GAME STATE ERROR FOR THIS MESSAGE", MessageStatus.ERROR);
         }
     }
 

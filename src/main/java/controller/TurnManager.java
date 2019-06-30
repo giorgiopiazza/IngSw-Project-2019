@@ -46,6 +46,7 @@ public class TurnManager implements Serializable {
      */
     TurnManager(List<UserPlayer> players) {
         this.players = new ArrayList<>(players);
+        this.damagedPlayers = new ArrayList<>();
         this.firstTurn = true;
         this.lastRoundPlayer = players.get(players.size() - 1);
         this.turnOwner = players.get(count);

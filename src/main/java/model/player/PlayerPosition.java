@@ -59,41 +59,15 @@ public class PlayerPosition implements Serializable {
     public Direction getDirection(PlayerPosition endingPos) throws NoDirectionException {
         if (this.equals(endingPos)) throw new SamePositionException();
 
-        PlayerPosition tempPos = new PlayerPosition(0, 0);
-
-        tempPos.setPosition(this);
-        for (int i = 0; i < (GameMap.MAX_ROWS - this.getRow()); ++i) {
-            tempPos.setRow(this.getRow() - i);
-            if (tempPos.equals(endingPos)) {
-                return Direction.NORTH;
-            }
+        if(this.getRow() != endingPos.getRow() && this.getColumn() != endingPos.getColumn()) {
+            throw new NoDirectionException();
         }
 
-        tempPos.setPosition(this);
-        for (int i = 0; i < (GameMap.MAX_COLUMNS - this.getColumn()); ++i) {
-            tempPos.setColumn(this.getColumn() + i);
-            if (tempPos.equals(endingPos)) {
-                return Direction.EAST;
-            }
+        if(this.getColumn() == endingPos.getColumn()) {
+            return this.getRow() > endingPos.getRow() ? Direction.NORTH : Direction.SOUTH;
+        } else {
+            return this.getRow() > endingPos.getRow() ? Direction.WEST : Direction.EAST;
         }
-
-        tempPos.setPosition(this);
-        for (int i = 0; i < (GameMap.MAX_ROWS - this.getRow()); ++i) {
-            tempPos.setRow(this.getRow() + i);
-            if (tempPos.equals(endingPos)) {
-                return Direction.EAST;
-            }
-        }
-
-        tempPos.setPosition(this);
-        for (int i = 0; i < (GameMap.MAX_COLUMNS - this.getRow()); ++i) {
-            tempPos.setColumn(this.getColumn() - i);
-            if (tempPos.equals(endingPos)) {
-                return Direction.WEST;
-            }
-        }
-
-        throw new NoDirectionException();
     }
 
     @Override
