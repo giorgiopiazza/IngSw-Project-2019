@@ -38,12 +38,12 @@ public class InputValidator {
         }
 
         // check that the built position has a valid X coordinate
-        if (position.getCoordX() < 0 || position.getCoordX() > GameMap.MAX_ROWS - 1) {
+        if (position.getRow() < 0 || position.getRow() > GameMap.MAX_ROWS - 1) {
             return false;
         }
 
         // check that the built position has a valid Y coordinate
-        if (position.getCoordY() < 0 || position.getCoordY() > GameMap.MAX_COLUMNS - 1) {
+        if (position.getColumn() < 0 || position.getColumn() > GameMap.MAX_COLUMNS - 1) {
             return false;
         }
 
@@ -174,7 +174,7 @@ public class InputValidator {
     }
 
     private static boolean checkNullsInBotAction(UseTerminatorRequest useTerminatorRequest) {
-        return useTerminatorRequest.getTargetPlayer() != null && useTerminatorRequest.getMovingPosition() != null;
+        return useTerminatorRequest.getMovingPosition() != null;
     }
 
     private static boolean checkNullsInMoveAction(MoveRequest moveRequest) {
@@ -202,7 +202,7 @@ public class InputValidator {
             return false;
         }
 
-        if(!checkDuplicatesInArguments(shootRequest.getTargetPlayersUsername())) {
+        if (!checkDuplicatesInArguments(shootRequest.getTargetPlayersUsername())) {
             return false;
         }
 
@@ -233,13 +233,13 @@ public class InputValidator {
     }
 
     public static boolean validateIndexes(ActionRequest actionRequest, UserPlayer turnOwner) {
-        if(!actionRequest.getPaymentPowerups().isEmpty()) {
-            if(actionRequest.getPaymentPowerups().size() > turnOwner.getPowerups().length) {
+        if (!actionRequest.getPaymentPowerups().isEmpty()) {
+            if (actionRequest.getPaymentPowerups().size() > turnOwner.getPowerups().length) {
                 return false;
             }
 
-            for(Integer index : actionRequest.getPaymentPowerups()) {
-                if(index > turnOwner.getPowerups().length - 1) {
+            for (Integer index : actionRequest.getPaymentPowerups()) {
+                if (index > turnOwner.getPowerups().length - 1) {
                     return false;
                 }
             }

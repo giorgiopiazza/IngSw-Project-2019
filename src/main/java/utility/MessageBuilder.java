@@ -53,8 +53,8 @@ public class MessageBuilder {
      * Create a {@link DiscardPowerupRequest DiscardPowerupRequest} object from the actual
      * {@code player} and his {@code powerupCard}
      *
-     * @param powerupCards      the actual player
-     * @param powerupCard the card to discard
+     * @param powerupCards the actual player
+     * @param powerupCard  the card to discard
      * @return the {@link DiscardPowerupRequest DiscardPowerupRequest} object to send to the server
      * @throws PowerupCardsNotFoundException if the player does not have that {@code powerupCard}
      */
@@ -84,11 +84,11 @@ public class MessageBuilder {
     }
 
     public static MovePickRequest buildMovePickRequest(String token, UserPlayer player, PlayerPosition newPos) {
-        if(player == null || newPos == null) {
+        if (player == null || newPos == null) {
             throw new NullPointerException("player and newPos cannot be null");
         }
 
-        return new MovePickRequest(player.getUsername(), token, newPos, new ArrayList<>(),null,null);
+        return new MovePickRequest(player.getUsername(), token, newPos, new ArrayList<>(), null, null);
     }
 
     /**
@@ -128,7 +128,7 @@ public class MessageBuilder {
         if (player == null || newPos == null || addingWeapon == null)
             throw new NullPointerException("player and newPos cannot be null");
 
-        if(paymentPowerups.size() > 3) throw new PowerupCardsNotFoundException();
+        if (paymentPowerups.size() > 3) throw new PowerupCardsNotFoundException();
 
         return new MovePickRequest(player.getUsername(), token, newPos, paymentPowerups, addingWeapon, discardingWeapon);
     }
@@ -164,8 +164,8 @@ public class MessageBuilder {
         if (paymentPowerups == null || player == null)
             throw new NullPointerException("player, paymentPowerups cannot be null");
 
-        if(reloadingWeapons.isEmpty() || reloadingWeapons.size() > 3) throw new WeaponCardsNotFoundException();
-        if(paymentPowerups.size() > 3) throw new PowerupCardsNotFoundException();
+        if (reloadingWeapons.isEmpty() || reloadingWeapons.size() > 3) throw new WeaponCardsNotFoundException();
+        if (paymentPowerups.size() > 3) throw new PowerupCardsNotFoundException();
 
         return new ReloadRequest(player.getUsername(), token, reloadingWeapons, paymentPowerups);
     }
@@ -175,7 +175,7 @@ public class MessageBuilder {
     public static ReloadRequest buildReloadRequest(String token, UserPlayer player, ArrayList<Integer> reloadingWeapons) throws WeaponCardsNotFoundException {
         if (player == null) throw new NullPointerException("player cannot be null");
 
-        if(reloadingWeapons.isEmpty() || reloadingWeapons.size() > 3) throw new WeaponCardsNotFoundException();
+        if (reloadingWeapons.isEmpty() || reloadingWeapons.size() > 3) throw new WeaponCardsNotFoundException();
 
         return new ReloadRequest(player.getUsername(), token, reloadingWeapons, null);
     }
@@ -188,10 +188,10 @@ public class MessageBuilder {
         if (shootRequest.getSenderUsername() == null)
             throw new NullPointerException("player userName can not be null");
 
-        if(shootRequest.getWeaponID() < 0 || shootRequest.getWeaponID() > 2)
+        if (shootRequest.getWeaponID() < 0 || shootRequest.getWeaponID() > 2)
             throw new IndexOutOfBoundsException("Invalid index for maximum number of weapons allowed in hand");
 
-        if(shootRequest.getEffect() < 0 || shootRequest.getEffect() > 3)
+        if (shootRequest.getEffect() < 0 || shootRequest.getEffect() > 3)
             throw new IndexOutOfBoundsException("Invalid index for maximum number od powerups allowed in hand!");
 
         return shootRequest;
@@ -212,7 +212,7 @@ public class MessageBuilder {
         if (player == null || newPos == null)
             throw new NullPointerException("Player and newPos cannot be null");
 
-        return new UseTerminatorRequest(player.getUsername(), token, newPos, target.getUsername());
+        return new UseTerminatorRequest(player.getUsername(), token, newPos, target == null ? null : target.getUsername());
     }
 
     private static List<Integer> powerupListToIndexes(@NotNull UserPlayer player, List<PowerupCard> powerupCards) {

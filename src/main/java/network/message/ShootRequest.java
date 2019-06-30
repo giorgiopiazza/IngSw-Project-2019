@@ -91,12 +91,11 @@ public class ShootRequest extends EffectRequest {
         private ArrayList<Integer> paymentPowerups;
         private ArrayList<Integer> rechargingWeapons;
 
-        public ShootRequestBuilder(String username, String token, int weaponID, int effect, ArrayList<Integer> rechargingWeapons) {
+        public ShootRequestBuilder(String username, String token, int weaponID, int effect) {
             this.username = username;
             this.token = token;
             this.weaponID = weaponID;
             this.effect = effect;
-            this.rechargingWeapons = Objects.requireNonNullElse(rechargingWeapons, new ArrayList<>());
         }
 
         public ShootRequestBuilder targetPlayersUsernames(ArrayList<String> targetPlayersUsernames) {
