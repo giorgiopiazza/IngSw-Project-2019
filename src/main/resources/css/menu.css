@@ -199,53 +199,53 @@
 }
 
 #connectSocketButton {
-    -fx-image: url("../img/scenes/connectsocketbutton.png");
+    -fx-image: url("/img/scenes/connectsocketbutton.png");
 }
 
 #connectRmiButton {
-    -fx-image: url("../img/scenes/connectrmibutton.png");
+    -fx-image: url("/img/scenes/connectrmibutton.png");
 }
 
 #backButton {
-    -fx-image: url("../img/scenes/backbutton.png");
+    -fx-image: url("/img/scenes/backbutton.png");
 }
 
 #okButton {
-    -fx-image: url("../img/scenes/okbutton.png");
+    -fx-image: url("/img/scenes/okbutton.png");
 }
 
 #yellowCard {
-    -fx-image: url("../img/players/yellow.png");
+    -fx-image: url("/img/players/yellow.png");
 }
 
 #blueCard {
-    -fx-image: url("../img/players/blue.png");
+    -fx-image: url("/img/players/blue.png");
 }
 
 #greyCard {
-    -fx-image: url("../img/players/grey.png");
+    -fx-image: url("/img/players/grey.png");
 }
 
 #purpleCard {
-    -fx-image: url("../img/players/purple.png");
+    -fx-image: url("/img/players/purple.png");
 }
 
 #greenCard {
-    -fx-image: url("../img/players/green.png");
+    -fx-image: url("/img/players/green.png");
 }
 
 #map1 {
-    -fx-image: url("../img/maps/vote/map1.png");
+    -fx-image: url("/img/maps/vote/map1.png");
 }
 
 #map2 {
-    -fx-image: url("../img/maps/vote/map2.png");
+    -fx-image: url("/img/maps/vote/map2.png");
 }
 
 #map3 {
-    -fx-image: url("../img/maps/vote/map3.png");
+    -fx-image: url("/img/maps/vote/map3.png");
 }
 
 #map4 {
-    -fx-image: url("../img/maps/vote/map4.png");
+    -fx-image: url("/img/maps/vote/map4.png");
 }

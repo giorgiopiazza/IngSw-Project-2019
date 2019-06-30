@@ -30,6 +30,7 @@ import model.player.*;
 import network.client.ClientGameManager;
 import network.message.PowerupRequest;
 import network.message.ReloadRequest;
+import network.message.ShootRequest;
 import utility.GameCostants;
 import utility.MessageBuilder;
 
@@ -43,9 +44,11 @@ public class GameSceneController {
     private static final double NOT_OPAQUE = 1;
 
     private static final String CSS_CHECKBOX_IMAGE = "checkboxImage";
-    private static final String CSS_BUTTON_CLASS = "button";
+    private static final String CSS_BUTTON = "button";
     private static final String CSS_SQUARE_CLICK_BUTTON = "squareClickButton";
     private static final String CSS_SQUARE_OWNER_CLICK_BUTTON = "squareOwnerClickButton";
+    private static final String CSS_EFFECT_DESC_BACKGROUND = "effectDescBackground";
+    private static final String CSS_EFFECT_DESC = "effectDesc";
 
     private static final String NEXT_BUTTON_PATH = "/img/scenes/nextbutton.png";
 
@@ -301,7 +304,7 @@ public class GameSceneController {
      * @param mapID      id of the map
      * @param allPlayers list of players
      */
-    private void setPlayersOnMap(int mapID, ArrayList<Player> allPlayers) {
+    private void setPlayersOnMap(int mapID, List<Player> allPlayers) {
         for (ImageView playerFigure : playerFigures) {
             boardArea.getChildren().remove(playerFigure);
         }
@@ -448,6 +451,7 @@ public class GameSceneController {
 
                 zoomPanel.getChildren().add(weapon);
                 zoomPanel.setVisible(true);
+                zoomPanel.toFront();
             }
         }
     }
@@ -526,7 +530,7 @@ public class GameSceneController {
             ImageView imageView = new ImageView();
             imageView.setId(getActionIDFromPossibleAction(possibleAction));
             imageView.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> guiManager.doAction(possibleAction));
-            imageView.getStyleClass().add(CSS_BUTTON_CLASS);
+            imageView.getStyleClass().add(CSS_BUTTON);
 
             actionList.getChildren().add(imageView);
         }
@@ -603,7 +607,7 @@ public class GameSceneController {
         setBoardOpaque(OPAQUE);
         infoPanel.toFront();
         infoPanel.setVisible(true);
-
+        infoPanel.toFront();
     }
 
     private void showMyPlayerInfo(UserPlayer me) {
@@ -840,7 +844,7 @@ public class GameSceneController {
         botHBox.setSpacing(20);
 
         ImageView backButton = new ImageView("/img/scenes/backbutton.png");
-        backButton.getStyleClass().add(CSS_BUTTON_CLASS);
+        backButton.getStyleClass().add(CSS_BUTTON);
         backButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> hideActionPanel());
         botHBox.getChildren().add(backButton);
 
@@ -864,7 +868,7 @@ public class GameSceneController {
             final int powerupIndex = i;
 
             ImageView img = new ImageView(powerups.get(i).getImagePath());
-            img.getStyleClass().add(CSS_BUTTON_CLASS);
+            img.getStyleClass().add(CSS_BUTTON);
             img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onClickPowerupSpawn(powerupIndex));
             hBox.getChildren().add(img);
         }
@@ -875,11 +879,14 @@ public class GameSceneController {
 
         setBoardOpaque(OPAQUE);
         actionPanel.setVisible(true);
+        actionPanel.toFront();
     }
 
     private void onClickPowerupSpawn(int powerupIndex) {
         try {
-            if (!guiManager.sendRequest(MessageBuilder.buildDiscardPowerupRequest(guiManager.getClientToken(), guiManager.getPowerups(), guiManager.getPowerups().get(powerupIndex), guiManager.getUsername()))) {
+            if (!guiManager.sendRequest(MessageBuilder.buildSpawnDiscardPowerupRequest(guiManager.getClientToken(),
+                    guiManager.getPowerups(), guiManager.getSpawnPowerup(),
+                    guiManager.getPowerups().get(powerupIndex), guiManager.getUsername()))) {
                 GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
             }
         } catch (PowerupCardsNotFoundException e) {
@@ -922,6 +929,7 @@ public class GameSceneController {
 
         setBoardOpaque(OPAQUE);
         actionPanel.setVisible(true);
+        actionPanel.toFront();
     }
 
     private void onMoveMapSlotClick(PlayerPosition playerPosition) {
@@ -971,6 +979,7 @@ public class GameSceneController {
 
         setBoardOpaque(OPAQUE);
         actionPanel.setVisible(true);
+        actionPanel.toFront();
     }
 
     private void onSpawnBotClick(PlayerPosition botSpawnPosition) {
@@ -1013,6 +1022,7 @@ public class GameSceneController {
 
         setBoardOpaque(OPAQUE);
         actionPanel.setVisible(true);
+        actionPanel.toFront();
     }
 
     private void setMovePickSquareClickEvent(Square square, Button mapButton, PlayerPosition tempPos) {
@@ -1056,7 +1066,7 @@ public class GameSceneController {
             final int weaponIndex = i;
 
             ImageView img = new ImageView(weaponCards.get(i).getImagePath());
-            img.getStyleClass().add(CSS_BUTTON_CLASS);
+            img.getStyleClass().add(CSS_BUTTON);
             img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onWeaponCardPickClick(pickPosition, weaponCards.get(weaponIndex)));
             hBox.getChildren().add(img);
         }
@@ -1067,6 +1077,7 @@ public class GameSceneController {
 
         setBoardOpaque(OPAQUE);
         actionPanel.setVisible(true);
+        actionPanel.toFront();
     }
 
     private void onWeaponCardPickClick(final PlayerPosition pickPosition, final WeaponCard weaponCard) {
@@ -1086,13 +1097,14 @@ public class GameSceneController {
 
             HBox botHBox = (HBox) actionPanel.getBottom();
             ImageView nextButton = new ImageView(NEXT_BUTTON_PATH);
-            nextButton.getStyleClass().add(CSS_BUTTON_CLASS);
+            nextButton.getStyleClass().add(CSS_BUTTON);
 
             nextButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onCheckWeaponSwap(pickPosition, weaponCard, getMultiplePowerupIndexes()));
             botHBox.getChildren().add(nextButton);
 
             setBoardOpaque(OPAQUE);
             actionPanel.setVisible(true);
+            actionPanel.toFront();
         }
     }
 
@@ -1117,7 +1129,7 @@ public class GameSceneController {
             for (WeaponCard discardingWeap : weaponCards) {
 
                 ImageView img = new ImageView(discardingWeap.getImagePath());
-                img.getStyleClass().add(CSS_BUTTON_CLASS);
+                img.getStyleClass().add(CSS_BUTTON);
                 img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> sendPickRequest(pickPosition, weaponCard, paymentPowerups, discardingWeap));
                 hBox.getChildren().add(img);
             }
@@ -1128,6 +1140,7 @@ public class GameSceneController {
 
             setBoardOpaque(OPAQUE);
             actionPanel.setVisible(true);
+            actionPanel.toFront();
         }
     }
 
@@ -1142,6 +1155,209 @@ public class GameSceneController {
         } finally {
             hideActionPanel();
         }
+    }
+
+    void shoot() {
+        chooseShootWeapon(null, null);
+    }
+
+    void moveShoot(String title, int distance, boolean frenzy) {
+        setActionPanelTitle(title);
+        GameMap gameMap = guiManager.getGameMap();
+        PlayerPosition playerPosition = guiManager.getPlayer().getPosition();
+
+        AnchorPane anchorPane = new AnchorPane();
+
+        for (int y = 0; y < GameMap.MAX_COLUMNS; ++y) {
+            for (int x = 0; x < GameMap.MAX_ROWS; ++x) {
+                Square square = gameMap.getSquare(x, y);
+                PlayerPosition tempPos = new PlayerPosition(x, y);
+
+                if (square != null && tempPos.distanceOf(playerPosition, gameMap) <= distance && tempPos.distanceOf(playerPosition, gameMap) >= 0) {
+                    Button mapButton = new Button();
+                    mapButton.getStyleClass().add(tempPos.equals(playerPosition) ? CSS_SQUARE_OWNER_CLICK_BUTTON : CSS_SQUARE_CLICK_BUTTON);
+
+                    mapButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> checkFrenzy(tempPos, frenzy));
+
+
+                    AnchorPane.setLeftAnchor(mapButton, MapInsetsHelper.squareButtonInsets.getLeft() + y * MapInsetsHelper.SQUARE_BUTTON_HORIZONTAL_OFFSET);
+                    AnchorPane.setTopAnchor(mapButton, MapInsetsHelper.squareButtonInsets.getTop() + x * MapInsetsHelper.SQUARE_BUTTON_VERTICAL_OFFSET);
+
+                    anchorPane.getChildren().add(mapButton);
+                }
+            }
+        }
+
+        actionPanel.setCenter(anchorPane);
+
+        setActionPanelBottom();
+
+        setBoardOpaque(OPAQUE);
+        actionPanel.setVisible(true);
+        actionPanel.toFront();
+    }
+
+    private void checkFrenzy(PlayerPosition tempPos, boolean frenzy) {
+        if (frenzy) {
+            reloadBeforeShoot(tempPos);
+        } else {
+            chooseShootWeapon(tempPos, null);
+        }
+    }
+
+    private void reloadBeforeShoot(final PlayerPosition moveBeforeShoot) {
+        actionPanel.getChildren().clear();
+
+        List<WeaponCard> weapons = new ArrayList<>(Arrays.asList(guiManager.getPlayer().getWeapons()));
+
+        setActionPanelTitle("Frenzy Reload");
+
+        setReloadLayout(weapons);
+
+        setActionPanelBottom();
+
+        HBox botHBox = (HBox) actionPanel.getBottom();
+        ImageView nextButton = new ImageView(NEXT_BUTTON_PATH);
+        nextButton.getStyleClass().add(CSS_BUTTON);
+
+        nextButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> chooseShootWeapon(moveBeforeShoot, getReloadWeaponIndexes()));
+        botHBox.getChildren().add(nextButton);
+
+        setBoardOpaque(OPAQUE);
+        actionPanel.setVisible(true);
+        actionPanel.toFront();
+    }
+
+    private void chooseShootWeapon(final PlayerPosition moveBeforeShoot, final ArrayList<Integer> rechargingWeapons) {
+        List<WeaponCard> weaponCards = new ArrayList<>(Arrays.asList(guiManager.getPlayer().getWeapons()));
+
+        if (weaponCards.isEmpty() || weaponCards.stream().noneMatch(w -> w.status() == 0)) {
+            GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, "Invalid Shoot Action");
+            return;
+        }
+
+        weaponCards = weaponCards.stream().filter(w -> w.status() == 0).collect(Collectors.toList());
+
+        actionPanel.getChildren().clear();
+
+        setActionPanelTitle("Shoot");
+
+        VBox vBox = new VBox();
+        vBox.setAlignment(Pos.CENTER);
+
+        HBox hBox = new HBox();
+        hBox.setAlignment(Pos.BASELINE_CENTER);
+        hBox.setSpacing(20);
+        vBox.getChildren().add(hBox);
+
+        for (WeaponCard weaponCard : weaponCards) {
+            ImageView img = new ImageView(weaponCard.getImagePath());
+            img.getStyleClass().add(CSS_BUTTON);
+            img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> chooseWeaponEffect(moveBeforeShoot, rechargingWeapons, weaponCard));
+            hBox.getChildren().add(img);
+        }
+
+        actionPanel.setCenter(vBox);
+
+        setActionPanelBottom();
+
+        setBoardOpaque(OPAQUE);
+        actionPanel.setVisible(true);
+        actionPanel.toFront();
+    }
+
+    private void chooseWeaponEffect(PlayerPosition moveBeforeShoot, ArrayList<Integer> rechargingWeapons, WeaponCard weaponCard) {
+        actionPanel.getChildren().clear();
+
+        setActionPanelTitle("Choose effect");
+
+        VBox vBox = new VBox();
+        vBox.setAlignment(Pos.CENTER);
+
+        HBox hBox = new HBox();
+        hBox.setAlignment(Pos.CENTER);
+        hBox.setSpacing(20);
+        vBox.getChildren().add(hBox);
+
+        List<Effect> weaponEffects = new ArrayList<>();
+        weaponEffects.add(weaponCard.getBaseEffect());
+        weaponEffects.addAll(weaponCard.getSecondaryEffects());
+
+        for (int i = 0; i < weaponEffects.size(); ++i) {
+            final int weaponEffectIndex = i;
+
+            final Effect weaponEffect = weaponEffects.get(i);
+            StackPane effectPane = new StackPane();
+            effectPane.getStyleClass().add(CSS_EFFECT_DESC_BACKGROUND);
+            effectPane.getStyleClass().add(CSS_BUTTON);
+            effectPane.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+                int weaponIndex = Arrays.asList(guiManager.getPlayer().getWeapons()).indexOf(weaponCard);
+
+                if (weaponIndex != -1) {
+                    ShootRequest.ShootRequestBuilder shootRequestBuilder = new ShootRequest.ShootRequestBuilder(guiManager.getUsername(), guiManager.getClientToken(), weaponIndex, weaponEffectIndex, rechargingWeapons)
+                            .moveBeforeShootPosition(moveBeforeShoot);
+
+                    askShootPaymentPowerups(shootRequestBuilder, weaponEffect);
+                }
+            });
+
+            Label descLabel = new Label(weaponEffects.get(i).getDescription().strip());
+            descLabel.getStyleClass().add(CSS_EFFECT_DESC);
+            StackPane.setAlignment(descLabel, Pos.CENTER);
+            effectPane.getChildren().add(descLabel);
+
+            Ammo[] effectCost = weaponEffect.getCost().toArray();
+            for (int j = 0; j < effectCost.length; j++) {
+                ImageView ammoImage = new ImageView("/img/ammo/" + effectCost[j].name().toLowerCase() + "Ammo.png");
+                Insets margin = new Insets(MapInsetsHelper.ammoEffectCostInsets.getTop(), 0, 0, MapInsetsHelper.ammoEffectCostInsets.getLeft() - j * MapInsetsHelper.AMMO_EFFECT_COST_HORIZONTAL_OFFSET);
+                StackPane.setMargin(ammoImage, margin);
+                StackPane.setAlignment(ammoImage, Pos.TOP_LEFT);
+
+                effectPane.getChildren().add(ammoImage);
+            }
+
+            hBox.getChildren().add(effectPane);
+        }
+
+        actionPanel.setCenter(vBox);
+
+        setActionPanelBottom();
+
+        setBoardOpaque(OPAQUE);
+        actionPanel.setVisible(true);
+        actionPanel.toFront();
+    }
+
+    private void askShootPaymentPowerups(ShootRequest.ShootRequestBuilder shootRequestBuilder, Effect weaponEffect) {
+        ArrayList<PowerupCard> powerupCards = new ArrayList<>(guiManager.getPowerups());
+
+        actionPanel.getChildren().clear();
+
+        setActionPanelTitle("Powerups Payment");
+
+        setMultiplePowerupSelectLayout(powerupCards);
+
+        setActionPanelBottom();
+
+        HBox botHBox = (HBox) actionPanel.getBottom();
+        ImageView nextButton = new ImageView(NEXT_BUTTON_PATH);
+        nextButton.getStyleClass().add(CSS_BUTTON);
+
+        nextButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+            ArrayList<Integer> powerupIndexes = getMultiplePowerupIndexes();
+
+            buildShootRequest(shootRequestBuilder.paymentPowerups(powerupIndexes), weaponEffect);
+        });
+
+        botHBox.getChildren().add(nextButton);
+
+        setBoardOpaque(OPAQUE);
+        actionPanel.setVisible(true);
+        actionPanel.toFront();
+    }
+
+    private void buildShootRequest(ShootRequest.ShootRequestBuilder shootRequestBuilder, Effect effect) {
+
     }
 
     void powerup() {
@@ -1169,7 +1385,7 @@ public class GameSceneController {
                 final int powerupIndex = i;
 
                 ImageView img = new ImageView(powerupCards.get(i).getImagePath());
-                img.getStyleClass().add(CSS_BUTTON_CLASS);
+                img.getStyleClass().add(CSS_BUTTON);
                 img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onPowerupUseClick(powerupIndex));
                 hBox.getChildren().add(img);
             }
@@ -1181,6 +1397,7 @@ public class GameSceneController {
 
         setBoardOpaque(OPAQUE);
         actionPanel.setVisible(true);
+        actionPanel.toFront();
     }
 
     void tagbackGrenade() {
@@ -1204,7 +1421,7 @@ public class GameSceneController {
 
         HBox botHBox = (HBox) actionPanel.getBottom();
         ImageView nextButton = new ImageView(NEXT_BUTTON_PATH);
-        nextButton.getStyleClass().add(CSS_BUTTON_CLASS);
+        nextButton.getStyleClass().add(CSS_BUTTON);
 
         nextButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
             ArrayList<Integer> powerupIndexes = getMultiplePowerupIndexes();
@@ -1223,6 +1440,7 @@ public class GameSceneController {
 
         setBoardOpaque(OPAQUE);
         actionPanel.setVisible(true);
+        actionPanel.toFront();
     }
 
     private void onPowerupUseClick(int powerupIndex) {
@@ -1277,6 +1495,7 @@ public class GameSceneController {
 
         setBoardOpaque(OPAQUE);
         actionPanel.setVisible(true);
+        actionPanel.toFront();
     }
 
     private void askNewtonMovePosition(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
@@ -1313,6 +1532,7 @@ public class GameSceneController {
 
         setBoardOpaque(OPAQUE);
         actionPanel.setVisible(true);
+        actionPanel.toFront();
     }
 
     private void onTeleporterClick(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
@@ -1347,6 +1567,7 @@ public class GameSceneController {
 
         setBoardOpaque(OPAQUE);
         actionPanel.setVisible(true);
+        actionPanel.toFront();
     }
 
     private void onScopeClick(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
@@ -1399,6 +1620,7 @@ public class GameSceneController {
 
         setBoardOpaque(OPAQUE);
         actionPanel.setVisible(true);
+        actionPanel.toFront();
     }
 
     private void askScopePaymentPowerups(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
@@ -1422,7 +1644,7 @@ public class GameSceneController {
 
         HBox botHBox = (HBox) actionPanel.getBottom();
         ImageView nextButton = new ImageView(NEXT_BUTTON_PATH);
-        nextButton.getStyleClass().add(CSS_BUTTON_CLASS);
+        nextButton.getStyleClass().add(CSS_BUTTON);
 
         nextButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
             ArrayList<Integer> paymentPowerups = getMultiplePowerupIndexes();
@@ -1440,6 +1662,7 @@ public class GameSceneController {
 
         setBoardOpaque(OPAQUE);
         actionPanel.setVisible(true);
+        actionPanel.toFront();
     }
 
     private void askScopeAmmoColor(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
@@ -1466,7 +1689,7 @@ public class GameSceneController {
         final PowerupRequest.PowerupRequestBuilder finalPowerupRequestBuilder = powerupRequestBuilder;
 
         for (Ammo ammo : ammoList) {
-            ImageView img = new ImageView(ammo.name().toLowerCase() + "Ammo.png");
+            ImageView img = new ImageView("/img/ammo/" + ammo.name().toLowerCase() + "Ammo.png");
 
             img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
                 PowerupRequest currTempRequest = finalPowerupRequestBuilder.build();
@@ -1491,6 +1714,7 @@ public class GameSceneController {
 
         setBoardOpaque(OPAQUE);
         actionPanel.setVisible(true);
+        actionPanel.toFront();
     }
 
     private void sendPowerupRequest(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
@@ -1510,6 +1734,23 @@ public class GameSceneController {
 
         setActionPanelTitle("Reload Weapons");
 
+        setReloadLayout(weapons);
+
+        setActionPanelBottom();
+
+        HBox botHBox = (HBox) actionPanel.getBottom();
+        ImageView nextButton = new ImageView(NEXT_BUTTON_PATH);
+        nextButton.getStyleClass().add(CSS_BUTTON);
+
+        nextButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> reloadPaymentPowerups(getReloadWeaponIndexes()));
+        botHBox.getChildren().add(nextButton);
+
+        setBoardOpaque(OPAQUE);
+        actionPanel.setVisible(true);
+        actionPanel.toFront();
+    }
+
+    private void setReloadLayout(List<WeaponCard> weapons) {
         VBox vBox = new VBox();
         vBox.setAlignment(Pos.CENTER);
 
@@ -1536,18 +1777,6 @@ public class GameSceneController {
         }
 
         actionPanel.setCenter(vBox);
-
-        setActionPanelBottom();
-
-        HBox botHBox = (HBox) actionPanel.getBottom();
-        ImageView nextButton = new ImageView(NEXT_BUTTON_PATH);
-        nextButton.getStyleClass().add(CSS_BUTTON_CLASS);
-
-        nextButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> reloadPaymentPowerups(getReloadWeaponIndexes()));
-        botHBox.getChildren().add(nextButton);
-
-        setBoardOpaque(OPAQUE);
-        actionPanel.setVisible(true);
     }
 
     private ArrayList<Integer> getReloadWeaponIndexes() {
@@ -1587,7 +1816,7 @@ public class GameSceneController {
 
         HBox botHBox = (HBox) actionPanel.getBottom();
         ImageView nextButton = new ImageView(NEXT_BUTTON_PATH);
-        nextButton.getStyleClass().add(CSS_BUTTON_CLASS);
+        nextButton.getStyleClass().add(CSS_BUTTON);
 
         nextButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
             ArrayList<Integer> paymentPowerups = getMultiplePowerupIndexes();
@@ -1614,6 +1843,7 @@ public class GameSceneController {
 
         setBoardOpaque(OPAQUE);
         actionPanel.setVisible(true);
+        actionPanel.toFront();
     }
 
     private void setMultiplePowerupSelectLayout(List<PowerupCard> powerupCards) {
@@ -1660,6 +1890,99 @@ public class GameSceneController {
         }
 
         return paymentPowerups;
+    }
+
+    void botAction() {
+        setActionPanelTitle("Bot Move");
+        GameMap gameMap = guiManager.getGameMap();
+        PlayerPosition botPosition = guiManager.getPlayerByName(GameCostants.BOT_NAME).getPosition();
+
+        AnchorPane anchorPane = new AnchorPane();
+
+        for (int y = 0; y < GameMap.MAX_COLUMNS; ++y) {
+            for (int x = 0; x < GameMap.MAX_ROWS; ++x) {
+                Square square = gameMap.getSquare(x, y);
+                PlayerPosition tempPos = new PlayerPosition(x, y);
+
+                if (square != null && tempPos.distanceOf(botPosition, gameMap) <= 1 && tempPos.distanceOf(botPosition, gameMap) >= 0) {
+                    Button mapButton = new Button();
+                    mapButton.getStyleClass().add(tempPos.equals(botPosition) ? CSS_SQUARE_OWNER_CLICK_BUTTON : CSS_SQUARE_CLICK_BUTTON);
+
+                    mapButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+                        handleBotMove(tempPos);
+                    });
+
+                    AnchorPane.setLeftAnchor(mapButton, MapInsetsHelper.squareButtonInsets.getLeft() + y * MapInsetsHelper.SQUARE_BUTTON_HORIZONTAL_OFFSET);
+                    AnchorPane.setTopAnchor(mapButton, MapInsetsHelper.squareButtonInsets.getTop() + x * MapInsetsHelper.SQUARE_BUTTON_VERTICAL_OFFSET);
+
+                    anchorPane.getChildren().add(mapButton);
+                }
+            }
+        }
+
+        actionPanel.setCenter(anchorPane);
+
+        setActionPanelBottom();
+
+        setBoardOpaque(OPAQUE);
+        actionPanel.setVisible(true);
+        actionPanel.toFront();
+    }
+
+    private void handleBotMove(PlayerPosition tempPos) {
+        List<UserPlayer> players = guiManager.getPlayers().stream().filter(p -> !p.getUsername().equals(guiManager.getUsername())).collect(Collectors.toList());
+        List<UserPlayer> visiblePlayers = new ArrayList<>();
+
+        for (UserPlayer player : players) {
+            if (tempPos.canSee(player.getPosition())) {
+                visiblePlayers.add(player);
+            }
+        }
+
+        if (visiblePlayers.isEmpty()) {
+            sendBotAction(tempPos, null);
+        } else {
+            chooseBotTarget(tempPos, visiblePlayers);
+        }
+    }
+
+    private void chooseBotTarget(PlayerPosition movePosition, List<UserPlayer> visiblePlayers) {
+        actionPanel.getChildren().clear();
+
+        setActionPanelTitle("Bot Target");
+
+        VBox vBox = new VBox();
+        vBox.setAlignment(Pos.CENTER);
+
+        HBox hBox = new HBox();
+        hBox.setAlignment(Pos.BASELINE_CENTER);
+        hBox.setSpacing(20);
+        vBox.getChildren().add(hBox);
+
+        for (UserPlayer player : visiblePlayers) {
+            ImageView img = new ImageView();
+            img.setId(getIconIDFromColor(player.getColor()));
+
+            img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+                sendBotAction(movePosition, player);
+            });
+
+            hBox.getChildren().add(img);
+        }
+
+        actionPanel.setCenter(vBox);
+
+        setActionPanelBottom();
+
+        setBoardOpaque(OPAQUE);
+        actionPanel.setVisible(true);
+        actionPanel.toFront();
+    }
+
+    private void sendBotAction(PlayerPosition movePosition, UserPlayer target) {
+        if (!guiManager.sendRequest(MessageBuilder.buildUseTerminatorRequest(guiManager.getPlayer(), guiManager.getClientToken(), movePosition, target))) {
+            GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
+        }
     }
 
     private List<PlayerPosition> getDirectionalMove(GameMap gameMap, PlayerPosition startingSquare, int distance) {

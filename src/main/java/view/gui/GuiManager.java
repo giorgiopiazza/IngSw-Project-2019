@@ -199,7 +199,7 @@ public class GuiManager extends ClientGameManager {
 
     @Override
     public void shoot() {
-
+        Platform.runLater(() -> gameSceneController.shoot());
     }
 
     @Override
@@ -209,7 +209,7 @@ public class GuiManager extends ClientGameManager {
 
     @Override
     public void adrenalineShoot() {
-
+        Platform.runLater(() -> gameSceneController.moveShoot("Adrenaline Shoot", 1, false));
     }
 
     @Override
@@ -224,7 +224,7 @@ public class GuiManager extends ClientGameManager {
 
     @Override
     public void frenzyShoot() {
-
+        Platform.runLater(() -> gameSceneController.moveShoot("Frenzy Shoot", 1, true));
     }
 
     @Override
@@ -234,12 +234,12 @@ public class GuiManager extends ClientGameManager {
 
     @Override
     public void lightFrenzyShoot() {
-
+        Platform.runLater(() -> gameSceneController.moveShoot("Light Frenzy Shoot", 2, true));
     }
 
     @Override
     public void botAction() {
-
+        Platform.runLater(() -> gameSceneController.botAction());
     }
 
     @Override

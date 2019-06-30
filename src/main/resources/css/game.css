@@ -165,96 +165,117 @@
     -fx-effect: dropshadow(gaussian, #F44336, 15, 0.2, 0, 0);
 }
 
+.effectDescBackground {
+    -fx-alignment: center;
+
+    -fx-min-width: 180px;
+    -fx-max-width: 180px;
+
+    -fx-min-height: 220px;
+    -fx-max-height: 220px;
+
+    -fx-background-image: url("/img/weapons/effectbg.png");
+}
+
+.effectDesc {
+    -fx-min-width: 160px;
+    -fx-max-width: 160px;
+
+    -fx-wrap-text: true;
+    -fx-font-size: 18px;
+    -fx-font-family: "Exo 2 Medium";
+}
+
 #blue {
-    -fx-image: url("../img/players/blueFigure.png");
+    -fx-image: url("/img/players/blueFigure.png");
 }
 
 #green {
-    -fx-image: url("../img/players/greenFigure.png");
+    -fx-image: url("/img/players/greenFigure.png");
 }
 
 #grey {
-    -fx-image: url("../img/players/greyFigure.png");
+    -fx-image: url("/img/players/greyFigure.png");
 }
 
 #purple {
-    -fx-image: url("../img/players/purpleFigure.png");
+    -fx-image: url("/img/players/purpleFigure.png");
 }
 
 #yellow {
-    -fx-image: url("../img/players/yellowFigure.png");
+    -fx-image: url("/img/players/yellowFigure.png");
 }
 
 #blueIcon {
-    -fx-image: url("../img/players/blueIcon.png");
+    -fx-image: url("/img/players/blueIcon.png");
 }
 
 #greenIcon {
-    -fx-image: url("../img/players/greenIcon.png");
+    -fx-image: url("/img/players/greenIcon.png");
 }
 
 #greyIcon {
-    -fx-image: url("../img/players/greyIcon.png");
+    -fx-image: url("/img/players/greyIcon.png");
 }
 
 #purpleIcon {
-    -fx-image: url("../img/players/purpleIcon.png");
+    -fx-image: url("/img/players/purpleIcon.png");
 }
 
 #yellowIcon {
-    -fx-image: url("../img/players/yellowIcon.png");
+    -fx-image: url("/img/players/yellowIcon.png");
 }
 
 #spawnBotAction {
-    -fx-image: url("../img/actions/spawn_bot.png");
+    -fx-image: url("/img/actions/spawn_bot.png");
 }
 
 #playerSpawnAction {
-    -fx-image: url("../img/actions/spawn_player.png");
+    -fx-image: url("/img/actions/spawn_player.png");
 }
 
 #powerupAction {
-    -fx-image: url("../img/actions/powerup.png");
+    -fx-image: url("/img/actions/powerup.png");
 }
 
 #grenadeAction {
-    -fx-image: url("../img/actions/tagback_grenade.png");
+    -fx-image: url("/img/actions/tagback_grenade.png");
 }
 
 #scopeAction {
-    -fx-image: url("../img/actions/targeting_scope.png");
+    -fx-image: url("/img/actions/targeting_scope.png");
 }
 
 #moveAction {
-    -fx-image: url("../img/actions/move.png");
+    -fx-image: url("/img/actions/move.png");
 }
 
 #movePickAction {
-    -fx-image: url("../img/actions/move_pick.png");
+    -fx-image: url("/img/actions/move_pick.png");
 }
 
 #shootAction {
-    -fx-image: url("../img/actions/shoot.png");
+    -fx-image: url("/img/actions/shoot.png");
 }
 
 #reloadAction {
-    -fx-image: url("../img/actions/reload.png");
+    -fx-image: url("/img/actions/reload.png");
 }
 
 #adrenalinePickAction {
-    -fx-image: url("../img/actions/adrenaline_pick.png");
+    -fx-image: url("/img/actions/adrenaline_pick.png");
 }
 
 #adrenalineShootAction {
-    -fx-image: url("../img/actions/adrenaline_shoot.png");
+    -fx-image: url("/img/actions/adrenaline_shoot.png");
 }
 
 #frenzyMoveAction {
-    -fx-image: url("../img/actions/frenzy_move.png");
+    -fx-image: url("/img/actions/frenzy_move.png");
 }
 
 #frenzyPickAction {
-    -fx-image: url("../img/actions/frenzy_pick.png");
+    -fx-image: url("/img/actions/frenzy_pick.png");
 }
 
 #frenzyShootAction {
@@ -262,17 +283,17 @@
 }
 
 #lightFrenzyPickAction {
-    -fx-image: url("../img/actions/light_frenzy_pick.png");
+    -fx-image: url("/img/actions/light_frenzy_pick.png");
 }
 
 #lightFrenzyShootAction {
-    -fx-image: url("../img/actions/light_frenzy_shoot.png");
+    -fx-image: url("/img/actions/light_frenzy_shoot.png");
 }
 
 #botAction {
-    -fx-image: url("../img/actions/bot_action.png");
+    -fx-image: url("/img/actions/bot_action.png");
 }
 
 #passTurnAction {
-    -fx-image: url("../img/actions/pass_turn.png");
+    -fx-image: url("/img/actions/pass_turn.png");
 }

@@ -165,15 +165,15 @@ public class WeaponParser {
         for (int i = targets.length - 1; i >= 0; --i) {
             JsonObject subEffect = subEffects.get(i).getAsJsonObject();
 
-            if (subEffect.has(Properties.MARK_DISTRIBUTION.getJKey())) {
-                effect = new ExtraMarkDecorator(effect,
-                        parseIntJsonArray(subEffect.get(Properties.MARK_DISTRIBUTION.getJKey()).getAsJsonArray()),
-                        targets[i]);
-            }
-
             if (subEffect.has(Properties.DAMAGE_DISTRIBUTION.getJKey())) {
                 effect = new ExtraDamageDecorator(effect,
                         parseIntJsonArray(subEffect.get(Properties.DAMAGE_DISTRIBUTION.getJKey()).getAsJsonArray()),
+                        targets[i]);
+            }
+
+            if (subEffect.has(Properties.MARK_DISTRIBUTION.getJKey())) {
+                effect = new ExtraMarkDecorator(effect,
+                        parseIntJsonArray(subEffect.get(Properties.MARK_DISTRIBUTION.getJKey()).getAsJsonArray()),
                         targets[i]);
             }
 

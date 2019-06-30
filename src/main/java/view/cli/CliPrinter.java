@@ -149,7 +149,7 @@ class CliPrinter {
     }
 
     private static void printMapRow(AdrenalinePrintStream out, Square[] squareRow, GameSerialized gameSerialized) {
-        ArrayList<Player> inGamePlayers = gameSerialized.getAllPlayers();
+        List<Player> inGamePlayers = gameSerialized.getAllPlayers();
 
         out.print(
                 getSquareTopRow(squareRow) +
@@ -308,7 +308,7 @@ class CliPrinter {
         return tempRow;
     }
 
-    private static String getPlayerDecoration(Square[] squareRow, GameSerialized gameSerialized, ArrayList<Player> inGamePlayers) {
+    private static String getPlayerDecoration(Square[] squareRow, GameSerialized gameSerialized, List<Player> inGamePlayers) {
         StringBuilder row = new StringBuilder();
 
         for (Square square : squareRow) {
@@ -336,7 +336,7 @@ class CliPrinter {
         return tempRow;
     }
 
-    private static StringBuilder getMidPlayerDecoration(Square square, GameSerialized gameSerialized, ArrayList<Player> inGamePlayers) {
+    private static StringBuilder getMidPlayerDecoration(Square square, GameSerialized gameSerialized, List<Player> inGamePlayers) {
         StringBuilder tempRow = new StringBuilder();
         ArrayList<Player> thisSquarePlayers = new ArrayList<>();
 
