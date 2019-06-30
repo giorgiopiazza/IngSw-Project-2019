@@ -199,7 +199,7 @@ public class GuiManager extends ClientGameManager {
 
     @Override
     public void shoot() {
-        Platform.runLater(() -> gameSceneController.shoot());
+        Platform.runLater(gameSceneController::shoot);
     }
 
     @Override
@@ -239,7 +239,7 @@ public class GuiManager extends ClientGameManager {
 
     @Override
     public void botAction() {
-        Platform.runLater(() -> gameSceneController.botAction());
+        Platform.runLater(gameSceneController::botAction);
     }
 
     @Override

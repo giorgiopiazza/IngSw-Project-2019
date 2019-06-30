@@ -884,6 +884,8 @@ public class GameSceneController {
     }
 
     private void onClickPowerupSpawn(int powerupIndex) {
+        hideActionPanel();
+
         try {
             if (!guiManager.sendRequest(MessageBuilder.buildSpawnDiscardPowerupRequest(guiManager.getClientToken(),
                     guiManager.getPowerups(), guiManager.getSpawnPowerup(),
@@ -892,8 +894,6 @@ public class GameSceneController {
             }
         } catch (PowerupCardsNotFoundException e) {
             GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, e.getMessage());
-        } finally {
-            hideActionPanel();
         }
     }
 
@@ -934,12 +934,10 @@ public class GameSceneController {
     }
 
     private void onMoveMapSlotClick(PlayerPosition playerPosition) {
-        try {
-            if (!guiManager.sendRequest(MessageBuilder.buildMoveRequest(guiManager.getClientToken(), guiManager.getPlayer(), playerPosition))) {
-                GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
-            }
-        } finally {
-            hideActionPanel();
+        hideActionPanel();
+
+        if (!guiManager.sendRequest(MessageBuilder.buildMoveRequest(guiManager.getClientToken(), guiManager.getPlayer(), playerPosition))) {
+            GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
         }
     }
 
@@ -984,11 +982,11 @@ public class GameSceneController {
     }
 
     private void onSpawnBotClick(PlayerPosition botSpawnPosition) {
+        hideActionPanel();
+
         if (!guiManager.sendRequest(MessageBuilder.buildBotSpawnRequest(guiManager.getPlayer(), guiManager.getClientToken(), guiManager.getGameMap().getSquare(botSpawnPosition)))) {
             GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
         }
-
-        hideActionPanel();
     }
 
     void moveAndPick(String title, int distance) {
@@ -1035,11 +1033,11 @@ public class GameSceneController {
     }
 
     private void onTilePickClick(PlayerPosition pickPosition) {
+        hideActionPanel();
+
         if (!guiManager.sendRequest(MessageBuilder.buildMovePickRequest(guiManager.getClientToken(), guiManager.getPlayer(), pickPosition))) {
             GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
         }
-
-        hideActionPanel();
     }
 
     private void onWeaponPickClick(final PlayerPosition pickPosition) {
@@ -1128,7 +1126,6 @@ public class GameSceneController {
             vBox.getChildren().add(hBox);
 
             for (WeaponCard discardingWeap : weaponCards) {
-
                 ImageView img = new ImageView(discardingWeap.getImagePath());
                 img.getStyleClass().add(CSS_BUTTON);
                 img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> sendPickRequest(pickPosition, weaponCard, paymentPowerups, discardingWeap));
@@ -1146,6 +1143,8 @@ public class GameSceneController {
     }
 
     private void sendPickRequest(final PlayerPosition pickPosition, final WeaponCard weaponCard, final ArrayList<Integer> paymentPowerups, final WeaponCard discardingWeapon) {
+        hideActionPanel();
+
         try {
             if (!guiManager.sendRequest(MessageBuilder.buildMovePickRequest(guiManager.getClientToken(), guiManager.getPlayer(), pickPosition, paymentPowerups, weaponCard, discardingWeapon))) {
                 GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
@@ -1153,8 +1152,6 @@ public class GameSceneController {
         } catch (
                 PowerupCardsNotFoundException e) {
             GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, e.getMessage());
-        } finally {
-            hideActionPanel();
         }
     }
 
@@ -1298,7 +1295,7 @@ public class GameSceneController {
                     ShootRequest.ShootRequestBuilder shootRequestBuilder = new ShootRequest.ShootRequestBuilder(guiManager.getUsername(), guiManager.getClientToken(), weaponIndex, weaponEffectIndex)
                             .moveBeforeShootPosition(moveBeforeShoot);
 
-                    if(rechargingWeapons != null) {
+                    if (rechargingWeapons != null) {
                         shootRequestBuilder.rechargingWeapons(rechargingWeapons);
                     }
 
@@ -1944,6 +1941,8 @@ public class GameSceneController {
     }
 
     private void sendShootRequest(ShootRequest.ShootRequestBuilder shootRequestBuilder) {
+        hideActionPanel();
+
         if (!guiManager.sendRequest(MessageBuilder.buildShootRequest(shootRequestBuilder))) {
             GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
         }
@@ -2308,6 +2307,8 @@ public class GameSceneController {
     }
 
     private void sendPowerupRequest(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
+        hideActionPanel();
+
         try {
             if (!guiManager.sendRequest(MessageBuilder.buildPowerupRequest(powerupRequestBuilder))) {
                 GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
@@ -2409,6 +2410,8 @@ public class GameSceneController {
         nextButton.getStyleClass().add(CSS_BUTTON);
 
         nextButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+            hideActionPanel();
+
             ArrayList<Integer> paymentPowerups = getMultiplePowerupIndexes();
             ReloadRequest reloadRequest;
 
@@ -2568,6 +2571,8 @@ public class GameSceneController {
     }
 
     private void sendBotAction(PlayerPosition movePosition, UserPlayer target) {
+        hideActionPanel();
+
         if (!guiManager.sendRequest(MessageBuilder.buildUseTerminatorRequest(guiManager.getPlayer(), guiManager.getClientToken(), movePosition, target))) {
             GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
         }
