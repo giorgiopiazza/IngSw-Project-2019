@@ -45,7 +45,7 @@ public class PlayerPositionTest {
 
         // SOUTH
         shooter.setRow(0);
-        target.setColumn(2);
+        target.setRow(2);
 
         assertEquals(Direction.SOUTH, shooter.getDirection(target));
 
