@@ -1333,6 +1333,11 @@ public class GameSceneController {
     private void askShootPaymentPowerups(ShootRequest.ShootRequestBuilder shootRequestBuilder, Effect weaponEffect) {
         ArrayList<PowerupCard> powerupCards = new ArrayList<>(guiManager.getPowerups());
 
+        if (powerupCards.isEmpty()) {
+            buildShootRequest(shootRequestBuilder, List.of(weaponEffect.getTargets()), weaponEffect.getProperties());
+            return;
+        }
+
         actionPanel.getChildren().clear();
 
         setActionPanelTitle("Powerups Payment");
@@ -1408,7 +1413,7 @@ public class GameSceneController {
             tempRequest = shootRequestBuilder.build();
         }
 
-        setActionPanelTitle("Shoot Target #" + tempRequest.getTargetPlayersUsername().size() + 1);
+        setActionPanelTitle("Shoot Target #" + (tempRequest.getTargetPlayersUsername().size() + 1));
 
         VBox vBox = new VBox();
         vBox.setAlignment(Pos.CENTER);
@@ -1466,7 +1471,7 @@ public class GameSceneController {
         VBox vBox = new VBox();
         vBox.setAlignment(Pos.CENTER);
 
-        setActionPanelTitle("Shoot Target #" + tempRequest.getTargetPlayersUsername().size() + 1);
+        setActionPanelTitle("Shoot Target #" + (tempRequest.getTargetPlayersUsername().size() + 1));
 
         HBox hBox = new HBox();
         hBox.setSpacing(20);
@@ -1542,7 +1547,7 @@ public class GameSceneController {
             tempRequest = shootRequestBuilder.build();
         }
 
-        setActionPanelTitle("Shoot Square Target #" + tempRequest.getTargetPositions().size() + 1);
+        setActionPanelTitle("Shoot Square Target #" + (tempRequest.getTargetPositions().size() + 1));
 
         GameMap gameMap = guiManager.getGameMap();
 
@@ -1608,7 +1613,7 @@ public class GameSceneController {
 
         PlayerPosition playerPosition = guiManager.getPlayer().getPosition();
 
-        setActionPanelTitle("Shoot Square Target #" + tempRequest.getTargetPositions().size() + 1);
+        setActionPanelTitle("Shoot Square Target #" + (tempRequest.getTargetPositions().size() + 1));
 
         GameMap gameMap = guiManager.getGameMap();
         AnchorPane anchorPane = new AnchorPane();
@@ -1997,7 +2002,7 @@ public class GameSceneController {
     }
 
     private void askMultiplePowerupUsage(String powerupName) {
-        ArrayList<PowerupCard> powerupCards = new ArrayList<>(guiManager.getPowerups());
+        List<PowerupCard> powerupCards = new ArrayList<>(guiManager.getPowerups());
 
         actionPanel.getChildren().clear();
 
@@ -2168,7 +2173,7 @@ public class GameSceneController {
             tempRequest = powerupRequestBuilder.build();
         }
 
-        setActionPanelTitle("Scope Target #" + tempRequest.getTargetPlayersUsername().size() + 1);
+        setActionPanelTitle("Scope Target #" + (tempRequest.getTargetPlayersUsername().size() + 1));
 
         VBox vBox = new VBox();
         vBox.setAlignment(Pos.CENTER);
@@ -2223,6 +2228,11 @@ public class GameSceneController {
             powerupCards.remove(index);
         }
 
+        if (powerupCards.isEmpty()) {
+            askScopeAmmoColor(powerupRequestBuilder);
+            return;
+        }
+
         actionPanel.getChildren().clear();
 
         setActionPanelTitle("Scope payment Powerup");
@@ -2264,7 +2274,7 @@ public class GameSceneController {
             tempRequest = powerupRequestBuilder.build();
         }
 
-        setActionPanelTitle("Scope Ammo Color #" + tempRequest.getTargetPlayersUsername().size() + 1);
+        setActionPanelTitle("Scope Ammo Color #" + (tempRequest.getTargetPlayersUsername().size() + 1));
 
         VBox vBox = new VBox();
         vBox.setAlignment(Pos.CENTER);
@@ -2396,6 +2406,23 @@ public class GameSceneController {
 
     private void reloadPaymentPowerups(ArrayList<Integer> reloadWeapons) {
         ArrayList<PowerupCard> powerupCards = new ArrayList<>(guiManager.getPowerups());
+
+        if (powerupCards.isEmpty()) {
+            ReloadRequest reloadRequest;
+
+            try {
+                reloadRequest = MessageBuilder.buildReloadRequest(guiManager.getClientToken(), guiManager.getPlayer(), new ArrayList<>(reloadWeapons));
+            } catch (WeaponCardsNotFoundException e) {
+                GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, e.getMessage());
+                return;
+            }
+
+            if (!guiManager.sendRequest(reloadRequest)) {
+                GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
+            }
+
+            return;
+        }
 
         actionPanel.getChildren().clear();
 
