@@ -13,7 +13,7 @@ public class Gui extends Application {
     @Override
     public void start(Stage stage) {
         stage.setMaximized(true);
-        stage.setFullScreen(false);
+        stage.setFullScreen(true);
         stage.setFullScreenExitHint("");
         stage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
 
@@ -25,7 +25,6 @@ public class Gui extends Application {
         stage.setScene(new Scene(new Pane()));
 
         GuiManager.setLayout(stage.getScene(), "fxml/menuScene.fxml");
-        //GuiManager.setLayout(stage.getScene(), "fxml/gameScene.fxml");
         stage.show();
     }
 
