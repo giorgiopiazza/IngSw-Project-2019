@@ -1161,7 +1161,7 @@ public class Cli extends ClientGameManager {
                     break;
                 case SQUARE:
                     if (effectProperties.containsKey(Properties.SAME_POSITION.getJKey())) {
-                        shootRequestBuilder.targetPositions(new ArrayList<>(Collections.singletonList(getPlayerByName(targetsChosen.get(0)).getPosition())));
+                        shootRequestBuilder.targetPositions(new ArrayList<>(List.of(getPlayerByName(targetsChosen.get(0)).getPosition())));
                     } else {
                         shootRequestBuilder.targetPositions(askTargetSquaresPositions(effectProperties));
                     }
