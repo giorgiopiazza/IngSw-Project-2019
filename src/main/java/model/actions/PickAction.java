@@ -98,7 +98,7 @@ public class PickAction implements Action {
     @Override
     public void execute() {
         // first I must always move the player
-        actingPlayer.changePosition(movingPos.getCoordX(), movingPos.getCoordY());
+        actingPlayer.changePosition(movingPos.getRow(), movingPos.getColumn());
 
         // then I can pick depending on the square I now belong to
         if (squareType == SquareType.TILE) {

@@ -127,8 +127,8 @@ public abstract class Player implements Serializable, Comparable<Player> {
         if ((newY < 0) || (newY > 5)) {
             throw new IndexOutOfBoundsException("The Y you wanted to change is not in the map");
         }
-        this.position.setCoordX(newX);
-        this.position.setCoordY(newY);
+        this.position.setRow(newX);
+        this.position.setColumn(newY);
     }
 
     /**

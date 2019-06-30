@@ -178,7 +178,7 @@ public class GameMap implements Serializable {
      * @return the Square represented by the playerPosition
      */
     public Square getSquare(PlayerPosition playerPosition) {
-        return rooms[playerPosition.getCoordX()][playerPosition.getCoordY()];
+        return rooms[playerPosition.getRow()][playerPosition.getColumn()];
     }
 
     /**
@@ -218,14 +218,14 @@ public class GameMap implements Serializable {
         List<Player> players = new ArrayList<>();
 
         for (Player p : game.getPlayers()) {
-            if (getSquare(p.getPosition().getCoordX(), p.getPosition().getCoordY()).getRoomColor().equals(roomColor)) {
+            if (getSquare(p.getPosition().getRow(), p.getPosition().getColumn()).getRoomColor().equals(roomColor)) {
                 players.add(p);
             }
         }
 
         if (game.isTerminatorPresent()) {
             Player term = game.getTerminator();
-            if (getSquare(term.getPosition().getCoordX(), term.getPosition().getCoordY()).getRoomColor().equals(roomColor)) {
+            if (getSquare(term.getPosition().getRow(), term.getPosition().getColumn()).getRoomColor().equals(roomColor)) {
                 players.add(term);
             }
         }

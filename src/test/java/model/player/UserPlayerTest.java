@@ -102,14 +102,14 @@ class UserPlayerTest {
         players[2].changePosition(2, 3);
         players[3].changePosition(2, 3);
 
-        assertEquals(0, players[0].getPosition().getCoordX());
-        assertEquals(0, players[0].getPosition().getCoordY());
-        assertEquals(1, players[1].getPosition().getCoordX());
-        assertEquals(1, players[1].getPosition().getCoordY());
-        assertEquals(2, players[2].getPosition().getCoordX());
-        assertEquals(3, players[2].getPosition().getCoordY());
-        assertEquals(2, players[3].getPosition().getCoordX());
-        assertEquals(3, players[3].getPosition().getCoordY());
+        assertEquals(0, players[0].getPosition().getRow());
+        assertEquals(0, players[0].getPosition().getColumn());
+        assertEquals(1, players[1].getPosition().getRow());
+        assertEquals(1, players[1].getPosition().getColumn());
+        assertEquals(2, players[2].getPosition().getRow());
+        assertEquals(3, players[2].getPosition().getColumn());
+        assertEquals(2, players[3].getPosition().getRow());
+        assertEquals(3, players[3].getPosition().getColumn());
 
         assertThrows(IndexOutOfBoundsException.class, () -> players[1].changePosition(-1, 1));
         assertThrows(IndexOutOfBoundsException.class, () -> players[1].changePosition(5, 1));

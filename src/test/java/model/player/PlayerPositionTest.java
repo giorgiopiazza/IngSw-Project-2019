@@ -23,16 +23,16 @@ public class PlayerPositionTest {
 
     @Test
     void defaultMethods() {
-        shooter.setCoordX(1);
-        shooter.setCoordY(1);
+        shooter.setRow(1);
+        shooter.setColumn(1);
 
-        assertEquals(1, shooter.getCoordX());
-        assertEquals(1, shooter.getCoordY());
+        assertEquals(1, shooter.getRow());
+        assertEquals(1, shooter.getColumn());
 
         target.setPosition(shooter);
 
-        assertEquals(1, target.getCoordX());
-        assertEquals(1, target.getCoordY());
+        assertEquals(1, target.getRow());
+        assertEquals(1, target.getColumn());
     }
 
     @Test
@@ -44,8 +44,8 @@ public class PlayerPositionTest {
         assertEquals(Direction.NORTH, shooter.getDirection(target));
 
         // SOUTH
-        shooter.setCoordX(0);
-        target.setCoordX(2);
+        shooter.setRow(0);
+        target.setColumn(2);
 
         assertEquals(Direction.SOUTH, shooter.getDirection(target));
 
@@ -56,8 +56,8 @@ public class PlayerPositionTest {
         assertEquals(Direction.WEST, shooter.getDirection(target));
 
         // EAST
-        shooter.setCoordY(0);
-        target.setCoordY(3);
+        shooter.setColumn(0);
+        target.setColumn(3);
 
         assertEquals(Direction.EAST, shooter.getDirection(target));
 
@@ -77,13 +77,13 @@ public class PlayerPositionTest {
         assertTrue(shooter.canSee(target, gameMap));
 
         // same room is always visible
-        shooter.setCoordY(1);
-        target.setCoordY(2);
+        shooter.setColumn(1);
+        target.setColumn(2);
 
         assertTrue(shooter.canSee(target, gameMap));
 
         // adjacent rooms if shooter on door is always visible
-        shooter.setCoordY(0);
+        shooter.setColumn(0);
 
         assertTrue(shooter.canSee(target, gameMap));
 
@@ -97,7 +97,7 @@ public class PlayerPositionTest {
         assertEquals(0, shooter.distanceOf(target, gameMap));
 
         // distance 1
-        target.setCoordY(1);
+        target.setColumn(1);
         assertEquals(1, shooter.distanceOf(target, gameMap));
 
         // max position

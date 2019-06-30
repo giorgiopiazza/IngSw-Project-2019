@@ -42,12 +42,12 @@ public class TerminatorAction implements Action {
         }
 
         // check that the built position has a valid X coordinate
-        if (movingPos.getCoordX() < 0 || movingPos.getCoordX() > 2) {
+        if (movingPos.getRow() < 0 || movingPos.getRow() > 2) {
             throw new InvalidActionException();
         }
 
         // check that the built position has a valid Y coordinate
-        if (movingPos.getCoordY() < 0 || movingPos.getCoordY() > 3) {
+        if (movingPos.getColumn() < 0 || movingPos.getColumn() > 3) {
             throw new InvalidActionException();
         }
 
@@ -76,7 +76,7 @@ public class TerminatorAction implements Action {
     @Override
     public void execute() {
         // first I move the terminator
-        terminator.changePosition(movingPos.getCoordX(), movingPos.getCoordY());
+        terminator.changePosition(movingPos.getRow(), movingPos.getColumn());
 
         // if the terminator can not see anyone his action is ended
         if (targetPlayer == null) {
