@@ -35,7 +35,7 @@ public class GameMap implements Serializable {
      * Map of type:
      * B B B
      * R R R Y
-     * W W Y
+     *   W W Y
      */
     public static final int MAP_1 = 1;
     /**

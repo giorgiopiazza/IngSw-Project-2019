@@ -274,13 +274,13 @@
 			"targetNum": 1,
             "damageDistribution": [2],
 			"minDistance": 1,
-			"moveTarget": 1,
+			"maxMoveTarget": 1,
 			"moveTargetBefore": true
           }
         },
         {
           "id": 1,
-          "description": "Choose up to 2 targets on the vortex or movable with distance 1 and give them each 1 damage.       ",
+          "description": "Choose first and up to 2 more targets movable with max distance 1 and give them each 1 damage.     ",
 		  "cost": ["RED"],
           "properties": {
             "visible": true,
@@ -288,7 +288,8 @@
 			"maxTargetNum": 3,
             "damageDistribution": [2, 1, 1],
 			"minDistance": 1,
-			"moveTarget": 1,
+			"maxMoveTarget": 1,
+            "samePosition": true,
 			"moveTargetBefore": true
           }
         }
