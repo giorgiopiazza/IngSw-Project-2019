@@ -1,7 +1,6 @@
 package model.cards.effects;
 
 import enumerations.TargetType;
-import model.Game;
 import model.player.AmmoQuantity;
 import model.player.PlayerPosition;
 import network.message.EffectRequest;

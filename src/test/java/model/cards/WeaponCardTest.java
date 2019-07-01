@@ -25,8 +25,7 @@ import utility.WeaponParser;
 import java.util.ArrayList;
 import java.util.List;
 
-import static enumerations.Ammo.BLUE;
-import static enumerations.Ammo.YELLOW;
+import static enumerations.Ammo.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
@@ -562,6 +561,160 @@ class WeaponCardTest {
         assertEquals(2, target2.getPlayerBoard().getDamageCount());
         assertEquals(0, target2.getPlayerBoard().getMarkCount());
         assertEquals(new PlayerPosition(0,1), shooter.getPosition());
+    }
+
+    @Test
+    void vortexCannon() throws MaxCardsInHandException, NotEnoughAmmoException, WeaponNotChargedException, WeaponAlreadyChargedException, InvalidActionException {
+        WeaponCard vortexCannon = getWeaponByName("Vortex Cannon");
+        vortexCannon.setStatus(full);
+
+        ArrayList<PlayerPosition> targetPositions = new ArrayList<>();
+
+        shooter.addWeapon(vortexCannon);
+
+
+        // first effect same position
+        shooter.setPosition(new PlayerPosition(1,0));
+        target1.setPosition(new PlayerPosition(0,1));
+        userTarget.add(target1.getUsername());
+        targetPositions.add(target1.getPosition());
+
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 0);
+        builder = builder.targetPlayersUsernames(userTarget);
+        builder = builder.targetPlayersMovePositions(targetPositions);
+        builder = builder.moveTargetsFirst(true);
+
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.SHOOT, request);
+
+        assertTrue(action.validate());
+        action.execute();
+
+        assertEquals(2, target1.getPlayerBoard().getDamageCount());
+        assertEquals(0, target1.getPlayerBoard().getMarkCount());
+        assertEquals(new PlayerPosition(0,1), target1.getPosition());
+
+
+        // first effect with one movement
+        vortexCannon.setStatus(full);
+        target1.setPosition(new PlayerPosition(0,2));
+        target1.getPlayerBoard().setDamages(new ArrayList<>());
+        targetPositions.clear();
+        targetPositions.add(new PlayerPosition(0,1));
+
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 0);
+        builder = builder.targetPlayersUsernames(userTarget);
+        builder = builder.targetPlayersMovePositions(targetPositions);
+        builder = builder.moveTargetsFirst(true);
+
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.SHOOT, request);
+
+        assertTrue(action.validate());
+        action.execute();
+
+        assertEquals(2, target1.getPlayerBoard().getDamageCount());
+        assertEquals(0, target1.getPlayerBoard().getMarkCount());
+        assertEquals(new PlayerPosition(0,1), target1.getPosition());
+
+        // first effect with invalid movement
+        vortexCannon.setStatus(full);
+        target1.setPosition(new PlayerPosition(0,2));
+        target1.getPlayerBoard().setDamages(new ArrayList<>());
+        targetPositions.clear();
+        targetPositions.add(new PlayerPosition(0,0));
+
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 0);
+        builder = builder.targetPlayersUsernames(userTarget);
+        builder = builder.targetPlayersMovePositions(targetPositions);
+        builder = builder.moveTargetsFirst(true);
+
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.SHOOT, request);
+
+        assertTrue(action.validate());
+        assertThrows(Exception.class, () -> action.execute());
+
+
+        // second effect some targets move some targets don't
+        vortexCannon.setStatus(full);
+        target1.setPosition(new PlayerPosition(0,0));
+        target2.setPosition(new PlayerPosition(0,1));
+        target3.setPosition(new PlayerPosition(0,2));
+        userTarget.add(target2.getUsername());
+        userTarget.add(target3.getUsername());
+        target1.getPlayerBoard().setDamages(new ArrayList<>());
+        targetPositions.clear();
+        targetPositions.add(new PlayerPosition(0,1));
+        targetPositions.add(new PlayerPosition(0,1));
+        targetPositions.add(new PlayerPosition(0,1));
+
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 1);
+        builder = builder.targetPlayersUsernames(userTarget);
+        builder = builder.targetPlayersMovePositions(targetPositions);
+        builder = builder.moveTargetsFirst(true);
+
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.SHOOT, request);
+
+        assertTrue(action.validate());
+        action.execute();
+
+        assertEquals(2, target1.getPlayerBoard().getDamageCount());
+        assertEquals(0, target1.getPlayerBoard().getMarkCount());
+        assertEquals(new PlayerPosition(0,1), target1.getPosition());
+        assertEquals(1, target2.getPlayerBoard().getDamageCount());
+        assertEquals(0, target2.getPlayerBoard().getMarkCount());
+        assertEquals(new PlayerPosition(0,1), target2.getPosition());
+        assertEquals(1, target3.getPlayerBoard().getDamageCount());
+        assertEquals(0, target3.getPlayerBoard().getMarkCount());
+        assertEquals(new PlayerPosition(0,1), target3.getPosition());
+
+        // second effect invalid move
+        vortexCannon.setStatus(full);
+        target1.setPosition(new PlayerPosition(0,0));
+        target2.setPosition(new PlayerPosition(0,1));
+        target3.setPosition(new PlayerPosition(0,2));
+        targetPositions.clear();
+        targetPositions.add(new PlayerPosition(0,0));
+        targetPositions.add(new PlayerPosition(0,0));
+        targetPositions.add(new PlayerPosition(0,0));
+
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 1);
+        builder = builder.targetPlayersUsernames(userTarget);
+        builder = builder.targetPlayersMovePositions(targetPositions);
+        builder = builder.moveTargetsFirst(true);
+
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.SHOOT, request);
+
+        assertTrue(action.validate());
+        assertThrows(Exception.class, () -> action.execute());
+
+        // second effect different positions
+        vortexCannon.setStatus(full);
+        target1.getPlayerBoard().addAmmo(RED);
+        target1.setPosition(new PlayerPosition(0,0));
+        target2.setPosition(new PlayerPosition(0,1));
+        target3.setPosition(new PlayerPosition(0,2));
+        targetPositions.clear();
+        targetPositions.add(new PlayerPosition(0,0));
+        targetPositions.add(new PlayerPosition(0,0));
+        targetPositions.add(new PlayerPosition(0,1));
+
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 1);
+        builder = builder.targetPlayersUsernames(userTarget);
+        builder = builder.targetPlayersMovePositions(targetPositions);
+        builder = builder.moveTargetsFirst(true);
+
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.SHOOT, request);
+
+        assertTrue(action.validate());
+        assertThrows(Exception.class, () -> action.execute());
+
+
+
     }
 
     WeaponCard getWeaponByName(String name) {
