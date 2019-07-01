@@ -3,7 +3,6 @@ package view.gui;
 import enumerations.MessageStatus;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
@@ -11,15 +10,12 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import model.GameSerialized;
 import network.message.GameVoteResponse;
 import utility.MessageBuilder;
 
-import java.net.URL;
 import java.util.List;
-import java.util.ResourceBundle;
 
-public class LobbySceneController implements Initializable {
+public class LobbySceneController {
     private GuiManager guiManager;
 
     @FXML
@@ -37,8 +33,8 @@ public class LobbySceneController implements Initializable {
     @FXML
     private VBox lobbyLabelsBox;
 
-    @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
+    @FXML
+    public void initialize() {
         guiManager = GuiManager.getInstance();
         guiManager.setLobbySceneController(this);
 

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import java.net.URL?>
+<?import javafx.scene.image.ImageView?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="view.gui.EndGameSceneController" styleClass="mainPane">
+
+    <stylesheets>
+        <URL value="@../css/menu.css"/>
+    </stylesheets>
+
+    <top>
+        <VBox styleClass="topBox">
+            <Label text="Game ended" styleClass="menuTitle"/>
+        </VBox>
+    </top>
+
+    <center>
+        <VBox styleClass="centerBox">
+            <TableView>
+
+            </TableView>
+        </VBox>
+    </center>
+
+    <bottom>
+        <VBox styleClass="botBox">
+            <ImageView fx:id="exitButton" id="exitButton" styleClass="button"/>
+        </VBox>
+    </bottom>
+
+</BorderPane>

@@ -13,6 +13,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class GameSerialized implements Serializable {
     private static final long serialVersionUID = 526685006552543525L;
@@ -96,6 +98,8 @@ public class GameSerialized implements Serializable {
 
     public List<PowerupCard> getPowerups() {
         List<PowerupCard> powerupList = new ArrayList<>(Arrays.asList(this.powerupCards));
+        powerupList = powerupList.stream().filter(Objects::nonNull).collect(Collectors.toList());
+
         if (spawningPowerup != null) powerupList.add(this.spawningPowerup);
 
         return powerupList;

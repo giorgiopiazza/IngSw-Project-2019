@@ -3,23 +3,18 @@ package view.gui;
 import enumerations.MessageStatus;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import model.GameSerialized;
 import network.client.Client;
 import network.message.ConnectionResponse;
 import utility.GameCostants;
 import utility.ServerAddressValidator;
 
-import java.net.URL;
-import java.util.ResourceBundle;
-
-public class ConnectionSceneController implements Initializable {
+public class ConnectionSceneController {
     private final PseudoClass errorPseudo = PseudoClass.getPseudoClass("error");
     private GuiManager guiManager;
 
@@ -38,8 +33,8 @@ public class ConnectionSceneController implements Initializable {
     @FXML
     private ImageView backButton;
 
-    @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
+    @FXML
+    public void initialize() {
         guiManager = GuiManager.getInstance();
         guiManager.setConnectionSceneController(this);
 

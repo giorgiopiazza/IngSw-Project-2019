@@ -260,7 +260,9 @@ public class GuiManager extends ClientGameManager {
 
     @Override
     public void onPlayerDisconnect(String username) {
-
+        if (gameSceneController != null) {
+            Platform.runLater(() -> gameSceneController.onPlayerDisconnect(username));
+        }
     }
 
     @Override

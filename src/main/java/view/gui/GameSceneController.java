@@ -289,7 +289,7 @@ public class GameSceneController {
                 if (square != null && square.getSquareType() == SquareType.TILE) {
                     CardSquare cardSquare = (CardSquare) square;
 
-                    ImageView ammoTile = (cardSquare.isAmmoTilePresent()) ?
+                    ImageView ammoTile = (cardSquare.isAmmoTilePresent() && cardSquare.getAmmoTile() != null) ?
                             new ImageView(cardSquare.getAmmoTile().getImagePath()) : new ImageView();
 
                     ammoTile.setFitHeight(32);
@@ -352,7 +352,8 @@ public class GameSceneController {
         }
 
         killshotsImages.clear();
-        // TODO ADD FRENZY
+
+        killShots.addAll(gameSerialized.getFinalFrenzyKillShots());
 
 
         double startingLeftMargin = MapInsetsHelper.killShotTrackInsets.getLeft() + (8 - killShotNum) * MapInsetsHelper.KILLSHOT_TRACK_HORIZONTAL_OFFSET;
@@ -1897,7 +1898,7 @@ public class GameSceneController {
 
                 targetMoveOrder(shootRequestBuilder.targetPlayersMovePositions(targetPlayersMovePositions), newProperties);
             } else {
-                askTargetMovePosition(shootRequestBuilder, properties, exactMove, distance, targetNum + 1);
+                askTargetMovePosition(shootRequestBuilder.targetPlayersMovePositions(targetPlayersMovePositions), properties, exactMove, distance, targetNum + 1);
             }
         });
 
@@ -2470,6 +2471,8 @@ public class GameSceneController {
                 return;
             }
 
+            hideActionPanel();
+
             if (!guiManager.sendRequest(reloadRequest)) {
                 GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
             }
@@ -2753,5 +2756,9 @@ public class GameSceneController {
         }
 
         return returnPositions;
+    }
+
+    void onPlayerDisconnect(String player) {
+        GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), "Disconnection", player + "disconnected from the server");
     }
 }

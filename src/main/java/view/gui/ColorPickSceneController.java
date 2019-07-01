@@ -3,7 +3,6 @@ package view.gui;
 import enumerations.MessageStatus;
 import enumerations.PlayerColor;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
@@ -11,11 +10,9 @@ import javafx.stage.Stage;
 import network.message.Response;
 import utility.MessageBuilder;
 
-import java.net.URL;
 import java.util.List;
-import java.util.ResourceBundle;
 
-public class ColorPickSceneController implements Initializable {
+public class ColorPickSceneController {
     private GuiManager guiManager;
 
     @FXML
@@ -33,8 +30,8 @@ public class ColorPickSceneController implements Initializable {
     @FXML
     private ImageView greenCard;
 
-    @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
+    @FXML
+    public void initialize() {
         guiManager = GuiManager.getInstance();
         guiManager.setColorPickSceneController(this);
 

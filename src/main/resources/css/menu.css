@@ -183,19 +183,19 @@
 /* Images */
 
 #logoImage {
-    -fx-image: url("../img/scenes/logo.png");
+    -fx-image: url("/img/scenes/logo.png");
 }
 
 #startButton {
-    -fx-image: url("../img/scenes/startbutton.png");
+    -fx-image: url("/img/scenes/startbutton.png");
 }
 
 #exitButton {
-    -fx-image: url("../img/scenes/exitbutton.png");
+    -fx-image: url("/img/scenes/exitbutton.png");
 }
 
 #voteButton {
-    -fx-image: url("../img/scenes/votebutton.png")
+    -fx-image: url("/img/scenes/votebutton.png")
 }
 
 #connectSocketButton {
