@@ -135,6 +135,7 @@ public class RoundManager {
             try {
                 spawnColor = Ammo.toColor(spawningPowerup.getValue());
                 turnOwner.discardPowerupByIndex(discardRequest.getPowerup());
+                gameInstance.getPowerupCardsDeck().discardCard(spawningPowerup);
             } catch (EmptyHandException e) {
                 // never reached, in first spawn state every player always have two powerups!
                 return buildNegativeResponse("GAME ERROR");
@@ -420,7 +421,9 @@ public class RoundManager {
 
         for (Integer index : reverseSort) {
             try {
+                PowerupCard discardingPowerup = powerUpper.getPowerups()[index];
                 powerUpper.discardPowerupByIndex(index);
+                gameInstance.getPowerupCardsDeck().discardCard(discardingPowerup);
             } catch (EmptyHandException e) {
                 // never reached here
             }
@@ -676,6 +679,7 @@ public class RoundManager {
         // after having used the powerup I discard it from the players hand
         try {
             turnManager.getTurnOwner().discardPowerupByIndex(powerupRequest.getPowerup().get(0));
+            gameInstance.getPowerupCardsDeck().discardCard(chosenPowerup);
         } catch (EmptyHandException e) {
             // never reached if the player has the powerup!
         }
@@ -955,7 +959,7 @@ public class RoundManager {
             turnManager.setDeathPlayers(deathPlayers);
             gameManager.changeState(PossibleGameState.MANAGE_DEATHS);
             turnManager.giveTurn(deathPlayers.get(0));
-            turnManager.getTurnOwner().setSpawningCard((PowerupCard) gameInstance.getPowerupCardsDeck().draw());
+            turnManager.getTurnOwner().setSpawningCard(drawPowerup());
             turnManager.resetCount();
             turnManager.setArrivingGameState(nextPassState);
             return buildPositiveResponse("Turn passed");
@@ -985,7 +989,7 @@ public class RoundManager {
             turnManager.setDeathPlayers(deathPlayers);
             gameManager.changeState(PossibleGameState.MANAGE_DEATHS);
             turnManager.giveTurn(deathPlayers.get(0));
-            deathPlayers.get(0).setSpawningCard((PowerupCard) gameInstance.getPowerupCardsDeck().draw());
+            deathPlayers.get(0).setSpawningCard(drawPowerup());
             turnManager.resetCount();
             return buildPositiveResponse("Turn passed after Spawning the Terminator");
         } else {
@@ -1022,11 +1026,13 @@ public class RoundManager {
 
         if (powerupIndex == 3) {
             spawnPowerup = turnOwner.getSpawningCard();
+            gameInstance.getPowerupCardsDeck().discardCard(spawnPowerup);
         } else {
             spawnPowerup = turnOwner.getPowerups()[powerupIndex];
+            gameInstance.getPowerupCardsDeck().discardCard(spawnPowerup);
             try {
                 turnOwner.discardPowerup(spawnPowerup);
-                turnOwner.addPowerup(spawnPowerup);
+                turnOwner.addPowerup(turnOwner.getSpawningCard());
             } catch (MaxCardsInHandException | EmptyHandException e) {
                 // never happen at this point
             }
@@ -1057,7 +1063,7 @@ public class RoundManager {
 
         // otherwise there are still death players and the next one has to respawn
         turnManager.giveTurn(turnManager.getDeathPlayers().get(turnManager.getTurnCount()));
-        turnManager.getTurnOwner().setSpawningCard((PowerupCard) gameInstance.getPowerupCardsDeck().draw());
+        turnManager.getTurnOwner().setSpawningCard(drawPowerup());
 
         return buildPositiveResponse("Player Respawned");
     }
@@ -1190,6 +1196,20 @@ public class RoundManager {
             getTurnManager().getTurnOwner().changePlayerState(PossiblePlayerState.PLAYING);
             setInitialActions();
         }
+    }
+
+    /**
+     * @return always a {@link PowerupCard Powerup}, in case the deck is finished a new one is flushed with the already
+     * used powerups
+     */
+    private PowerupCard drawPowerup() {
+        PowerupCard drawnPowerup = (PowerupCard) gameInstance.getPowerupCardsDeck().draw();
+        if(drawnPowerup == null) {
+            gameInstance.getPowerupCardsDeck().flush();
+            drawnPowerup = (PowerupCard) gameInstance.getPowerupCardsDeck().draw();
+        }
+
+        return drawnPowerup;
     }
 
     /**

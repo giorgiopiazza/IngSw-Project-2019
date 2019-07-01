@@ -13,22 +13,45 @@ import network.message.PowerupRequest;
 
 import java.util.Objects;
 
+/**
+ * This class represents a powerup.
+ * A powerup needs an id to be distinguished and an Ammo that represents his value
+ */
 public class PowerupCard extends UsableCard {
     private static final long serialVersionUID = -8499317938860478314L;
 
     private final int id;
     private final Ammo value;
 
+    /**
+     * Creates a new powerup with needed informations
+     *
+     * @param name powerup's name
+     * @param imagePath powerup's image
+     * @param value powerup's value
+     * @param baseEffect powerup's only effect
+     * @param id poweup's id
+     */
     public PowerupCard(String name, String imagePath, Ammo value, Effect baseEffect, int id) {
         super(name, imagePath, baseEffect);
         this.id = id;
         this.value = value;
     }
 
+    /**
+     * @return the value of the {@link PowerupCard PowerupCard}
+     */
     public Ammo getValue() {
         return this.value;
     }
 
+    /**
+     * Executes the usage of the powerup
+     *
+     * @param request the {@link EffectRequest Request} received to use the powerup
+     * @throws NotEnoughAmmoException in case the user has not enough ammo to use the powerup
+     * @throws InvalidPowerupActionException in case the action is not valid
+     */
     @Override
     public void use(EffectRequest request) throws NotEnoughAmmoException, InvalidPowerupActionException {
         PowerupRequest powerupRequest = (PowerupRequest) request;
@@ -49,6 +72,14 @@ public class PowerupCard extends UsableCard {
         }
     }
 
+    /**
+     * Pays the cost of the powerup. In this game only TARGETING SCOPES have a cost
+     *
+     * @param request the {@link EffectRequest Request} received
+     * @param shootingPlayer the powerup user
+     * @param cost the cost of the using powerup
+     * @throws NotEnoughAmmoException in case the user has not enough ammo to pay the powerup
+     */
     private void payEffectCost(PowerupRequest request, UserPlayer shootingPlayer, AmmoQuantity cost) throws NotEnoughAmmoException {
         if (!cost.noAmmo()) {
             Ammo colorCost = null;
@@ -59,6 +90,8 @@ public class PowerupCard extends UsableCard {
             }
 
             if(request.getPaymentPowerups() != null && !request.getPaymentPowerups().isEmpty()) {
+                PowerupCard payingPowerup = shootingPlayer.getPowerups()[request.getPaymentPowerups().get(0)];
+                Game.getInstance().getPowerupCardsDeck().discardCard(payingPowerup);
                 paid = true;
             }
 

@@ -22,6 +22,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class represents the Map used to play the game. It is a 2 x 3 matrix containing a null cell in case the
+ * map has no square in that position
+ */
 public class GameMap implements Serializable {
     /**
      * Maximum number of map lines: 3
@@ -66,6 +70,11 @@ public class GameMap implements Serializable {
     private Square[][] rooms;
     private String imagePath;
 
+    /**
+     * Builds the map with the chosen index that represents her
+     *
+     * @param mapType the index representing the chosen map
+     */
     public GameMap(int mapType) {
         String path = "json/maps.json";
         InputStream is = GameMap.class.getClassLoader().getResourceAsStream(path);
@@ -109,12 +118,23 @@ public class GameMap implements Serializable {
         this.mapID = mapType;
     }
 
+    /**
+     * Creates a copy of the map
+     *
+     * @param gameMap the map to be copied
+     */
     public GameMap(@NotNull GameMap gameMap) {
         this.rooms = gameMap.rooms;
         this.imagePath = gameMap.imagePath;
         this.mapID = gameMap.mapID;
     }
 
+    /**
+     * Fills the map with the chosen matrix representation
+     *
+     * @param matrix the 2 x 3 matrix representing the map
+     * @param map the map to be filled
+     */
     private static void fillMap(JsonArray matrix, Square[][] map) {
         for (int i = 0; i < matrix.size(); i++) {
             JsonArray row = matrix.get(i).getAsJsonArray();
@@ -156,6 +176,9 @@ public class GameMap implements Serializable {
         throw new NullPointerException("Something went wrong... mapType: " + mapType + " JsonArray: " + array);
     }
 
+    /**
+     * @return the image path of the map
+     */
     public String getImagePath() {
         return imagePath;
     }
@@ -306,12 +329,29 @@ public class GameMap implements Serializable {
         }
     }
 
+    /**
+     * Fills a TILE square with a tile
+     *
+     * @param tempSquare the TILE square to be filled
+     */
     private void fillWithAmmoTile(Square tempSquare) {
         if (!((CardSquare) tempSquare).isAmmoTilePresent()) {
-            ((CardSquare) tempSquare).setAmmoTile((AmmoTile) Game.getInstance().getAmmoTileDeck().draw());
+            AmmoTile drawnTile = (AmmoTile) Game.getInstance().getAmmoTileDeck().draw();
+            if(drawnTile == null) {
+                Game.getInstance().getAmmoTileDeck().flush();
+                ((CardSquare) tempSquare).setAmmoTile((AmmoTile) Game.getInstance().getAmmoTileDeck().draw());
+            } else {
+                ((CardSquare) tempSquare).setAmmoTile(drawnTile);
+            }
         }
     }
 
+    /**
+     * Returns the number of missing {@link WeaponCard WeaponCards} on a SPAWN square
+     *
+     * @param spawnSquare the SPAWN square to check indexes
+     * @return the number of missing weapons
+     */
     private int getMissingCards(SpawnSquare spawnSquare) {
         int nullCounter = 0;
         for (int i = 0; i < 3; ++i) {
@@ -321,6 +361,9 @@ public class GameMap implements Serializable {
         return nullCounter;
     }
 
+    /**
+     * @return the id of the chosen map
+     */
     public int getMapID() {
         return mapID;
     }

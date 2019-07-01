@@ -3,6 +3,7 @@ package model.map;
 import enumerations.RoomColor;
 import enumerations.SquareAdjacency;
 import enumerations.SquareType;
+import model.Game;
 import model.cards.AmmoTile;
 
 public class CardSquare extends Square {
@@ -27,6 +28,7 @@ public class CardSquare extends Square {
 
     public AmmoTile pickAmmoTile() {
         this.hasAmmoTile = false;
+        Game.getInstance().getAmmoTileDeck().discardCard(ammoTile);
         return ammoTile;
     }
 
