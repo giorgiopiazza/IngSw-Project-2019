@@ -717,6 +717,12 @@ class WeaponCardTest {
 
     }
 
+    @Test
+    void shockWave() {
+        WeaponCard shockwave = getWeaponByName("Shockwave");
+
+    }
+
     WeaponCard getWeaponByName(String name) {
         WeaponCard weaponCard = null;
 

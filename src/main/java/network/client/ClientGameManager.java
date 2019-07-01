@@ -73,7 +73,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         DateFormat dateFormat = new SimpleDateFormat("dd-mm_HH.mm.ss");
 
         try {
-            FileHandler fh = new FileHandler("client-" + dateFormat.format(date) + ".log");
+            FileHandler fh = new FileHandler("log/client-" + dateFormat.format(date) + ".log");
             fh.setFormatter(new SimpleFormatter());
             LOGGER.setUseParentHandlers(false);
             LOGGER.addHandler(fh);
@@ -232,7 +232,9 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
      * Show the client all the possible actions
      */
     protected void makeMove() {
-        queue.add(() -> displayActions(getPossibleActions()));
+        if (getUsername().equals(turnOwner)) {
+            queue.add(() -> displayActions(getPossibleActions()));
+        }
     }
 
     /**
