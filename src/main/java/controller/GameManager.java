@@ -456,13 +456,21 @@ public class GameManager implements TimerRunListener, Serializable {
      * @return a positive or negative {@link Response Response} handled by the server
      */
     private Response checkTerminatorRespawn(Message receivedMessage) {
+        Bot terminator = (Bot) gameInstance.getTerminator();
         Response tempResponse;
         if (receivedMessage.getContent() == MessageContent.BOT_SPAWN) {
             tempResponse = roundManager.handleTerminatorRespawn((BotSpawnRequest) receivedMessage);
             if (tempResponse.getStatus() == MessageStatus.OK) {
                 // if the Respawn message is validated I can distribute the points of the terminator's playerboard, move the skull from the tracker and then reset his playerboard
-                distributePoints(gameInstance.getTerminator());
-                moveSkull(gameInstance.getTerminator());
+                distributePoints(terminator);
+                moveSkull(terminator);
+
+                // if the death bot has been overkilled, he marks his overkiller
+                if(terminator.getPlayerBoard().getDamageCount() > 11) {
+                    getRoundManager().getTurnManager().getTurnOwner().getPlayerBoard().addMark(terminator, 1);
+                }
+
+                // then I set back the playerboard to the initial state
                 gameInstance.getTerminator().getPlayerBoard().onDeath();
 
                 // if the state changed to FINAL_FRENZY, no other players died and the FRENZY MODE starts
@@ -496,6 +504,13 @@ public class GameManager implements TimerRunListener, Serializable {
                 UserPlayer respawnedPlayer = gameInstance.getUserPlayerByUsername(receivedMessage.getSenderUsername());
                 distributePoints(respawnedPlayer);
                 moveSkull(respawnedPlayer);
+
+                // if the death player has been overkilled, he marks his overkiller
+                if(respawnedPlayer.getPlayerBoard().getDamageCount() > 11) {
+                    gameInstance.getPlayerByName(respawnedPlayer.getPlayerBoard().getDamages().get(11)).getPlayerBoard().addMark(respawnedPlayer, 1);
+                }
+
+                // then I set back the playerboard to the inistial state
                 respawnedPlayer.getPlayerBoard().onDeath();
 
                 // if the state changed to FINAL_FRENZY, no other players died and the FRENZY MODE starts
