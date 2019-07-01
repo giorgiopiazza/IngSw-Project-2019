@@ -67,6 +67,7 @@ public class GameSceneController {
 
     private static final double POWERUP_CARD_WIDTH = 128;
     private static final double POWERUP_CARD_HEIGHT = 200;
+
     @FXML
     Pane mainPane;
     @FXML
@@ -105,12 +106,16 @@ public class GameSceneController {
     BorderPane infoPanel;
     @FXML
     BorderPane actionPanel;
+
     private GuiManager guiManager;
+
     private List<ImageView> weaponSlotList;
     private List<ImageView> ammoTiles;
     private List<ImageView> killshotsImages;
     private List<ImageView> playerFigures;
     private Map<String, Ammo> weaponColor;
+
+    private String infoPanelUsername = null;
 
     @FXML
     private void initialize() {
@@ -214,6 +219,10 @@ public class GameSceneController {
     void onStateUpdate() {
         setTurnOwnerIcon(GuiManager.getInstance().getTurnOwner());
         updateMap(guiManager.getGameSerialized());
+
+        if (infoPanelUsername != null) {
+            showPlayerInfo(infoPanelUsername);
+        }
     }
 
     /**
@@ -585,14 +594,8 @@ public class GameSceneController {
         }
     }
 
-    /**
-     * Shows the player info in the info panel
-     *
-     * @param event event of the click on a icon
-     */
-    private void showPlayerInfo(Event event) {
-        ImageView playerIcon = (ImageView) event.getTarget();
-        String username = (String) playerIcon.getProperties().get(USERNAME_PROPERTY);
+    private void showPlayerInfo(String username) {
+        infoPanelUsername = username;
 
         if (guiManager.getUsername().equals(username)) {
             showMyPlayerInfo(guiManager.getPlayer());
@@ -603,9 +606,20 @@ public class GameSceneController {
         }
 
         setBoardOpaque(OPAQUE);
-        infoPanel.toFront();
         infoPanel.setVisible(true);
         infoPanel.toFront();
+    }
+
+    /**
+     * Shows the player info in the info panel
+     *
+     * @param event event of the click on a icon
+     */
+    private void showPlayerInfo(Event event) {
+        ImageView playerIcon = (ImageView) event.getTarget();
+        String username = (String) playerIcon.getProperties().get(USERNAME_PROPERTY);
+
+        showPlayerInfo(username);
     }
 
     private void showMyPlayerInfo(UserPlayer me) {
@@ -822,6 +836,8 @@ public class GameSceneController {
         infoPanel.setVisible(false);
 
         setBoardOpaque(NOT_OPAQUE);
+
+        infoPanelUsername = null;
     }
 
     private void setActionPanelTitle(String title) {
@@ -1724,7 +1740,7 @@ public class GameSceneController {
         PlayerPosition playerPosition = guiManager.getPlayer().getPosition();
         AnchorPane anchorPane = new AnchorPane();
 
-        int distance = Integer.parseInt(Properties.MOVE.getJKey());
+        int distance = Integer.parseInt(properties.get(Properties.MOVE.getJKey()));
 
         for (int y = 0; y < GameMap.MAX_COLUMNS; ++y) {
             for (int x = 0; x < GameMap.MAX_ROWS; ++x) {
