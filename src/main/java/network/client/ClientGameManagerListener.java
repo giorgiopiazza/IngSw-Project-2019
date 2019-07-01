@@ -5,6 +5,7 @@ import enumerations.PossibleAction;
 import model.GameSerialized;
 import model.player.Player;
 import network.message.ConnectionResponse;
+import network.message.GameStateMessage;
 import network.message.GameVoteResponse;
 import network.message.Response;
 
@@ -72,10 +73,8 @@ interface ClientGameManagerListener {
 
     /**
      * Handles a game state update
-     *
-     * @param gameSerialized update of the game
      */
-    void gameStateUpdate(GameSerialized gameSerialized);
+    void gameStateUpdate();
 
     /**
      * Displays the response error

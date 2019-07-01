@@ -206,8 +206,6 @@ public class MessageBuilder {
         return new BotSpawnRequest(player.getUsername(), token, spawnSquare.getRoomColor());
     }
 
-    @NotNull
-    @Contract("_, null, _, _ -> fail; _, !null, null, _ -> fail; _, !null, !null, null -> fail; _, !null, !null, !null -> new")
     public static UseTerminatorRequest buildUseTerminatorRequest(UserPlayer player, String token, PlayerPosition newPos, UserPlayer target) {
         if (player == null || newPos == null)
             throw new NullPointerException("Player and newPos cannot be null");
