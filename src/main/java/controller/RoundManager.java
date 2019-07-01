@@ -74,7 +74,7 @@ public class RoundManager {
      * depending on the {@link Game Game} state that can be: {@link GameState GameState.NORMAL} or
      * {@link GameState GameState}
      */
-    private void setInitialActions() {
+    void setInitialActions() {
         if (gameInstance.getState() == GameState.NORMAL && turnManager.getTurnOwner().getPlayerState() == PossiblePlayerState.FIRST_SPAWN) {
             ActionManager.setStartingPossibleActions(turnManager.getTurnOwner(), gameInstance.isTerminatorPresent());
         } else if (gameInstance.getState() == GameState.NORMAL && turnManager.getTurnOwner().getPlayerState() == PossiblePlayerState.PLAYING) {
@@ -939,6 +939,7 @@ public class RoundManager {
                 turnManager.getTurnOwner().addPoints(1);
             }
 
+            turnManager.setFrenzyActivator();
             gameInstance.getTerminator().setPosition(null);
             turnManager.setArrivingGameState(nextPassState);
             gameManager.changeState(PossibleGameState.TERMINATOR_RESPAWN);
@@ -950,6 +951,7 @@ public class RoundManager {
             }
 
             // there are death players I set everything I need to respawn them
+            turnManager.setFrenzyActivator();
             turnManager.setDeathPlayers(deathPlayers);
             gameManager.changeState(PossibleGameState.MANAGE_DEATHS);
             turnManager.giveTurn(deathPlayers.get(0));
