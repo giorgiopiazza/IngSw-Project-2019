@@ -24,6 +24,11 @@ public class ClientUpdater implements Runnable {
 
                 do {
                     messages = client.receiveMessages();
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 } while (messages.isEmpty());
 
                 messages.forEach(updateListener::onUpdate);

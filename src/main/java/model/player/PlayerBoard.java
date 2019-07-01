@@ -79,7 +79,7 @@ public class PlayerBoard implements Serializable {
     /**
      * Method that sets the state of the playerBoard related to how many damages he has received
      */
-    public void setBoardState() {
+    private void setBoardState() {
         int currentDamages = getDamageCount();
         if(currentDamages < 3) {
             this.boardState = PlayerBoardState.NORMAL;
@@ -212,7 +212,7 @@ public class PlayerBoard implements Serializable {
      */
     public void addMark(Player markDealer, int marksCount) {
         if (markDealer == null) {
-            throw new NullPointerException("Player cannot be null");
+            throw new NullPointerException("Player cannot be null ");
         }
 
         int marksNum = Collections.frequency(marks, markDealer.getUsername());
@@ -275,6 +275,7 @@ public class PlayerBoard implements Serializable {
     public void onDeath() {
         damages.clear();
         skulls++;
+        setBoardState();
     }
 
     @Override

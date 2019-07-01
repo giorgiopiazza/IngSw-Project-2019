@@ -797,8 +797,7 @@ public class Cli extends ClientGameManager {
 
     @Override
     public void notifyGameEnd(List<Player> winners) {
-        out.println("EndGame todo");
-        // TODO
+        printWinners(winners);
     }
 
     /**
@@ -1114,11 +1113,7 @@ public class Cli extends ClientGameManager {
      */
     private Boolean askMiddleMove() throws CancelledActionException {
         out.println("Choose if you want to do a: 'inMiddle'(0) or 'before'/'after'(1) movement");
-        if (readInt(0, 1, true) == 0) {
-            return true;
-        } else {
-            return false;
-        }
+        return readInt(0,1, true) == 0;
     }
 
     /**
@@ -1804,10 +1799,17 @@ public class Cli extends ClientGameManager {
      * Prints the list of players
      */
     private void printPlayers() {
-        CliPrinter.printUsername(out, getPlayers()
-                .stream()
-                .filter(p -> !p.getUsername().equals(getUsername()))
-                .collect(Collectors.toList()));
+        CliPrinter.printUsername(out, getPlayersWithBot());
+        out.println();
+    }
+
+    /**
+     * Prints the winners of the game
+     *
+     * @param winners the List of winners
+     */
+    private void printWinners(List<Player> winners) {
+        CliPrinter.printWinners(out, winners, getPlayersWithBot());
         out.println();
     }
 
