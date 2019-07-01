@@ -67,15 +67,6 @@ public class GameSceneController {
 
     private static final double POWERUP_CARD_WIDTH = 128;
     private static final double POWERUP_CARD_HEIGHT = 200;
-
-    private GuiManager guiManager;
-
-    private List<ImageView> weaponSlotList;
-    private List<ImageView> ammoTiles;
-    private List<ImageView> killshotsImages;
-    private List<ImageView> playerFigures;
-    private Map<String, Ammo> weaponColor;
-
     @FXML
     Pane mainPane;
     @FXML
@@ -114,6 +105,12 @@ public class GameSceneController {
     BorderPane infoPanel;
     @FXML
     BorderPane actionPanel;
+    private GuiManager guiManager;
+    private List<ImageView> weaponSlotList;
+    private List<ImageView> ammoTiles;
+    private List<ImageView> killshotsImages;
+    private List<ImageView> playerFigures;
+    private Map<String, Ammo> weaponColor;
 
     @FXML
     private void initialize() {
@@ -1063,11 +1060,13 @@ public class GameSceneController {
 
         for (int i = 0; i < weaponCards.size(); i++) {
             final int weaponIndex = i;
-
-            ImageView img = new ImageView(weaponCards.get(i).getImagePath());
-            img.getStyleClass().add(CSS_BUTTON);
-            img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onWeaponCardPickClick(pickPosition, weaponCards.get(weaponIndex)));
-            hBox.getChildren().add(img);
+            WeaponCard weaponCard = weaponCards.get(i);
+            if (weaponCard != null) {
+                ImageView img = new ImageView(weaponCard.getImagePath());
+                img.getStyleClass().add(CSS_BUTTON);
+                img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onWeaponCardPickClick(pickPosition, weaponCards.get(weaponIndex)));
+                hBox.getChildren().add(img);
+            }
         }
 
         actionPanel.setCenter(vBox);
