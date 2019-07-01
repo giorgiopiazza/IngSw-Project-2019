@@ -152,7 +152,7 @@ public class GameManager implements TimerRunListener, Serializable {
         switch (gameState) {
 
             case GAME_STARTED:
-                return UserPlayerState.FIRST_ACTION;
+                return mapGameStartedWithPlayerState(roundManager.getTurnManager().getTurnOwner().getPlayerState());
 
             case FINAL_FRENZY:
                 return UserPlayerState.FIRST_FRENZY_ACTION;
@@ -190,6 +190,23 @@ public class GameManager implements TimerRunListener, Serializable {
             default:
                 // they called her: THE CRASHING EXCEPTION... always reached, but never catched...
                 throw new InvalidGameStateException();
+        }
+    }
+
+    /**
+     * Maps the state of the game manager caring of the state of the turn owner
+     *
+     * @param playerState the {@link PossiblePlayerState PlayerState} of the turn owner
+     * @return the corresponding {@link UserPlayerState UserPlayerState}
+     */
+    private UserPlayerState mapGameStartedWithPlayerState(PossiblePlayerState playerState) {
+        switch (playerState) {
+            case FIRST_SPAWN:
+                return UserPlayerState.SPAWN;
+            case SPAWN_TERMINATOR:
+                return UserPlayerState.BOT_SPAWN;
+            default:
+                return UserPlayerState.FIRST_ACTION;
         }
     }
 
