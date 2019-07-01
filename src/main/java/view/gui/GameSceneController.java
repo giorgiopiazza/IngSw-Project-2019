@@ -68,14 +68,6 @@ public class GameSceneController {
     private static final double POWERUP_CARD_WIDTH = 128;
     private static final double POWERUP_CARD_HEIGHT = 200;
 
-    private GuiManager guiManager;
-
-    private List<ImageView> weaponSlotList;
-    private List<ImageView> ammoTiles;
-    private List<ImageView> killshotsImages;
-    private List<ImageView> playerFigures;
-    private Map<String, Ammo> weaponColor;
-
     @FXML
     Pane mainPane;
     @FXML
@@ -114,6 +106,16 @@ public class GameSceneController {
     BorderPane infoPanel;
     @FXML
     BorderPane actionPanel;
+
+    private GuiManager guiManager;
+
+    private List<ImageView> weaponSlotList;
+    private List<ImageView> ammoTiles;
+    private List<ImageView> killshotsImages;
+    private List<ImageView> playerFigures;
+    private Map<String, Ammo> weaponColor;
+
+    private String infoPanelUsername = null;
 
     @FXML
     private void initialize() {
@@ -217,6 +219,10 @@ public class GameSceneController {
     void onStateUpdate() {
         setTurnOwnerIcon(GuiManager.getInstance().getTurnOwner());
         updateMap(guiManager.getGameSerialized());
+
+        if (infoPanelUsername != null) {
+            showPlayerInfo(infoPanelUsername);
+        }
     }
 
     /**
@@ -588,14 +594,8 @@ public class GameSceneController {
         }
     }
 
-    /**
-     * Shows the player info in the info panel
-     *
-     * @param event event of the click on a icon
-     */
-    private void showPlayerInfo(Event event) {
-        ImageView playerIcon = (ImageView) event.getTarget();
-        String username = (String) playerIcon.getProperties().get(USERNAME_PROPERTY);
+    private void showPlayerInfo(String username) {
+        infoPanelUsername = username;
 
         if (guiManager.getUsername().equals(username)) {
             showMyPlayerInfo(guiManager.getPlayer());
@@ -606,9 +606,20 @@ public class GameSceneController {
         }
 
         setBoardOpaque(OPAQUE);
-        infoPanel.toFront();
         infoPanel.setVisible(true);
         infoPanel.toFront();
+    }
+
+    /**
+     * Shows the player info in the info panel
+     *
+     * @param event event of the click on a icon
+     */
+    private void showPlayerInfo(Event event) {
+        ImageView playerIcon = (ImageView) event.getTarget();
+        String username = (String) playerIcon.getProperties().get(USERNAME_PROPERTY);
+
+        showPlayerInfo(username);
     }
 
     private void showMyPlayerInfo(UserPlayer me) {
@@ -825,6 +836,8 @@ public class GameSceneController {
         infoPanel.setVisible(false);
 
         setBoardOpaque(NOT_OPAQUE);
+
+        infoPanelUsername = null;
     }
 
     private void setActionPanelTitle(String title) {
@@ -1063,11 +1076,13 @@ public class GameSceneController {
 
         for (int i = 0; i < weaponCards.size(); i++) {
             final int weaponIndex = i;
-
-            ImageView img = new ImageView(weaponCards.get(i).getImagePath());
-            img.getStyleClass().add(CSS_BUTTON);
-            img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onWeaponCardPickClick(pickPosition, weaponCards.get(weaponIndex)));
-            hBox.getChildren().add(img);
+            WeaponCard weaponCard = weaponCards.get(i);
+            if (weaponCard != null) {
+                ImageView img = new ImageView(weaponCard.getImagePath());
+                img.getStyleClass().add(CSS_BUTTON);
+                img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onWeaponCardPickClick(pickPosition, weaponCards.get(weaponIndex)));
+                hBox.getChildren().add(img);
+            }
         }
 
         actionPanel.setCenter(vBox);
@@ -1382,15 +1397,13 @@ public class GameSceneController {
 
         if (properties.containsKey(Properties.MOVE.getJKey())) {
             askSenderMove(shootRequestBuilder, properties);
-        }
-
-        if (properties.containsKey(Properties.MOVE_TARGET.getJKey())) {
+        } else if (properties.containsKey(Properties.MOVE_TARGET.getJKey())) {
             askTargetMovePosition(shootRequestBuilder, properties, true, Integer.parseInt(properties.get(Properties.MOVE_TARGET.getJKey())), 0);
         } else if (properties.containsKey(Properties.MAX_MOVE_TARGET.getJKey())) {
             askTargetMovePosition(shootRequestBuilder, properties, false, Integer.parseInt(properties.get(Properties.MAX_MOVE_TARGET.getJKey())), 0);
+        } else {
+            sendShootRequest(shootRequestBuilder);
         }
-
-        sendShootRequest(shootRequestBuilder);
     }
 
     private void askPlayerTargets(ShootRequest.ShootRequestBuilder shootRequestBuilder, List<TargetType> targets, Map<String, String> properties) {
@@ -1697,6 +1710,13 @@ public class GameSceneController {
             }
         }
 
+        actionPanel.setCenter(anchorPane);
+
+        setActionPanelBottom();
+
+        setBoardOpaque(OPAQUE);
+        actionPanel.setVisible(true);
+        actionPanel.toFront();
     }
 
     private void addNextButton(ShootRequest.ShootRequestBuilder shootRequestBuilder, List<TargetType> targets, Map<String, String> properties) {
@@ -1720,7 +1740,7 @@ public class GameSceneController {
         PlayerPosition playerPosition = guiManager.getPlayer().getPosition();
         AnchorPane anchorPane = new AnchorPane();
 
-        int distance = Integer.parseInt(Properties.MOVE.getJKey());
+        int distance = Integer.parseInt(properties.get(Properties.MOVE.getJKey()));
 
         for (int y = 0; y < GameMap.MAX_COLUMNS; ++y) {
             for (int x = 0; x < GameMap.MAX_ROWS; ++x) {
@@ -1823,14 +1843,6 @@ public class GameSceneController {
 
         setActionPanelTitle("Move of " + tempRequest.getTargetPlayersUsername().get(targetNum));
 
-        VBox vBox = new VBox();
-        vBox.setAlignment(Pos.CENTER);
-
-        HBox hBox = new HBox();
-        hBox.setAlignment(Pos.BASELINE_CENTER);
-        hBox.setSpacing(20);
-        vBox.getChildren().add(hBox);
-
         GameMap gameMap = guiManager.getGameMap();
 
         PlayerPosition playerPosition = guiManager.getPlayerByName(tempRequest.getTargetPlayersUsername().get(targetNum)).getPosition();
@@ -1853,7 +1865,7 @@ public class GameSceneController {
             }
         }
 
-        actionPanel.setCenter(vBox);
+        actionPanel.setCenter(anchorPane);
 
         setActionPanelBottom();
 
@@ -2191,8 +2203,6 @@ public class GameSceneController {
         hBox.setSpacing(20);
         vBox.getChildren().add(hBox);
 
-        final PowerupRequest.PowerupRequestBuilder finalPowerupRequestBuilder = powerupRequestBuilder;
-
         for (Player player : guiManager.getPlayers()) {
             final String currentUsername = player.getUsername();
             if (!currentUsername.equals(guiManager.getUsername())) {
@@ -2200,15 +2210,15 @@ public class GameSceneController {
                 img.setId(getIconIDFromColor(player.getColor()));
                 img.getStyleClass().add(CSS_BUTTON);
                 img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-                    PowerupRequest currTempRequest = finalPowerupRequestBuilder.build();
+                    PowerupRequest currTempRequest = powerupRequestBuilder.build();
 
                     ArrayList<String> targetUsernames = currTempRequest.getTargetPlayersUsername();
                     targetUsernames.add(currentUsername);
 
                     if (currTempRequest.getPowerup().size() == targetUsernames.size()) {
-                        askScopePaymentPowerups(finalPowerupRequestBuilder.targetPlayersUsername(targetUsernames));
+                        askScopePaymentPowerups(powerupRequestBuilder.targetPlayersUsername(targetUsernames));
                     } else {
-                        onScopeClick(finalPowerupRequestBuilder.targetPlayersUsername(targetUsernames));
+                        onScopeClick(powerupRequestBuilder.targetPlayersUsername(targetUsernames));
                     }
                 });
 
@@ -2255,13 +2265,12 @@ public class GameSceneController {
 
         nextButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
             ArrayList<Integer> paymentPowerups = getMultiplePowerupIndexes();
-            PowerupRequest.PowerupRequestBuilder currPowerupRequestBuilder = powerupRequestBuilder.paymentPowerups(paymentPowerups);
-            PowerupRequest currPowerupRequest = currPowerupRequestBuilder.build();
+            PowerupRequest currPowerupRequest = powerupRequestBuilder.build();
 
-            if (currPowerupRequest.getPowerup().size() == currPowerupRequest.getPaymentPowerups().size()) {
-                sendPowerupRequest(currPowerupRequestBuilder);
+            if (currPowerupRequest.getPowerup().size() == paymentPowerups.size()) {
+                sendPowerupRequest(powerupRequestBuilder.paymentPowerups(paymentPowerups));
             } else {
-                askScopeAmmoColor(currPowerupRequestBuilder);
+                askScopeAmmoColor(powerupRequestBuilder.paymentPowerups(paymentPowerups));
             }
         });
 
@@ -2278,7 +2287,7 @@ public class GameSceneController {
         PowerupRequest tempRequest = powerupRequestBuilder.build();
 
         if (tempRequest.getAmmoColor() == null) {
-            powerupRequestBuilder.targetPlayersUsername(new ArrayList<>());
+            powerupRequestBuilder.ammoColor(new ArrayList<>());
             tempRequest = powerupRequestBuilder.build();
         }
 
@@ -2293,21 +2302,21 @@ public class GameSceneController {
         vBox.getChildren().add(hBox);
 
         List<Ammo> ammoList = List.of(Ammo.RED, Ammo.BLUE, Ammo.YELLOW);
-        final PowerupRequest.PowerupRequestBuilder finalPowerupRequestBuilder = powerupRequestBuilder;
 
         for (Ammo ammo : ammoList) {
             ImageView img = new ImageView("/img/ammo/" + ammo.name().toLowerCase() + "Ammo.png");
+            img.getStyleClass().add(CSS_BUTTON);
 
             img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-                PowerupRequest currTempRequest = finalPowerupRequestBuilder.build();
+                PowerupRequest currTempRequest = powerupRequestBuilder.build();
 
                 ArrayList<Ammo> ammoColorList = currTempRequest.getAmmoColor();
                 ammoColorList.add(ammo);
 
                 if (currTempRequest.getPowerup().size() == (ammoColorList.size() + currTempRequest.getPaymentPowerups().size())) {
-                    sendPowerupRequest(finalPowerupRequestBuilder.ammoColor(ammoColorList));
+                    sendPowerupRequest(powerupRequestBuilder.ammoColor(ammoColorList));
                 } else {
-                    askScopeAmmoColor(finalPowerupRequestBuilder.ammoColor(ammoColorList));
+                    askScopeAmmoColor(powerupRequestBuilder.ammoColor(ammoColorList));
                 }
             });
 

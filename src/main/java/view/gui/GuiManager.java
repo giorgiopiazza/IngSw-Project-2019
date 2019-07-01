@@ -12,7 +12,6 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import model.GameSerialized;
 import model.player.Player;
 import network.message.ConnectionResponse;
 import network.message.GameVoteResponse;
