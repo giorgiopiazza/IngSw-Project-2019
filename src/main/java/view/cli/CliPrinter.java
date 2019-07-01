@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 class CliPrinter {
 
@@ -1008,14 +1009,46 @@ class CliPrinter {
             out.println(
                     getTopWinnersDecoration(winners.size()) +
                             addEmptyLine(winners.size()) +
-                            getAllWinnersTitle(winners.size()) +
+                            getWinnersTitle(winners.size(), "***** EVERYBODY WIN THIS GAME *****") +
+                            addEmptyLine(winners.size()) +
                             getWinnersNames(winners) +
                             getWinnersPoints(winners) +
                             addEmptyLine(winners.size()) +
                             getBotWinnersDecoration(winners.size())
             );
         } else {
-            // todo
+            int size = winners.size() > (allPlayers.size() / 2) ? winners.size() : allPlayers.size() - winners.size();
+
+            out.println(
+                    getTopWinnersDecoration(size) +
+                            addEmptyLine(size) +
+                            getWinnersTitle(size, "***** THE WINNERS OF THIS GAME ARE *****") +
+                            addEmptyLine(size) +
+                            getWinnersNames(size, winners) +
+                            getWinnersPoints(size, winners) +
+                            addEmptyLine(size) +
+                            addSeparatorLine(size) +
+                            addEmptyLine(size) +
+                            getWinnersTitle(size, "***** POOR ORDERED LOOSERS ARE *****") +
+                            addEmptyLine(size) +
+                            getWinnersNames(size, allPlayers.stream().filter(player -> !winners.contains(player))
+                                                                     .sorted((player1, player2) -> {
+                                                                         if(player1.getPoints() < player2.getPoints()) return 1;
+                                                                         else if (player1.getPoints() > player2.getPoints()) return -1;
+                                                                         else return 0;
+                            })
+                                                                     .collect(Collectors.toList()))
+                                    +
+                            getWinnersPoints(size, allPlayers.stream().filter(player -> !winners.contains(player))
+                                                                      .sorted((player1, player2) -> {
+                                                                          if(player1.getPoints() < player2.getPoints()) return 1;
+                                                                          else if (player1.getPoints() > player2.getPoints()) return -1;
+                                                                          else return 0;
+                            })
+                                                                      .collect(Collectors.toList())) +
+                            addEmptyLine(size) +
+                            getBotWinnersDecoration(size)
+            );
         }
     }
 
@@ -1027,17 +1060,20 @@ class CliPrinter {
         return "╚═══════════════" + "═══════════════".repeat(winners - 2) + "═══════════════╝" + "\n";
     }
 
-    private static String addEmptyLine(int winners) {
-        return "║" + "               ".repeat(winners) + "║";
+    private static String addSeparatorLine(int size) {
+        return "╠═══════════════" + "═══════════════".repeat(size - 2) + "═══════════════╣" + "\n";
     }
 
-    private static String getAllWinnersTitle(int winners) {
-        int decorationLength = 15 * winners;
+    private static String addEmptyLine(int winners) {
+        return "║" + "               ".repeat(winners) + "║"  + "\n";
+    }
+
+    private static String getWinnersTitle(int size, String winnerTitle) {
+        final int decorationLength = 15 * size;
         int firstMissingBlanks;
         int secondMissingBlanks;
-        String allWinners = "***** EVERYBODY WIN THIS GAME *****";
 
-        int difference = decorationLength - allWinners.length();
+        int difference = decorationLength - winnerTitle.length();
         if (difference % 2 == 0) {
             firstMissingBlanks = secondMissingBlanks = difference / 2;
         } else {
@@ -1045,8 +1081,9 @@ class CliPrinter {
             secondMissingBlanks = difference / 2;
         }
 
-        return "║" + " ".repeat(firstMissingBlanks) + allWinners + " ".repeat(secondMissingBlanks) + "║";
+        return "║" + " ".repeat(firstMissingBlanks) + winnerTitle + " ".repeat(secondMissingBlanks) + "║" + "\n";
     }
+
 
     private static String getWinnersNames(List<Player> winners) {
         StringBuilder tempOut = new StringBuilder();
@@ -1058,6 +1095,28 @@ class CliPrinter {
         }
 
         tempOut.append("║").append("\n");
+        return tempOut.toString();
+    }
+
+    private static String getWinnersNames(int size, List<Player> winners) {
+        StringBuilder tempOut = new StringBuilder();
+
+        tempOut.append("║");
+
+        if(size == winners.size()) {
+            for(Player player : winners) {
+                tempOut.append(addFirstWinnersMissingBlanks(player.getUsername())).append(player.getUsername()).append(addSecondWinnersMissingBlanks(player.getUsername()));
+            }
+        } else {
+            tempOut.append(addFirstCenterBlanks(size, winners.size()));
+            for(Player player : winners) {
+                tempOut.append(addFirstWinnersMissingBlanks(player.getUsername())).append(player.getUsername()).append(addSecondWinnersMissingBlanks(player.getUsername()));
+            }
+            tempOut.append(addSecondCenterBlanks(size, winners.size()));
+        }
+
+        tempOut.append("║");
+        tempOut.append("\n");
         return tempOut.toString();
     }
 
@@ -1081,6 +1140,27 @@ class CliPrinter {
         return " ".repeat(missingBlanks);
     }
 
+    private static String addFirstCenterBlanks(int size, int centeringPlayers) {
+        int playersSize = centeringPlayers * 15;
+        int difference = size * 15 - playersSize;
+
+        int missingBlanks;
+
+        if(difference % 2 == 0) {
+            missingBlanks = difference / 2;
+        } else {
+            missingBlanks = difference / 2 + 1;
+        }
+        return " ".repeat(missingBlanks);
+    }
+
+    private static String addSecondCenterBlanks(int size, int centeringPlayers) {
+        int playersSize = centeringPlayers * 15;
+        int missingBlanks = (size * 15 - playersSize) / 2;
+
+        return " ".repeat(missingBlanks);
+    }
+
     private static String getWinnersPoints(List<Player> winners) {
         StringBuilder tempOut = new StringBuilder();
 
@@ -1096,11 +1176,28 @@ class CliPrinter {
 
     }
 
+    private static String getWinnersPoints(int size, List<Player> winners) {
+        StringBuilder tempOut = new StringBuilder();
 
+        tempOut.append("║");
 
+        if(size == winners.size()) {
+            for(Player player : winners) {
+                String tempPoints = "Points: " + player.getPoints();
+                tempOut.append(addFirstWinnersMissingBlanks(tempPoints)).append(tempPoints).append(addSecondWinnersMissingBlanks(tempPoints));
+            }
+        } else {
+            tempOut.append(addFirstCenterBlanks(size, winners.size()));
+            for(Player player : winners) {
+                String tempPoints = "Points: " + player.getPoints();
+                tempOut.append(addFirstWinnersMissingBlanks(tempPoints)).append(tempPoints).append(addSecondWinnersMissingBlanks(tempPoints));
+            }
+            tempOut.append(addSecondCenterBlanks(size, winners.size()));
+        }
 
-
-
+        tempOut.append("║").append("\n");
+        return tempOut.toString();
+    }
 
     private static String printColorAmmos(int ammoInt, String color) {
         StringBuilder tempOut = new StringBuilder();

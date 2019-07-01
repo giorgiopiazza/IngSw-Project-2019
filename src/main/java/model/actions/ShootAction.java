@@ -90,7 +90,7 @@ public class ShootAction implements Action {
     @Override
     public void execute() throws InvalidActionException, WeaponAlreadyChargedException, NotEnoughAmmoException, WeaponNotChargedException {
         // first I move the shooter saving his position in case after the weapon validate it can not be used
-        PlayerPosition startingPos = actingPlayer.getPosition();
+        PlayerPosition startingPos = new PlayerPosition(actingPlayer.getPosition());
         actingPlayer.changePosition(movingPos.getRow(), movingPos.getColumn());
 
         // if the shooting action is a frenzy one I can also recharge my weapons before shooting

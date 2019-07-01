@@ -1,6 +1,7 @@
 package controller;
 
 import enumerations.PossibleGameState;
+import model.player.Player;
 import model.player.UserPlayer;
 
 import java.io.Serializable;
@@ -18,6 +19,7 @@ public class TurnManager implements Serializable {
 
     private UserPlayer turnOwner;
     private UserPlayer lastPlayer;
+    private Player frenzyActivator;
     private final UserPlayer lastRoundPlayer;
 
     private ArrayList<UserPlayer> players;
@@ -66,6 +68,7 @@ public class TurnManager implements Serializable {
         this.lastRoundPlayer = other.lastRoundPlayer;
 
         this.players = other.players;
+        this.frenzyActivator = other.frenzyActivator;
         this.damagedPlayers = other.damagedPlayers;
         this.deathPlayers = other.deathPlayers;
 
@@ -103,6 +106,20 @@ public class TurnManager implements Serializable {
      */
     UserPlayer getLastPlayer() {
         return this.lastPlayer;
+    }
+
+    /**
+     * @return the {@link Player Player} who activated the frenzy
+     */
+    public Player getFrenzyActivator() {
+        return this.frenzyActivator;
+    }
+
+    /**
+     * the turn owner as the frenzy activator
+     */
+    void setFrenzyActivator() {
+        this.frenzyActivator = turnOwner;
     }
 
     /**
@@ -282,7 +299,6 @@ public class TurnManager implements Serializable {
      * given the correct number and type of FrenzyActions
      */
     void setFrenzyPlayers() {
-        UserPlayer frenzyActivator = turnOwner;
         boolean beforeFirst = true;
 
         do {
