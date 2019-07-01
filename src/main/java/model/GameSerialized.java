@@ -26,6 +26,7 @@ public class GameSerialized implements Serializable {
 
     private int killShotNum;
     private KillShot[] killShotsTrack;
+    private ArrayList<KillShot> finalFrenzyKillShots;
 
     // attributes for each single player, initialized thanks to the username passed to the constructor
     private int points;
@@ -43,6 +44,7 @@ public class GameSerialized implements Serializable {
 
         killShotsTrack = instance.getKillShotsTrack() != null ? Arrays.copyOf(instance.getKillShotsTrack(), instance.getKillShotsTrack().length) : null;
         killShotNum = instance.getKillShotNum();
+        finalFrenzyKillShots = instance.getFinalFrenzyKillShots();
 
         gameMap = new GameMap(instance.getGameMap());
         setSecretAttributes(userName);
@@ -70,6 +72,10 @@ public class GameSerialized implements Serializable {
 
     public KillShot[] getKillShotsTrack() {
         return killShotsTrack;
+    }
+
+    public ArrayList<KillShot> getFinalFrenzyKillShots() {
+        return finalFrenzyKillShots;
     }
 
     public GameMap getGameMap() {
