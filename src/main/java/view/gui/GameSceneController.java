@@ -214,9 +214,9 @@ public class GameSceneController {
         }
     }
 
-    void onStateUpdate(GameSerialized gameSerialized) {
+    void onStateUpdate() {
         setTurnOwnerIcon(GuiManager.getInstance().getTurnOwner());
-        updateMap(gameSerialized);
+        updateMap(guiManager.getGameSerialized());
     }
 
     /**
@@ -1734,7 +1734,7 @@ public class GameSceneController {
                     mapButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
                         shootRequestBuilder.senderMovePosition(tempPos);
 
-                        askSenderMovePosition(shootRequestBuilder, properties, properties.containsKey(Properties.MOVE_IN_MIDDLE.getJKey()));
+                        askSenderMoveOrder(shootRequestBuilder, properties, properties.containsKey(Properties.MOVE_IN_MIDDLE.getJKey()));
                     });
 
                     AnchorPane.setLeftAnchor(mapButton, MapInsetsHelper.squareButtonInsets.getLeft() + y * MapInsetsHelper.SQUARE_BUTTON_HORIZONTAL_OFFSET);
@@ -1754,7 +1754,7 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
-    private void askSenderMovePosition(ShootRequest.ShootRequestBuilder shootRequestBuilder, Map<String, String> properties, boolean middle) {
+    private void askSenderMoveOrder(ShootRequest.ShootRequestBuilder shootRequestBuilder, Map<String, String> properties, boolean middle) {
         actionPanel.getChildren().clear();
 
         setActionPanelTitle("Sender move order");
@@ -2054,6 +2054,14 @@ public class GameSceneController {
     }
 
     private void onNewtonClick(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
+        List<Player> players = guiManager.getPlayersWithBot();
+        players = players.stream().filter(p -> p.getPosition() != null && !p.getUsername().equals(guiManager.getUsername())).collect(Collectors.toList());
+
+        if (players.isEmpty()) {
+            GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, "No suitable players to use Newton");
+            return;
+        }
+
         actionPanel.getChildren().clear();
 
         setActionPanelTitle("Newton Target");
@@ -2066,20 +2074,19 @@ public class GameSceneController {
         hBox.setSpacing(20);
         vBox.getChildren().add(hBox);
 
-        for (Player player : guiManager.getPlayers()) {
-            if (!player.getUsername().equals(guiManager.getUsername())) {
-                ImageView img = new ImageView();
-                img.setId(getIconIDFromColor(player.getColor()));
-                img.getProperties().put(USERNAME_PROPERTY, player.getUsername());
+        for (Player player : players) {
+            ImageView img = new ImageView();
+            img.getStyleClass().add(CSS_BUTTON);
+            img.setId(getIconIDFromColor(player.getColor()));
+            img.getProperties().put(USERNAME_PROPERTY, player.getUsername());
 
-                img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-                    ImageView imageView = (ImageView) event.getTarget();
-                    String targetUsername = (String) imageView.getProperties().get(USERNAME_PROPERTY);
-                    askNewtonMovePosition(powerupRequestBuilder.targetPlayersUsername(new ArrayList<>(List.of(targetUsername))));
-                });
+            img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+                ImageView imageView = (ImageView) event.getTarget();
+                String targetUsername = (String) imageView.getProperties().get(USERNAME_PROPERTY);
+                askNewtonMovePosition(powerupRequestBuilder.targetPlayersUsername(new ArrayList<>(List.of(targetUsername))));
+            });
 
-                hBox.getChildren().add(img);
-            }
+            hBox.getChildren().add(img);
         }
 
         actionPanel.setCenter(vBox);
@@ -2092,9 +2099,10 @@ public class GameSceneController {
     }
 
     private void askNewtonMovePosition(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
-        setActionPanelTitle("Newton target move");
+        PowerupRequest tempReq = powerupRequestBuilder.build();
+        setActionPanelTitle("Newton " + tempReq.getTargetPlayersUsername().get(0) + " move");
         GameMap gameMap = guiManager.getGameMap();
-        PlayerPosition playerPosition = guiManager.getPlayerByName(powerupRequestBuilder.build().getTargetPlayersUsername().get(0)).getPosition();
+        PlayerPosition playerPosition = guiManager.getPlayerByName(tempReq.getTargetPlayersUsername().get(0)).getPosition();
 
         AnchorPane anchorPane = new AnchorPane();
 
@@ -2198,9 +2206,9 @@ public class GameSceneController {
                     targetUsernames.add(currentUsername);
 
                     if (currTempRequest.getPowerup().size() == targetUsernames.size()) {
-                        onScopeClick(finalPowerupRequestBuilder.targetPlayersUsername(targetUsernames));
-                    } else {
                         askScopePaymentPowerups(finalPowerupRequestBuilder.targetPlayersUsername(targetUsernames));
+                    } else {
+                        onScopeClick(finalPowerupRequestBuilder.targetPlayersUsername(targetUsernames));
                     }
                 });
 
@@ -2411,7 +2419,7 @@ public class GameSceneController {
             ReloadRequest reloadRequest;
 
             try {
-                reloadRequest = MessageBuilder.buildReloadRequest(guiManager.getClientToken(), guiManager.getPlayer(), new ArrayList<>(reloadWeapons));
+                reloadRequest = MessageBuilder.buildReloadRequest(guiManager.getClientToken(), guiManager.getPlayer(), reloadWeapons);
             } catch (WeaponCardsNotFoundException e) {
                 GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, e.getMessage());
                 return;
@@ -2437,16 +2445,16 @@ public class GameSceneController {
         nextButton.getStyleClass().add(CSS_BUTTON);
 
         nextButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-            hideActionPanel();
-
             ArrayList<Integer> paymentPowerups = getMultiplePowerupIndexes();
+
+            hideActionPanel();
             ReloadRequest reloadRequest;
 
             try {
                 if (paymentPowerups.isEmpty()) {
-                    reloadRequest = MessageBuilder.buildReloadRequest(guiManager.getClientToken(), guiManager.getPlayer(), new ArrayList<>(reloadWeapons));
+                    reloadRequest = MessageBuilder.buildReloadRequest(guiManager.getClientToken(), guiManager.getPlayer(), reloadWeapons);
                 } else {
-                    reloadRequest = MessageBuilder.buildReloadRequest(guiManager.getClientToken(), guiManager.getPlayer(), new ArrayList<>(reloadWeapons), paymentPowerups);
+                    reloadRequest = MessageBuilder.buildReloadRequest(guiManager.getClientToken(), guiManager.getPlayer(), reloadWeapons, paymentPowerups);
                 }
             } catch (WeaponCardsNotFoundException | PowerupCardsNotFoundException e) {
                 GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, e.getMessage());
@@ -2581,9 +2589,7 @@ public class GameSceneController {
             ImageView img = new ImageView();
             img.setId(getIconIDFromColor(player.getColor()));
 
-            img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-                sendBotAction(movePosition, player);
-            });
+            img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> sendBotAction(movePosition, player));
 
             hBox.getChildren().add(img);
         }
@@ -2618,15 +2624,29 @@ public class GameSceneController {
 
     private List<PlayerPosition> getNorthDirectionalMove(GameMap gameMap, PlayerPosition startingSquare, int distance) {
         List<PlayerPosition> returnPositions = new ArrayList<>();
-        Square tempsquare = gameMap.getSquare(startingSquare);
+
         int x = startingSquare.getRow();
         int y = startingSquare.getColumn();
 
-        while (x >= 0 && tempsquare.getNorth() != SquareAdjacency.WALL) {
-            PlayerPosition tempPosition = new PlayerPosition(x, y);
-            if (!startingSquare.equals(tempPosition) && startingSquare.distanceOf(tempPosition, gameMap) <= distance) {
-                returnPositions.add(tempPosition);
-                x--;
+        Square tempsquare = gameMap.getSquare(startingSquare);
+        PlayerPosition tempPosition = new PlayerPosition(x, y);
+
+        while (tempsquare != null) {
+            if (!startingSquare.equals(tempPosition)) {
+                if (startingSquare.distanceOf(tempPosition, gameMap) <= distance) {
+                    returnPositions.add(tempPosition);
+                } else {
+                    return returnPositions;
+                }
+            }
+
+            x--;
+
+            if (x >= 0) {
+                tempPosition = new PlayerPosition(x, y);
+                tempsquare = gameMap.getSquare(tempPosition);
+            } else {
+                tempsquare = null;
             }
         }
 
@@ -2635,15 +2655,29 @@ public class GameSceneController {
 
     private List<PlayerPosition> getSouthDirectionalMove(GameMap gameMap, PlayerPosition startingSquare, int distance) {
         List<PlayerPosition> returnPositions = new ArrayList<>();
-        Square tempsquare = gameMap.getSquare(startingSquare);
+
         int x = startingSquare.getRow();
         int y = startingSquare.getColumn();
 
-        while (x < GameMap.MAX_ROWS && tempsquare.getSouth() != SquareAdjacency.WALL) {
-            PlayerPosition tempPosition = new PlayerPosition(x, y);
-            if (!startingSquare.equals(tempPosition) && startingSquare.distanceOf(tempPosition, gameMap) <= distance) {
-                returnPositions.add(tempPosition);
-                x++;
+        Square tempsquare = gameMap.getSquare(startingSquare);
+        PlayerPosition tempPosition = new PlayerPosition(x, y);
+
+        while (tempsquare != null) {
+            if (!startingSquare.equals(tempPosition)) {
+                if (startingSquare.distanceOf(tempPosition, gameMap) <= distance) {
+                    returnPositions.add(tempPosition);
+                } else {
+                    return returnPositions;
+                }
+            }
+
+            x++;
+
+            if (x < GameMap.MAX_ROWS) {
+                tempPosition = new PlayerPosition(x, y);
+                tempsquare = gameMap.getSquare(tempPosition);
+            } else {
+                tempsquare = null;
             }
         }
 
@@ -2652,15 +2686,29 @@ public class GameSceneController {
 
     private List<PlayerPosition> getEastDirectionalMove(GameMap gameMap, PlayerPosition startingSquare, int distance) {
         List<PlayerPosition> returnPositions = new ArrayList<>();
-        Square tempsquare = gameMap.getSquare(startingSquare);
+
         int x = startingSquare.getRow();
         int y = startingSquare.getColumn();
 
-        while (y >= 0 && tempsquare.getEast() != SquareAdjacency.WALL) {
-            PlayerPosition tempPosition = new PlayerPosition(x, y);
-            if (!startingSquare.equals(tempPosition) && startingSquare.distanceOf(tempPosition, gameMap) <= distance) {
-                returnPositions.add(tempPosition);
-                y--;
+        Square tempsquare = gameMap.getSquare(startingSquare);
+        PlayerPosition tempPosition = new PlayerPosition(x, y);
+
+        while (tempsquare != null) {
+            if (!startingSquare.equals(tempPosition)) {
+                if (startingSquare.distanceOf(tempPosition, gameMap) <= distance) {
+                    returnPositions.add(tempPosition);
+                } else {
+                    return returnPositions;
+                }
+            }
+
+            y--;
+
+            if (y >= 0) {
+                tempPosition = new PlayerPosition(x, y);
+                tempsquare = gameMap.getSquare(tempPosition);
+            } else {
+                tempsquare = null;
             }
         }
 
@@ -2669,15 +2717,29 @@ public class GameSceneController {
 
     private List<PlayerPosition> getWestDirectionalMove(GameMap gameMap, PlayerPosition startingSquare, int distance) {
         List<PlayerPosition> returnPositions = new ArrayList<>();
-        Square tempsquare = gameMap.getSquare(startingSquare);
+
         int x = startingSquare.getRow();
         int y = startingSquare.getColumn();
 
-        while (y < GameMap.MAX_COLUMNS && tempsquare.getWest() != SquareAdjacency.WALL) {
-            PlayerPosition tempPosition = new PlayerPosition(x, y);
-            if (!startingSquare.equals(tempPosition) && startingSquare.distanceOf(tempPosition, gameMap) <= distance) {
-                returnPositions.add(tempPosition);
-                y++;
+        Square tempsquare = gameMap.getSquare(startingSquare);
+        PlayerPosition tempPosition = new PlayerPosition(x, y);
+
+        while (tempsquare != null) {
+            if (!startingSquare.equals(tempPosition)) {
+                if (startingSquare.distanceOf(tempPosition, gameMap) <= distance) {
+                    returnPositions.add(tempPosition);
+                } else {
+                    return returnPositions;
+                }
+            }
+
+            y++;
+
+            if (y < GameMap.MAX_COLUMNS) {
+                tempPosition = new PlayerPosition(x, y);
+                tempsquare = gameMap.getSquare(tempPosition);
+            } else {
+                tempsquare = null;
             }
         }
 

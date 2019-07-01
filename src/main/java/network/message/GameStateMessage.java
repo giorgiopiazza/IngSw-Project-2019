@@ -12,9 +12,9 @@ public class GameStateMessage extends Message {
     private final String turnOwner;
     private boolean grenadeUsage;
 
-    public GameStateMessage(String userName, String turnOwner, boolean grenadeUsage) {
+    public GameStateMessage(String username, String turnOwner, boolean grenadeUsage) {
         super (GameCostants.GOD_NAME, null, MessageContent.GAME_STATE);
-        this.gameSerialized = new GameSerialized(userName);
+        this.gameSerialized = new GameSerialized(username);
         this.turnOwner = turnOwner;
         this.grenadeUsage = grenadeUsage;
     }

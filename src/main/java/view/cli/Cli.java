@@ -346,7 +346,7 @@ public class Cli extends ClientGameManager {
     }
 
     @Override
-    public void gameStateUpdate(GameSerialized gameSerialized) {
+    public void gameStateUpdate() {
         printMap();
         out.println();
         printPlayerBoard();

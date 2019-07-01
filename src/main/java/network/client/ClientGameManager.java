@@ -451,9 +451,9 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
         synchronized (gameSerializedLock) {
             gameSerialized = gameStateMessage.getGameSerialized();
-
-            queue.add(() -> gameStateUpdate(gameSerialized));
         }
+
+        queue.add(this::gameStateUpdate);
 
         checkTurnChange(gameStateMessage);
     }
@@ -510,9 +510,10 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             roundManager.reconnection();
         }
 
+        turnOwner = reconnectionMessage.getGameStateMessage().getTurnOwner();
 
         synchronized (gameSerializedLock) {
-            queue.add(() -> gameStateUpdate(gameSerialized));
+            queue.add(this::gameStateUpdate);
         }
 
         checkTurnChange(reconnectionMessage.getGameStateMessage());
@@ -830,7 +831,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     /**
      * @return the game state object
      */
-    protected GameSerialized getGameSerialized() {
+    public GameSerialized getGameSerialized() {
         synchronized (gameSerializedLock) {
             return gameSerialized;
         }

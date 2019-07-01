@@ -146,18 +146,15 @@ public class GuiManager extends ClientGameManager {
     }
 
     @Override
-    public void gameStateUpdate(GameSerialized gameSerialized) {
+    public void gameStateUpdate() {
         if (gameSceneController == null) {
             if (lobbySceneController == null) { // Game reconnection
-                Platform.runLater(() ->
-                        connectionSceneController.onReconnectionResponse(gameSerialized));
+                Platform.runLater(connectionSceneController::onReconnectionResponse);
             } else { // Game Start
-                Platform.runLater(() ->
-                        lobbySceneController.onGameStart(gameSerialized));
+                Platform.runLater(lobbySceneController::onGameStart);
             }
         } else {
-            Platform.runLater(() ->
-                    gameSceneController.onStateUpdate(gameSerialized));
+            Platform.runLater(gameSceneController::onStateUpdate);
         }
     }
 

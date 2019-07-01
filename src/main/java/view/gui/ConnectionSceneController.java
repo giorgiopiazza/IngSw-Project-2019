@@ -129,12 +129,13 @@ public class ConnectionSceneController implements Initializable {
         }
     }
 
-    void onReconnectionResponse(GameSerialized gameSerialized) {
+    void onReconnectionResponse() {
         GameSceneController gameSceneController =
                 GuiManager.setLayout(mainPane.getScene(), "fxml/gameScene.fxml");
 
         if (gameSceneController != null) {
-            gameSceneController.setupGame(gameSerialized);
+            gameSceneController.setupGame(guiManager.getGameSerialized());
+            gameSceneController.onStateUpdate();
         }
     }
 }
