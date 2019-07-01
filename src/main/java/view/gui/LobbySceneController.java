@@ -89,12 +89,12 @@ public class LobbySceneController implements Initializable {
         }
     }
 
-    void onGameStart(GameSerialized gameSerialized) {
+    void onGameStart() {
         GameSceneController gameSceneController =
                 GuiManager.setLayout(mainPane.getScene(), "fxml/gameScene.fxml");
 
         if (gameSceneController != null) {
-            gameSceneController.setupGame(gameSerialized);
+            gameSceneController.setupGame(guiManager.getGameSerialized());
         }
     }
 

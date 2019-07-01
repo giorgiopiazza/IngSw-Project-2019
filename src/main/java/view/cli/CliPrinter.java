@@ -971,6 +971,12 @@ class CliPrinter {
         }
     }
 
+    /**
+     * Prints the names of the players in the game colored with their chosen color
+     *
+     * @param out PrintStream where to print
+     * @param playerList the List of {@link Player Players} to be printed
+     */
     static void printUsername(AdrenalinePrintStream out, List<Player> playerList) {
         StringBuilder tempOut = new StringBuilder();
 
@@ -989,6 +995,112 @@ class CliPrinter {
         out.println(tempOut);
 
     }
+
+    /**
+     * Prints the winners of the game
+     *
+     * @param out PrintStream where to print
+     * @param winners the winners of the game
+     * @param allPlayers all the players in the game
+     */
+    static void printWinners(AdrenalinePrintStream out, List<Player> winners, List<Player> allPlayers) {
+        if(winners.size() == allPlayers.size()) {
+            out.println(
+                    getTopWinnersDecoration(winners.size()) +
+                            addEmptyLine(winners.size()) +
+                            getAllWinnersTitle(winners.size()) +
+                            getWinnersNames(winners) +
+                            getWinnersPoints(winners) +
+                            addEmptyLine(winners.size()) +
+                            getBotWinnersDecoration(winners.size())
+            );
+        } else {
+            // todo
+        }
+    }
+
+    private static String getTopWinnersDecoration(int winners) {
+        return "╔═══════════════" + "═══════════════".repeat(winners - 2) + "═══════════════╗" + "\n";
+    }
+
+    private static String getBotWinnersDecoration(int winners) {
+        return "╚═══════════════" + "═══════════════".repeat(winners - 2) + "═══════════════╝" + "\n";
+    }
+
+    private static String addEmptyLine(int winners) {
+        return "║" + "               ".repeat(winners) + "║";
+    }
+
+    private static String getAllWinnersTitle(int winners) {
+        int decorationLength = 15 * winners;
+        int firstMissingBlanks;
+        int secondMissingBlanks;
+        String allWinners = "***** EVERYBODY WIN THIS GAME *****";
+
+        int difference = decorationLength - allWinners.length();
+        if (difference % 2 == 0) {
+            firstMissingBlanks = secondMissingBlanks = difference / 2;
+        } else {
+            firstMissingBlanks = difference / 2 + 1;
+            secondMissingBlanks = difference / 2;
+        }
+
+        return "║" + " ".repeat(firstMissingBlanks) + allWinners + " ".repeat(secondMissingBlanks) + "║";
+    }
+
+    private static String getWinnersNames(List<Player> winners) {
+        StringBuilder tempOut = new StringBuilder();
+
+        tempOut.append("║");
+
+        for(Player player : winners) {
+            tempOut.append(addFirstWinnersMissingBlanks(player.getUsername())).append(player.getUsername()).append(addSecondWinnersMissingBlanks(player.getUsername()));
+        }
+
+        tempOut.append("║").append("\n");
+        return tempOut.toString();
+    }
+
+    private static String addFirstWinnersMissingBlanks(String writingString) {
+        final int decorationLength = 15;
+        int difference = decorationLength - writingString.length();
+        int missingBlanks;
+
+        if(difference % 2 == 0) {
+            missingBlanks = difference / 2;
+        } else {
+            missingBlanks = difference / 2 + 1;
+        }
+        return " ".repeat(missingBlanks);
+    }
+
+    private static String addSecondWinnersMissingBlanks(String writingString) {
+        final int decorationLentgh = 15;
+        int missingBlanks = (decorationLentgh - writingString.length()) / 2;
+
+        return " ".repeat(missingBlanks);
+    }
+
+    private static String getWinnersPoints(List<Player> winners) {
+        StringBuilder tempOut = new StringBuilder();
+
+        tempOut.append("║");
+
+        for(Player player : winners) {
+            String tempPoints = "Points: " + player.getPoints();
+            tempOut.append(addFirstWinnersMissingBlanks(tempPoints)).append(tempPoints).append(addSecondWinnersMissingBlanks(tempPoints));
+        }
+
+        tempOut.append("║").append("\n");
+        return tempOut.toString();
+
+    }
+
+
+
+
+
+
 
     private static String printColorAmmos(int ammoInt, String color) {
         StringBuilder tempOut = new StringBuilder();
