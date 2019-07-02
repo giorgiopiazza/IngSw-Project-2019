@@ -1398,6 +1398,8 @@ public class GameSceneController {
 
         if (properties.containsKey(Properties.MOVE.getJKey())) {
             askSenderMove(shootRequestBuilder, properties);
+        } else if (properties.containsKey(Properties.MOVE_TO_LAST_TARGET.getJKey())) {
+            moveToLastTarget(shootRequestBuilder, properties);
         } else if (properties.containsKey(Properties.MOVE_TARGET.getJKey())) {
             askTargetMovePosition(shootRequestBuilder, properties, true, Integer.parseInt(properties.get(Properties.MOVE_TARGET.getJKey())), 0);
         } else if (properties.containsKey(Properties.MAX_MOVE_TARGET.getJKey())) {
@@ -1731,6 +1733,23 @@ public class GameSceneController {
         botHBox.getChildren().add(nextButton);
     }
 
+    private void moveToLastTarget(ShootRequest.ShootRequestBuilder shootRequestBuilder, Map<String, String> properties) {
+        ShootRequest tempReq = shootRequestBuilder.build();
+
+        if (!tempReq.getTargetPlayersUsername().isEmpty()) {
+            shootRequestBuilder.senderMovePosition(
+                    guiManager.getPlayerByName(
+                            tempReq.getTargetPlayersUsername().get(tempReq.getTargetPlayersUsername().size() - 1)
+                    ).getPosition()
+            );
+        }
+
+        Map<String, String> newProperties = new LinkedHashMap<>(properties);
+        newProperties.remove(Properties.MOVE_TO_LAST_TARGET.getJKey());
+
+        buildShootRequest(shootRequestBuilder, List.of(), newProperties);
+    }
+
     private void askSenderMove(ShootRequest.ShootRequestBuilder shootRequestBuilder, Map<String, String> properties) {
         actionPanel.getChildren().clear();
 
@@ -1814,7 +1833,7 @@ public class GameSceneController {
                     default:
                 }
 
-                Map<String, String> newProperties = new HashMap<>(properties);
+                Map<String, String> newProperties = new LinkedHashMap<>(properties);
                 newProperties.remove(Properties.MOVE.getJKey());
 
                 buildShootRequest(shootRequestBuilder, List.of(), newProperties);
@@ -1888,7 +1907,7 @@ public class GameSceneController {
 
             if (targetPlayersMovePositions.size() == currTempRequest.getTargetPlayersUsername().size()) {
 
-                Map<String, String> newProperties = new HashMap<>(properties);
+                Map<String, String> newProperties = new LinkedHashMap<>(properties);
 
                 if (exactMove) {
                     newProperties.remove(Properties.MOVE_TARGET.getJKey());
@@ -2434,6 +2453,8 @@ public class GameSceneController {
                 GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, e.getMessage());
                 return;
             }
+
+            hideActionPanel();
 
             if (!guiManager.sendRequest(reloadRequest)) {
                 GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
