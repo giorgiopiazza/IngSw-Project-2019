@@ -489,7 +489,7 @@ public class RoundManager {
                 ammoColors.remove(0);
             }
             try {
-                turnOwner.getPowerups()[i].use(tempRequest);
+                turnOwner.getPowerups()[scopeRequest.getPowerup().get(i)].use(tempRequest);
             } catch (NotEnoughAmmoException e) {
                 return buildNegativeResponse("Not Enough Ammo");
             } catch (InvalidPowerupActionException e) {
@@ -520,7 +520,7 @@ public class RoundManager {
             ammoColors.remove(0);
 
             try {
-                turnOwner.getPowerups()[i].use(tempRequest);
+                turnOwner.getPowerups()[scopeRequest.getPowerup().get(i)].use(tempRequest);
             } catch (NotEnoughAmmoException e) {
                 return buildNegativeResponse("Not Enough Ammo");
             } catch (InvalidPowerupActionException e) {
@@ -571,7 +571,7 @@ public class RoundManager {
                 ammoColors.remove(0);
             }
             try {
-                turnOwner.getPowerups()[i].use(tempRequest);
+                turnOwner.getPowerups()[scopeRequest.getPowerup().get(i)].use(tempRequest);
             } catch (NotEnoughAmmoException e) {
                 return buildNegativeResponse("Not Enough Ammo ");
             } catch (InvalidPowerupActionException e) {
@@ -880,8 +880,7 @@ public class RoundManager {
         }
 
         // after a reload action a player always passes his turn and the game has to manage the death players
-        deathPlayersHandler(PossibleGameState.PASS_NORMAL_TURN);
-        return buildPositiveResponse("Reload Action done");
+        return deathPlayersHandler(PossibleGameState.RELOAD_PASS);
     }
 
     /**
@@ -947,7 +946,12 @@ public class RoundManager {
             gameInstance.getTerminator().setPosition(null);
             turnManager.setArrivingGameState(nextPassState);
             gameManager.changeState(PossibleGameState.TERMINATOR_RESPAWN);
-            return buildPositiveResponse("Terminator has died respawn him before passing");
+
+            if(nextPassState == PossibleGameState.RELOAD_PASS) {
+                return buildPositiveResponse("Reload action done, respawn terminator now");
+            } else {
+                return buildPositiveResponse("Terminator has died respawn him before passing");
+            }
         } else if (!deathPlayers.isEmpty()) {
             // first of all I control if the current player has done a double kill
             if (deathPlayers.size() > 1) {
@@ -962,7 +966,12 @@ public class RoundManager {
             turnManager.getTurnOwner().setSpawningCard(drawPowerup());
             turnManager.resetCount();
             turnManager.setArrivingGameState(nextPassState);
-            return buildPositiveResponse("Turn passed");
+
+            if(nextPassState == PossibleGameState.RELOAD_PASS) {
+                return buildPositiveResponse("Reload action done, death players need to respawn");
+            } else {
+                return buildPositiveResponse("Turn passed");
+            }
         } else {
             // if no players have died the GameState remains the same
             return handleNextTurn(nextPassState);
@@ -1132,6 +1141,9 @@ public class RoundManager {
         if (arrivingState == PossibleGameState.PASS_NORMAL_TURN) {
             gameManager.changeState(PossibleGameState.GAME_STARTED);
             return buildPositiveResponse("Turn Passed");
+        } else if (arrivingState == PossibleGameState.RELOAD_PASS) {
+            gameManager.changeState(PossibleGameState.GAME_STARTED);
+            return buildPositiveResponse("Reload action done and turn passed");
         } else if (arrivingState == PossibleGameState.PASS_FRENZY_TURN) {
             gameManager.changeState(PossibleGameState.FINAL_FRENZY);
             return buildPositiveResponse("Turn Passed");
