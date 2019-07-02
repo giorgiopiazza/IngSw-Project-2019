@@ -15,7 +15,7 @@ public class ExtraDamageDecorator extends ExtraEffectDecorator {
     public ExtraDamageDecorator(Effect effect, int[] extraDamageDistribution, TargetType targetType) {
         this.effect = effect;
         this.description = effect.description;
-        this.properties = effect.properties;
+        setProperties(effect.getProperties());
         this.targets = effect.targets;
         this.cost = effect.cost;
         this.damageDistribution = extraDamageDistribution;

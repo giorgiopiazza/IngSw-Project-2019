@@ -53,6 +53,10 @@ public class TerminatorAction implements Action {
 
         int movingDistance = terminator.getPosition().distanceOf(movingPos);
 
+        return movingAndVisibilityValidation(movingDistance);
+    }
+
+    private boolean movingAndVisibilityValidation(int movingDistance) throws InvalidActionException{
         // move and Visibility validation
         if (movingDistance == 0) {
             if (targetPlayer == null) throw new InvalidActionException();

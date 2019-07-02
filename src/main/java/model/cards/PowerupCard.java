@@ -38,6 +38,12 @@ public class PowerupCard extends UsableCard {
         this.value = value;
     }
 
+    public PowerupCard(PowerupCard powerupCard) {
+        super(powerupCard.getName(), powerupCard.getImagePath(), powerupCard.getBaseEffect());
+        this.id = powerupCard.id;
+        this.value = powerupCard.value;
+    }
+
     /**
      * @return the value of the {@link PowerupCard PowerupCard}
      */

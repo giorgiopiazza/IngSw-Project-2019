@@ -12,7 +12,7 @@ public class ExtraDamageNoMarkDecorator extends ExtraEffectDecorator {
     public ExtraDamageNoMarkDecorator(Effect effect, int[] extraDamageDistribution) {
         this.effect = effect;
         this.description = effect.description;
-        this.properties = effect.properties;
+        setProperties(effect.getProperties());
         this.targets = effect.targets;
         this.cost = effect.cost;
         this.damageDistribution = extraDamageDistribution;

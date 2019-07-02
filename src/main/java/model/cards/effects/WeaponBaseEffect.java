@@ -6,15 +6,16 @@ import model.player.PlayerPosition;
 import network.message.EffectRequest;
 import network.message.ShootRequest;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class WeaponBaseEffect extends Effect {
 
-    public WeaponBaseEffect(AmmoQuantity cost, Map<String, String> properties, TargetType[] targets, String description) {
+    public WeaponBaseEffect(AmmoQuantity cost, HashMap<String, String> properties, TargetType[] targets, String description) {
         this.cost = cost;
         this.targets = targets;
-        this.properties = properties;
+        setProperties(properties);
         this.description = description;
     }
 
