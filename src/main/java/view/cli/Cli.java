@@ -9,7 +9,6 @@ import exceptions.client.CancelledActionException;
 import exceptions.game.InexistentColorException;
 import exceptions.map.InvalidSpawnColorException;
 import exceptions.utility.InvalidPropertiesException;
-import model.GameSerialized;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
 import model.cards.effects.Effect;
@@ -1182,6 +1181,8 @@ public class Cli extends ClientGameManager {
             } else {
                 shootRequestBuilder.moveSenderFirst(askBeforeAfterMove());
             }
+        } else if (effectProperties.containsKey(Properties.MOVE_TO_LAST_TARGET.getJKey())) {
+            shootRequestBuilder.senderMovePosition(getPlayerByName(targetsChosen.get(targetsChosen.size() - 1)).getPosition());
         }
 
         // now that I have handled the Turn Owner movement I have to handle the targets ones
