@@ -101,6 +101,8 @@ public class GameSceneController {
     @FXML
     VBox actionList;
     @FXML
+    Label pointLabel;
+    @FXML
     FlowPane zoomPanel;
     @FXML
     BorderPane infoPanel;
@@ -133,6 +135,7 @@ public class GameSceneController {
         GameMap gameMap = gameSerialized.getGameMap();
 
         map.setImage(new Image(gameMap.getImagePath()));
+        pointLabel.setText("Points: " + gameSerialized.getPoints());
 
         setPlayerIcons(gameSerialized);
 
@@ -220,6 +223,8 @@ public class GameSceneController {
     void onStateUpdate() {
         setTurnOwnerIcon(GuiManager.getInstance().getTurnOwner());
         updateMap(guiManager.getGameSerialized());
+
+        pointLabel.setText("Points: " + guiManager.getGameSerialized().getPoints());
 
         if (infoPanelUsername != null) {
             showPlayerInfo(infoPanelUsername);

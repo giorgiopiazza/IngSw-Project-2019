@@ -5,6 +5,7 @@
 <?import javafx.geometry.Insets?>
 <?import java.net.URL?>
 
+<?import javafx.scene.control.Label?>
 <FlowPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
           fx:controller="view.gui.GameSceneController" fx:id="mainPane" styleClass="mainPane">
 
@@ -114,6 +115,9 @@
                 <Insets bottom="20.0" left="20.0"/>
             </StackPane.margin>
         </VBox>
+
+        <!-- POINTS LABEL -->
+        <Label StackPane.alignment="TOP_RIGHT" fx:id="pointLabel" styleClass="pointLabel"/>
 
         <!-- ZOOM PANEL -->
         <FlowPane fx:id="zoomPanel" styleClass="zoomPanel"/>

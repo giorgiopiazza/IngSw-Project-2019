@@ -228,6 +228,14 @@
     -fx-max-width: 120px;
 }
 
+.pointLabel {
+    -fx-font-family: "Exo 2 Medium";
+    -fx-font-size: 24px;
+    -fx-text-fill: #F44336;
+
+    -fx-padding: 25 25 0 0;
+}
+
 .squareClickButton {
     -fx-max-height: 134px;
     -fx-min-height: 134px;
