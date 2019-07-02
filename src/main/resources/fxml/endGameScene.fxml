@@ -9,25 +9,34 @@
             fx:controller="view.gui.EndGameSceneController" styleClass="mainPane">
 
     <stylesheets>
-        <URL value="@../css/menu.css"/>
+        <URL value="@../css/game.css"/>
     </stylesheets>
 
     <top>
-        <VBox styleClass="topBox">
-            <Label text="Game ended" styleClass="menuTitle"/>
+        <VBox styleClass="topEndBox">
+            <Label text="Game ended" styleClass="endTitle"/>
         </VBox>
     </top>
 
     <center>
-        <VBox styleClass="centerBox">
-            <TableView>
-
+        <VBox styleClass="centerEndBox">
+            <TableView fx:id="table" styleClass="endTable">
+                <columns>
+                    <TableColumn fx:id="rankColumn" text="#" styleClass="endRankColumn">
+                    </TableColumn>
+                    <TableColumn fx:id="iconColumn" styleClass="endIconColumn">
+                    </TableColumn>
+                    <TableColumn fx:id="playerColumn" text="Player" styleClass="endPlayerColumn">
+                    </TableColumn>
+                    <TableColumn fx:id="pointsColumn" text="Points" styleClass="endPointsColumn">
+                    </TableColumn>
+                </columns>
             </TableView>
         </VBox>
     </center>
 
     <bottom>
-        <VBox styleClass="botBox">
+        <VBox styleClass="botEndBox">
             <ImageView fx:id="exitButton" id="exitButton" styleClass="button"/>
         </VBox>
     </bottom>

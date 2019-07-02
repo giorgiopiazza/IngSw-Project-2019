@@ -1004,7 +1004,7 @@ class CliPrinter {
      * @param out PrintStream where to print
      * @param allPoints the ArrayList containing all the {@link PlayerPoints PlayerPoints}
      */
-    static void printWinners(AdrenalinePrintStream out, ArrayList<PlayerPoints> allPoints) {
+    static void printWinners(AdrenalinePrintStream out, List<PlayerPoints> allPoints) {
         List<PlayerPoints> winners = allPoints.stream().filter(PlayerPoints::isWinner).collect(Collectors.toList());
 
         if(winners.size() == allPoints.size()) {

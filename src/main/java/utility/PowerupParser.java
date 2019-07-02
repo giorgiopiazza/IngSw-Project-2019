@@ -16,6 +16,7 @@ import model.player.AmmoQuantity;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -83,7 +84,7 @@ public class PowerupParser {
             target = WeaponParser.parseTargetTypeJsonArray(targets);
         }
 
-        Map<String, String> powerupProperties;
+        HashMap<String, String> powerupProperties;
         powerupProperties = WeaponParser.getProperties(properties);
 
         Effect effect;

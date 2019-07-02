@@ -7,17 +7,23 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
 
 /**
  * This class represents a Client
  */
 public abstract class Client extends UnicastRemoteObject {
     public static final int MAX_USERNAME_LENGTH = 20;
+    public static final int DISCONNECTION_TIME = 15000;
+
+    protected final PingTimerTask pingTimerTask;
+    protected Timer pingTimer;
 
     private final String username;
     private final String address;
     private final int port;
     private String token;
+    private DisconnectionListener disconnectionListener;
 
     final ArrayList<Message> messageQueue;
 
@@ -29,12 +35,17 @@ public abstract class Client extends UnicastRemoteObject {
      * @param port     port of the server
      * @throws RemoteException in case of problems with communication with server
      */
-    public Client(String username, String address, int port) throws RemoteException {
+    public Client(String username, String address, int port, DisconnectionListener disconnectionListener) throws RemoteException {
         this.username = username;
         this.address = address;
         this.port = port;
+        this.disconnectionListener = disconnectionListener;
 
         this.messageQueue = new ArrayList<>();
+
+        this.pingTimerTask = new PingTimerTask(this);
+        this.pingTimer = new Timer();
+        this.pingTimer.schedule(pingTimerTask, DISCONNECTION_TIME);
     }
 
     /**
@@ -82,6 +93,10 @@ public abstract class Client extends UnicastRemoteObject {
      * @throws Exception in case of problems with communication with server
      */
     public abstract void close() throws Exception;
+
+    public final void disconnected() {
+        disconnectionListener.onDisconnection();
+    }
 
     /**
      * @return the list of messages in the queue

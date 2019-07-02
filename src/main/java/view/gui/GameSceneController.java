@@ -152,6 +152,7 @@ public class GameSceneController {
         actionPanel.setVisible(false);
 
         setBoardOpaque(NOT_OPAQUE);
+        setTurnOwnerIcon(guiManager.getTurnOwner());
     }
 
     /**
@@ -471,7 +472,8 @@ public class GameSceneController {
         zoomPanel.getChildren().clear();
         zoomPanel.setVisible(false);
 
-        setBoardOpaque(1);
+        setBoardOpaque(NOT_OPAQUE);
+        setTurnOwnerIcon(guiManager.getTurnOwner());
     }
 
     /**
@@ -839,6 +841,8 @@ public class GameSceneController {
         setBoardOpaque(NOT_OPAQUE);
 
         infoPanelUsername = null;
+
+        setTurnOwnerIcon(guiManager.getTurnOwner());
     }
 
     private void setActionPanelTitle(String title) {
@@ -2781,6 +2785,14 @@ public class GameSceneController {
     }
 
     void onPlayerDisconnect(String player) {
-        GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), "Disconnection", player + "disconnected from the server");
+        GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), "Disconnection", player + " disconnected from the server");
+    }
+
+    void onGameEnd(List<PlayerPoints> players) {
+        EndGameSceneController endGameSceneController = GuiManager.setLayout(mainPane.getScene(), "fxml/endGameScene.fxml");
+
+        if (endGameSceneController != null) {
+            endGameSceneController.setData(players);
+        }
     }
 }

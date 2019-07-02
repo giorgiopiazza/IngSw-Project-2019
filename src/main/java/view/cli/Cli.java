@@ -16,6 +16,7 @@ import model.map.GameMap;
 import model.map.SpawnSquare;
 import model.map.Square;
 import model.player.*;
+import network.client.DisconnectionListener;
 import network.message.*;
 import utility.*;
 
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
 
 import static java.util.logging.Level.INFO;
 
-public class Cli extends ClientGameManager {
+public class Cli extends ClientGameManager implements DisconnectionListener {
     private Scanner in;
     private AdrenalinePrintStream out;
 
@@ -136,7 +137,7 @@ public class Cli extends ClientGameManager {
         out.println("\nServer Port: " + port);
 
         try {
-            createConnection(connection, username, address, port);
+            createConnection(connection, username, address, port, this);
         } catch (Exception e) {
             promptError(e.getMessage(), true);
         }
@@ -795,7 +796,7 @@ public class Cli extends ClientGameManager {
     }
 
     @Override
-    public void notifyGameEnd(ArrayList<PlayerPoints> winners) {
+    public void notifyGameEnd(List<PlayerPoints> winners) {
         printWinners(winners);
     }
 
@@ -1810,7 +1811,7 @@ public class Cli extends ClientGameManager {
      *
      * @param winners the ArrayList of {@link PlayerPoints PlayerPoints}
      */
-    private void printWinners(ArrayList<PlayerPoints> winners) {
+    private void printWinners(List<PlayerPoints> winners) {
         CliPrinter.printWinners(out, winners);
         out.println();
     }
@@ -1850,5 +1851,10 @@ public class Cli extends ClientGameManager {
      */
     private void printAmmo() {
         CliPrinter.printAmmo(out, getPlayer().getPlayerBoard().getAmmo());
+    }
+
+    @Override
+    public void onDisconnection() {
+        // TODO
     }
 }

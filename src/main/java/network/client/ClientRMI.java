@@ -8,6 +8,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.Timer;
 
 /**
  * This class represents a RMI Client
@@ -23,8 +24,8 @@ public class ClientRMI extends Client implements RMIClientConnection {
      * @param port     port of the server
      * @throws RemoteException in case of problems with communication with server
      */
-    public ClientRMI(String username, String address, int port) throws RemoteException {
-        super(username, address, port);
+    public ClientRMI(String username, String address, int port, DisconnectionListener disconnectionListener) throws RemoteException {
+        super(username, address, port, disconnectionListener);
     }
 
     /**
@@ -84,7 +85,9 @@ public class ClientRMI extends Client implements RMIClientConnection {
      */
     @Override
     public void ping() {
-        // Pinged
+        super.pingTimer.cancel();
+        super.pingTimer = new Timer();
+        super.pingTimer.schedule(super.pingTimerTask, Client.DISCONNECTION_TIME);
     }
 
     @Override
