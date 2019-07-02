@@ -385,7 +385,7 @@ class EffectValidator {
      */
     static boolean isPositioningValid(Map<String, String> properties, PlayerPosition shooterPosition, List<PlayerPosition> targetPositions) {
         return !((properties.containsKey(Properties.INLINE.getJKey()) && !areInLine(shooterPosition, targetPositions)) || // InLine targets validation
-                (properties.containsKey(Properties.MOVE_TO_LAST_TARGET.getJKey()) && lastTargetPos(shooterPosition, targetPositions))); // Move to last target validation
+                (properties.containsKey(Properties.MOVE_TO_LAST_TARGET.getJKey()) && !lastTargetPos(shooterPosition, targetPositions))); // Move to last target validation
     }
 
     /**
