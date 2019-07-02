@@ -1,5 +1,6 @@
 package model.cards.effects;
 
+import enumerations.Properties;
 import enumerations.TargetType;
 import model.player.AmmoQuantity;
 import model.player.PlayerPosition;
@@ -90,7 +91,12 @@ public class WeaponBaseEffect extends Effect {
             targetPositions = request.getTargetPlayersMovePositions();
         }
 
+        // validates the in line movement
+        if (targetType == TargetType.PLAYER && !EffectValidator.isPositioningValid(properties, shooterPosition, targetPositions)) {
+            return false;
+        }
+
         // After move positioning validation
-        return !(targetType == TargetType.PLAYER && !EffectValidator.isPositioningValid(properties, shooterPosition, targetPositions));
+        return !(targetType == TargetType.PLAYER && properties.containsKey(Properties.MOVE_TO_LAST_TARGET.getJKey()) && !EffectValidator.isMovingToLastTarget(request, request.getSenderMovePosition(), targetPositions));
     }
 }

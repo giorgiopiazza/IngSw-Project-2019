@@ -730,14 +730,81 @@ class WeaponCardTest {
 
         assertTrue(action.validate());
         assertThrows(Exception.class, () -> action.execute());
-
-
-
     }
 
     @Test
     void shockWave() {
         WeaponCard shockwave = getWeaponByName("Shockwave");
+
+    }
+
+    @Test
+    void powerGlove() throws MaxCardsInHandException, NotEnoughAmmoException, WeaponNotChargedException, WeaponAlreadyChargedException, InvalidActionException {
+        WeaponCard powerGlove = getWeaponByName("Power Glove");
+        powerGlove.setStatus(full);
+
+        shooter.addWeapon(powerGlove);
+        shooter.setPosition(new PlayerPosition(1,1));
+        target1.setPosition(new PlayerPosition(1,2));
+        target2.setPosition(new PlayerPosition(1,3));
+
+        userTarget.add(target1.getUsername());
+
+        // first effect
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 0);
+        builder.targetPlayersUsernames(userTarget);
+        builder.senderMovePosition(new PlayerPosition(1,2));
+        builder.moveToLastTarget(true);
+
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.SHOOT, request);
+
+        assertTrue(action.validate());
+        action.execute();
+
+        assertEquals(1, target1.getPlayerBoard().getDamageCount());
+        assertEquals(2, target1.getPlayerBoard().getMarkCount());
+        assertEquals(new PlayerPosition(1,2), shooter.getPosition());
+
+        // second effect valid positions
+        powerGlove.setStatus(full);
+        shooter.setPosition(new PlayerPosition(1,1));
+        target1.getPlayerBoard().setDamages(new ArrayList<>());
+        target1.getPlayerBoard().setMarks(new ArrayList<>());
+        userTarget.add(target2.getUsername());
+
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 1);
+        builder.targetPlayersUsernames(userTarget);
+        builder.senderMovePosition(new PlayerPosition(1, 3));
+        builder.moveToLastTarget(true);
+
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.SHOOT, request);
+
+        assertTrue(action.validate());
+        action.execute();
+
+        assertEquals(2, target1.getPlayerBoard().getDamageCount());
+        assertEquals(0, target1.getPlayerBoard().getMarkCount());
+        assertEquals(2, target2.getPlayerBoard().getDamageCount());
+        assertEquals(0, target2.getPlayerBoard().getMarkCount());
+        assertEquals(new PlayerPosition(1, 3), shooter.getPosition());
+
+        // second effect invalid positions
+        powerGlove.setStatus(full);
+        shooter.setPosition(new PlayerPosition(1,1));
+        target2.setPosition(new PlayerPosition(1, 2));
+
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 1);
+        builder.targetPlayersUsernames(userTarget);
+        builder.senderMovePosition(new PlayerPosition(1, 2));
+        builder.moveToLastTarget(true);
+
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.SHOOT, request);
+
+        assertTrue(action.validate());
+        assertThrows(Exception.class, () -> action.execute());
 
     }
 

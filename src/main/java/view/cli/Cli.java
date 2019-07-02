@@ -1184,6 +1184,7 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
             }
         } else if (effectProperties.containsKey(Properties.MOVE_TO_LAST_TARGET.getJKey())) {
             shootRequestBuilder.senderMovePosition(getPlayerByName(targetsChosen.get(targetsChosen.size() - 1)).getPosition());
+            shootRequestBuilder.moveToLastTarget(true);
         }
 
         // now that I have handled the Turn Owner movement I have to handle the targets ones
