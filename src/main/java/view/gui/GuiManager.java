@@ -1,5 +1,6 @@
 package view.gui;
 
+import model.player.PlayerPoints;
 import network.client.ClientGameManager;
 import enumerations.PlayerColor;
 import enumerations.PossibleAction;
@@ -18,6 +19,7 @@ import network.message.GameVoteResponse;
 import network.message.Response;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -266,7 +268,7 @@ public class GuiManager extends ClientGameManager {
     }
 
     @Override
-    public void notifyGameEnd(List<Player> winners) {
+    public void notifyGameEnd(ArrayList<PlayerPoints> winners) {
 
     }
 

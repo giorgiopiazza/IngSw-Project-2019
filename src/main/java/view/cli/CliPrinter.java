@@ -9,6 +9,7 @@ import model.cards.effects.Effect;
 import model.player.AmmoQuantity;
 import model.player.Player;
 import model.map.*;
+import model.player.PlayerPoints;
 import model.player.UserPlayer;
 
 import java.util.ArrayList;
@@ -1001,11 +1002,12 @@ class CliPrinter {
      * Prints the winners of the game
      *
      * @param out PrintStream where to print
-     * @param winners the winners of the game
-     * @param allPlayers all the players in the game
+     * @param allPoints the ArrayList containing all the {@link PlayerPoints PlayerPoints}
      */
-    static void printWinners(AdrenalinePrintStream out, List<Player> winners, List<Player> allPlayers) {
-        if(winners.size() == allPlayers.size()) {
+    static void printWinners(AdrenalinePrintStream out, ArrayList<PlayerPoints> allPoints) {
+        List<PlayerPoints> winners = allPoints.stream().filter(PlayerPoints::isWinner).collect(Collectors.toList());
+
+        if(winners.size() == allPoints.size()) {
             out.println(
                     getTopWinnersDecoration(winners.size()) +
                             addEmptyLine(winners.size()) +
@@ -1017,7 +1019,7 @@ class CliPrinter {
                             getBotWinnersDecoration(winners.size())
             );
         } else {
-            int size = winners.size() > (allPlayers.size() / 2) ? winners.size() : allPlayers.size() - winners.size();
+            int size = winners.size() > (allPoints.size() / 2) ? winners.size() : allPoints.size() - winners.size();
 
             out.println(
                     getTopWinnersDecoration(size) +
@@ -1031,7 +1033,7 @@ class CliPrinter {
                             addEmptyLine(size) +
                             getWinnersTitle(size, "***** POOR ORDERED LOOSERS ARE *****") +
                             addEmptyLine(size) +
-                            getWinnersNames(size, allPlayers.stream().filter(player -> !winners.contains(player))
+                            getWinnersNames(size, allPoints.stream().filter(player -> !winners.contains(player))
                                                                      .sorted((player1, player2) -> {
                                                                          if(player1.getPoints() < player2.getPoints()) return 1;
                                                                          else if (player1.getPoints() > player2.getPoints()) return -1;
@@ -1039,7 +1041,7 @@ class CliPrinter {
                             })
                                                                      .collect(Collectors.toList()))
                                     +
-                            getWinnersPoints(size, allPlayers.stream().filter(player -> !winners.contains(player))
+                            getWinnersPoints(size, allPoints.stream().filter(player -> !winners.contains(player))
                                                                       .sorted((player1, player2) -> {
                                                                           if(player1.getPoints() < player2.getPoints()) return 1;
                                                                           else if (player1.getPoints() > player2.getPoints()) return -1;
@@ -1085,32 +1087,32 @@ class CliPrinter {
     }
 
 
-    private static String getWinnersNames(List<Player> winners) {
+    private static String getWinnersNames(List<PlayerPoints> winners) {
         StringBuilder tempOut = new StringBuilder();
 
         tempOut.append("║");
 
-        for(Player player : winners) {
-            tempOut.append(addFirstWinnersMissingBlanks(player.getUsername())).append(player.getUsername()).append(addSecondWinnersMissingBlanks(player.getUsername()));
+        for(PlayerPoints player : winners) {
+            tempOut.append(addFirstWinnersMissingBlanks(player.getUserName())).append(player.getUserName()).append(addSecondWinnersMissingBlanks(player.getUserName()));
         }
 
         tempOut.append("║").append("\n");
         return tempOut.toString();
     }
 
-    private static String getWinnersNames(int size, List<Player> winners) {
+    private static String getWinnersNames(int size, List<PlayerPoints> winners) {
         StringBuilder tempOut = new StringBuilder();
 
         tempOut.append("║");
 
         if(size == winners.size()) {
-            for(Player player : winners) {
-                tempOut.append(addFirstWinnersMissingBlanks(player.getUsername())).append(player.getUsername()).append(addSecondWinnersMissingBlanks(player.getUsername()));
+            for(PlayerPoints player : winners) {
+                tempOut.append(addFirstWinnersMissingBlanks(player.getUserName())).append(player.getUserName()).append(addSecondWinnersMissingBlanks(player.getUserName()));
             }
         } else {
             tempOut.append(addFirstCenterBlanks(size, winners.size()));
-            for(Player player : winners) {
-                tempOut.append(addFirstWinnersMissingBlanks(player.getUsername())).append(player.getUsername()).append(addSecondWinnersMissingBlanks(player.getUsername()));
+            for(PlayerPoints player : winners) {
+                tempOut.append(addFirstWinnersMissingBlanks(player.getUserName())).append(player.getUserName()).append(addSecondWinnersMissingBlanks(player.getUserName()));
             }
             tempOut.append(addSecondCenterBlanks(size, winners.size()));
         }
@@ -1161,12 +1163,12 @@ class CliPrinter {
         return " ".repeat(missingBlanks);
     }
 
-    private static String getWinnersPoints(List<Player> winners) {
+    private static String getWinnersPoints(List<PlayerPoints> winners) {
         StringBuilder tempOut = new StringBuilder();
 
         tempOut.append("║");
 
-        for(Player player : winners) {
+        for(PlayerPoints player : winners) {
             String tempPoints = "Points: " + player.getPoints();
             tempOut.append(addFirstWinnersMissingBlanks(tempPoints)).append(tempPoints).append(addSecondWinnersMissingBlanks(tempPoints));
         }
@@ -1176,19 +1178,19 @@ class CliPrinter {
 
     }
 
-    private static String getWinnersPoints(int size, List<Player> winners) {
+    private static String getWinnersPoints(int size, List<PlayerPoints> winners) {
         StringBuilder tempOut = new StringBuilder();
 
         tempOut.append("║");
 
         if(size == winners.size()) {
-            for(Player player : winners) {
+            for(PlayerPoints player : winners) {
                 String tempPoints = "Points: " + player.getPoints();
                 tempOut.append(addFirstWinnersMissingBlanks(tempPoints)).append(tempPoints).append(addSecondWinnersMissingBlanks(tempPoints));
             }
         } else {
             tempOut.append(addFirstCenterBlanks(size, winners.size()));
-            for(Player player : winners) {
+            for(PlayerPoints player : winners) {
                 String tempPoints = "Points: " + player.getPoints();
                 tempOut.append(addFirstWinnersMissingBlanks(tempPoints)).append(tempPoints).append(addSecondWinnersMissingBlanks(tempPoints));
             }

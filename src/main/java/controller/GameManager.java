@@ -6,11 +6,7 @@ import exceptions.game.InvalidGameStateException;
 import exceptions.game.InvalidKillshotNumberException;
 import exceptions.game.InvalidMapNumberException;
 import model.Game;
-import model.player.KillShot;
-import model.player.Player;
-import model.player.PlayerBoard;
-import model.player.Bot;
-import model.player.UserPlayer;
+import model.player.*;
 import network.message.*;
 import network.server.Server;
 import utility.InputValidator;
@@ -109,7 +105,8 @@ public class GameManager implements TimerRunListener, Serializable {
         WinnersResponse winners;
         handleLastPointsDistribution();
         handleKillShotTrackDistribution();
-        winners = declareWinner();
+        winners = declareWinner(initPlayerPoints());
+        changeState(PossibleGameState.GAME_ENDED);
         server.sendMessageToAll(winners);
     }
 
@@ -187,6 +184,9 @@ public class GameManager implements TimerRunListener, Serializable {
             case MISSING_TERMINATOR_ACTION:
                 return UserPlayerState.BOT_ACTION;
 
+            case GAME_ENDED:
+                return UserPlayerState.GAME_ENDED;
+
             default:
                 // they called her: THE CRASHING EXCEPTION... always reached, but never catched...
                 throw new InvalidGameStateException();
@@ -218,6 +218,10 @@ public class GameManager implements TimerRunListener, Serializable {
      * @return a {@link Message Message} which contains the result of the received message
      */
     public Message onMessage(Message receivedMessage) {
+        if(gameState == PossibleGameState.GAME_ENDED) {
+            return new Response("GAME ENDED", MessageStatus.ERROR);
+        }
+
         if (!InputValidator.validateInput(receivedMessage)) {
             return buildInvalidResponse();
         }
@@ -274,6 +278,10 @@ public class GameManager implements TimerRunListener, Serializable {
      * @return a {@link Message Message} which contains the result of the received message
      */
     public Message onConnectionMessage(Message receivedConnectionMessage) {
+        if(gameState == PossibleGameState.GAME_ENDED) {
+            return new Response("GAME ENDED", MessageStatus.ERROR);
+        }
+
         if (!InputValidator.validatePlayerUsername(gameInstance.getPlayers(), receivedConnectionMessage)) {
             return new Response("Invalid connection Message", MessageStatus.ERROR);
         }
@@ -1114,15 +1122,54 @@ public class GameManager implements TimerRunListener, Serializable {
     }
 
     /**
+     * Builds the {@link PlayerPoints PlayerPoint} object for each player in the ga,e
+     *
+     * @return an ArrayList containing all the {@link PlayerPoints PlayerPoints}
+     */
+    private ArrayList<PlayerPoints> initPlayerPoints() {
+        List<UserPlayer> players = gameInstance.getPlayers();
+        ArrayList<PlayerPoints> playerPoints = new ArrayList<>();
+
+        if(gameInstance.isTerminatorPresent()) {
+            Bot bot = (Bot) gameInstance.getTerminator();
+            PlayerPoints botPoints = new PlayerPoints(bot.getUsername(), bot.getColor(), bot.getPoints());
+            playerPoints.add(botPoints);
+        }
+
+        for(UserPlayer player : players) {
+            PlayerPoints userPoints = new PlayerPoints(player.getUsername(), player.getColor(), player.getPoints());
+            playerPoints.add(userPoints);
+        }
+
+        return playerPoints;
+    }
+
+    /**
+     * Sets the winners from the ArrayList of usernames passed
+     *
+     * @param usernames the usernames of the winners
+     * @param playerPoints the player points of all the players in the game
+     */
+    private void setWinners(ArrayList<String> usernames, List<PlayerPoints> playerPoints) {
+        for(String winner : usernames) {
+            for(PlayerPoints winnerPoints : playerPoints) {
+                if(winner.equals(winnerPoints.getUserName())) {
+                    winnerPoints.setWinner();
+                }
+            }
+        }
+    }
+
+    /**
      * Method that declares the Winner/s of the game with a {@link WinnersResponse WinnerResponse} that will be
      * broadcasted to every player in the game
      *
+     * @param winners the ArrayList containing the {@link PlayerPoints PlayerPoints} of all the players
      * @return a {@link WinnersResponse WinnerResponse} containing the ArrayList of {@link Player Player/s} that won the Game
      */
-    private WinnersResponse declareWinner() {
+    private WinnersResponse declareWinner(ArrayList<PlayerPoints> winners) {
         List<UserPlayer> players = gameInstance.getPlayers();
         ArrayList<Player> tiePlayers = new ArrayList<>();
-        ArrayList<Player> winners = new ArrayList<>();
 
         ArrayList<Player> orderedPlayers = players.stream().sorted().collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
         int maxPoints = orderedPlayers.get(0).getPoints();
@@ -1135,7 +1182,7 @@ public class GameManager implements TimerRunListener, Serializable {
 
         if (gameInstance.isTerminatorPresent()) {
             if (gameInstance.getTerminator().getPoints() > maxPoints) {
-                winners.add(gameInstance.getTerminator());
+                setWinners(new ArrayList<>(Collections.singletonList(gameInstance.getTerminator().getUsername())), winners);
                 return new WinnersResponse(winners);
             } else if (gameInstance.getTerminator().getPoints() == maxPoints) {
                 tiePlayers.add(gameInstance.getTerminator());
@@ -1143,34 +1190,33 @@ public class GameManager implements TimerRunListener, Serializable {
         }
 
         if (tiePlayers.size() == 1) {
-            return new WinnersResponse(tiePlayers);
+            setWinners(new ArrayList<>(Collections.singletonList(tiePlayers.get(0).getUsername())), winners);
+            return new WinnersResponse(winners);
         } else {
-            winners = handleTiePlayers(tiePlayers);
+            handleTiePlayers(tiePlayers, winners);
             return new WinnersResponse(winners);
         }
     }
 
     /**
-     * Utility method used by {@link #declareWinner() declareWinner} method to get the Winner from a List of {@link Player Players}
+     * Utility method used by {@link #declareWinner(ArrayList)} )}  declareWinner} method to get the Winner from a List of {@link Player Players}
      * that did the same points during the Game
      *
      * @param tiePlayers ArrayList of {@link Player Players} with the same points at the end of the Game
-     * @return the ArrayList of {@link Player Player/s} that won the Game
+     * @param winners ArrayList with all the {@link PlayerPoints PlayerPoints}
      */
-    private ArrayList<Player> handleTiePlayers(ArrayList<Player> tiePlayers) {
+    private void handleTiePlayers(ArrayList<Player> tiePlayers, ArrayList<PlayerPoints> winners) {
         ArrayList<KillShot> killShotTracker = gameInstance.getKillShotTrack();
-        ArrayList<Player> winner = new ArrayList<>();
 
         for (KillShot killShot : killShotTracker) {
             for (Player player : tiePlayers) {
                 if (player.getUsername().equals(killShot.getKiller())) {
-                    winner.add(player);
-                    return winner;
+                    setWinners(new ArrayList<>(Collections.singletonList(player.getUsername())), winners);
                 }
             }
         }
 
-        return tiePlayers;
+        setWinners(new ArrayList<>(tiePlayers.stream().map(Player::getUsername).collect(Collectors.toList())), winners);
     }
 
     /**

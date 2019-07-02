@@ -1,33 +1,45 @@
 package network.message;
 
 import enumerations.MessageContent;
-import model.Game;
-import model.player.Player;
+import model.player.PlayerPoints;
 import utility.GameCostants;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
+/**
+ * This message contains the information about the winners of the game.
+ * More player can win the same game. To send this information to the
+ * clients an ArrayList containing all the {@link PlayerPoints Points}
+ * objects.
+ */
 public class WinnersResponse extends Message {
     private static final long serialVersionUID = -1441012929477935469L;
 
-    private final ArrayList<Player> winners;
+    private final ArrayList<PlayerPoints> winners;
 
-    public WinnersResponse(ArrayList<Player> winners) {
+    /**
+     * Builds the response containing all the information needed by the view to show the winners and
+     * the loosers of the game
+     *
+     * @param winners the ArrayList containing the {@link PlayerPoints PlayerPoints} of all the players
+     */
+    public WinnersResponse(ArrayList<PlayerPoints> winners) {
         super(GameCostants.GOD_NAME, null,MessageContent.WINNER);
 
         this.winners = winners;
     }
 
-    public ArrayList<Player> getWinners() {
+    /**
+     * @return the ArrayList containing the {@link PlayerPoints PlayerPoints} of all the players
+     */
+    public ArrayList<PlayerPoints> getWinners() {
         return this.winners;
     }
 
     @Override
     public String toString() {
         return "WinnersResponse{" +
-                "content=" + getContent() +
-                ", winners=" + (winners == null ? "null" : Arrays.toString(winners.toArray())) +
+                "winners=" + winners +
                 '}';
     }
 }

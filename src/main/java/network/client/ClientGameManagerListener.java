@@ -4,11 +4,13 @@ import enumerations.PlayerColor;
 import enumerations.PossibleAction;
 import model.GameSerialized;
 import model.player.Player;
+import model.player.PlayerPoints;
 import network.message.ConnectionResponse;
 import network.message.GameStateMessage;
 import network.message.GameVoteResponse;
 import network.message.Response;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -190,5 +192,5 @@ interface ClientGameManagerListener {
      *
      * @param winners list of winner players
      */
-    void notifyGameEnd(List<Player> winners);
+    void notifyGameEnd(ArrayList<PlayerPoints> winners);
 }

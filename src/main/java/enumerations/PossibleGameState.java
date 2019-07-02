@@ -9,6 +9,7 @@ public enum PossibleGameState {
      * Game started
      */
     GAME_STARTED,
+    GAME_ENDED,
     FINAL_FRENZY,
     SECOND_ACTION,
     MISSING_TERMINATOR_ACTION,

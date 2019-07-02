@@ -14,5 +14,6 @@ public enum UserPlayerState {
     BOT_ACTION,
     GRENADE_USAGE,
     FIRST_SCOPE_USAGE,
-    SECOND_SCOPE_USAGE
+    SECOND_SCOPE_USAGE,
+    GAME_ENDED
 }

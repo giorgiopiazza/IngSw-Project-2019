@@ -2,21 +2,28 @@ package model.map;
 
 import enumerations.RoomColor;
 import enumerations.SquareAdjacency;
+import model.Game;
 import model.cards.AmmoTile;
 import model.cards.WeaponCard;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.internal.matchers.Null;
 
 import static org.mockito.Mockito.mock;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class CardSquareTest {
 
+    private Game game;
     private CardSquare noTileSquare;
     private CardSquare tileSquare;
 
     @BeforeEach
     void before() {
+        game = Game.getInstance();
+        game.init();
+        game.initializeDecks();
+
         noTileSquare = new CardSquare(RoomColor.RED, SquareAdjacency.WALL, SquareAdjacency.SQUARE,
                                             SquareAdjacency.DOOR, SquareAdjacency.SQUARE);
         tileSquare = new CardSquare(RoomColor.RED, SquareAdjacency.WALL, SquareAdjacency.SQUARE,
@@ -25,7 +32,7 @@ public class CardSquareTest {
 
     @Test
     void defaultMethods() {
-        assertNull(noTileSquare.pickAmmoTile());
+        assertThrows(NullPointerException.class, () -> noTileSquare.pickAmmoTile());
         assertNotNull(tileSquare.pickAmmoTile());
         assertFalse(noTileSquare.isAmmoTilePresent());
 
