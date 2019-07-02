@@ -73,6 +73,7 @@ class WeaponCardTest {
 
         game = Game.getInstance();
         game.init();
+        game.initializeDecks();
         game.setGameMap(1);
 
         game.addPlayer(shooter);
