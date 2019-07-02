@@ -66,7 +66,7 @@ public class ExtraMarkDecorator extends ExtraEffectDecorator {
             List<Player> targetSquare = Game.getInstance().getGameMap().getPlayersInSquare(square);
             for (Player damaged : targetSquare) {
                 if (shooter != damaged) {
-                    damaged.getPlayerBoard().addDamage(shooter, markDistribution[0]);
+                    damaged.getPlayerBoard().addMark(shooter, markDistribution[0]);
                 }
             }
         }
@@ -74,13 +74,13 @@ public class ExtraMarkDecorator extends ExtraEffectDecorator {
 
     private void distributePlayerMarks(Player shooter, List<String> targetsUsername) {
         for (int i = 0; i < targetsUsername.size(); ++i) {
-            Game.getInstance().getUserPlayerByUsername(targetsUsername.get(i)).getPlayerBoard().addDamage(shooter, markDistribution[i]);
+            Game.getInstance().getUserPlayerByUsername(targetsUsername.get(i)).getPlayerBoard().addMark(shooter, markDistribution[i]);
         }
     }
 
     private void samePlayerMarksForAllTargets(Player shooter, List<String> targetsUsername) {
         for (String targetUsername : targetsUsername) {
-            Game.getInstance().getUserPlayerByUsername(targetUsername).getPlayerBoard().addDamage(shooter, markDistribution[0]);
+            Game.getInstance().getUserPlayerByUsername(targetUsername).getPlayerBoard().addMark(shooter, markDistribution[0]);
         }
     }
 
@@ -89,7 +89,7 @@ public class ExtraMarkDecorator extends ExtraEffectDecorator {
             List<Player> targetSquare = Game.getInstance().getGameMap().getPlayersInSquare(squares.get(i));
             for (Player damaged : targetSquare) {
                 if (shooter != damaged) {
-                    damaged.getPlayerBoard().addDamage(shooter, markDistribution[i]);
+                    damaged.getPlayerBoard().addMark(shooter, markDistribution[i]);
                 }
             }
         }

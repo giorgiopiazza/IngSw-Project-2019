@@ -60,7 +60,7 @@ public class ExtraDamageDecorator extends ExtraEffectDecorator {
                 }
         }
     }
-    
+
     private void distributePlayerDamage(Player shooter, List<String> targetsUsername) {
         for (int i = 0; i < targetsUsername.size(); ++i) {
             Game.getInstance().getUserPlayerByUsername(targetsUsername.get(i)).getPlayerBoard().addDamage(shooter, damageDistribution[i]);
