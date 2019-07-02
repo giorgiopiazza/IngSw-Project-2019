@@ -328,7 +328,7 @@
     },
 	{
       "id": 9,
-	  "cost": ["RED", "RED", "BLUE"],
+	  "cost": ["RED", "RED", "YELLOW"],
       "name": "Heatseeker",
       "image": "/img/weapons/heatseeker.png",
       "effects": [
