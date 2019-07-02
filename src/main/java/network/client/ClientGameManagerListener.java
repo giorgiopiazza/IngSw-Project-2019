@@ -192,5 +192,5 @@ interface ClientGameManagerListener {
      *
      * @param winners list of winner players
      */
-    void notifyGameEnd(ArrayList<PlayerPoints> winners);
+    void notifyGameEnd(List<PlayerPoints> winners);
 }

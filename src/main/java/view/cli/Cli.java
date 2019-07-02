@@ -795,7 +795,7 @@ public class Cli extends ClientGameManager {
     }
 
     @Override
-    public void notifyGameEnd(ArrayList<PlayerPoints> winners) {
+    public void notifyGameEnd(List<PlayerPoints> winners) {
         printWinners(winners);
     }
 
@@ -1809,7 +1809,7 @@ public class Cli extends ClientGameManager {
      *
      * @param winners the ArrayList of {@link PlayerPoints PlayerPoints}
      */
-    private void printWinners(ArrayList<PlayerPoints> winners) {
+    private void printWinners(List<PlayerPoints> winners) {
         CliPrinter.printWinners(out, winners);
         out.println();
     }
