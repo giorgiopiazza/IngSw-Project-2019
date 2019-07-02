@@ -4,15 +4,15 @@ import java.util.TimerTask;
 
 public class PingTimerTask extends TimerTask {
 
-    private Client client;
+    private DisconnectionListener disconnectionListener;
 
-    public PingTimerTask(Client client) {
+    public PingTimerTask(DisconnectionListener disconnectionListener) {
         super();
-        this.client = client;
+        this.disconnectionListener = disconnectionListener;
     }
 
     @Override
     public void run() {
-        client.disconnected();
+        disconnectionListener.onDisconnection();
     }
 }

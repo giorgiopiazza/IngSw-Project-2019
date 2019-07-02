@@ -1854,6 +1854,6 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
 
     @Override
     public void onDisconnection() {
-        // TODO
+        promptError("Disconnected from the server, connection expired", true);
     }
 }
