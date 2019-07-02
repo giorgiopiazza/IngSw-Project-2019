@@ -148,6 +148,10 @@ public class WeaponParser {
             effect = new ExtraMoveDecorator(effect, MoveTarget.TARGET);
         }
 
+        if (properties.has(Properties.MOVE_TO_LAST_TARGET.getJKey())) {
+            effect = new ExtraMoveDecorator(effect, MoveTarget.PLAYER);
+        }
+
         return effect;
     }
 

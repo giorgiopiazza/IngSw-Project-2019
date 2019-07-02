@@ -17,6 +17,7 @@ import network.message.ShootRequest;
 import network.message.PowerupRequest;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 class EffectValidator {
 
@@ -182,18 +183,6 @@ class EffectValidator {
         }
 
         return true;
-    }
-
-    /**
-     * Method that verifies that at the end of a shoot the shooter is in the
-     * same position of his last target
-     *
-     * @param shooterPosition PlayerPosition of the shooter
-     * @param targetPositions PlayerPosition of the targets
-     * @return true if the shooter is in the same position of the last target, otherwise false
-     */
-    private static boolean lastTargetPos(PlayerPosition shooterPosition, List<PlayerPosition> targetPositions) {
-        return shooterPosition.equals(targetPositions.get(targetPositions.size() - 1));
     }
 
     /**
@@ -376,7 +365,7 @@ class EffectValidator {
     }
 
     /**
-     * Method that verifies the poritioning properties of the effect: inLine and moveToLastTarget
+     * Method that verifies the inLine property
      *
      * @param properties      Map containing the properties of the effect
      * @param shooterPosition PlayerPosition of the shooter
@@ -384,8 +373,26 @@ class EffectValidator {
      * @return true if both or only one of the two properties are verified, otherwise false
      */
     static boolean isPositioningValid(Map<String, String> properties, PlayerPosition shooterPosition, List<PlayerPosition> targetPositions) {
-        return !((properties.containsKey(Properties.INLINE.getJKey()) && !areInLine(shooterPosition, targetPositions)) || // InLine targets validation
-                (properties.containsKey(Properties.MOVE_TO_LAST_TARGET.getJKey()) && !lastTargetPos(shooterPosition, targetPositions))); // Move to last target validation
+        return !(properties.containsKey(Properties.INLINE.getJKey()) && !areInLine(shooterPosition, targetPositions)); // InLine targets validation
+    }
+
+    /**
+     * Method that verifies the moveToLastTarget property
+     *
+     * @param request the ShootRequest received
+     * @param shooterPosition PlayerPosition of the shooter
+     * @param targetPositions List of PlayerPosition of the targets
+     * @return true if both or only one of the two properties are verified, otherwise false
+     */
+    static boolean isMovingToLastTarget(ShootRequest request, PlayerPosition shooterPosition, List<PlayerPosition> targetPositions) {
+        if(targetPositions.size() > 1) {
+            List<PlayerPosition> differentPositions = targetPositions.stream().distinct().collect(Collectors.toList());
+            if(differentPositions.size() < targetPositions.size()) {
+                return false;
+            }
+        }
+
+        return request.isMoveToLastTarget() && shooterPosition.equals(targetPositions.get(targetPositions.size() - 1));
     }
 
     /**

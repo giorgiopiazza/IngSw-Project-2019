@@ -19,6 +19,7 @@ public class ShootRequest extends EffectRequest {
     private final boolean moveSenderFirst;
     private final boolean moveInMiddle;
     private final boolean moveTargetsFirst;
+    private final boolean moveToLastTarget;
 
     private ArrayList<Integer> rechargingWeapons;
 
@@ -39,6 +40,7 @@ public class ShootRequest extends EffectRequest {
         this.moveSenderFirst = builder.moveSenderFirst;
         this.moveInMiddle = builder.moveInMiddle;
         this.moveTargetsFirst = builder.moveTargetsFirst;
+        this.moveToLastTarget = builder.moveToLastTarget;
         this.rechargingWeapons = builder.rechargingWeapons;
     }
 
@@ -66,6 +68,10 @@ public class ShootRequest extends EffectRequest {
         return moveTargetsFirst;
     }
 
+    public boolean isMoveToLastTarget() {
+        return moveToLastTarget;
+    }
+
     public ArrayList<Integer> getRechargingWeapons() {
         return rechargingWeapons;
     }
@@ -87,6 +93,7 @@ public class ShootRequest extends EffectRequest {
         private boolean moveSenderFirst;
         private boolean moveInMiddle;
         private boolean moveTargetsFirst;
+        private boolean moveToLastTarget;
 
         private ArrayList<Integer> paymentPowerups;
         private ArrayList<Integer> rechargingWeapons;
@@ -140,6 +147,11 @@ public class ShootRequest extends EffectRequest {
 
         public ShootRequestBuilder moveTargetsFirst(boolean moveTargetsFirst) {
             this.moveTargetsFirst = moveTargetsFirst;
+            return this;
+        }
+
+        public ShootRequestBuilder moveToLastTarget(boolean moveToLastTarget) {
+            this.moveToLastTarget = moveToLastTarget;
             return this;
         }
 

@@ -1747,6 +1747,7 @@ public class GameSceneController {
         Map<String, String> newProperties = new LinkedHashMap<>(properties);
         newProperties.remove(Properties.MOVE_TO_LAST_TARGET.getJKey());
 
+        shootRequestBuilder.moveToLastTarget(true);
         buildShootRequest(shootRequestBuilder, List.of(), newProperties);
     }
 
