@@ -71,7 +71,7 @@ public class EndGameSceneController {
 
         tableRows.add(new TableRow("1", winners.get(0).getPlayerColor(), winners.get(0).getUserName(), Integer.toString(winners.get(0).getPoints())));
 
-        if (tableRows.size() > 1) {
+        if (winners.size() > 1) {
             for (PlayerPoints playerPoints : winners.subList(1, winners.size())) {
                 tableRows.add(new TableRow("", playerPoints.getPlayerColor(), playerPoints.getUserName(), Integer.toString(playerPoints.getPoints())));
             }

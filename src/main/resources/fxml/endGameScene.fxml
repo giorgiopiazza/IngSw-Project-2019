@@ -22,7 +22,7 @@
         <VBox styleClass="centerEndBox">
             <TableView fx:id="table" styleClass="endTable">
                 <columns>
-                    <TableColumn fx:id="rankColumn" text="Rank" styleClass="endRankColumn">
+                    <TableColumn fx:id="rankColumn" text="#" styleClass="endRankColumn">
                     </TableColumn>
                     <TableColumn fx:id="iconColumn" styleClass="endIconColumn">
                     </TableColumn>
