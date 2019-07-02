@@ -916,7 +916,10 @@ public class RoundManager {
             if (turnManager.getTurnOwner().equals(turnManager.getLastPlayer())) {
                 // if reached, game has ended, last remaining points are calculated and a winner is declared!
                 gameManager.endGame();
-                return buildPositiveResponse("Turn passed and GAME HAS ENDED");
+
+                // game is not saved before the game ends as it can be played with the last save done
+                gameManager.sendPrivateUpdates();
+                return new Response("Turn passed and GAME HAS ENDED", MessageStatus.OK);
             }
             return deathPlayersHandler(PossibleGameState.PASS_FRENZY_TURN);
         } else {
