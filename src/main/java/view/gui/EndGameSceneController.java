@@ -8,7 +8,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import model.player.PlayerPoints;
-import network.message.WinnersResponse;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -63,15 +62,14 @@ public class EndGameSceneController {
         table.setPlaceholder(new Label());
     }
 
-    void setData(WinnersResponse response) {
-        List<PlayerPoints> players = response.getWinners();
+    void setData(List<PlayerPoints> players) {
         List<PlayerPoints> winners = players.stream().filter(PlayerPoints::isWinner).collect(Collectors.toList());
 
         ArrayList<TableRow> tableRows = new ArrayList<>();
 
         tableRows.add(new TableRow("1", winners.get(0).getPlayerColor(), winners.get(0).getUserName(), Integer.toString(winners.get(0).getPoints())));
 
-        if (tableRows.size() > 1) {
+        if (winners.size() > 1) {
             for (PlayerPoints playerPoints : winners.subList(1, winners.size())) {
                 tableRows.add(new TableRow("", playerPoints.getPlayerColor(), playerPoints.getUserName(), Integer.toString(playerPoints.getPoints())));
             }

@@ -118,17 +118,28 @@
 }
 
 .endTable {
-    -fx-min-width: 1320px;
-    -fx-max-width: 1320px;
+    -fx-min-width: 1305px;
+    -fx-max-width: 1305px;
 
     -fx-min-height: 500px;
     -fx-max-height: 500px;
 
     -fx-background-color: transparent;
+    -fx-border-color: transparent;
 }
 
 .endTable:focused{
     -fx-background-color: transparent;
+}
+
+.endTable .scroll-bar * {
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+
+    -fx-min-height: 0;
+    -fx-pref-height: 0;
+    -fx-max-height: 0;
 }
 
 .endTable .column-header {
@@ -139,13 +150,40 @@
     -fx-background-color: transparent;
 }
 
+.endTable .column-header-background .filler {
+    -fx-background-color: transparent;
+}
+
 .endTable .column-header-background .label{
     -fx-background-color: transparent;
-    -fx-text-fill: red;
+
+    -fx-font-family: "Ethnocentric Rg";
+    -fx-font-style: italic;
+    -fx-font-size: 25px;
+    -fx-text-fill: #F44336;
+
+    -fx-padding: 20 0 20 0;
+}
+
+.endTable .placeholder {
+    -fx-background-color: transparent;
+}
+
+.endTable .table-column {
+    -fx-alignment:  center;
+    -fx-font-family: "Exo 2 Medium";
+    -fx-font-size: 20px;
+    -fx-text-fill: #F44336;
+}
+
+.table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-table-cell-border-color: transparent;
 }
 
 .endRankColumn {
-    -fx-pref-width: 200px;
+    -fx-pref-width: 100px;
 }
 
 .endIconColumn {
@@ -153,11 +191,11 @@
 }
 
 .endPlayerColumn {
-    -fx-pref-width: 800px;
+    -fx-pref-width: 860px;
 }
 
 .endPointsColumn {
-    -fx-pref-width: 200px;
+    -fx-pref-width: 220px;
 }
 
 .weaponZoomImageBlue {

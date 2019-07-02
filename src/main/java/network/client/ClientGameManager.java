@@ -62,6 +62,8 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
     private boolean noChangeStateRequest; // Identify a request that doesn't have to change the player state
 
+    private boolean gameEnded = false;
+
     public ClientGameManager() {
         firstTurn = true;
         noChangeStateRequest = false;
@@ -98,6 +100,10 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
     @Override
     public void onUpdate(Message message) {
+        if (gameEnded) {
+            return;
+        }
+
         switch (message.getContent()) {
             case PLAYERS_IN_LOBBY:
                 handlePlayersInLobby((LobbyPlayersResponse) message);
@@ -482,6 +488,8 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
      * @param winnerResponse winners message received
      */
     private void handleWinner(WinnersResponse winnerResponse) {
+        gameEnded = true;
+
         synchronized (gameSerializedLock) {
             queue.add(() -> notifyGameEnd(winnerResponse.getWinners()));
         }

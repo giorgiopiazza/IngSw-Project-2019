@@ -12,6 +12,8 @@ public class TableRow {
     TableRow(String rank, PlayerColor color, String username, String points) {
         this.rank = rank;
         this.icon = new ImageView("/img/players/" + color.toString().toLowerCase() + "Icon.png");
+        this.icon.setFitHeight(68);
+        this.icon.setFitWidth(65);
         this.username = username;
         this.points = points;
     }

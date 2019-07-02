@@ -2786,4 +2786,12 @@ public class GameSceneController {
     void onPlayerDisconnect(String player) {
         GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), "Disconnection", player + " disconnected from the server");
     }
+
+    void onGameEnd(List<PlayerPoints> players) {
+        EndGameSceneController endGameSceneController = GuiManager.setLayout(mainPane.getScene(), "fxml/endGameScene.fxml");
+
+        if (endGameSceneController != null) {
+            endGameSceneController.setData(players);
+        }
+    }
 }

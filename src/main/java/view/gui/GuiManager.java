@@ -269,8 +269,10 @@ public class GuiManager extends ClientGameManager implements DisconnectionListen
     }
 
     @Override
-    public void notifyGameEnd(ArrayList<PlayerPoints> winners) {
-
+    public void notifyGameEnd(List<PlayerPoints> winners) {
+        if (gameSceneController != null) {
+            Platform.runLater(() -> gameSceneController.onGameEnd(winners));
+        }
     }
 
     @Override
