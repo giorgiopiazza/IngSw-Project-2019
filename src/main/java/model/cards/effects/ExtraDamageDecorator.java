@@ -39,19 +39,18 @@ public class ExtraDamageDecorator extends ExtraEffectDecorator {
         switch (targetType) {
             case PLAYER:
                 targetsUsername = request.getTargetPlayersUsername();
-                for (int i = 0; i < targetsUsername.size(); ++i) {
-                    Game.getInstance().getUserPlayerByUsername(targetsUsername.get(i)).getPlayerBoard().addDamage(shooter, damageDistribution[i]);
+                if(targetsUsername.size() > 1 && damageDistribution.length == 1) {
+                    samePlayerDamageForAllTargets(shooter, targetsUsername);
+                } else {
+                    distributePlayerDamage(shooter, targetsUsername);
                 }
                 break;
             case SQUARE:
                 List<PlayerPosition> squares = request.getTargetPositions();
-                for (int i = 0; i < squares.size(); ++i) {
-                    List<Player> targetSquare = Game.getInstance().getGameMap().getPlayersInSquare(squares.get(i));
-                    for (Player damaged : targetSquare) {
-                        if (shooter != damaged) {
-                            damaged.getPlayerBoard().addDamage(shooter, damageDistribution[i]);
-                        }
-                    }
+                if(squares.size() > 1 && damageDistribution.length == 1) {
+                    sameSquareDamageForAllTargets(shooter, squares);
+                } else {
+                    distributeSquareDamage(shooter, squares);
                 }
                 break;
             default:
@@ -59,6 +58,40 @@ public class ExtraDamageDecorator extends ExtraEffectDecorator {
                 for (Player damaged : targetRoom) {
                     damaged.getPlayerBoard().addDamage(shooter, damageDistribution[0]);
                 }
+        }
+    }
+    
+    private void distributePlayerDamage(Player shooter, List<String> targetsUsername) {
+        for (int i = 0; i < targetsUsername.size(); ++i) {
+            Game.getInstance().getUserPlayerByUsername(targetsUsername.get(i)).getPlayerBoard().addDamage(shooter, damageDistribution[i]);
+        }
+    }
+
+    private void sameSquareDamageForAllTargets(Player shooter, List<PlayerPosition> squares) {
+        for (PlayerPosition square : squares) {
+            List<Player> targetSquare = Game.getInstance().getGameMap().getPlayersInSquare(square);
+            for (Player damaged : targetSquare) {
+                if (shooter != damaged) {
+                    damaged.getPlayerBoard().addDamage(shooter, damageDistribution[0]);
+                }
+            }
+        }
+    }
+
+    private void distributeSquareDamage(Player shooter, List<PlayerPosition> squares) {
+        for (int i = 0; i < squares.size(); ++i) {
+            List<Player> targetSquare = Game.getInstance().getGameMap().getPlayersInSquare(squares.get(i));
+            for (Player damaged : targetSquare) {
+                if (shooter != damaged) {
+                    damaged.getPlayerBoard().addDamage(shooter, damageDistribution[i]);
+                }
+            }
+        }
+    }
+
+    private void samePlayerDamageForAllTargets(Player shooter, List<String> targetsUsername) {
+        for (String targetUsername : targetsUsername) {
+            Game.getInstance().getUserPlayerByUsername(targetUsername).getPlayerBoard().addDamage(shooter, damageDistribution[0]);
         }
     }
 }

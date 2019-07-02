@@ -39,19 +39,18 @@ public class ExtraMarkDecorator extends ExtraEffectDecorator {
         switch (targetType) {
             case PLAYER:
                 targetsUsername = request.getTargetPlayersUsername();
-                for (int i = 0; i < targetsUsername.size(); ++i) {
-                    Game.getInstance().getUserPlayerByUsername(targetsUsername.get(i)).getPlayerBoard().addMark(shooter, markDistribution[i]);
+                if(targetsUsername.size() > 1 && markDistribution.length == 1) {
+                    samePlayerMarksForAllTargets(shooter, targetsUsername);
+                } else {
+                    distributePlayerMarks(shooter, targetsUsername);
                 }
                 break;
             case SQUARE:
                 List<PlayerPosition> squares = request.getTargetPositions();
-                for (int i = 0; i < squares.size(); ++i) {
-                    List<Player> targetSquare = Game.getInstance().getGameMap().getPlayersInSquare(squares.get(i));
-                    for (Player marked : targetSquare) {
-                        if (shooter != marked) {
-                            marked.getPlayerBoard().addMark(shooter, markDistribution[i]);
-                        }
-                    }
+                if(squares.size() > 1 && markDistribution.length == 1) {
+                    sameSquareMarksForAllTargets(shooter, squares);
+                } else {
+                    distributeMarkDamage(shooter, squares);
                 }
                 break;
             default:
@@ -59,6 +58,40 @@ public class ExtraMarkDecorator extends ExtraEffectDecorator {
                 for (Player marked : targetRoom) {
                     marked.getPlayerBoard().addMark(shooter, markDistribution[0]);
                 }
+        }
+    }
+
+    private void sameSquareMarksForAllTargets(Player shooter, List<PlayerPosition> squares) {
+        for (PlayerPosition square : squares) {
+            List<Player> targetSquare = Game.getInstance().getGameMap().getPlayersInSquare(square);
+            for (Player damaged : targetSquare) {
+                if (shooter != damaged) {
+                    damaged.getPlayerBoard().addDamage(shooter, markDistribution[0]);
+                }
+            }
+        }
+    }
+
+    private void distributePlayerMarks(Player shooter, List<String> targetsUsername) {
+        for (int i = 0; i < targetsUsername.size(); ++i) {
+            Game.getInstance().getUserPlayerByUsername(targetsUsername.get(i)).getPlayerBoard().addDamage(shooter, markDistribution[i]);
+        }
+    }
+
+    private void samePlayerMarksForAllTargets(Player shooter, List<String> targetsUsername) {
+        for (String targetUsername : targetsUsername) {
+            Game.getInstance().getUserPlayerByUsername(targetUsername).getPlayerBoard().addDamage(shooter, markDistribution[0]);
+        }
+    }
+
+    private void distributeMarkDamage(Player shooter, List<PlayerPosition> squares) {
+        for (int i = 0; i < squares.size(); ++i) {
+            List<Player> targetSquare = Game.getInstance().getGameMap().getPlayersInSquare(squares.get(i));
+            for (Player damaged : targetSquare) {
+                if (shooter != damaged) {
+                    damaged.getPlayerBoard().addDamage(shooter, markDistribution[i]);
+                }
+            }
         }
     }
 }
