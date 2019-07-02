@@ -103,7 +103,7 @@ public class ConnectionSceneController {
             connectRmiButton.setDisable(true);
 
             try {
-                GuiManager.getInstance().createConnection(connection, username, address, Integer.parseInt(port));
+                GuiManager.getInstance().createConnection(connection, username, address, Integer.parseInt(port), GuiManager.getInstance());
             } catch (Exception e) {
                 GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE,
                         "Failed to establish a connection!");

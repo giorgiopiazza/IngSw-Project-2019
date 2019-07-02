@@ -14,6 +14,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import model.player.Player;
+import network.client.DisconnectionListener;
 import network.message.ConnectionResponse;
 import network.message.GameVoteResponse;
 import network.message.Response;
@@ -23,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-public class GuiManager extends ClientGameManager {
+public class GuiManager extends ClientGameManager implements DisconnectionListener {
     private static GuiManager instance = null;
 
     private ConnectionSceneController connectionSceneController;
@@ -283,5 +284,10 @@ public class GuiManager extends ClientGameManager {
             Platform.runLater(() ->
                     lobbySceneController.updateLobbyList(users));
         }
+    }
+
+    @Override
+    public void onDisconnection() {
+        // TODO
     }
 }
