@@ -370,7 +370,7 @@ public class RoundManager {
         }
 
         // ammo check
-        if (powerupsIndexes.size() - paymentPowerups.size() != scopeMessage.getAmmoColor().size()) {
+        if (powerupsIndexes.size() - paymentPowerups.size() != 0 && (scopeMessage.getAmmoColor() == null || powerupsIndexes.size() - paymentPowerups.size() != scopeMessage.getAmmoColor().size())) {
             return buildNegativeResponse("Missing Ammo Colors to pay");
         }
 
