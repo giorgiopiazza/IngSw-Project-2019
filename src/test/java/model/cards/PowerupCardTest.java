@@ -50,7 +50,7 @@ class PowerupCardTest {
 
         do {
             p3 = (PowerupCard) game.getPowerupCardsDeck().draw();
-        } while (!p3.equals(p1));
+        } while (p3.equals(p1));
 
         p1.hashCode();
         p1.toString();
