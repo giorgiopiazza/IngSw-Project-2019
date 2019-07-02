@@ -20,14 +20,14 @@ public class PowerupBaseEffect extends Effect {
     public PowerupBaseEffect(HashMap<String, String> properties, TargetType[] targets, String description) {
         this.cost = new AmmoQuantity();
         this.targets = targets;
-        this.properties = properties;
+        setProperties(properties);
         this.description = description;
     }
 
     public PowerupBaseEffect(AmmoQuantity cost, HashMap<String, String> properties, TargetType[] targets, String description) {
         this.cost = cost;
         this.targets = targets;
-        this.properties = properties;
+        setProperties(properties);
         this.description = description;
     }
 

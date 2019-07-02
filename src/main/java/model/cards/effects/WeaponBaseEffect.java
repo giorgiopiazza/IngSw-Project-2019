@@ -15,7 +15,7 @@ public class WeaponBaseEffect extends Effect {
     public WeaponBaseEffect(AmmoQuantity cost, HashMap<String, String> properties, TargetType[] targets, String description) {
         this.cost = cost;
         this.targets = targets;
-        this.properties = properties;
+        setProperties(properties);
         this.description = description;
     }
 

@@ -91,6 +91,23 @@ class WeaponCardTest {
     }
 
     @Test
+    void cardStatus() {
+        ChargedWeapon charged = new ChargedWeapon();
+        charged.isRechargeable(null);
+        charged.status();
+
+        UnchargedWeapon uncharged = new UnchargedWeapon();
+        uncharged.charged(null);
+        uncharged.isRechargeable(null);
+        assertThrows(WeaponNotChargedException.class, () -> uncharged.use(null, null));
+
+        SemiChargedWeapon semi = new SemiChargedWeapon();
+        semi.charged(null);
+        semi.isRechargeable(null);
+        assertThrows(WeaponNotChargedException.class, () -> semi.use(null, null));
+    }
+
+    @Test
     void lockRifle() throws InvalidActionException, WeaponNotChargedException, WeaponAlreadyChargedException, NotEnoughAmmoException, MaxCardsInHandException {
         WeaponCard lockRifle = getWeaponByName("Lock Rifle");
         lockRifle.setStatus(full);

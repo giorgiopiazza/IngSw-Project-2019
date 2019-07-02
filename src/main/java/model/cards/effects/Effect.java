@@ -14,12 +14,16 @@ public abstract class Effect implements Serializable {
     private static final long serialVersionUID = 992667210434983695L;
 
     protected AmmoQuantity cost;
-    protected HashMap<String, String> properties;
+    private HashMap<String, String> properties;
     protected TargetType[] targets;
     protected String description;
 
     public Map<String, String> getProperties() {
         return this.properties;
+    }
+
+    void setProperties(Map<String, String> properties) {
+        this.properties = (HashMap<String, String>) properties;
     }
 
     public TargetType[] getTargets() {
