@@ -100,7 +100,7 @@ public class WeaponParser {
             target = parseTargetTypeJsonArray(targets);
         }
 
-        Map<String, String> weaponProperties;
+        HashMap<String, String> weaponProperties;
         if (properties.has(SUB_EFFECTS)) {
             weaponProperties = getPropertiesWithSubEffects(properties);
         } else {
@@ -243,9 +243,9 @@ public class WeaponParser {
      * @param properties JsonObject that contains visibility properties
      * @return a LinkedHashMap<String,String> where the key is the visibility rule and the value is its definition
      */
-    static Map<String, String> getProperties(JsonObject properties) {
+    static HashMap<String, String> getProperties(JsonObject properties) {
         // I create a linked hash map as I can iterate on it with the order I put his elements
-        Map<String, String> effectProperties = new LinkedHashMap<>();
+        HashMap<String, String> effectProperties = new LinkedHashMap<>();
         JsonObject justVisibilityProperties = properties.deepCopy();
         Set<String> keys;
 
@@ -279,7 +279,7 @@ public class WeaponParser {
      * @param properties JsonObject that contains visibility properties
      * @return a LinkedHashMap<String, String> where the key is the visibility rule and the value is its definition
      */
-    private static Map<String, String> getPropertiesWithSubEffects(JsonObject properties) {
+    private static HashMap<String, String> getPropertiesWithSubEffects(JsonObject properties) {
 
         JsonObject justVisibilityProperties = properties.deepCopy();
         Set<String> keys;
@@ -289,7 +289,7 @@ public class WeaponParser {
         justVisibilityProperties.remove(SUB_EFFECTS);
         justVisibilityProperties.remove(TARGET);
 
-        Map<String, String> effectProperties = new LinkedHashMap<>(getProperties(justVisibilityProperties));
+        HashMap<String, String> effectProperties = new LinkedHashMap<>(getProperties(justVisibilityProperties));
         TargetType[] separators = parseTargetTypeJsonArray(targets);
         for (int i = 0; i < separators.length; ++i) {
             keys = subEffects.get(i).getAsJsonObject().keySet();

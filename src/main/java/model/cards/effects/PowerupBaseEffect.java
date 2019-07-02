@@ -9,6 +9,7 @@ import model.player.PlayerPosition;
 import network.message.EffectRequest;
 import network.message.PowerupRequest;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,14 +17,14 @@ import static model.cards.effects.EffectValidator.teleporterValidator;
 
 public class PowerupBaseEffect extends Effect {
 
-    public PowerupBaseEffect(Map<String, String> properties, TargetType[] targets, String description) {
+    public PowerupBaseEffect(HashMap<String, String> properties, TargetType[] targets, String description) {
         this.cost = new AmmoQuantity();
         this.targets = targets;
         this.properties = properties;
         this.description = description;
     }
 
-    public PowerupBaseEffect(AmmoQuantity cost, Map<String, String> properties, TargetType[] targets, String description) {
+    public PowerupBaseEffect(AmmoQuantity cost, HashMap<String, String> properties, TargetType[] targets, String description) {
         this.cost = cost;
         this.targets = targets;
         this.properties = properties;

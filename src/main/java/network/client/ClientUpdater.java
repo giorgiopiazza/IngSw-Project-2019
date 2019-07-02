@@ -25,9 +25,10 @@ public class ClientUpdater implements Runnable {
                 do {
                     messages = client.receiveMessages();
                     try {
-                        Thread.sleep(100);
+                        client.wait(100);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
+                        Thread.currentThread().interrupt();
                     }
                 } while (messages.isEmpty());
 
