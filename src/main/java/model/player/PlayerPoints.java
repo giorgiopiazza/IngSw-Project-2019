@@ -2,14 +2,13 @@ package model.player;
 
 import enumerations.PlayerColor;
 
-import java.util.ArrayList;
-import java.util.stream.Collectors;
+import java.io.Serializable;
 
 /**
  * This class represents a player and the points he earned during the game. It is used to handle the declaration of
  * the winners following the tie rules
  */
-public class PlayerPoints {
+public class PlayerPoints implements Serializable {
     private final String userName;
     private final PlayerColor playerColor;
     private final int points;
