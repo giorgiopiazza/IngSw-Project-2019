@@ -22,6 +22,7 @@ class DeckTest {
 
     @Test
     void garbage() {
+        garbage = new Deck(garbage, true);
         garbage.addCard(mock(UsableCard.class));
         garbage.addCard(mock(UsableCard.class));
         garbage.addCard(mock(UsableCard.class));
@@ -51,10 +52,12 @@ class DeckTest {
 
         garbage.shuffle();
         garbage.flush();
+        garbage.toString();
     }
 
     @Test
     void noGarbage() {
+        noGarbage = new Deck(noGarbage);
         noGarbage.addCard(mock(UsableCard.class));
         noGarbage.addCard(mock(UsableCard.class));
         noGarbage.addCard(mock(UsableCard.class));
