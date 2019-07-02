@@ -95,6 +95,71 @@
     -fx-min-width: 1300px;
 }
 
+.topEndBox {
+    -fx-padding: 50 0 0 0;
+    -fx-alignment: CENTER;
+}
+
+.centerEndBox {
+    -fx-max-width: 1200px;
+    -fx-alignment: CENTER;
+}
+
+.botEndBox {
+    -fx-padding: 0 0 50 0;
+    -fx-alignment: CENTER;
+}
+
+.endTitle {
+    -fx-font-family: "Ethnocentric Rg";
+    -fx-font-style: italic;
+    -fx-font-size: 50px;
+    -fx-text-fill: #f3997b;
+}
+
+.endTable {
+    -fx-min-width: 1320px;
+    -fx-max-width: 1320px;
+
+    -fx-min-height: 500px;
+    -fx-max-height: 500px;
+
+    -fx-background-color: transparent;
+}
+
+.endTable:focused{
+    -fx-background-color: transparent;
+}
+
+.endTable .column-header {
+    -fx-background-color: transparent;
+}
+
+.endTable .column-header-background {
+    -fx-background-color: transparent;
+}
+
+.endTable .column-header-background .label{
+    -fx-background-color: transparent;
+    -fx-text-fill: red;
+}
+
+.endRankColumn {
+    -fx-pref-width: 200px;
+}
+
+.endIconColumn {
+    -fx-pref-width: 120px;
+}
+
+.endPlayerColumn {
+    -fx-pref-width: 800px;
+}
+
+.endPointsColumn {
+    -fx-pref-width: 200px;
+}
+
 .weaponZoomImageBlue {
     -fx-effect: dropshadow(gaussian, #536DFE, 15, 0.2, 0, 0);
 }
@@ -356,4 +421,8 @@
 
 #passTurnAction {
     -fx-image: url("/img/actions/pass_turn.png");
+}
+
+#exitButton {
+    -fx-image: url("/img/scenes/exitbutton.png");
 }

@@ -106,6 +106,7 @@
 .dialogLabel {
     -fx-font-family: "Exo 2 Black";
     -fx-font-size: 25px;
+    -fx-wrap-text: true;
 }
 
 /* Connection */
