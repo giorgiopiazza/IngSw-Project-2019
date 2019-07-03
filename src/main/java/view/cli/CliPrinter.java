@@ -1009,7 +1009,7 @@ class CliPrinter {
             out.println(
                     getTopWinnersDecoration(winners.size()) +
                             addEmptyLine(winners.size()) +
-                            getWinnersTitle(winners.size(), "***** EVERYBODY WIN THIS GAME *****") +
+                            getWinnersTitle(winners.size(), "EVERYBODY WIN THIS GAME") +
                             addEmptyLine(winners.size()) +
                             getWinnersNames(winners) +
                             getWinnersPoints(winners) +
@@ -1022,14 +1022,14 @@ class CliPrinter {
             out.println(
                     getTopWinnersDecoration(size) +
                             addEmptyLine(size) +
-                            getWinnersTitle(size, "***** THE WINNERS OF THIS GAME ARE *****") +
+                            getWinnersTitle(size, "THE WINNERS OF THIS GAME ARE") +
                             addEmptyLine(size) +
                             getWinnersNames(size, winners) +
                             getWinnersPoints(size, winners) +
                             addEmptyLine(size) +
                             addSeparatorLine(size) +
                             addEmptyLine(size) +
-                            getWinnersTitle(size, "***** POOR ORDERED LOOSERS ARE *****") +
+                            getWinnersTitle(size, "POOR ORDERED LOOSERS ARE") +
                             addEmptyLine(size) +
                             getWinnersNames(size, allPoints.stream().filter(player -> !winners.contains(player))
                                                                      .sorted((player1, player2) -> {

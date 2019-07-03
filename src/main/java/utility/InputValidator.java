@@ -108,9 +108,13 @@ public class InputValidator {
     }
 
     private static boolean checkBaseEffect(EffectRequest effectRequest) {
+        if(!checkBaseAction(effectRequest)) {
+            return false;
+        }
+
         if (!effectRequest.getTargetPlayersUsername().isEmpty()) {
             for (String userName : effectRequest.getTargetPlayersUsername()) {
-                if (userName == null) {
+                if (userName == null || Game.getInstance().getPlayerByName(userName).getPosition() == null) {
                     return false;
                 }
             }
@@ -123,6 +127,8 @@ public class InputValidator {
                 }
             }
         }
+
+
 
         return true;
     }
@@ -193,7 +199,7 @@ public class InputValidator {
     }
 
     private static boolean checkIndexesInShootAction(ShootRequest shootRequest) {
-        if (!checkBaseAction(shootRequest)) {
+        if (!checkBaseEffect(shootRequest)) {
             return false;
         }
 
