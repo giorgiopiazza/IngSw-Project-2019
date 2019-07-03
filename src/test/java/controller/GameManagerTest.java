@@ -1,7 +1,6 @@
 package controller;
 
 import enumerations.*;
-import exceptions.game.InvalidMapNumberException;
 import model.Game;
 import model.player.Player;
 import model.player.PlayerPosition;
@@ -12,7 +11,6 @@ import org.junit.jupiter.api.Test;
 
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.Mockito.mock;
 
 
@@ -22,7 +20,7 @@ class GameManagerTest {
     private Game game;
 
     @BeforeEach
-    void before() throws InvalidMapNumberException {
+    void before() {
         server = mock(Server.class);
 
         game = Game.getInstance();
@@ -46,7 +44,7 @@ class GameManagerTest {
     }
 
     @Test
-    void lobby() throws Exception {
+    void lobby() {
         gameManager = new GameManager(server, true, 8, 10000);
 
         Response response = (Response) gameManager.onMessage(
@@ -72,6 +70,9 @@ class GameManagerTest {
 
         response = (Response) gameManager.onMessage(
                 new LobbyMessage("gio", null, PlayerColor.GREY, true));
+        assertEquals(MessageStatus.ERROR, response.getStatus());
+
+        response = (Response) gameManager.onConnectionMessage(new LobbyMessage("piro", null, null, false));
         assertEquals(MessageStatus.ERROR, response.getStatus());
 
         response = (Response) gameManager.onMessage(
@@ -135,14 +136,24 @@ class GameManagerTest {
 
         gameManager.sendGrenadePrivateUpdates();
 
+        response = (Response) gameManager.onConnectionMessage(new LobbyMessage(null, null, null, false));
+        assertEquals(MessageStatus.ERROR, response.getStatus());
+
         response = (Response) gameManager.onConnectionMessage(new LobbyMessage("tose", null, null, true));
         assertEquals(MessageStatus.OK, response.getStatus());
 
         assertEquals(PossibleGameState.GAME_ENDED, gameManager.getGameState());
+
+        response = (Response) gameManager.onMessage(
+                new LobbyMessage("piro", null, PlayerColor.GREEN, true));
+        assertEquals(MessageStatus.ERROR, response.getStatus());
+
+        response = (Response) gameManager.onConnectionMessage(new LobbyMessage("tose", null, PlayerColor.GREY, false));
+        assertEquals(MessageStatus.ERROR, response.getStatus());
     }
 
     @Test
-    void gameWithBot() throws Exception {
+    void gameWithBot() {
         gameManager = new GameManager(server, true, 8, 10000);
 
         Response response = (Response) gameManager.onMessage(
@@ -167,12 +178,6 @@ class GameManagerTest {
 
         assertNull(gameManager.getUserPlayerState(null));
 
-        for (Player p : gameManager.getGameInstance().getPlayers()) {
-            if (!p.getUsername().equals(turnOwner)) {
-                assertEquals(UserPlayerState.FIRST_ACTION, gameManager.getUserPlayerState(p.getUsername()));
-            }
-        }
-
         assertEquals(UserPlayerState.BOT_SPAWN, gameManager.getUserPlayerState(turnOwner));
 
         response = (Response) gameManager.onMessage(
@@ -181,9 +186,18 @@ class GameManagerTest {
 
         assertEquals(UserPlayerState.SPAWN, gameManager.getUserPlayerState(turnOwner));
 
+        for (Player p : gameManager.getGameInstance().getPlayers()) {
+            if (!p.getUsername().equals(turnOwner)) {
+                assertEquals(UserPlayerState.FIRST_ACTION, gameManager.getUserPlayerState(p.getUsername()));
+                response = (Response) gameManager.onMessage(
+                        new DiscardPowerupRequest(p.getUsername(), null, 0));
+                assertEquals(MessageStatus.ERROR, response.getStatus());
+                break;
+            }
+        }
+
         response = (Response) gameManager.onMessage(
                 new DiscardPowerupRequest(turnOwner, null, 0));
-
         assertEquals(MessageStatus.OK, response.getStatus());
 
         assertEquals(UserPlayerState.FIRST_ACTION, gameManager.getUserPlayerState(turnOwner));
@@ -205,12 +219,31 @@ class GameManagerTest {
         assertEquals(MessageStatus.ERROR, response.getStatus());
 
         response = (Response) gameManager.onMessage(
+                new ReloadRequest(turnOwner, null, null, null));
+        assertEquals(MessageStatus.ERROR, response.getStatus());
+
+        response = (Response) gameManager.onMessage(
+                new PowerupRequest(new PowerupRequest.PowerupRequestBuilder(turnOwner, null, null)));
+        assertEquals(MessageStatus.ERROR, response.getStatus());
+
+        response = (Response) gameManager.onMessage(
+                new BotUseRequest(turnOwner, null, null, null));
+        assertEquals(MessageStatus.ERROR, response.getStatus());
+
+        response = (Response) gameManager.onMessage(
                 new PassTurnRequest(turnOwner, null));
+        assertEquals(MessageStatus.OK, response.getStatus());
+
+        String newTurnOwner = gameManager.getRoundManager().getTurnManager().getTurnOwner().getUsername();
+        assertNotEquals(newTurnOwner, turnOwner);
+
+        response = (Response) gameManager.onMessage(
+                new DiscardPowerupRequest(newTurnOwner, null, 0));
         assertEquals(MessageStatus.OK, response.getStatus());
     }
 
     @Test
-    void gameWithoutBot() throws Exception {
+    void gameWithoutBot() {
         gameManager = new GameManager(server, false, 8, 10000);
 
         Response response = (Response) gameManager.onMessage(
@@ -327,6 +360,6 @@ class GameManagerTest {
     void shootParameters() {
         gameManager = new GameManager(server, true, 8, 10000);
 
-        GameManager.ShootParameters shootParameters = gameManager.new ShootParameters(mock(ShootRequest.class), false);
+        gameManager.new ShootParameters(mock(ShootRequest.class), false);
     }
 }

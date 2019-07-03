@@ -54,7 +54,6 @@ public class TurnManager implements Serializable {
         this.turnOwner = players.get(count);
         this.afterFrenzy = new ArrayList<>();
         this.beforeFrenzy = new ArrayList<>();
-
     }
 
     /**
@@ -111,7 +110,7 @@ public class TurnManager implements Serializable {
     /**
      * @return the {@link Player Player} who activated the frenzy
      */
-    public Player getFrenzyActivator() {
+    Player getFrenzyActivator() {
         return this.frenzyActivator;
     }
 
