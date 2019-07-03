@@ -1936,7 +1936,6 @@ public class GameSceneController {
     }
 
     void tagbackGrenade() {
-        // TODO INVIARE PASS_TURN_REQUEST IN CASO NON VENGA USATO NESSUNA GRANATA
         askMultiplePowerupUsage(ClientGameManager.TAGBACK_GRENADE);
     }
 
@@ -1965,10 +1964,18 @@ public class GameSceneController {
             PowerupRequest.PowerupRequestBuilder powerupRequestBuilder =
                     new PowerupRequest.PowerupRequestBuilder(guiManager.getUsername(), guiManager.getClientToken(), powerupIndexes);
 
-            if (powerupIndexes.isEmpty() || powerupName.equals(ClientGameManager.TAGBACK_GRENADE)) {
-                sendPowerupRequest(powerupRequestBuilder);
+            if (powerupName.equals(ClientGameManager.TAGBACK_GRENADE)) {
+                if (powerupIndexes.isEmpty()) {
+                    passTurn();
+                } else {
+                    sendPowerupRequest(powerupRequestBuilder);
+                }
             } else {
-                onScopeClick(powerupRequestBuilder);
+                if (powerupIndexes.isEmpty()) {
+                    sendPowerupRequest(powerupRequestBuilder);
+                } else {
+                    onScopeClick(powerupRequestBuilder);
+                }
             }
         });
 
