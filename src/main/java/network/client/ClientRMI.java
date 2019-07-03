@@ -10,6 +10,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Objects;
 import java.util.Timer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class represents a RMI Client
@@ -90,6 +92,7 @@ public class ClientRMI extends Client implements RMIClientConnection {
         super.pingTimer.cancel();
         super.pingTimer = new Timer();
         super.pingTimer.schedule(new PingTimerTask(super.disconnectionListener), Client.DISCONNECTION_TIME);
+        Logger.getGlobal().log(Level.INFO, "Ping from server");
     }
 
     @Override

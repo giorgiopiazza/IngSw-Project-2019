@@ -172,6 +172,7 @@ public class RoundManager {
     private void afterTerminatorActionHandler(PossibleGameState gameState) {
         if (gameState == PossibleGameState.GAME_STARTED || gameState == PossibleGameState.FINAL_FRENZY || gameState == PossibleGameState.SECOND_ACTION) {
             // if terminator action is done before the 2 actions the game state does not change, otherwise it must be done before passing the turn
+            gameManager.changeState(gameState);
             turnManager.getTurnOwner().removeAction(PossibleAction.BOT_ACTION);
         } else if (gameState == PossibleGameState.MISSING_TERMINATOR_ACTION) {
             if (gameInstance.getState().equals(GameState.NORMAL)) {

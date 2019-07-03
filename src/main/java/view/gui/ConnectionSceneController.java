@@ -119,6 +119,7 @@ public class ConnectionSceneController {
         } else {
             GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, response.getMessage());
 
+            guiManager.stopPingTimer();
             guiManager.closeConnection();
             onBackButtonClick();
         }

@@ -947,4 +947,11 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     public String getFirstPlayer() {
         return firstPlayer;
     }
+
+    /**
+     * stop the ping timer to avoid the disconnection after an invalid lobbyResponse
+     */
+    public void stopPingTimer() {
+        client.pingTimer.cancel();
+    }
 }

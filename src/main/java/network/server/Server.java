@@ -468,6 +468,7 @@ public class Server implements Runnable {
             for (Map.Entry<String, Connection> client : clients.entrySet()) {
                 if (client.getValue() != null && client.getValue().isConnected()) {
                     client.getValue().ping();
+                    LOGGER.log(Level.INFO, "ping {0}", client.getValue().getToken());
                 }
             }
 

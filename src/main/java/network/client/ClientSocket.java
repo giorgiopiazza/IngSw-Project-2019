@@ -10,6 +10,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Objects;
 import java.util.Timer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -85,6 +86,7 @@ public class ClientSocket extends Client implements Runnable {
                     super.pingTimer.cancel();
                     super.pingTimer = new Timer();
                     super.pingTimer.schedule(new PingTimerTask(super.disconnectionListener), Client.DISCONNECTION_TIME);
+                    Logger.getGlobal().log(Level.INFO, "Ping from server");
                 }
             } catch (IOException e) {
                 disconnect();
