@@ -602,7 +602,7 @@ class EffectValidator {
      * @return {@code true} if the index is valid, otherwise {@code false}
      */
     static boolean isPowerupIndexValid(PowerupRequest request) {
-        UserPlayer powerupUser = Game.getInstance().getUserPlayerByUsername(request.getSenderUsername());
+        UserPlayer powerupUser = (UserPlayer) Game.getInstance().getUserPlayerByUsername(request.getSenderUsername());
         int powerupIndex = request.getPowerup().get(0);
 
         if (powerupIndex < 0 || powerupIndex > 3) {

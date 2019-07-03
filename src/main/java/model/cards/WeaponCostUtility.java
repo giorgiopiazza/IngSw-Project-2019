@@ -35,7 +35,7 @@ public class WeaponCostUtility {
      * @throws NotEnoughAmmoException in case the shooter has not enough ammo
      */
     public static void payCost(String username, List<Integer> paymentsPowerups, AmmoQuantity cost) throws NotEnoughAmmoException {
-        UserPlayer shootingPlayer = Game.getInstance().getUserPlayerByUsername(username);
+        UserPlayer shootingPlayer = (UserPlayer)Game.getInstance().getUserPlayerByUsername(username);
         PowerupCard[] powerupCards = shootingPlayer.getPowerups();
 
         List<Integer> usedPowerups = new ArrayList<>();

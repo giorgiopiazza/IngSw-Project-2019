@@ -2507,6 +2507,7 @@ public class GameSceneController {
         for (UserPlayer player : visiblePlayers) {
             ImageView img = new ImageView();
             img.setId(getIconIDFromColor(player.getColor()));
+            img.getStyleClass().add(CSS_BUTTON);
 
             img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> sendBotAction(movePosition, player));
 

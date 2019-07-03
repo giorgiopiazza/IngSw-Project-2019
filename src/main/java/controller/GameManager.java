@@ -512,7 +512,7 @@ public class GameManager implements TimerRunListener, Serializable {
             tempResponse = roundManager.handlePlayerRespawn((DiscardPowerupRequest) receivedMessage);
             if (tempResponse.getStatus() == MessageStatus.OK) {
                 // if the player respawn is validated I can distribute the points of the terminator's playerboard, move the skull from the tracker and then reset his playerboard
-                UserPlayer respawnedPlayer = gameInstance.getUserPlayerByUsername(receivedMessage.getSenderUsername());
+                UserPlayer respawnedPlayer = (UserPlayer) gameInstance.getUserPlayerByUsername(receivedMessage.getSenderUsername());
                 distributePoints(respawnedPlayer);
                 moveSkull(respawnedPlayer);
 

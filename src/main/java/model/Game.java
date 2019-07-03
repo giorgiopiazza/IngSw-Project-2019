@@ -493,10 +493,15 @@ public class Game implements Serializable {
      * @param username of the desired player
      * @return the UserPlayer with the ID passed
      */
-    public UserPlayer getUserPlayerByUsername(String username) {
+    public Player getUserPlayerByUsername(String username) {
+        if (username.equalsIgnoreCase(GameCostants.BOT_NAME)) {
+            return terminator;
+        }
+
         for (UserPlayer p : players) {
             if (p.getUsername().equals(username)) return p;
         }
+
         throw new MissingPlayerUsernameException(username);
     }
 

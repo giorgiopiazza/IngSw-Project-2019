@@ -68,7 +68,7 @@ public class PowerupCard extends UsableCard {
             throw new InvalidCommandException();
         }
 
-        UserPlayer shootingPlayer = Game.getInstance().getUserPlayerByUsername(username);
+        UserPlayer shootingPlayer = (UserPlayer) Game.getInstance().getUserPlayerByUsername(username);
 
         if (getBaseEffect().validate(powerupRequest)) {
             payEffectCost(powerupRequest, shootingPlayer, getBaseEffect().getCost());

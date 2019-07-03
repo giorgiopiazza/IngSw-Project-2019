@@ -63,11 +63,12 @@ public class GameSerialized implements Serializable {
     }
 
     private void setSecretAttributes(String userName) {
-        UserPlayer receivingPlayer = Game.getInstance().getUserPlayerByUsername(userName);
+        Player receivingPlayer = Game.getInstance().getUserPlayerByUsername(userName);
+        UserPlayer userPlayer = (UserPlayer) receivingPlayer;
 
-        this.points = receivingPlayer.getPoints();
-        this.powerupCards = receivingPlayer.getPowerups();
-        this.spawningPowerup = receivingPlayer.getSpawningCard();
+        this.points = userPlayer.getPoints();
+        this.powerupCards = userPlayer.getPowerups();
+        this.spawningPowerup = userPlayer.getSpawningCard();
     }
 
     public List<UserPlayer> getPlayers() {

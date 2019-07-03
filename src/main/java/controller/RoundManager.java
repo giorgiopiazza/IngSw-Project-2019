@@ -211,7 +211,7 @@ public class RoundManager {
      */
     Response handleTerminatorAction(BotUseRequest terminatorRequest, PossibleGameState gameState) {
         TerminatorAction terminatorAction;
-        UserPlayer botTarget = terminatorRequest.getTargetPlayer() == null ? null : gameInstance.getUserPlayerByUsername(terminatorRequest.getTargetPlayer());
+        UserPlayer botTarget = terminatorRequest.getTargetPlayer() == null ? null : (UserPlayer) gameInstance.getUserPlayerByUsername(terminatorRequest.getTargetPlayer());
 
         if (turnManager.getTurnOwner().getPossibleActions().contains(PossibleAction.BOT_ACTION)) {
             try {
@@ -219,7 +219,7 @@ public class RoundManager {
                 if (terminatorAction.validate()) {
                     terminatorAction.execute();
                     if (botTarget != null) {
-                        turnManager.setDamagedPlayers(new ArrayList<>(List.of(gameInstance.getUserPlayerByUsername(terminatorRequest.getTargetPlayer()))));
+                        turnManager.setDamagedPlayers(new ArrayList<>(List.of((UserPlayer)gameInstance.getUserPlayerByUsername(terminatorRequest.getTargetPlayer()))));
                     }
                 } else {
                     return buildNegativeResponse("Terminator action not valid");
