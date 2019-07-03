@@ -482,15 +482,7 @@ public class GameManager implements TimerRunListener, Serializable {
                 // then I set back the playerboard to the initial state
                 gameInstance.getTerminator().getPlayerBoard().onDeath();
 
-                // if the state changed to FINAL_FRENZY, no other players died and the FRENZY MODE starts
-                if (gameState == PossibleGameState.FINAL_FRENZY) {
-                    gameInstance.setState(GameState.FINAL_FRENZY);
-                    finalFrenzySetup();
-                }
-
-                SaveGame.saveGame(this);
-                sendPrivateUpdates();
-                return tempResponse;
+                return checkFrenzy(tempResponse);
             } else {
                 sendPrivateUpdates();
                 return tempResponse;
@@ -524,15 +516,7 @@ public class GameManager implements TimerRunListener, Serializable {
                 // then I set back the playerboard to the inistial state
                 respawnedPlayer.getPlayerBoard().onDeath();
 
-                // if the state changed to FINAL_FRENZY, no other players died and the FRENZY MODE starts
-                if (gameState == PossibleGameState.FINAL_FRENZY) {
-                    gameInstance.setState(GameState.FINAL_FRENZY);
-                    finalFrenzySetup();
-                }
-
-                SaveGame.saveGame(this);
-                sendPrivateUpdates();
-                return tempResponse;
+                return checkFrenzy(tempResponse);
             } else {
                 sendPrivateUpdates();
                 return tempResponse;
@@ -946,6 +930,24 @@ public class GameManager implements TimerRunListener, Serializable {
             default:
                 throw new InvalidGameStateException();
         }
+    }
+
+    /**
+     * Method called at the end of every respawn action to check if the game is going to the final frenzy
+     *
+     * @param tempResponse the {@link Response Response} built
+     * @return the {@link Response Response} passed
+     */
+    private Response checkFrenzy(Response tempResponse) {
+        // if the state changed to FINAL_FRENZY, no other players died and the FRENZY MODE starts
+        if (gameState == PossibleGameState.FINAL_FRENZY) {
+            gameInstance.setState(GameState.FINAL_FRENZY);
+            finalFrenzySetup();
+        }
+
+        SaveGame.saveGame(this);
+        sendPrivateUpdates();
+        return tempResponse;
     }
 
     /**
