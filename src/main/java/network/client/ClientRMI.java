@@ -92,7 +92,6 @@ public class ClientRMI extends Client implements RMIClientConnection {
         super.pingTimer.cancel();
         super.pingTimer = new Timer();
         super.pingTimer.schedule(new PingTimerTask(super.disconnectionListener), Client.DISCONNECTION_TIME);
-        Logger.getGlobal().log(Level.INFO, "Ping from server");
     }
 
     @Override
