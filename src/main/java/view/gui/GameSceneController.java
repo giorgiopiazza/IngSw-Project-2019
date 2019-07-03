@@ -2479,7 +2479,7 @@ public class GameSceneController {
         List<UserPlayer> visiblePlayers = new ArrayList<>();
 
         for (UserPlayer player : players) {
-            if (tempPos.canSee(player.getPosition())) {
+            if (player.getPosition() != null && tempPos.canSee(player.getPosition())) {
                 visiblePlayers.add(player);
             }
         }
