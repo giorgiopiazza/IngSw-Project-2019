@@ -16,7 +16,7 @@ public abstract class Client extends UnicastRemoteObject {
     public static final int MAX_USERNAME_LENGTH = 20;
     public static final int DISCONNECTION_TIME = 15000;
 
-    protected final PingTimerTask pingTimerTask;
+    protected DisconnectionListener disconnectionListener;
     protected Timer pingTimer;
 
     private final String username;
@@ -38,12 +38,12 @@ public abstract class Client extends UnicastRemoteObject {
         this.username = username;
         this.address = address;
         this.port = port;
+        this.disconnectionListener = disconnectionListener;
 
         this.messageQueue = new ArrayList<>();
 
-        this.pingTimerTask = new PingTimerTask(disconnectionListener);
         this.pingTimer = new Timer();
-        this.pingTimer.schedule(pingTimerTask, DISCONNECTION_TIME);
+        this.pingTimer.schedule(new PingTimerTask(this.disconnectionListener), DISCONNECTION_TIME);
     }
 
     /**

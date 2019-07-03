@@ -82,7 +82,7 @@ public class ClientSocket extends Client implements Runnable {
                 } else if (message != null && message.getContent() == MessageContent.PING) {
                     super.pingTimer.cancel();
                     super.pingTimer = new Timer();
-                    super.pingTimer.schedule(super.pingTimerTask, Client.DISCONNECTION_TIME);
+                    super.pingTimer.schedule(new PingTimerTask(super.disconnectionListener), Client.DISCONNECTION_TIME);
                 }
             } catch (IOException e) {
                 disconnect();
