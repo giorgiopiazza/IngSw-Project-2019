@@ -13,6 +13,6 @@ public class PingTimerTask extends TimerTask {
 
     @Override
     public void run() {
-        //disconnectionListener.onDisconnection();
+        disconnectionListener.onDisconnection();
     }
 }
