@@ -381,6 +381,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         if (connectionResponse.getStatus().equals(MessageStatus.OK)) {
             client.setToken(connectionResponse.getNewToken());
         } else {
+            client.pingTimer.cancel();
             closeConnection();
         }
 
@@ -946,12 +947,5 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
      */
     public String getFirstPlayer() {
         return firstPlayer;
-    }
-
-    /**
-     * stop the ping timer to avoid the disconnection after an invalid lobbyResponse
-     */
-    public void stopPingTimer() {
-        client.pingTimer.cancel();
     }
 }

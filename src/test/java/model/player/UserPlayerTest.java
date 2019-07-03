@@ -1,14 +1,25 @@
 package model.player;
 
 import enumerations.PlayerColor;
+import enumerations.PossibleAction;
+import enumerations.PossiblePlayerState;
 import exceptions.game.InvalidMapNumberException;
 import exceptions.player.CardAlreadyInHandException;
+import exceptions.player.EmptyHandException;
 import exceptions.player.MaxCardsInHandException;
 import model.Game;
+import model.cards.Deck;
+import model.cards.PowerupCard;
 import model.cards.WeaponCard;
 import model.map.GameMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import utility.PowerupParser;
+import utility.WeaponParser;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -29,6 +40,59 @@ class UserPlayerTest {
         players[3] = new UserPlayer("player", PlayerColor.values()[3], board);
         players[3].setFirstPlayer();
         players[3].setPosition(new PlayerPosition(0, 0));
+    }
+
+    @Test
+    void player() throws InvalidMapNumberException {
+        Player player = new UserPlayer("ciao");
+        Player gio = new UserPlayer("gio");
+
+        Game.getInstance().setGameMap(GameMap.MAP_3);
+
+        player.setColor(PlayerColor.GREEN);
+
+        player.setPosition(new PlayerPosition(0,0));
+        gio.setPosition(new PlayerPosition(1,1));
+
+        assertFalse(player.isDead());
+        player.getPlayerBoard().addDamage(gio, 11);
+        assertTrue(player.isDead());
+        assertEquals(0, gio.compareTo(player));
+        player.setPoints(10);
+        assertEquals(-10, player.compareTo(gio));
+        assertFalse(gio.canSee(player));
+    }
+
+    @Test
+    void userPlayer() throws MaxCardsInHandException, EmptyHandException {
+        UserPlayer p1 = new UserPlayer("1");
+        UserPlayer p2 = new UserPlayer("2");
+
+        Deck deck = PowerupParser.parseCards();
+        Deck deck1 = WeaponParser.parseCards();
+
+        p1.setPosition(new PlayerPosition(0,0));
+        p2.setPossibleActions(null);
+        p1.setPossibleActions(new HashSet<>(List.of(PossibleAction.SHOOT, PossibleAction.ADRENALINE_PICK)));
+        p1.getPlayerState();
+        p1.changePlayerState(PossiblePlayerState.PLAYING);
+        p1.setPlayerState(PossiblePlayerState.PLAYING);
+        p1.setWeapons(new ArrayList<>(List.of((WeaponCard) deck1.draw())));
+
+        PowerupCard powerupCard = (PowerupCard) deck.draw();
+        WeaponCard weaponCard = (WeaponCard) deck1.draw();
+
+        p1.addWeapon(weaponCard);
+        p1.setPowerups(new ArrayList<>(List.of((PowerupCard)deck.draw())));
+        p1.addPowerup(powerupCard);
+        p1.discardPowerup(powerupCard);
+
+        p1.discardPowerupByIndex(0);
+
+        assertThrows(EmptyHandException.class, () -> p1.discardPowerup(powerupCard));
+        assertThrows(IllegalArgumentException.class, () -> p1.discardPowerupByIndex(-1));
+        assertThrows(IllegalArgumentException.class, () -> p1.discardPowerupByIndex(100));
+        assertThrows(EmptyHandException.class, () -> p1.discardPowerupByIndex(0));
     }
 
     @Test
@@ -72,6 +136,7 @@ class UserPlayerTest {
         p2.setPosition(new PlayerPosition(2, 0));
 
         assertEquals(5, p1.distanceOf(p2));
+        assertEquals(p1.distanceOf(p2), p1.distanceOf(p2, Game.getInstance().getGameMap()));
     }
 
     @Test
