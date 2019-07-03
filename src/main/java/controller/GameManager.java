@@ -12,6 +12,7 @@ import network.server.Server;
 import utility.InputValidator;
 import utility.LobbyTimer;
 import utility.TimerRunListener;
+import utility.persistency.SaveGame;
 
 import java.io.Serializable;
 import java.util.*;
@@ -218,7 +219,7 @@ public class GameManager implements TimerRunListener, Serializable {
      * @return a {@link Message Message} which contains the result of the received message
      */
     public Message onMessage(Message receivedMessage) {
-        if(gameState == PossibleGameState.GAME_ENDED) {
+        if (gameState == PossibleGameState.GAME_ENDED) {
             return new Response("GAME ENDED", MessageStatus.ERROR);
         }
 
@@ -278,7 +279,7 @@ public class GameManager implements TimerRunListener, Serializable {
      * @return a {@link Message Message} which contains the result of the received message
      */
     public Message onConnectionMessage(Message receivedConnectionMessage) {
-        if(gameState == PossibleGameState.GAME_ENDED) {
+        if (gameState == PossibleGameState.GAME_ENDED) {
             return new Response("GAME ENDED", MessageStatus.ERROR);
         }
 
@@ -321,7 +322,7 @@ public class GameManager implements TimerRunListener, Serializable {
             if (gameEnded) {
                 return new Response("Player disconnected, game has now less then 3 players and then is ending...", MessageStatus.OK);
             } else if (getRoundManager().getTurnManager().getTurnOwner().getUsername().equals(receivedConnectionMessage.getSenderUsername())) {    // if game hasn't ended I check if the disconnected player is the turn owner, if so I change the state, otherwise nothing happens
-                if(roundManager.getTurnManager().getTurnOwner().getPossibleActions().contains(PossibleAction.CHOOSE_SPAWN) || roundManager.getTurnManager().getTurnOwner().getPossibleActions().contains(PossibleAction.SPAWN_BOT)) {
+                if (roundManager.getTurnManager().getTurnOwner().getPossibleActions().contains(PossibleAction.CHOOSE_SPAWN) || roundManager.getTurnManager().getTurnOwner().getPossibleActions().contains(PossibleAction.SPAWN_BOT)) {
                     roundManager.handleRandomSpawn(roundManager.getTurnManager().getTurnOwner().getPosition() == null, gameInstance.isTerminatorPresent() && gameInstance.getTerminator().getPosition() == null);
                 }
                 roundManager.handlePassAction();
@@ -474,7 +475,7 @@ public class GameManager implements TimerRunListener, Serializable {
                 moveSkull(terminator);
 
                 // if the death bot has been overkilled, he marks his overkiller
-                if(terminator.getPlayerBoard().getDamageCount() > 11) {
+                if (terminator.getPlayerBoard().getDamageCount() > 11) {
                     getRoundManager().getTurnManager().getTurnOwner().getPlayerBoard().addMark(terminator, 1);
                 }
 
@@ -486,6 +487,8 @@ public class GameManager implements TimerRunListener, Serializable {
                     gameInstance.setState(GameState.FINAL_FRENZY);
                     finalFrenzySetup();
                 }
+
+                SaveGame.saveGame(this);
                 sendPrivateUpdates();
                 return tempResponse;
             } else {
@@ -514,7 +517,7 @@ public class GameManager implements TimerRunListener, Serializable {
                 moveSkull(respawnedPlayer);
 
                 // if the death player has been overkilled, he marks his overkiller
-                if(respawnedPlayer.getPlayerBoard().getDamageCount() > 11) {
+                if (respawnedPlayer.getPlayerBoard().getDamageCount() > 11) {
                     gameInstance.getPlayerByName(respawnedPlayer.getPlayerBoard().getDamages().get(11)).getPlayerBoard().addMark(respawnedPlayer, 1);
                 }
 
@@ -527,6 +530,7 @@ public class GameManager implements TimerRunListener, Serializable {
                     finalFrenzySetup();
                 }
 
+                SaveGame.saveGame(this);
                 sendPrivateUpdates();
                 return tempResponse;
             } else {
@@ -710,7 +714,7 @@ public class GameManager implements TimerRunListener, Serializable {
         }
 
         // added the players I can add the terminator, if present
-        if(gameInstance.isTerminatorPresent()) {
+        if (gameInstance.isTerminatorPresent()) {
             gameInstance.buildTerminator();
         }
 
@@ -1130,13 +1134,13 @@ public class GameManager implements TimerRunListener, Serializable {
         List<UserPlayer> players = gameInstance.getPlayers();
         ArrayList<PlayerPoints> playerPoints = new ArrayList<>();
 
-        if(gameInstance.isTerminatorPresent()) {
+        if (gameInstance.isTerminatorPresent()) {
             Bot bot = (Bot) gameInstance.getTerminator();
             PlayerPoints botPoints = new PlayerPoints(bot.getUsername(), bot.getColor(), bot.getPoints());
             playerPoints.add(botPoints);
         }
 
-        for(UserPlayer player : players) {
+        for (UserPlayer player : players) {
             PlayerPoints userPoints = new PlayerPoints(player.getUsername(), player.getColor(), player.getPoints());
             playerPoints.add(userPoints);
         }
@@ -1147,13 +1151,13 @@ public class GameManager implements TimerRunListener, Serializable {
     /**
      * Sets the winners from the ArrayList of usernames passed
      *
-     * @param usernames the usernames of the winners
+     * @param usernames    the usernames of the winners
      * @param playerPoints the player points of all the players in the game
      */
     private void setWinners(ArrayList<String> usernames, List<PlayerPoints> playerPoints) {
-        for(String winner : usernames) {
-            for(PlayerPoints winnerPoints : playerPoints) {
-                if(winner.equals(winnerPoints.getUserName())) {
+        for (String winner : usernames) {
+            for (PlayerPoints winnerPoints : playerPoints) {
+                if (winner.equals(winnerPoints.getUserName())) {
                     winnerPoints.setWinner();
                 }
             }
@@ -1203,7 +1207,7 @@ public class GameManager implements TimerRunListener, Serializable {
      * that did the same points during the Game
      *
      * @param tiePlayers ArrayList of {@link Player Players} with the same points at the end of the Game
-     * @param winners ArrayList with all the {@link PlayerPoints PlayerPoints}
+     * @param winners    ArrayList with all the {@link PlayerPoints PlayerPoints}
      */
     private void handleTiePlayers(ArrayList<Player> tiePlayers, ArrayList<PlayerPoints> winners) {
         ArrayList<KillShot> killShotTracker = gameInstance.getKillShotTrack();

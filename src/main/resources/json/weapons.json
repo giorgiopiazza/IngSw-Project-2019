@@ -715,7 +715,7 @@
           "id": 1,
           "description": "REPEAT ONE: move to a square exactly 1 move far. You may deal 2 damage to 1 target there.          ",
           "properties": {
-            "visible": true,
+            "concatenatedVisible": true,
             "target": ["PLAYER"],
             "maxTargetNum": 2,
             "damageDistribution": [2, 2],

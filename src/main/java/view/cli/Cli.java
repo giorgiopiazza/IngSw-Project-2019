@@ -16,6 +16,7 @@ import model.map.GameMap;
 import model.map.SpawnSquare;
 import model.map.Square;
 import model.player.*;
+import network.client.DisconnectionListener;
 import network.message.*;
 import utility.*;
 
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
 
 import static java.util.logging.Level.INFO;
 
-public class Cli extends ClientGameManager {
+public class Cli extends ClientGameManager implements DisconnectionListener {
     private Scanner in;
     private AdrenalinePrintStream out;
 
@@ -136,7 +137,7 @@ public class Cli extends ClientGameManager {
         out.println("\nServer Port: " + port);
 
         try {
-            createConnection(connection, username, address, port);
+            createConnection(connection, username, address, port, this);
         } catch (Exception e) {
             promptError(e.getMessage(), true);
         }
@@ -1183,6 +1184,7 @@ public class Cli extends ClientGameManager {
             }
         } else if (effectProperties.containsKey(Properties.MOVE_TO_LAST_TARGET.getJKey())) {
             shootRequestBuilder.senderMovePosition(getPlayerByName(targetsChosen.get(targetsChosen.size() - 1)).getPosition());
+            shootRequestBuilder.moveToLastTarget(true);
         }
 
         // now that I have handled the Turn Owner movement I have to handle the targets ones
@@ -1849,5 +1851,10 @@ public class Cli extends ClientGameManager {
      */
     private void printAmmo() {
         CliPrinter.printAmmo(out, getPlayer().getPlayerBoard().getAmmo());
+    }
+
+    @Override
+    public void onDisconnection() {
+        promptError("Disconnected from the server, connection expired", true);
     }
 }

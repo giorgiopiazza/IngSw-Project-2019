@@ -164,11 +164,11 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
      * @param port       port of the serve
      * @throws Exception if something goes wrong with the creation of the connection
      */
-    public void createConnection(int connection, String username, String address, int port) throws Exception {
+    public void createConnection(int connection, String username, String address, int port, DisconnectionListener disconnectionListener) throws Exception {
         if (connection == 0) {
-            client = new ClientSocket(username, address, port);
+            client = new ClientSocket(username, address, port, disconnectionListener);
         } else {
-            client = new ClientRMI(username, address, port);
+            client = new ClientRMI(username, address, port, disconnectionListener);
         }
 
         client.startConnection();

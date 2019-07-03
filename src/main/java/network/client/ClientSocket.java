@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Timer;
 import java.util.logging.Logger;
 
 /**
@@ -30,8 +31,8 @@ public class ClientSocket extends Client implements Runnable {
      * @param port     port of the server
      * @throws IOException in case of problems with communication with server
      */
-    public ClientSocket(String username, String address, int port) throws IOException {
-        super(username, address, port);
+    public ClientSocket(String username, String address, int port, DisconnectionListener disconnectionListener) throws IOException {
+        super(username, address, port, disconnectionListener);
     }
 
     /**
@@ -79,6 +80,10 @@ public class ClientSocket extends Client implements Runnable {
                     synchronized (messageQueue) {
                         messageQueue.add(message);
                     }
+                } else if (message != null && message.getContent() == MessageContent.PING) {
+                    super.pingTimer.cancel();
+                    super.pingTimer = new Timer();
+                    super.pingTimer.schedule(new PingTimerTask(super.disconnectionListener), Client.DISCONNECTION_TIME);
                 }
             } catch (IOException e) {
                 disconnect();

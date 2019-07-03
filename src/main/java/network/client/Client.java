@@ -7,6 +7,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
 
 /**
  * This class represents a Client
@@ -14,6 +15,10 @@ import java.util.List;
 public abstract class Client extends UnicastRemoteObject {
     public static final int MAX_USERNAME_LENGTH = 20;
     private static final long serialVersionUID = -5831202245262756797L;
+    public static final int DISCONNECTION_TIME = 15000;
+
+    protected DisconnectionListener disconnectionListener;
+    protected Timer pingTimer;
 
     private final String username;
     private final String address;
@@ -30,12 +35,16 @@ public abstract class Client extends UnicastRemoteObject {
      * @param port     port of the server
      * @throws RemoteException in case of problems with communication with server
      */
-    public Client(String username, String address, int port) throws RemoteException {
+    public Client(String username, String address, int port, DisconnectionListener disconnectionListener) throws RemoteException {
         this.username = username;
         this.address = address;
         this.port = port;
+        this.disconnectionListener = disconnectionListener;
 
         this.messageQueue = new ArrayList<>();
+
+        this.pingTimer = new Timer();
+        this.pingTimer.schedule(new PingTimerTask(this.disconnectionListener), DISCONNECTION_TIME);
     }
 
     /**
