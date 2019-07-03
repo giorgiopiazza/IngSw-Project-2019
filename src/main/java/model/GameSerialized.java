@@ -1,6 +1,7 @@
 package model;
 
 import enumerations.GameState;
+import enumerations.PossibleAction;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
 import model.map.GameMap;
@@ -25,6 +26,7 @@ public class GameSerialized implements Serializable {
     private ArrayList<UserPlayer> players;
     private Bot bot;
     private Boolean botPresent;
+    private boolean botActionDone;
 
     private int killShotNum;
     private KillShot[] killShotsTrack;
@@ -47,7 +49,12 @@ public class GameSerialized implements Serializable {
         }
 
         botPresent = instance.isTerminatorPresent();
-        if (botPresent) bot = (Bot) instance.getTerminator();
+        if (botPresent) {
+            bot = (Bot) instance.getTerminator();
+            botActionDone = ((UserPlayer) Game.getInstance().getPlayerByName(userName)).getPossibleActions().contains(PossibleAction.BOT_ACTION);
+        } else {
+            botActionDone = false;
+        }
 
         killShotsTrack = instance.getKillShotsTrack() != null ? Arrays.copyOf(instance.getKillShotsTrack(), instance.getKillShotsTrack().length) : null;
         killShotNum = instance.getKillShotNum();
@@ -77,6 +84,10 @@ public class GameSerialized implements Serializable {
 
     public boolean isBotPresent() {
         return botPresent;
+    }
+
+    public boolean isBotActionDone() {
+        return botActionDone;
     }
 
     public int getKillShotNum() {
