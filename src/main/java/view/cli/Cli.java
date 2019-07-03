@@ -652,12 +652,18 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
             return;
         }
 
-        ArrayList<Integer> indexes = new ArrayList<>(getPowerupsIndexesFromList(getPowerups(), chosenGrenades));
+        if (chosenGrenades.isEmpty()) {
+            if(!sendRequest(MessageBuilder.buildPassTurnRequest(getClientToken(), getPlayer()))) {
+                promptError(SEND_ERROR, true);
+            }
+        } else {
+            ArrayList<Integer> indexes = new ArrayList<>(getPowerupsIndexesFromList(getPowerups(), chosenGrenades));
 
-        PowerupRequest.PowerupRequestBuilder grenadeRequestBuilder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), indexes);
+            PowerupRequest.PowerupRequestBuilder grenadeRequestBuilder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), indexes);
 
-        if (!sendRequest(MessageBuilder.buildPowerupRequest(grenadeRequestBuilder))) {
-            promptError(SEND_ERROR, true);
+            if (!sendRequest(MessageBuilder.buildPowerupRequest(grenadeRequestBuilder))) {
+                promptError(SEND_ERROR, true);
+            }
         }
     }
 
@@ -1449,7 +1455,7 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
             out.println("\nChoose the weapon. Your ammo are:\n");
             printAmmo();
             choose = readInt(0, weapons.length - 1, true);
-        } while ((choose < 0 || choose > weapons.length - 1));
+        } while (weapons[choose] == null && choose > weapons.length - 1);
 
         return weapons[choose];
     }

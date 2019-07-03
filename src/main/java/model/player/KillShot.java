@@ -27,8 +27,7 @@ public class KillShot implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         KillShot killShot = (KillShot) o;
-        return points == killShot.points &&
-                Objects.equals(killer, killShot.killer);
+        return points == killShot.points && killer.equals(killShot.killer);
     }
 
     @Override

@@ -554,6 +554,10 @@ public class Game implements Serializable {
             playersDamage.add(player.getPlayerBoard().getDamageCount());
         }
 
+        if(isTerminatorPresent()) {
+            playersDamage.add(terminator.getPlayerBoard().getDamageCount());
+        }
+
         return playersDamage;
     }
 

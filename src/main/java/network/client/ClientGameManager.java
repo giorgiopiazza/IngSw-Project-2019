@@ -381,6 +381,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         if (connectionResponse.getStatus().equals(MessageStatus.OK)) {
             client.setToken(connectionResponse.getNewToken());
         } else {
+            client.pingTimer.cancel();
             closeConnection();
         }
 
