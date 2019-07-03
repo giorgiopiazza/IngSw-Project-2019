@@ -169,7 +169,7 @@ public class RoundManager {
      *
      * @param gameState the {@link GameState GameState} in which the {@link GameManager GameManager} needs to evolve
      */
-    private void afterTerminatorActionHandler(PossibleGameState gameState) {
+    void afterTerminatorActionHandler(PossibleGameState gameState) {
         if (gameState == PossibleGameState.GAME_STARTED || gameState == PossibleGameState.FINAL_FRENZY || gameState == PossibleGameState.SECOND_ACTION) {
             // if terminator action is done before the 2 actions the game state does not change, otherwise it must be done before passing the turn
             gameManager.changeState(gameState);
@@ -286,6 +286,7 @@ public class RoundManager {
             turnManager.giveTurn(turnManager.getMarkedByGrenadePlayer());
             if (turnManager.getMarkingTerminator()) {
                 afterTerminatorActionHandler(turnManager.getArrivingGameState());
+                return buildPositiveResponse("Grenade used, turn going back to real turn owner");
             }
             gameManager.changeState(handleAfterActionState(turnManager.isSecondAction()));
             return buildPositiveResponse("Grenade used, turn going back to real turn owner");
@@ -892,13 +893,17 @@ public class RoundManager {
      * @param beforeShootDamage the List of damage before the {@link ShootAction ShootAction}
      * @return the ArrayList of damaged {@link UserPlayer UserPlayers}
      */
-    private ArrayList<UserPlayer> buildDamagedPlayers(List<Integer> beforeShootDamage) {
-        ArrayList<UserPlayer> reallyDamagedPlayers = new ArrayList<>();
+    private ArrayList<Player> buildDamagedPlayers(List<Integer> beforeShootDamage) {
+        ArrayList<Player> reallyDamagedPlayers = new ArrayList<>();
 
         for (int i = 0; i < gameInstance.getPlayers().size(); ++i) {
             if (gameInstance.getPlayers().get(i).getPlayerBoard().getDamageCount() > beforeShootDamage.get(i)) {
                 reallyDamagedPlayers.add(gameInstance.getPlayers().get(i));
             }
+        }
+
+        if (beforeShootDamage.size() > gameInstance.getPlayers().size() && gameInstance.isTerminatorPresent()) {
+            reallyDamagedPlayers.add(gameInstance.getTerminator());
         }
 
         return reallyDamagedPlayers;

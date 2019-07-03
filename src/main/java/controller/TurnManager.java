@@ -23,7 +23,7 @@ public class TurnManager implements Serializable {
     private final UserPlayer lastRoundPlayer;
 
     private List<UserPlayer> players;
-    private List<UserPlayer> damagedPlayers;
+    private List<Player> damagedPlayers;
     private List<UserPlayer> deathPlayers;
 
     private UserPlayer markedByGrenadePlayer;
@@ -127,7 +127,7 @@ public class TurnManager implements Serializable {
      *
      * @param damaged the ArrayList of damaged {@link UserPlayer UserPlayers}
      */
-    void setDamagedPlayers(ArrayList<UserPlayer> damaged) {
+    void setDamagedPlayers(ArrayList<Player> damaged) {
         damagedPlayers = Objects.requireNonNullElse(damaged, new ArrayList<>());
     }
 
@@ -135,7 +135,7 @@ public class TurnManager implements Serializable {
      * @return the ArrayList of damaged {@link UserPlayer UserPlayers}, used to verify when TARGETING SCOPE
      * can be used
      */
-    List<UserPlayer> getDamagedPlayers() {
+    List<Player> getDamagedPlayers() {
         return this.damagedPlayers;
     }
 
@@ -145,9 +145,9 @@ public class TurnManager implements Serializable {
     List<UserPlayer> getGrenadePossibleUsers() {
         ArrayList<UserPlayer> grenadePossessors = new ArrayList<>();
 
-        for(UserPlayer player : damagedPlayers) {
-            if(player.getPowerupOccurrences("TAGBACK GRENADE") > 0) {
-                grenadePossessors.add(player);
+        for(Player player : damagedPlayers) {
+            if(((UserPlayer) player).getPowerupOccurrences("TAGBACK GRENADE") > 0) {
+                grenadePossessors.add((UserPlayer) player);
             }
         }
 

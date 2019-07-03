@@ -653,12 +653,18 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
             return;
         }
 
-        ArrayList<Integer> indexes = new ArrayList<>(getPowerupsIndexesFromList(getPowerups(), chosenGrenades));
+        if (chosenGrenades.isEmpty()) {
+            if(!sendRequest(MessageBuilder.buildPassTurnRequest(getClientToken(), getPlayer()))) {
+                promptError(SEND_ERROR, true);
+            }
+        } else {
+            ArrayList<Integer> indexes = new ArrayList<>(getPowerupsIndexesFromList(getPowerups(), chosenGrenades));
 
-        PowerupRequest.PowerupRequestBuilder grenadeRequestBuilder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), indexes);
+            PowerupRequest.PowerupRequestBuilder grenadeRequestBuilder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), indexes);
 
-        if (!sendRequest(MessageBuilder.buildPowerupRequest(grenadeRequestBuilder))) {
-            promptError(SEND_ERROR, true);
+            if (!sendRequest(MessageBuilder.buildPowerupRequest(grenadeRequestBuilder))) {
+                promptError(SEND_ERROR, true);
+            }
         }
     }
 

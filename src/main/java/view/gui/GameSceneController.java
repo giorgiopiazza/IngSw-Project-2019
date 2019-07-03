@@ -1936,6 +1936,7 @@ public class GameSceneController {
     }
 
     void tagbackGrenade() {
+        // TODO INVIARE PASS_TURN_REQUEST IN CASO NON VENGA USATO NESSUNA GRANATA
         askMultiplePowerupUsage(ClientGameManager.TAGBACK_GRENADE);
     }
 
