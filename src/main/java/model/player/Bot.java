@@ -27,11 +27,7 @@ public class Bot extends Player {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        Bot bot = (Bot) o;
-        return spawnTurn == bot.spawnTurn;
+        return super.equals(o);
     }
 
     @Override

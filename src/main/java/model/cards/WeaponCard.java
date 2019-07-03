@@ -196,10 +196,7 @@ public class WeaponCard extends UsableCard {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         WeaponCard that = (WeaponCard) o;
-        return id == that.id &&
-                Arrays.equals(cost, that.cost) &&
-                Objects.equals(secondaryEffects, that.secondaryEffects) &&
-                Objects.equals(weaponState, that.weaponState);
+        return id == that.id;
     }
 
     @Override

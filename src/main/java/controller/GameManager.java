@@ -991,7 +991,7 @@ public class GameManager implements TimerRunListener, Serializable {
                 .sorted(Map.Entry.comparingByValue())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 
-        if (deathsPlayerBoard.isBoardFlipped()) {     // first blood assignment
+        if (!deathsPlayerBoard.isBoardFlipped()) {     // first blood assignment
             firstBlooder = gameInstance.getUserPlayerByUsername(deathsPlayerBoard.getDamages().get(0));
             firstBlooder.addPoints(1);
         }
