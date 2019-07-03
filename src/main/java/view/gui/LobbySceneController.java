@@ -94,7 +94,8 @@ public class LobbySceneController {
         }
     }
 
-    void updateLobbyList(List<String> users) {
+    void updateLobbyList() {
+        List<String> users = guiManager.getLobbyPlayers();
         ObservableList<Node> childrens = lobbyLabelsBox.getChildren();
         childrens.clear();
 

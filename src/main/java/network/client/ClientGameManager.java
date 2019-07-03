@@ -44,6 +44,9 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
     private Client client;
     private boolean joinedLobby;
+    private List<String> lobbyPlayers;
+
+    private boolean votedMap;
 
     private ClientRoundManager roundManager; // manage the rounds of this client
     private GameSerialized gameSerialized;
@@ -350,7 +353,6 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         try {
             client.sendMessage(message);
         } catch (IOException e) {
-            Logger.getGlobal().severe(e.getMessage());
             return false;
         }
 
@@ -403,6 +405,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
      * @param gameVoteResponse response received
      */
     private void handleVoteResponse(GameVoteResponse gameVoteResponse) {
+        votedMap = false;
         queue.add(() -> voteResponse(gameVoteResponse));
     }
 
@@ -412,6 +415,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
      * @param message message received
      */
     private void handlePlayersInLobby(LobbyPlayersResponse message) {
+        lobbyPlayers = message.getUsers();
         queue.add(() -> playersLobbyUpdate(message.getUsers()));
     }
 
@@ -424,6 +428,8 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         if (!joinedLobby) {
             joinedLobby = response.getStatus() == MessageStatus.OK;
             queue.add(() -> lobbyJoinResponse(response));
+        } else if (votedMap) {
+            votedMap = false;
         } else {
             if (response.getStatus() == MessageStatus.ERROR) {
                 queue.add(() -> responseError(response.getMessage()));
@@ -948,5 +954,19 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
      */
     public String getFirstPlayer() {
         return firstPlayer;
+    }
+
+    /**
+     * @return the players in lobby
+     */
+    public List<String> getLobbyPlayers() {
+        return lobbyPlayers;
+    }
+
+    /**
+     * Sets the voted map flag to true
+     */
+    protected void votedMap() {
+        votedMap = true;
     }
 }

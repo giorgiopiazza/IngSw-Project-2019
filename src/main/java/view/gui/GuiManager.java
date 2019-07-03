@@ -285,7 +285,7 @@ public class GuiManager extends ClientGameManager implements DisconnectionListen
     public void playersLobbyUpdate(List<String> users) {
         if (lobbySceneController != null) {
             Platform.runLater(() ->
-                    lobbySceneController.updateLobbyList(users));
+                    lobbySceneController.updateLobbyList());
         }
     }
 

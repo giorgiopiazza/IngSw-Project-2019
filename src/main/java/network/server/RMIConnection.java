@@ -49,15 +49,17 @@ public class RMIConnection extends Connection {
      */
     @Override
     public void disconnect() {
-        connected = false;
+        if (connected) {
+            connected = false;
 
-        try {
-            clientSession.disconnectMe();
-        } catch (RemoteException e) {
-            //
+            try {
+                clientSession.disconnectMe();
+            } catch (RemoteException e) {
+                //
+            }
+
+            server.onDisconnect(this);
         }
-
-        server.onDisconnect(this);
     }
 
     /**
