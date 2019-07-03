@@ -104,10 +104,6 @@ public class InputValidator {
             return false;
         }
 
-        if(!Game.getInstance().doesPlayerExists(message.getSenderUsername())) {
-            return false;
-        }
-
         return message.getContent() != null;
     }
 

@@ -553,7 +553,6 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         client.setToken(gameLoadResponse.getNewToken());
 
         roundManager = new ClientRoundManager(gameLoadResponse.isBotPresent());
-
         roundManager.setPlayerState(gameLoadResponse.getUserPlayerState());
 
         isBotPresent = gameLoadResponse.isBotPresent();
@@ -621,6 +620,8 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             roundManager.grenade();
         } else if (getPlayer().isDead()) {
             roundManager.death();
+        } else if (getPlayer().getPosition() == null) {
+            roundManager.spawn();
         }
     }
 

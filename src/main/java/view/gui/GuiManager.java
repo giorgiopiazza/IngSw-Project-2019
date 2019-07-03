@@ -105,7 +105,7 @@ public class GuiManager extends ClientGameManager implements DisconnectionListen
 
     @Override
     public void loadResponse() {
-        // TODO
+        // Wait others to reconnect
     }
 
     @Override
@@ -160,12 +160,15 @@ public class GuiManager extends ClientGameManager implements DisconnectionListen
 
     @Override
     public void responseError(String error) {
-        if (gameSceneController == null) {
+        if (gameSceneController != null) {
+            Platform.runLater(() ->
+                    gameSceneController.onError(error));
+        } else if (lobbySceneController != null) {
             Platform.runLater(() ->
                     lobbySceneController.onError(error));
         } else {
             Platform.runLater(() ->
-                    gameSceneController.onError(error));
+                    connectionSceneController.onError(error));
         }
     }
 
@@ -288,6 +291,16 @@ public class GuiManager extends ClientGameManager implements DisconnectionListen
 
     @Override
     public void onDisconnection() {
-        // TODO
+        Platform.runLater(() -> {
+            if (gameSceneController != null) {
+                gameSceneController.onDisconnection();
+            } else if (lobbySceneController != null) {
+                lobbySceneController.onDisconnection();
+            } else if (colorPickSceneController != null) {
+                colorPickSceneController.onDisconnection();
+            }
+
+            System.exit(0);
+        });
     }
 }

@@ -1,6 +1,7 @@
 package model.player;
 
 import enumerations.Direction;
+import enumerations.PlayerColor;
 import exceptions.player.NoDirectionException;
 import exceptions.player.SamePositionException;
 import model.map.GameMap;
@@ -19,6 +20,17 @@ public class PlayerPositionTest {
     void before() {
         shooter = new PlayerPosition(0,0);
         target = new PlayerPosition(shooter);
+    }
+
+    @Test
+    void playerPoints() {
+        PlayerPoints points = new PlayerPoints("ciao", PlayerColor.GREEN, 2);
+
+        points.getPoints();
+        points.getUserName();
+        points.getPlayerColor();
+        points.setWinner();
+        assertTrue(points.isWinner());
     }
 
     @Test

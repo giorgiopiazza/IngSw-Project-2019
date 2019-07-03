@@ -2622,4 +2622,8 @@ public class GameSceneController {
             endGameSceneController.setData(players);
         }
     }
+
+    void onDisconnection() {
+        GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), "Disconnection", "You were disconnected from the server");
+    }
 }

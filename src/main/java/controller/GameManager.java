@@ -223,7 +223,9 @@ public class GameManager implements TimerRunListener, Serializable {
             return new Response("GAME ENDED", MessageStatus.ERROR);
         }
 
-        if (!InputValidator.validateInput(receivedMessage)) {
+        if (!InputValidator.validateInput(receivedMessage) ||
+                (gameState != PossibleGameState.GAME_ROOM &&
+                        !Game.getInstance().doesPlayerExists(receivedMessage.getSenderUsername()))) {
             return buildInvalidResponse();
         }
 
