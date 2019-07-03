@@ -234,7 +234,6 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
         if (response.getStatus().equals(MessageStatus.ERROR)) {
             promptError(response.getMessage(), false);
             out.println();
-            stopPingTimer();
             doConnection();
         } else {
             out.println("Connected to server with username " + getUsername());
