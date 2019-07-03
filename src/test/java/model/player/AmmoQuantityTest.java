@@ -33,6 +33,13 @@ class AmmoQuantityTest {
         assertEquals(3, ammoQuantity.getRedAmmo());
         assertEquals(3, ammoQuantity.getYellowAmmo());
 
+        ammoQuantity.addAmmo(Ammo.BLUE);
+        ammoQuantity.addAmmo(Ammo.RED);
+        ammoQuantity.addAmmo(Ammo.YELLOW);
+
+        assertEquals(9, ammoQuantity.getAmmoCount());
+        ammoQuantity.toArray();
+        ammoQuantity.toString();
     }
 
     @Test
