@@ -9,10 +9,7 @@ import exceptions.player.MissingCardException;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class UserPlayer extends Player {
     private static final long serialVersionUID = 6112114324297833028L;
@@ -63,8 +60,13 @@ public class UserPlayer extends Player {
         return this.spawningCard;
     }
 
-    public void setPossibleActions(EnumSet<PossibleAction> possibleActions) {
-        this.possibleActions = possibleActions;
+    public void setPossibleActions(Set<PossibleAction> possibleActions) {
+        if (possibleActions != null) {
+            this.possibleActions = EnumSet.copyOf(possibleActions);
+
+        } else {
+            this.possibleActions = null;
+        }
     }
 
     public void setPlayerState(PossiblePlayerState playerState) {
@@ -138,15 +140,13 @@ public class UserPlayer extends Player {
      * Discards the specified powerup from your hand
      *
      * @param powerup the powerup to be discarded
-     * @return true if the powerup has been discarded
      * @throws EmptyHandException if your hand has no powerups
      */
-    public boolean discardPowerup(PowerupCard powerup) throws EmptyHandException {
+    public void discardPowerup(PowerupCard powerup) throws EmptyHandException {
         if (powerups.isEmpty()) {
             throw new EmptyHandException("powerups");
         }
         powerups.remove(powerup);
-        return true;
     }
 
     /**
@@ -229,10 +229,6 @@ public class UserPlayer extends Player {
         return this.possibleActions;
     }
 
-    public void setActions(EnumSet<PossibleAction> possibleActions) {
-        this.possibleActions = possibleActions;
-    }
-
     public void addAction(PossibleAction addingAction) {
         this.possibleActions.add(addingAction);
     }
@@ -241,6 +237,24 @@ public class UserPlayer extends Player {
         this.possibleActions.remove(removingAction);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        UserPlayer player = (UserPlayer) o;
+        return firstPlayer == player.firstPlayer &&
+                Objects.equals(possibleActions, player.possibleActions) &&
+                playerState == player.playerState &&
+                Objects.equals(weapons, player.weapons) &&
+                Objects.equals(powerups, player.powerups) &&
+                Objects.equals(spawningCard, player.spawningCard);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), possibleActions, playerState, weapons, powerups, spawningCard, firstPlayer);
+    }
 
     @Override
     public String toString() {

@@ -8,6 +8,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.Objects;
 import java.util.Timer;
 
 /**
@@ -94,5 +95,19 @@ public class ClientRMI extends Client implements RMIClientConnection {
     @Override
     public void disconnectMe() throws RemoteException {
         server = null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        ClientRMI clientRMI = (ClientRMI) o;
+        return Objects.equals(server, clientRMI.server);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), server);
     }
 }

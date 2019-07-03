@@ -3,8 +3,10 @@ package network.message;
 import enumerations.MessageContent;
 import model.player.PlayerPoints;
 import utility.GameCostants;
+import utility.NullObjectHelper;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This message contains the information about the winners of the game.
@@ -23,16 +25,16 @@ public class WinnersResponse extends Message {
      *
      * @param winners the ArrayList containing the {@link PlayerPoints PlayerPoints} of all the players
      */
-    public WinnersResponse(ArrayList<PlayerPoints> winners) {
+    public WinnersResponse(List<PlayerPoints> winners) {
         super(GameCostants.GOD_NAME, null,MessageContent.WINNER);
 
-        this.winners = winners;
+        this.winners = NullObjectHelper.getNotNullArrayList(winners);
     }
 
     /**
      * @return the ArrayList containing the {@link PlayerPoints PlayerPoints} of all the players
      */
-    public ArrayList<PlayerPoints> getWinners() {
+    public List<PlayerPoints> getWinners() {
         return this.winners;
     }
 

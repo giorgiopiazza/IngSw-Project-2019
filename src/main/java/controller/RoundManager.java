@@ -88,7 +88,7 @@ public class RoundManager {
      * Method used to set <b>only</b> the {@link ReloadAction ReloadAction} to a {@link UserPlayer UserPlayer} when needed
      */
     private void setReloadAction() {
-        turnManager.getTurnOwner().setActions(EnumSet.of(PossibleAction.RELOAD));
+        turnManager.getTurnOwner().setPossibleActions(EnumSet.of(PossibleAction.RELOAD));
     }
 
     /**
@@ -204,12 +204,12 @@ public class RoundManager {
     /**
      * Method that handles the {@link TerminatorAction TerminatorAction}
      *
-     * @param terminatorRequest the {@link UseTerminatorRequest UseTerminatorRequest} received
+     * @param terminatorRequest the {@link BotUseRequest UseTerminatorRequest} received
      * @param gameState         the {@link GameState GameState} used by the method
      *                          {@link #afterTerminatorActionHandler(PossibleGameState) afterTerminatorActionHandler}
      * @return a positive or negative {@link Response Response} handled by the server
      */
-    Response handleTerminatorAction(UseTerminatorRequest terminatorRequest, PossibleGameState gameState) {
+    Response handleTerminatorAction(BotUseRequest terminatorRequest, PossibleGameState gameState) {
         TerminatorAction terminatorAction;
         UserPlayer botTarget = terminatorRequest.getTargetPlayer() == null ? null : gameInstance.getUserPlayerByUsername(terminatorRequest.getTargetPlayer());
 
@@ -344,7 +344,7 @@ public class RoundManager {
         Response tempResponse;
         int sizeDifference;
         List<Integer> powerupsIndexes = scopeMessage.getPowerup();
-        ArrayList<Integer> paymentPowerups = scopeMessage.getPaymentPowerups();
+        List<Integer> paymentPowerups = scopeMessage.getPaymentPowerups();
         List<String> targets = scopeMessage.getTargetPlayersUsername();
 
         // checks over every constraint of a SCOPE usage
@@ -471,8 +471,8 @@ public class RoundManager {
     private Response oneScopeForEachTarget(PowerupRequest scopeRequest) {
         PowerupRequest tempRequest;
         UserPlayer turnOwner = turnManager.getTurnOwner();
-        ArrayList<Integer> paymentPowerups = scopeRequest.getPaymentPowerups();
-        ArrayList<Ammo> ammoColors = scopeRequest.getAmmoColor();
+        List<Integer> paymentPowerups = scopeRequest.getPaymentPowerups();
+        List<Ammo> ammoColors = scopeRequest.getAmmoColor();
 
         for (int i = 0; i < scopeRequest.getPowerup().size(); ++i) {
             if (!paymentPowerups.isEmpty()) {
@@ -509,7 +509,7 @@ public class RoundManager {
     private Response moreScopesForFirstTarget(PowerupRequest scopeRequest) {
         PowerupRequest tempRequest;
         UserPlayer turnOwner = turnManager.getTurnOwner();
-        ArrayList<Ammo> ammoColors = scopeRequest.getAmmoColor();
+        List<Ammo> ammoColors = scopeRequest.getAmmoColor();
 
         for (int i = 0; i < 2; ++i) {
             // impossible that there are payment powerups in this case!
@@ -553,8 +553,8 @@ public class RoundManager {
     private Response allScopesForOneTarget(PowerupRequest scopeRequest, int numberOfScopes) {
         PowerupRequest tempRequest;
         UserPlayer turnOwner = turnManager.getTurnOwner();
-        ArrayList<Integer> paymentPowerups = scopeRequest.getPaymentPowerups();
-        ArrayList<Ammo> ammoColors = scopeRequest.getAmmoColor();
+        List<Integer> paymentPowerups = scopeRequest.getPaymentPowerups();
+        List<Ammo> ammoColors = scopeRequest.getAmmoColor();
 
         for (int i = 0; i < numberOfScopes; ++i) {
             if (!paymentPowerups.isEmpty()) {
@@ -937,7 +937,7 @@ public class RoundManager {
      * @return a positive or negative {@link Response Response} handled by the server
      */
     private Response deathPlayersHandler(PossibleGameState nextPassState) {
-        ArrayList<UserPlayer> deathPlayers = gameInstance.getDeathPlayers();
+        List<UserPlayer> deathPlayers = gameInstance.getDeathPlayers();
 
         if (gameInstance.isTerminatorPresent() && gameInstance.getTerminator().getPlayerBoard().getDamageCount() > 10) {
             // first of all I control if the current player has done a double kill
@@ -988,7 +988,7 @@ public class RoundManager {
      * @return a positive or negative {@link Response Response} handled by the server
      */
     Response handleTerminatorRespawn(BotSpawnRequest respawnRequest) {
-        ArrayList<UserPlayer> deathPlayers = gameInstance.getDeathPlayers();
+        List<UserPlayer> deathPlayers = gameInstance.getDeathPlayers();
 
         try {
             gameInstance.spawnTerminator(gameInstance.getGameMap().getSpawnSquare(respawnRequest.getSpawnColor()));

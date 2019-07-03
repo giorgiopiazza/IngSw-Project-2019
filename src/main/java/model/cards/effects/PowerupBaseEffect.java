@@ -9,7 +9,6 @@ import model.player.PlayerPosition;
 import network.message.EffectRequest;
 import network.message.PowerupRequest;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,14 +18,14 @@ public class PowerupBaseEffect extends Effect {
 
     private static final long serialVersionUID = -2807643151080169972L;
 
-    public PowerupBaseEffect(HashMap<String, String> properties, TargetType[] targets, String description) {
+    public PowerupBaseEffect(Map<String, String> properties, TargetType[] targets, String description) {
         this.cost = new AmmoQuantity();
         this.targets = targets;
         setProperties(properties);
         this.description = description;
     }
 
-    public PowerupBaseEffect(AmmoQuantity cost, HashMap<String, String> properties, TargetType[] targets, String description) {
+    public PowerupBaseEffect(AmmoQuantity cost, Map<String, String> properties, TargetType[] targets, String description) {
         this.cost = cost;
         this.targets = targets;
         setProperties(properties);

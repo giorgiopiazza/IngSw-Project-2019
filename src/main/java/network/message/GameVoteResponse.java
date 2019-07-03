@@ -2,7 +2,6 @@ package network.message;
 
 import enumerations.MessageContent;
 import enumerations.MessageStatus;
-import model.Game;
 import utility.GameCostants;
 
 public class GameVoteResponse extends Message {

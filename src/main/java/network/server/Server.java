@@ -325,7 +325,7 @@ public class Server implements Runnable {
      * @return if a username is legit
      */
     private boolean isUsernameLegit(String username) {
-        for (String forbidden : GameCostants.FORBIDDEN_USERNAME) {
+        for (String forbidden : GameCostants.getForbiddenUsernames()) {
             if (username.equalsIgnoreCase(forbidden)) {
                 return false;
             }

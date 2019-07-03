@@ -7,10 +7,7 @@ import model.player.Bot;
 import model.player.UserPlayer;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
 public class NotTransientPlayer implements Serializable {
     private static final long serialVersionUID = -9213961725005653060L;
@@ -23,7 +20,7 @@ public class NotTransientPlayer implements Serializable {
     private List<PowerupCard> powerups;
     private PowerupCard spawningCard;
 
-    public NotTransientPlayer(UserPlayer userPlayer) {
+    NotTransientPlayer(UserPlayer userPlayer) {
         this.userName = userPlayer.getUsername();
         this.points = userPlayer.getPoints();
 
@@ -33,7 +30,7 @@ public class NotTransientPlayer implements Serializable {
         this.spawningCard = userPlayer.getSpawningCard();
     }
 
-    public NotTransientPlayer(Bot bot) {
+    NotTransientPlayer(Bot bot) {
         this.userName = bot.getUsername();
         this.points = bot.getPoints();
     }
@@ -46,7 +43,7 @@ public class NotTransientPlayer implements Serializable {
         return points;
     }
 
-    public EnumSet<PossibleAction> getPossibleActions() {
+    public Set<PossibleAction> getPossibleActions() {
         return possibleActions;
     }
 

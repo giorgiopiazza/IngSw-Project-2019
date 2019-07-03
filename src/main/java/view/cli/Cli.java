@@ -76,7 +76,7 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
                 final String currentUsername = in.nextLine();
 
                 if (currentUsername.equals("") ||
-                        GameCostants.FORBIDDEN_USERNAME.stream().anyMatch(u -> u.equalsIgnoreCase(currentUsername))) {
+                        GameCostants.getForbiddenUsernames().stream().anyMatch(u -> u.equalsIgnoreCase(currentUsername))) {
                     firstError = promptInputError(firstError, "Invalid username!");
                 } else {
                     username = currentUsername;
@@ -620,12 +620,8 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
             builder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), new ArrayList<>());
         }
 
-        try {
-            if (!sendRequest(MessageBuilder.buildPowerupRequest(builder))) {
-                promptError(SEND_ERROR, true);
-            }
-        } catch (PowerupCardsNotFoundException e) {
-            promptError(e.getMessage(), false);
+        if (!sendRequest(MessageBuilder.buildPowerupRequest(builder))) {
+            promptError(SEND_ERROR, true);
         }
     }
 
@@ -660,12 +656,8 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
 
         PowerupRequest.PowerupRequestBuilder grenadeRequestBuilder = new PowerupRequest.PowerupRequestBuilder(getUsername(), getClientToken(), indexes);
 
-        try {
-            if (!sendRequest(MessageBuilder.buildPowerupRequest(grenadeRequestBuilder))) {
-                promptError(SEND_ERROR, true);
-            }
-        } catch (PowerupCardsNotFoundException e) {
-            promptError(e.getMessage(), false);
+        if (!sendRequest(MessageBuilder.buildPowerupRequest(grenadeRequestBuilder))) {
+            promptError(SEND_ERROR, true);
         }
     }
 
@@ -774,12 +766,8 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
             return;
         }
 
-        try {
-            if (!sendRequest(MessageBuilder.buildPowerupRequest(powerupRequestBuilder))) {
-                promptError(SEND_ERROR, true);
-            }
-        } catch (PowerupCardsNotFoundException e) {
-            promptError(e.getMessage(), false);
+        if (!sendRequest(MessageBuilder.buildPowerupRequest(powerupRequestBuilder))) {
+            promptError(SEND_ERROR, true);
         }
     }
 
@@ -1113,7 +1101,7 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
      */
     private Boolean askMiddleMove() throws CancelledActionException {
         out.println("Choose if you want to do a: 'inMiddle'(0) or 'before'/'after'(1) movement");
-        return readInt(0,1, true) == 0;
+        return readInt(0, 1, true) == 0;
     }
 
     /**

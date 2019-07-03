@@ -7,6 +7,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Timer;
 
 /**
@@ -15,17 +16,17 @@ import java.util.Timer;
 public abstract class Client extends UnicastRemoteObject {
     public static final int MAX_USERNAME_LENGTH = 20;
     private static final long serialVersionUID = -5831202245262756797L;
-    public static final int DISCONNECTION_TIME = 15000;
+    static final int DISCONNECTION_TIME = 15000;
 
-    protected DisconnectionListener disconnectionListener;
-    protected Timer pingTimer;
+    transient DisconnectionListener disconnectionListener;
+    transient Timer pingTimer;
 
     private final String username;
     private final String address;
     private final int port;
     private String token;
 
-    final ArrayList<Message> messageQueue;
+    final transient List<Message> messageQueue;
 
     /**
      * Constructs a client
@@ -35,7 +36,7 @@ public abstract class Client extends UnicastRemoteObject {
      * @param port     port of the server
      * @throws RemoteException in case of problems with communication with server
      */
-    public Client(String username, String address, int port, DisconnectionListener disconnectionListener) throws RemoteException {
+    Client(String username, String address, int port, DisconnectionListener disconnectionListener) throws RemoteException {
         this.username = username;
         this.address = address;
         this.port = port;
@@ -50,7 +51,7 @@ public abstract class Client extends UnicastRemoteObject {
     /**
      * @return the address of the server
      */
-    public String getAddress() {
+    String getAddress() {
         return address;
     }
 
@@ -76,7 +77,7 @@ public abstract class Client extends UnicastRemoteObject {
         this.token = token;
     }
 
-    public ArrayList<Message> getMessageQueue() {
+    public List<Message> getMessageQueue() {
         return messageQueue;
     }
 
@@ -96,7 +97,7 @@ public abstract class Client extends UnicastRemoteObject {
     /**
      * @return the list of messages in the queue
      */
-    public ArrayList<Message> receiveMessages() {
+    List<Message> receiveMessages() {
         ArrayList<Message> copyList;
 
         synchronized (messageQueue) {
@@ -112,5 +113,25 @@ public abstract class Client extends UnicastRemoteObject {
      */
     public String getUsername() {
         return username;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        Client client = (Client) o;
+        return port == client.port &&
+                Objects.equals(disconnectionListener, client.disconnectionListener) &&
+                Objects.equals(pingTimer, client.pingTimer) &&
+                Objects.equals(username, client.username) &&
+                Objects.equals(address, client.address) &&
+                Objects.equals(token, client.token) &&
+                Objects.equals(messageQueue, client.messageQueue);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), disconnectionListener, pingTimer, username, address, port, token, messageQueue);
     }
 }

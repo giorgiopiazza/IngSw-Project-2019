@@ -87,7 +87,7 @@ public class ConnectionSceneController {
         final String port = portField.getText();
 
         boolean isUsernameValid = !username.equals("") &&
-                GameCostants.FORBIDDEN_USERNAME.stream().noneMatch(u -> u.equalsIgnoreCase(username));
+                GameCostants.getForbiddenUsernames().stream().noneMatch(u -> u.equalsIgnoreCase(username));
 
         boolean isAddressValid = ServerAddressValidator.isAddressValid(address);
 

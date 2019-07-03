@@ -1,23 +1,24 @@
 package network.message;
 
 import enumerations.MessageContent;
+import utility.NullObjectHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Objects;
+import java.util.List;
 
 public class ReloadRequest extends ActionRequest {
     private static final long serialVersionUID = -2207568671961041647L;
 
     private final ArrayList<Integer> weapons;
 
-    public ReloadRequest(String username, String token, ArrayList<Integer> weapons, ArrayList<Integer> paymentPowerups) {
+    public ReloadRequest(String username, String token, List<Integer> weapons, List<Integer> paymentPowerups) {
         super(username, token, MessageContent.RELOAD, null, paymentPowerups);
 
-        this.weapons = Objects.requireNonNullElse(weapons, new ArrayList<>());
+        this.weapons = NullObjectHelper.getNotNullArrayList(weapons);
     }
 
-    public ArrayList<Integer> getWeapons() {
+    public List<Integer> getWeapons() {
         return weapons;
     }
 

@@ -6,7 +6,9 @@ import model.player.Player;
 import model.player.PlayerPosition;
 import network.message.EffectRequest;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class ExtraMarkDecorator extends ExtraEffectDecorator {
     private static final long serialVersionUID = 4095069933567546259L;
@@ -94,5 +96,22 @@ public class ExtraMarkDecorator extends ExtraEffectDecorator {
                 }
             }
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        ExtraMarkDecorator that = (ExtraMarkDecorator) o;
+        return Arrays.equals(markDistribution, that.markDistribution) &&
+                targetType == that.targetType;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(super.hashCode(), targetType);
+        result = 31 * result + Arrays.hashCode(markDistribution);
+        return result;
     }
 }

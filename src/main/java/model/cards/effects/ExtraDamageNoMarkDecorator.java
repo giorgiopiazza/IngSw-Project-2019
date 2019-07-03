@@ -4,6 +4,7 @@ import model.Game;
 import model.player.Player;
 import network.message.EffectRequest;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class ExtraDamageNoMarkDecorator extends ExtraEffectDecorator {
@@ -37,5 +38,21 @@ public class ExtraDamageNoMarkDecorator extends ExtraEffectDecorator {
         for (int i = 0; i < targetsUsername.size(); ++i) {
             Game.getInstance().getUserPlayerByUsername(targetsUsername.get(i)).getPlayerBoard().addDamageNoMark(shooter, damageDistribution[i]);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        ExtraDamageNoMarkDecorator that = (ExtraDamageNoMarkDecorator) o;
+        return Arrays.equals(damageDistribution, that.damageDistribution);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + Arrays.hashCode(damageDistribution);
+        return result;
     }
 }

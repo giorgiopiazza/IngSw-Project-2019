@@ -3,10 +3,11 @@ package network.message;
 import enumerations.RoomColor;
 import enumerations.MessageContent;
 import model.player.PlayerPosition;
+import utility.NullObjectHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Objects;
+import java.util.List;
 
 public class ShootRequest extends EffectRequest {
     private static final long serialVersionUID = -9183566520524697764L;
@@ -41,7 +42,7 @@ public class ShootRequest extends EffectRequest {
         this.moveInMiddle = builder.moveInMiddle;
         this.moveTargetsFirst = builder.moveTargetsFirst;
         this.moveToLastTarget = builder.moveToLastTarget;
-        this.rechargingWeapons = builder.rechargingWeapons;
+        this.rechargingWeapons = NullObjectHelper.getNotNullArrayList(builder.rechargingWeapons);
     }
 
     public int getWeaponID() {
@@ -72,7 +73,7 @@ public class ShootRequest extends EffectRequest {
         return moveToLastTarget;
     }
 
-    public ArrayList<Integer> getRechargingWeapons() {
+    public List<Integer> getRechargingWeapons() {
         return rechargingWeapons;
     }
 
@@ -82,21 +83,21 @@ public class ShootRequest extends EffectRequest {
         private int weaponID;
         private int effect;
 
-        private ArrayList<String> targetPlayersUsernames;
-        private ArrayList<PlayerPosition> targetPositions;
+        private List<String> targetPlayersUsernames;
+        private List<PlayerPosition> targetPositions;
         private RoomColor targetRoomColor;
 
         private PlayerPosition moveBeforeShootPosition;
         private PlayerPosition senderMovePosition;
-        private ArrayList<PlayerPosition> targetPlayersMovePositions;
+        private List<PlayerPosition> targetPlayersMovePositions;
 
         private boolean moveSenderFirst;
         private boolean moveInMiddle;
         private boolean moveTargetsFirst;
         private boolean moveToLastTarget;
 
-        private ArrayList<Integer> paymentPowerups;
-        private ArrayList<Integer> rechargingWeapons;
+        private List<Integer> paymentPowerups;
+        private List<Integer> rechargingWeapons;
 
         public ShootRequestBuilder(String username, String token, int weaponID, int effect) {
             this.username = username;
@@ -105,12 +106,12 @@ public class ShootRequest extends EffectRequest {
             this.effect = effect;
         }
 
-        public ShootRequestBuilder targetPlayersUsernames(ArrayList<String> targetPlayersUsernames) {
+        public ShootRequestBuilder targetPlayersUsernames(List<String> targetPlayersUsernames) {
             this.targetPlayersUsernames = targetPlayersUsernames;
             return this;
         }
 
-        public ShootRequestBuilder targetPositions(ArrayList<PlayerPosition> targetPositions) {
+        public ShootRequestBuilder targetPositions(List<PlayerPosition> targetPositions) {
             this.targetPositions = targetPositions;
             return this;
         }
@@ -130,7 +131,7 @@ public class ShootRequest extends EffectRequest {
             return this;
         }
 
-        public ShootRequestBuilder targetPlayersMovePositions(ArrayList<PlayerPosition> targetPlayersMovePositions) {
+        public ShootRequestBuilder targetPlayersMovePositions(List<PlayerPosition> targetPlayersMovePositions) {
             this.targetPlayersMovePositions = targetPlayersMovePositions;
             return this;
         }
@@ -155,12 +156,12 @@ public class ShootRequest extends EffectRequest {
             return this;
         }
 
-        public ShootRequestBuilder paymentPowerups(ArrayList<Integer> paymentPowerups) {
+        public ShootRequestBuilder paymentPowerups(List<Integer> paymentPowerups) {
             this.paymentPowerups = paymentPowerups;
             return this;
         }
 
-        public ShootRequestBuilder rechargingWeapons(ArrayList<Integer> rechargingWeapons) {
+        public ShootRequestBuilder rechargingWeapons(List<Integer> rechargingWeapons) {
             this.rechargingWeapons = rechargingWeapons;
             return this;
         }

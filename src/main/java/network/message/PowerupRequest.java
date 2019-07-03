@@ -4,9 +4,11 @@ import enumerations.Ammo;
 import enumerations.RoomColor;
 import enumerations.MessageContent;
 import model.player.PlayerPosition;
+import utility.NullObjectHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class PowerupRequest extends EffectRequest {
     private static final long serialVersionUID = 8674157231024320484L;
@@ -25,45 +27,45 @@ public class PowerupRequest extends EffectRequest {
                         .paymentPowerups(builder.paymentPowerups)
         );
 
-        this.powerup = builder.powerup;
-        this.ammoColor = builder.ammoColor;
+        this.powerup = NullObjectHelper.getNotNullArrayList(builder.powerup);
+        this.ammoColor = NullObjectHelper.getNotNullArrayList(builder.ammoColor);
     }
 
-    public ArrayList<Integer> getPowerup() {
+    public List<Integer> getPowerup() {
         return powerup;
     }
 
-    public ArrayList<Ammo> getAmmoColor() {
+    public List<Ammo> getAmmoColor() {
         return ammoColor;
     }
 
     public static class PowerupRequestBuilder {
         private String username;
         private String token;
-        private ArrayList<Integer> powerup;
-        private ArrayList<Ammo> ammoColor;
+        private List<Integer> powerup;
+        private List<Ammo> ammoColor;
 
-        private ArrayList<String> targetPlayersUsername;
-        private ArrayList<PlayerPosition> targetPositions;
+        private List<String> targetPlayersUsername;
+        private List<PlayerPosition> targetPositions;
         private RoomColor targetRoomColor;
 
         private PlayerPosition senderMovePosition;
-        private ArrayList<PlayerPosition> targetPlayersMovePositions;
+        private List<PlayerPosition> targetPlayersMovePositions;
 
-        private ArrayList<Integer> paymentPowerups;
+        private List<Integer> paymentPowerups;
 
-        public PowerupRequestBuilder(String username, String token, ArrayList<Integer> powerup) {
+        public PowerupRequestBuilder(String username, String token, List<Integer> powerup) {
             this.username = username;
             this.token = token;
             this.powerup = powerup;
         }
 
-        public PowerupRequestBuilder targetPlayersUsername(ArrayList<String> targetPlayersUsername) {
+        public PowerupRequestBuilder targetPlayersUsername(List<String> targetPlayersUsername) {
             this.targetPlayersUsername = targetPlayersUsername;
             return this;
         }
 
-        public PowerupRequestBuilder targetPositions(ArrayList<PlayerPosition> targetPositions) {
+        public PowerupRequestBuilder targetPositions(List<PlayerPosition> targetPositions) {
             this.targetPositions = targetPositions;
             return this;
         }
@@ -78,17 +80,17 @@ public class PowerupRequest extends EffectRequest {
             return this;
         }
 
-        public PowerupRequestBuilder targetPlayersMovePositions(ArrayList<PlayerPosition> targetPlayersMovePositions) {
+        public PowerupRequestBuilder targetPlayersMovePositions(List<PlayerPosition> targetPlayersMovePositions) {
             this.targetPlayersMovePositions = targetPlayersMovePositions;
             return this;
         }
 
-        public PowerupRequestBuilder paymentPowerups(ArrayList<Integer> paymentPowerups) {
+        public PowerupRequestBuilder paymentPowerups(List<Integer> paymentPowerups) {
             this.paymentPowerups = paymentPowerups;
             return this;
         }
 
-        public PowerupRequestBuilder ammoColor(ArrayList<Ammo> ammoColor) {
+        public PowerupRequestBuilder ammoColor(List<Ammo> ammoColor) {
             this.ammoColor = ammoColor;
             return this;
         }

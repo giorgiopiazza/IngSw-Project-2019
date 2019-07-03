@@ -13,14 +13,12 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import model.player.Player;
 import network.client.DisconnectionListener;
 import network.message.ConnectionResponse;
 import network.message.GameVoteResponse;
 import network.message.Response;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -107,7 +105,7 @@ public class GuiManager extends ClientGameManager implements DisconnectionListen
 
     @Override
     public void loadResponse() {
-
+        // TODO
     }
 
     @Override

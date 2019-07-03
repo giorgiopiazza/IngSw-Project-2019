@@ -22,11 +22,11 @@ public class ActionManager {
      */
     public static void setStartingPossibleActions(UserPlayer player, boolean isTerminatorPresent) {
         if (player.isFirstPlayer() && isTerminatorPresent) {
-            player.setActions(EnumSet.of(PossibleAction.SPAWN_BOT, PossibleAction.CHOOSE_SPAWN));
+            player.setPossibleActions(EnumSet.of(PossibleAction.SPAWN_BOT, PossibleAction.CHOOSE_SPAWN));
         } else if (isTerminatorPresent) {
-            player.setActions(EnumSet.of(PossibleAction.CHOOSE_SPAWN, PossibleAction.BOT_ACTION));
+            player.setPossibleActions(EnumSet.of(PossibleAction.CHOOSE_SPAWN, PossibleAction.BOT_ACTION));
         } else {
-            player.setActions(EnumSet.of(PossibleAction.CHOOSE_SPAWN));
+            player.setPossibleActions(EnumSet.of(PossibleAction.CHOOSE_SPAWN));
         }
     }
 
@@ -39,13 +39,13 @@ public class ActionManager {
 
         switch (currentPlayerBoardState) {
             case NORMAL:
-                player.setActions(EnumSet.of(PossibleAction.MOVE, PossibleAction.MOVE_AND_PICK, PossibleAction.SHOOT));
+                player.setPossibleActions(EnumSet.of(PossibleAction.MOVE, PossibleAction.MOVE_AND_PICK, PossibleAction.SHOOT));
                 break;
             case FIRST_ADRENALINE:
-                player.setActions(EnumSet.of(PossibleAction.MOVE, PossibleAction.ADRENALINE_PICK, PossibleAction.SHOOT));
+                player.setPossibleActions(EnumSet.of(PossibleAction.MOVE, PossibleAction.ADRENALINE_PICK, PossibleAction.SHOOT));
                 break;
             default:    // second adrenaline
-                player.setActions(EnumSet.of(PossibleAction.MOVE, PossibleAction.ADRENALINE_PICK, PossibleAction.ADRENALINE_SHOOT));
+                player.setPossibleActions(EnumSet.of(PossibleAction.MOVE, PossibleAction.ADRENALINE_PICK, PossibleAction.ADRENALINE_SHOOT));
         }
 
         if (Game.getInstance().isTerminatorPresent()) {
@@ -61,9 +61,9 @@ public class ActionManager {
      */
     static void setFrenzyPossibleActions(UserPlayer player, TurnManager turnManager) {
         if (turnManager.getAfterFrenzy().contains(player)) {
-            player.setActions(EnumSet.of(PossibleAction.FRENZY_MOVE, PossibleAction.FRENZY_PICK, PossibleAction.FRENZY_SHOOT));
+            player.setPossibleActions(EnumSet.of(PossibleAction.FRENZY_MOVE, PossibleAction.FRENZY_PICK, PossibleAction.FRENZY_SHOOT));
         } else {
-            player.setActions(EnumSet.of(PossibleAction.LIGHT_FRENZY_SHOOT, PossibleAction.LIGHT_FRENZY_PICK));
+            player.setPossibleActions(EnumSet.of(PossibleAction.LIGHT_FRENZY_SHOOT, PossibleAction.LIGHT_FRENZY_PICK));
         }
 
         if (Game.getInstance().isTerminatorPresent()) {

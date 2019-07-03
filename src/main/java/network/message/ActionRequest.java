@@ -2,9 +2,10 @@ package network.message;
 
 import enumerations.MessageContent;
 import model.player.PlayerPosition;
+import utility.NullObjectHelper;
 
 import java.util.ArrayList;
-import java.util.Objects;
+import java.util.List;
 
 public abstract class ActionRequest extends Message {
     private static final long serialVersionUID = 9032466429818166290L;
@@ -12,18 +13,18 @@ public abstract class ActionRequest extends Message {
     private final PlayerPosition senderMovePosition;
     private final ArrayList<Integer> paymentPowerups;
 
-    public ActionRequest(String username, String token, MessageContent content, PlayerPosition senderMovePosition, ArrayList<Integer> paymentPowerups) {
+    ActionRequest(String username, String token, MessageContent content, PlayerPosition senderMovePosition, List<Integer> paymentPowerups) {
         super(username, token, content);
         this.senderMovePosition = senderMovePosition;
-        this.paymentPowerups = Objects.requireNonNullElse(paymentPowerups, new ArrayList<>());
+        this.paymentPowerups = NullObjectHelper.getNotNullArrayList(paymentPowerups);
     }
 
     public PlayerPosition getSenderMovePosition() {
         return senderMovePosition;
     }
 
-    public ArrayList<Integer> getPaymentPowerups() {
-        if(paymentPowerups == null) return new ArrayList<>();
+    public List<Integer> getPaymentPowerups() {
+        if (paymentPowerups == null) return new ArrayList<>();
         else return paymentPowerups;
     }
 }

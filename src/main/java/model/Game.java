@@ -80,7 +80,7 @@ public class Game implements Serializable {
     /**
      * Game load initialization
      */
-    public void loadGame(Game savedGame, ArrayList<NotTransientPlayer> notTransientPlayers) {
+    public void loadGame(Game savedGame, List<NotTransientPlayer> notTransientPlayers) {
         currentState = savedGame.currentState;
         gameStarted = savedGame.gameStarted;
         players = savedGame.players;
@@ -88,7 +88,7 @@ public class Game implements Serializable {
         terminatorPresent = savedGame.terminatorPresent;
         if(terminatorPresent) {
             terminator = savedGame.terminator;
-            loadTransientTerminator(notTransientPlayers);
+            loadTransientBot(notTransientPlayers);
         }
         killShotNum = savedGame.killShotNum;
         killShotsTrack = savedGame.killShotsTrack;
@@ -106,7 +106,7 @@ public class Game implements Serializable {
      *
      * @param notTransientPlayers ArrayList of objects containing all the needed information to reset each {@link UserPlayer player} old state
      */
-    private void loadTransientPlayers(ArrayList<NotTransientPlayer> notTransientPlayers) {
+    private void loadTransientPlayers(List<NotTransientPlayer> notTransientPlayers) {
         for(UserPlayer player : players) {
             for(NotTransientPlayer notTransientPlayer : notTransientPlayers) {
                 if(player.getUsername().equals(notTransientPlayer.getUserName())) {
@@ -125,7 +125,7 @@ public class Game implements Serializable {
      *
      * @param notTransientPlayers ArrayList of objects containing also the information for the {@link Bot Terminator}'s old state
      */
-    private void loadTransientTerminator(ArrayList<NotTransientPlayer> notTransientPlayers) {
+    private void loadTransientBot(List<NotTransientPlayer> notTransientPlayers) {
         for(NotTransientPlayer notTransientPlayer : notTransientPlayers) {
             if(notTransientPlayer.getUserName().equals(GameCostants.BOT_NAME)) {
                 terminator.setPoints(notTransientPlayer.getPoints());
@@ -144,7 +144,7 @@ public class Game implements Serializable {
         return instance;
     }
 
-    public ArrayList<KillShot> getFinalFrenzyKillShots() {
+    public List<KillShot> getFinalFrenzyKillShots() {
         return this.finalFrenzyKillShots;
     }
 
@@ -155,7 +155,7 @@ public class Game implements Serializable {
     /**
      * @return an ArrayList representation of the killshotTrack
      */
-    public ArrayList<KillShot> getKillShotTrack() {
+    public List<KillShot> getKillShotTrack() {
         ArrayList<KillShot> arrayListTracker = new ArrayList<>();
         for (KillShot killShot : killShotsTrack) {
             if (killShot != null) {
@@ -527,7 +527,7 @@ public class Game implements Serializable {
      *
      * @return an ArrayList containing all dead players
      */
-    public ArrayList<UserPlayer> getDeathPlayers() {
+    public List<UserPlayer> getDeathPlayers() {
         ArrayList<UserPlayer> deathPlayers = new ArrayList<>();
 
         for (UserPlayer player : players) {

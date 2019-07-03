@@ -5,7 +5,6 @@ import network.server.Server;
 
 import java.util.TimerTask;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class MoveTimer extends TimerTask {
     private final Connection connection;

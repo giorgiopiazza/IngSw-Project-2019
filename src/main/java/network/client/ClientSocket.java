@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.logging.Logger;
 
@@ -119,5 +120,22 @@ public class ClientSocket extends Client implements Runnable {
 
         in = null;
         out = null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        ClientSocket that = (ClientSocket) o;
+        return Objects.equals(socket, that.socket) &&
+                Objects.equals(in, that.in) &&
+                Objects.equals(out, that.out) &&
+                Objects.equals(messageReceiver, that.messageReceiver);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), socket, in, out, messageReceiver);
     }
 }

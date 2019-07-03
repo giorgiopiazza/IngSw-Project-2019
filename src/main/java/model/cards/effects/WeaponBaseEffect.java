@@ -7,7 +7,6 @@ import model.player.PlayerPosition;
 import network.message.EffectRequest;
 import network.message.ShootRequest;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,7 +14,7 @@ public class WeaponBaseEffect extends Effect {
 
     private static final long serialVersionUID = 6933102168404912677L;
 
-    public WeaponBaseEffect(AmmoQuantity cost, HashMap<String, String> properties, TargetType[] targets, String description) {
+    public WeaponBaseEffect(AmmoQuantity cost, Map<String, String> properties, TargetType[] targets, String description) {
         this.cost = cost;
         this.targets = targets;
         setProperties(properties);
@@ -46,8 +45,6 @@ public class WeaponBaseEffect extends Effect {
     private boolean subValidate(ShootRequest request, Map<String, String> properties, TargetType targetType) {
         PlayerPosition shooterPosition = EffectValidator.checkAdrenalineMove(request);
         List<PlayerPosition> targetPositions = EffectValidator.getTargetPositions(request, targetType);
-
-
 
         // Command targets validation
         if (!EffectValidator.isTargetValid(request, properties, targetType))

@@ -414,7 +414,7 @@ public class GameManager implements TimerRunListener, Serializable {
      * Method used to oblige a player to use the {@link model.actions.TerminatorAction TerminatorAction} in case he hasn't
      * already performed it
      *
-     * @param receivedMessage the {@link Message Message} received that can be both: {@link UseTerminatorRequest UseTerminatorRequest}
+     * @param receivedMessage the {@link Message Message} received that can be both: {@link BotUseRequest UseTerminatorRequest}
      *                        or a {@link PowerupRequest PowerupRequest}
      * @return a positive or negative {@link Response Response} handled by the server
      */
@@ -422,7 +422,7 @@ public class GameManager implements TimerRunListener, Serializable {
         // only messages to use the terminator action and a powerup can be used!
         switch (receivedMessage.getContent()) {
             case BOT_ACTION:
-                return roundManager.handleTerminatorAction((UseTerminatorRequest) receivedMessage, PossibleGameState.MISSING_TERMINATOR_ACTION);
+                return roundManager.handleTerminatorAction((BotUseRequest) receivedMessage, PossibleGameState.MISSING_TERMINATOR_ACTION);
             case POWERUP_USAGE:
                 return roundManager.handlePowerupAction((PowerupRequest) receivedMessage);
             default:
@@ -573,7 +573,7 @@ public class GameManager implements TimerRunListener, Serializable {
     }
 
     /**
-     * Method that checks and executes the {@link UseTerminatorRequest TerminatorRequest}
+     * Method that checks and executes the {@link BotUseRequest TerminatorRequest}
      *
      * @param receivedMessage the {@link Message Message} received
      * @return a positive or negative {@link Response Response} handled by the server
@@ -581,7 +581,7 @@ public class GameManager implements TimerRunListener, Serializable {
     private Response terminatorCheckState(Message receivedMessage) {
         if (gameState == PossibleGameState.GAME_STARTED || gameState == PossibleGameState.SECOND_ACTION || gameState == PossibleGameState.FINAL_FRENZY
                 || gameState == PossibleGameState.ACTIONS_DONE || gameState == PossibleGameState.FRENZY_ACTIONS_DONE) {
-            return roundManager.handleTerminatorAction((UseTerminatorRequest) receivedMessage, gameState);
+            return roundManager.handleTerminatorAction((BotUseRequest) receivedMessage, gameState);
         } else {
             return buildInvalidResponse();
         }
@@ -1058,9 +1058,9 @@ public class GameManager implements TimerRunListener, Serializable {
      */
     private void handleKillShotTrackDistribution() {
         Integer[] trackerPoints = gameInstance.getTrackerPoints();
-        ArrayList<KillShot> killShotTracker = gameInstance.getKillShotTrack();
-        ArrayList<KillShot> finalFrenzyTracker = gameInstance.getFinalFrenzyKillShots();
-        ArrayList<String> killers = new ArrayList<>();
+        List<KillShot> killShotTracker = gameInstance.getKillShotTrack();
+        List<KillShot> finalFrenzyTracker = gameInstance.getFinalFrenzyKillShots();
+        List<String> killers = new ArrayList<>();
         ArrayList<String> distinctKillers;
         Map<String, DamageCountWrapper> receivers = new HashMap<>();
 
@@ -1102,12 +1102,12 @@ public class GameManager implements TimerRunListener, Serializable {
      * how many {@link KillShot KillShot} each {@code killer} on the KillShotTrack did during the game
      *
      * @param killer             String containing the UserName of the counting {@link Player Player} on the KillShotTrack
-     * @param killShotTracker    ArrayList of {@link KillShot Killshots} coming from the game map
-     * @param finalFrenzyTracker ArrayList of {@link KillShot Killshots} containing all the {@link KillShot Killshots} done
+     * @param killShotTracker    List of {@link KillShot Killshots} coming from the game map
+     * @param finalFrenzyTracker List of {@link KillShot Killshots} containing all the {@link KillShot Killshots} done
      *                           during the FinalFrenzy
      * @return an int that rerpesents the frequency of the Killer's {@link KillShot KillShots} on the KillShotTracker
      */
-    private int getPointsOnKillShots(String killer, ArrayList<KillShot> killShotTracker, ArrayList<KillShot> finalFrenzyTracker) {
+    private int getPointsOnKillShots(String killer, List<KillShot> killShotTracker, List<KillShot> finalFrenzyTracker) {
         int pointsOnKillShots = 0;
 
         for (KillShot killShot : killShotTracker) {
@@ -1210,7 +1210,7 @@ public class GameManager implements TimerRunListener, Serializable {
      * @param winners    ArrayList with all the {@link PlayerPoints PlayerPoints}
      */
     private void handleTiePlayers(ArrayList<Player> tiePlayers, ArrayList<PlayerPoints> winners) {
-        ArrayList<KillShot> killShotTracker = gameInstance.getKillShotTrack();
+        List<KillShot> killShotTracker = gameInstance.getKillShotTrack();
 
         for (KillShot killShot : killShotTracker) {
             for (Player player : tiePlayers) {

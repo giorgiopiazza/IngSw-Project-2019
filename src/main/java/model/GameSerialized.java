@@ -39,14 +39,24 @@ public class GameSerialized implements Serializable {
         Game instance = Game.getInstance();
 
         currentState = instance.getState();
-        players = new ArrayList<>(instance.getPlayers());
+
+        if (instance.getPlayers() != null) {
+            players = new ArrayList<>(instance.getPlayers());
+        } else {
+            players = new ArrayList<>();
+        }
 
         botPresent = instance.isTerminatorPresent();
         if (botPresent) bot = (Bot) instance.getTerminator();
 
         killShotsTrack = instance.getKillShotsTrack() != null ? Arrays.copyOf(instance.getKillShotsTrack(), instance.getKillShotsTrack().length) : null;
         killShotNum = instance.getKillShotNum();
-        finalFrenzyKillShots = instance.getFinalFrenzyKillShots();
+
+        if (instance.getFinalFrenzyKillShots() != null) {
+            finalFrenzyKillShots = new ArrayList<>(instance.getFinalFrenzyKillShots());
+        } else {
+            finalFrenzyKillShots = new ArrayList<>();
+        }
 
         gameMap = new GameMap(instance.getGameMap());
         setSecretAttributes(userName);
@@ -76,7 +86,7 @@ public class GameSerialized implements Serializable {
         return killShotsTrack;
     }
 
-    public ArrayList<KillShot> getFinalFrenzyKillShots() {
+    public List<KillShot> getFinalFrenzyKillShots() {
         return finalFrenzyKillShots;
     }
 
@@ -116,7 +126,7 @@ public class GameSerialized implements Serializable {
             }
         }
 
-        return null;
+        return new ArrayList<>();
     }
 
     public Bot getBot() {
@@ -144,8 +154,10 @@ public class GameSerialized implements Serializable {
         this.bot = bot;
     }
 
-    public void setPlayers(ArrayList<UserPlayer> userPlayers) {
-        this.players = userPlayers;
+    public void setPlayers(List<UserPlayer> userPlayers) {
+        if (userPlayers != null) {
+            this.players = new ArrayList<>(userPlayers);
+        }
     }
 
     public void setGameMap(GameMap gameMap) {

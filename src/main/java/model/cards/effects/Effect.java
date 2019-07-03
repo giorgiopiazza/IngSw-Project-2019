@@ -22,10 +22,6 @@ public abstract class Effect implements Serializable {
         return this.properties;
     }
 
-    void setProperties(Map<String, String> properties) {
-        this.properties = (HashMap<String, String>) properties;
-    }
-
     public TargetType[] getTargets() {
         return this.targets;
     }
@@ -36,6 +32,14 @@ public abstract class Effect implements Serializable {
 
     public AmmoQuantity getCost() {
         return cost;
+    }
+
+    public void setProperties(Map<String, String> properties) {
+        if (properties != null) {
+            this.properties = new HashMap<>(properties);
+        } else {
+            this.properties = new HashMap<>();
+        }
     }
 
     /**

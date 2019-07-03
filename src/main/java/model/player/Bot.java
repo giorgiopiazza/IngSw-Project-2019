@@ -1,8 +1,9 @@
 package model.player;
 
 import enumerations.PlayerColor;
-import model.Game;
 import utility.GameCostants;
+
+import java.util.Objects;
 
 public class Bot extends Player {
     private static final long serialVersionUID = 7578529420778904200L;
@@ -22,5 +23,19 @@ public class Bot extends Player {
 
     public void setSpawnTurn(boolean spawnTurn) {
         this.spawnTurn = spawnTurn;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        Bot bot = (Bot) o;
+        return spawnTurn == bot.spawnTurn;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), spawnTurn);
     }
 }

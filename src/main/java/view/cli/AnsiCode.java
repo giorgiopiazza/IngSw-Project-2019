@@ -1,27 +1,31 @@
 package view.cli;
 
-public class AnsiCode {
-    public static final String RESET = "\u001B[0m";
-    public static final String CLEAR_LINE = "\33[1A\33[2K";
-    public static final String CLEAR_CONSOLE = "\033[H\033[2J";
+class AnsiCode {
+    private AnsiCode() {
+        throw new IllegalStateException("Utility class");
+    }
 
-    public static final String TEXT_BLACK = "\u001B[30m";
-    public static final String TEXT_RED = "\u001B[31m";
-    public static final String TEXT_GREEN = "\u001B[32m";
-    public static final String TEXT_YELLOW = "\u001B[33m";
-    public static final String TEXT_BLUE = "\u001B[34m";
-    public static final String TEXT_PURPLE = "\u001B[35m";
-    public static final String TEXT_WHITE = "\u001B[37m";
+    static final String RESET = "\u001B[0m";
+    static final String CLEAR_LINE = "\33[1A\33[2K";
+    static final String CLEAR_CONSOLE = "\033[H\033[2J";
 
-    public static final String BACKGROUND_BLACK = "\u001B[40m";
-    public static final String BACKGROUND_RED = "\u001B[41m";
-    public static final String BACKGROUND_GREEN = "\u001B[42m";
-    public static final String BACKGROUND_YELLOW = "\u001B[43m";
-    public static final String BACKGROUND_BLUE = "\u001B[44m";
-    public static final String BACKGROUND_PURPLE = "\u001B[45m";
-    public static final String BACKGROUND_WHITE = "\u001B[47m";
+    static final String TEXT_BLACK = "\u001B[30m";
 
-    public static String getTextColorCodeByName(String color, boolean background) {
+    private static final String TEXT_RED = "\u001B[31m";
+    private static final String TEXT_GREEN = "\u001B[32m";
+    private static final String TEXT_YELLOW = "\u001B[33m";
+    private static final String TEXT_BLUE = "\u001B[34m";
+    private static final String TEXT_PURPLE = "\u001B[35m";
+    private static final String TEXT_WHITE = "\u001B[37m";
+
+    private static final String BACKGROUND_RED = "\u001B[41m";
+    private static final String BACKGROUND_GREEN = "\u001B[42m";
+    private static final String BACKGROUND_YELLOW = "\u001B[43m";
+    private static final String BACKGROUND_BLUE = "\u001B[44m";
+    private static final String BACKGROUND_PURPLE = "\u001B[45m";
+    private static final String BACKGROUND_WHITE = "\u001B[47m";
+
+    static String getTextColorCodeByName(String color, boolean background) {
         color = color.toUpperCase();
 
         switch (color) {

@@ -7,6 +7,7 @@ import model.player.PlayerPosition;
 import network.message.EffectRequest;
 
 import java.util.List;
+import java.util.Objects;
 
 public class ExtraMoveDecorator extends ExtraEffectDecorator {
     private static final long serialVersionUID = -1299754577436399885L;
@@ -45,5 +46,19 @@ public class ExtraMoveDecorator extends ExtraEffectDecorator {
                         movingPositions.get(i).getRow(), movingPositions.get(i).getColumn());
             }
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        ExtraMoveDecorator that = (ExtraMoveDecorator) o;
+        return moveTarget == that.moveTarget;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), moveTarget);
     }
 }

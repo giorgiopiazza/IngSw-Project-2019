@@ -22,9 +22,9 @@ public class TurnManager implements Serializable {
     private Player frenzyActivator;
     private final UserPlayer lastRoundPlayer;
 
-    private ArrayList<UserPlayer> players;
-    private ArrayList<UserPlayer> damagedPlayers;
-    private ArrayList<UserPlayer> deathPlayers;
+    private List<UserPlayer> players;
+    private List<UserPlayer> damagedPlayers;
+    private List<UserPlayer> deathPlayers;
 
     private UserPlayer markedByGrenadePlayer;
     private boolean markingTerminator;
@@ -32,8 +32,8 @@ public class TurnManager implements Serializable {
     private boolean firstTurn;
     private boolean secondAction;
 
-    private ArrayList<UserPlayer> afterFrenzy;
-    private ArrayList<UserPlayer> beforeFrenzy;
+    private List<UserPlayer> afterFrenzy;
+    private List<UserPlayer> beforeFrenzy;
 
     private PossibleGameState arrivingGameState;
 
@@ -135,14 +135,14 @@ public class TurnManager implements Serializable {
      * @return the ArrayList of damaged {@link UserPlayer UserPlayers}, used to verify when TARGETING SCOPE
      * can be used
      */
-    ArrayList<UserPlayer> getDamagedPlayers() {
+    List<UserPlayer> getDamagedPlayers() {
         return this.damagedPlayers;
     }
 
     /**
      * @return the ArrayList of the {@link UserPlayer UserPlayers} that can use a TAGBACK GRENADE
      */
-    ArrayList<UserPlayer> getGrenadePossibleUsers() {
+    List<UserPlayer> getGrenadePossibleUsers() {
         ArrayList<UserPlayer> grenadePossessors = new ArrayList<>();
 
         for(UserPlayer player : damagedPlayers) {
@@ -159,7 +159,7 @@ public class TurnManager implements Serializable {
      *
      * @param deaths the ArrayList of dead {@link UserPlayer UserPlayers}
      */
-    void setDeathPlayers(ArrayList<UserPlayer> deaths) {
+    void setDeathPlayers(List<UserPlayer> deaths) {
         deathPlayers = Objects.requireNonNullElse(deaths, new ArrayList<>());
         for(UserPlayer deathPlayer : deathPlayers) {
             deathPlayer.setPosition(null);
@@ -169,7 +169,7 @@ public class TurnManager implements Serializable {
     /**
      * @return an ArrayList of dead {@link UserPlayer UserPlayers}, it is used to give them the turn to Respawn
      */
-    ArrayList<UserPlayer> getDeathPlayers() {
+    List<UserPlayer> getDeathPlayers() {
         return this.deathPlayers;
     }
 
@@ -241,7 +241,7 @@ public class TurnManager implements Serializable {
      * @return the ArrayList of the {@link UserPlayer UserPlayers} that are after the FrenzyActivator but before the FirstPlayer;
      * these players will have two FrenzyActions during the FinalFrenzy
      */
-    ArrayList<UserPlayer> getAfterFrenzy() {
+    List<UserPlayer> getAfterFrenzy() {
         return this.afterFrenzy;
     }
 

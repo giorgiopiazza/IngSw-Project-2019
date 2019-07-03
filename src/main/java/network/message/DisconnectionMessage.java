@@ -1,7 +1,6 @@
 package network.message;
 
 import enumerations.MessageContent;
-import model.Game;
 import utility.GameCostants;
 
 public class DisconnectionMessage extends Message {

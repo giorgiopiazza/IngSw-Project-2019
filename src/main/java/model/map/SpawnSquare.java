@@ -3,12 +3,11 @@ package model.map;
 import enumerations.RoomColor;
 import enumerations.SquareAdjacency;
 import enumerations.SquareType;
-import exceptions.map.MaxSquareWeaponsException;
 import exceptions.map.MissingWeaponOnSquareException;
 import model.cards.WeaponCard;
 
 public class SpawnSquare extends Square {
-    public static final int MAX_WEAPONS = 3;
+    static final int MAX_WEAPONS = 3;
     private static final long serialVersionUID = -6938415064965184143L;
     private WeaponCard[] weapons;
 

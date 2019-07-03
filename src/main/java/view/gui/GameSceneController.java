@@ -19,7 +19,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
-import model.Game;
 import model.GameSerialized;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
@@ -68,6 +67,10 @@ public class GameSceneController {
 
     private static final double POWERUP_CARD_WIDTH = 128;
     private static final double POWERUP_CARD_HEIGHT = 200;
+
+    private static final String BEFORE = "before";
+    private static final String MIDDLE = "middle";
+    private static final String AFTER = "after";
 
     @FXML
     Pane mainPane;
@@ -1440,7 +1443,7 @@ public class GameSceneController {
             img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
                 ShootRequest currTempRequest = shootRequestBuilder.build();
 
-                ArrayList<String> targetUsername = currTempRequest.getTargetPlayersUsername();
+                List<String> targetUsername = currTempRequest.getTargetPlayersUsername();
                 targetUsername.add(currentUsername);
 
                 if (targetUsername.size() == numberOfTargets) {
@@ -1580,7 +1583,7 @@ public class GameSceneController {
         mapButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
             ShootRequest currTempRequest = shootRequestBuilder.build();
 
-            ArrayList<PlayerPosition> targetPositions = currTempRequest.getTargetPositions();
+            List<PlayerPosition> targetPositions = currTempRequest.getTargetPositions();
             targetPositions.add(tempPos);
 
             if (targetPositions.size() == numberOfTargets) {
@@ -1727,9 +1730,9 @@ public class GameSceneController {
         List<String> moveOrder;
 
         if (middle) {
-            moveOrder = new ArrayList<>(List.of("before", "middle", "after"));
+            moveOrder = new ArrayList<>(List.of(BEFORE, MIDDLE, AFTER));
         } else {
-            moveOrder = new ArrayList<>(List.of("before", "after"));
+            moveOrder = new ArrayList<>(List.of(BEFORE, AFTER));
         }
 
         for (String move : moveOrder) {
@@ -1738,13 +1741,13 @@ public class GameSceneController {
 
             img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
                 switch (move) {
-                    case "before":
+                    case BEFORE:
                         shootRequestBuilder.moveSenderFirst(true);
                         break;
-                    case "after":
+                    case AFTER:
                         shootRequestBuilder.moveSenderFirst(false);
                         break;
-                    case "middle":
+                    case MIDDLE:
                         shootRequestBuilder.moveInMiddle(true);
                         break;
                     default:
@@ -1819,7 +1822,7 @@ public class GameSceneController {
         mapButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
             ShootRequest currTempRequest = shootRequestBuilder.build();
 
-            ArrayList<PlayerPosition> targetPlayersMovePositions = currTempRequest.getTargetPlayersMovePositions();
+            List<PlayerPosition> targetPlayersMovePositions = currTempRequest.getTargetPlayersMovePositions();
             targetPlayersMovePositions.add(tempPos);
 
             if (targetPlayersMovePositions.size() == currTempRequest.getTargetPlayersUsername().size()) {
@@ -1862,7 +1865,7 @@ public class GameSceneController {
         hBox.setSpacing(20);
         vBox.getChildren().add(hBox);
 
-        List<String> moveOrder = new ArrayList<>(List.of("before", "after"));
+        List<String> moveOrder = new ArrayList<>(List.of(BEFORE, AFTER));
 
         for (String move : moveOrder) {
             ImageView img = new ImageView("/img/scenes/" + move + "button.png");
@@ -1870,10 +1873,10 @@ public class GameSceneController {
 
             img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
                 switch (move) {
-                    case "before":
+                    case BEFORE:
                         shootRequestBuilder.moveTargetsFirst(true);
                         break;
-                    case "after":
+                    case AFTER:
                         shootRequestBuilder.moveTargetsFirst(false);
                         break;
                     default:
@@ -2127,7 +2130,7 @@ public class GameSceneController {
                 img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
                     PowerupRequest currTempRequest = powerupRequestBuilder.build();
 
-                    ArrayList<String> targetUsernames = currTempRequest.getTargetPlayersUsername();
+                    List<String> targetUsernames = currTempRequest.getTargetPlayersUsername();
                     targetUsernames.add(currentUsername);
 
                     if (currTempRequest.getPowerup().size() == targetUsernames.size()) {
@@ -2213,7 +2216,7 @@ public class GameSceneController {
             img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
                 PowerupRequest currTempRequest = powerupRequestBuilder.build();
 
-                ArrayList<Ammo> ammoColorList = currTempRequest.getAmmoColor();
+                List<Ammo> ammoColorList = currTempRequest.getAmmoColor();
                 ammoColorList.add(ammo);
 
                 if (currTempRequest.getPowerup().size() == (ammoColorList.size() + currTempRequest.getPaymentPowerups().size())) {
@@ -2239,12 +2242,8 @@ public class GameSceneController {
     private void sendPowerupRequest(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
         hideActionPanel();
 
-        try {
-            if (!guiManager.sendRequest(MessageBuilder.buildPowerupRequest(powerupRequestBuilder))) {
-                GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
-            }
-        } catch (PowerupCardsNotFoundException e) {
-            GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, e.getMessage());
+        if (!guiManager.sendRequest(MessageBuilder.buildPowerupRequest(powerupRequestBuilder))) {
+            GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
         }
     }
 

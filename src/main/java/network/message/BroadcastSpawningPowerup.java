@@ -1,7 +1,6 @@
 package network.message;
 
 import enumerations.MessageContent;
-import model.Game;
 import model.cards.PowerupCard;
 import utility.GameCostants;
 

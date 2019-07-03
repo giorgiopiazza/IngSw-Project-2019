@@ -2,10 +2,8 @@ package view.cli;
 
 import enumerations.*;
 import model.GameSerialized;
-import model.cards.Card;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
-import model.cards.effects.Effect;
 import model.player.AmmoQuantity;
 import model.player.Player;
 import model.map.*;

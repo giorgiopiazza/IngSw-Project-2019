@@ -3,11 +3,11 @@ package network.message;
 import enumerations.RoomColor;
 import enumerations.MessageContent;
 import model.player.PlayerPosition;
+import utility.NullObjectHelper;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Objects;
+import java.util.List;
 
 public abstract class EffectRequest extends ActionRequest {
     private static final long serialVersionUID = 2808691785528480885L;
@@ -20,17 +20,17 @@ public abstract class EffectRequest extends ActionRequest {
     public EffectRequest(EffectRequestBuilder builder) {
         super(builder.username, builder.token, builder.content, builder.senderMovePosition, builder.paymentPowerups);
 
-        this.targetPlayersUsername = Objects.requireNonNullElse(builder.targetPlayersUsernames, new ArrayList<>());
-        this.targetPositions = Objects.requireNonNullElse(builder.targetPositions, new ArrayList<>());
+        this.targetPlayersUsername = NullObjectHelper.getNotNullArrayList(builder.targetPlayersUsernames);
+        this.targetPositions = NullObjectHelper.getNotNullArrayList(builder.targetPositions);
         this.targetRoomColor = builder.targetRoomColor;
-        this.targetPlayersMovePositions = Objects.requireNonNullElse(builder.targetPlayersMovePositions, new ArrayList<>());
+        this.targetPlayersMovePositions = NullObjectHelper.getNotNullArrayList(builder.targetPlayersMovePositions);
     }
 
-    public ArrayList<String> getTargetPlayersUsername() {
+    public List<String> getTargetPlayersUsername() {
         return targetPlayersUsername;
     }
 
-    public ArrayList<PlayerPosition> getTargetPositions() {
+    public List<PlayerPosition> getTargetPositions() {
         return targetPositions;
     }
 
@@ -38,7 +38,7 @@ public abstract class EffectRequest extends ActionRequest {
         return targetRoomColor;
     }
 
-    public ArrayList<PlayerPosition> getTargetPlayersMovePositions() {
+    public List<PlayerPosition> getTargetPlayersMovePositions() {
         return targetPlayersMovePositions;
     }
 
@@ -51,15 +51,14 @@ public abstract class EffectRequest extends ActionRequest {
         private String token;
         private MessageContent content;
 
-        private ArrayList<String> targetPlayersUsernames;
-        private ArrayList<PlayerPosition> targetPositions;
+        private List<String> targetPlayersUsernames;
+        private List<PlayerPosition> targetPositions;
         private RoomColor targetRoomColor;
 
         private PlayerPosition senderMovePosition;
-        private ArrayList<PlayerPosition> targetPlayersMovePositions;
+        private List<PlayerPosition> targetPlayersMovePositions;
 
-        private ArrayList<Integer> paymentPowerups;
-        private ArrayList<Integer> rechargingWeapons;
+        private List<Integer> paymentPowerups;
 
         public EffectRequestBuilder(String username, String token, MessageContent content) {
             this.username = username;
@@ -67,12 +66,12 @@ public abstract class EffectRequest extends ActionRequest {
             this.content = content;
         }
 
-        public EffectRequestBuilder targetPlayersUsernames(ArrayList<String> targetPlayersUsernames) {
+        public EffectRequestBuilder targetPlayersUsernames(List<String> targetPlayersUsernames) {
             this.targetPlayersUsernames = targetPlayersUsernames;
             return this;
         }
 
-        public EffectRequestBuilder targetPositions(ArrayList<PlayerPosition> targetPositions) {
+        public EffectRequestBuilder targetPositions(List<PlayerPosition> targetPositions) {
             this.targetPositions = targetPositions;
             return this;
         }
@@ -87,18 +86,13 @@ public abstract class EffectRequest extends ActionRequest {
             return this;
         }
 
-        public EffectRequestBuilder targetPlayersMovePositions(ArrayList<PlayerPosition> targetPlayersMovePositions) {
+        public EffectRequestBuilder targetPlayersMovePositions(List<PlayerPosition> targetPlayersMovePositions) {
             this.targetPlayersMovePositions = targetPlayersMovePositions;
             return this;
         }
 
-        public EffectRequestBuilder paymentPowerups(ArrayList<Integer> paymentPowerups) {
+        public EffectRequestBuilder paymentPowerups(List<Integer> paymentPowerups) {
             this.paymentPowerups = paymentPowerups;
-            return this;
-        }
-
-        public EffectRequestBuilder rechargingWeapons(ArrayList<Integer> rechargingWeapons) {
-            this.rechargingWeapons = rechargingWeapons;
             return this;
         }
     }

@@ -7,7 +7,6 @@ import model.player.UserPlayer;
 import network.message.*;
 import network.server.Server;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -77,7 +76,7 @@ public class InputValidator {
                 case POWERUP_USAGE:
                     return checkNullsInPowerup((PowerupRequest) checkingMessage);
                 case BOT_ACTION:
-                    return checkNullsInBotAction((UseTerminatorRequest) checkingMessage);
+                    return checkNullsInBotAction((BotUseRequest) checkingMessage);
                 case MOVE:
                     return checkNullsInMoveAction((MoveRequest) checkingMessage);
                 case MOVE_PICK:
@@ -173,8 +172,8 @@ public class InputValidator {
 
     }
 
-    private static boolean checkNullsInBotAction(UseTerminatorRequest useTerminatorRequest) {
-        return useTerminatorRequest.getMovingPosition() != null;
+    private static boolean checkNullsInBotAction(BotUseRequest botUseRequest) {
+        return botUseRequest.getMovingPosition() != null;
     }
 
     private static boolean checkNullsInMoveAction(MoveRequest moveRequest) {
@@ -227,7 +226,7 @@ public class InputValidator {
         }
     }
 
-    private static boolean checkDuplicatesInArguments(ArrayList<?> checkingList) {
+    private static boolean checkDuplicatesInArguments(List<?> checkingList) {
         List<?> distinctList = checkingList.stream().distinct().collect(Collectors.toList());
         return distinctList.size() == checkingList.size();
     }

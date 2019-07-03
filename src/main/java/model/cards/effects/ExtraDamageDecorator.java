@@ -6,7 +6,9 @@ import model.player.Player;
 import model.player.PlayerPosition;
 import network.message.EffectRequest;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class ExtraDamageDecorator extends ExtraEffectDecorator {
     private static final long serialVersionUID = 793450342025388024L;
@@ -94,5 +96,22 @@ public class ExtraDamageDecorator extends ExtraEffectDecorator {
         for (String targetUsername : targetsUsername) {
             Game.getInstance().getUserPlayerByUsername(targetUsername).getPlayerBoard().addDamage(shooter, damageDistribution[0]);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        ExtraDamageDecorator that = (ExtraDamageDecorator) o;
+        return Arrays.equals(damageDistribution, that.damageDistribution) &&
+                targetType == that.targetType;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(super.hashCode(), targetType);
+        result = 31 * result + Arrays.hashCode(damageDistribution);
+        return result;
     }
 }

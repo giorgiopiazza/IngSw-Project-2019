@@ -2,7 +2,6 @@ package network.message;
 
 import enumerations.MessageContent;
 import enumerations.UserPlayerState;
-import model.Game;
 import utility.GameCostants;
 
 public class GameLoadResponse extends Message {

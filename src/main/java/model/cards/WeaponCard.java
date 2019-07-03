@@ -18,6 +18,7 @@ import network.message.ShootRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -33,13 +34,18 @@ public class WeaponCard extends UsableCard {
     public static final int SEMI_CHARGED = 2;
 
     public WeaponCard(String name, String imagePath, Effect baseEffect, int id, Ammo[] cost,
-                      ArrayList<Effect> secondaryEffects, WeaponState weaponState) {
+                      List<Effect> secondaryEffects, WeaponState weaponState) {
         super(name, imagePath, baseEffect);
         this.id = id;
         this.cost = cost;
-        this.secondaryEffects = secondaryEffects;
-        this.weaponState = weaponState;
 
+        if (secondaryEffects != null) {
+            this.secondaryEffects = new ArrayList<>(secondaryEffects);
+        } else {
+            this.secondaryEffects = new ArrayList<>();
+        }
+
+        this.weaponState = weaponState;
     }
 
     /**
@@ -59,7 +65,7 @@ public class WeaponCard extends UsableCard {
     /**
      * @return the secondary effects of the weapon
      */
-    public ArrayList<Effect> getSecondaryEffects() {
+    public List<Effect> getSecondaryEffects() {
         return this.secondaryEffects;
     }
 
@@ -184,6 +190,24 @@ public class WeaponCard extends UsableCard {
         recharge();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        WeaponCard that = (WeaponCard) o;
+        return id == that.id &&
+                Arrays.equals(cost, that.cost) &&
+                Objects.equals(secondaryEffects, that.secondaryEffects) &&
+                Objects.equals(weaponState, that.weaponState);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(super.hashCode(), id, secondaryEffects, weaponState);
+        result = 31 * result + Arrays.hashCode(cost);
+        return result;
+    }
 
     @Override
     public String toString() {

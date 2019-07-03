@@ -9,7 +9,7 @@ public class ClientUpdater implements Runnable {
     private ClientUpdateListener updateListener;
     private Thread thread;
 
-    public ClientUpdater(Client client, ClientUpdateListener updateListener) {
+    ClientUpdater(Client client, ClientUpdateListener updateListener) {
         this.client = client;
         this.updateListener = updateListener;
         this.thread = new Thread(this);
@@ -27,7 +27,7 @@ public class ClientUpdater implements Runnable {
                     try {
                         client.wait(100);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        ClientGameManager.LOGGER.severe(e.getMessage());
                         Thread.currentThread().interrupt();
                     }
                 } while (messages.isEmpty());
