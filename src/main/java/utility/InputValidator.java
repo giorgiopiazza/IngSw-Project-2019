@@ -46,10 +46,6 @@ public class InputValidator {
             return false;
         }
 
-        if (Game.getInstance().getGameMap().getSquare(position) == null) {
-            return false;
-        }
-
         return Game.getInstance().getGameMap().getSquare(position) != null;
     }
 
@@ -204,6 +200,10 @@ public class InputValidator {
         }
 
         if (shootRequest.getWeaponID() < 0 || shootRequest.getWeaponID() > 2) {
+            return false;
+        }
+
+        if(shootRequest.getWeaponID() > ((UserPlayer) Game.getInstance().getPlayerByName(shootRequest.getSenderUsername())).getWeapons().length - 1) {
             return false;
         }
 

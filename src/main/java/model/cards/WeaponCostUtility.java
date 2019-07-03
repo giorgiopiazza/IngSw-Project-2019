@@ -43,7 +43,7 @@ public class WeaponCostUtility {
         AmmoQuantity costWithoutPowerups = getCostWithoutPowerup(cost, paymentsPowerups, usedPowerups, powerupCards);
         shootingPlayer.getPlayerBoard().useAmmo(costWithoutPowerups);
 
-        if (!usedPowerups.isEmpty()) {
+        if (!usedPowerups.isEmpty() && powerupCards.length != 0) {
             usedPowerups.sort(Collections.reverseOrder());
 
             try {
@@ -75,7 +75,7 @@ public class WeaponCostUtility {
         int blueCost = cost.getBlueAmmo();
         int yellowCost = cost.getYellowAmmo();
 
-        if (powerups.isEmpty()) {
+        if (powerups.isEmpty() || powerupCards.length == 0) {
             return new AmmoQuantity(redCost, blueCost, yellowCost);
         }
 

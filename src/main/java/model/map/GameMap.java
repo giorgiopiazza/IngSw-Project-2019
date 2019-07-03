@@ -241,7 +241,7 @@ public class GameMap implements Serializable {
         List<Player> players = new ArrayList<>();
 
         for (Player p : game.getPlayers()) {
-            if (getSquare(p.getPosition().getRow(), p.getPosition().getColumn()).getRoomColor().equals(roomColor)) {
+            if (p.getPosition() != null && getSquare(p.getPosition().getRow(), p.getPosition().getColumn()).getRoomColor().equals(roomColor)) {
                 players.add(p);
             }
         }

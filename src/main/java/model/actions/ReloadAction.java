@@ -24,7 +24,7 @@ public class ReloadAction implements Action {
         this.actingPlayer = actingPlayer;
         this.rechargeRequest = rechargeRequest;
         this.rechargingWeaponsIndexes = rechargeRequest.getWeapons().stream().distinct().collect(Collectors.toList());
-        this.powerupIndexes = rechargeRequest.getPaymentPowerups().stream().distinct().collect(Collectors.toList());
+        this.powerupIndexes = rechargeRequest.getPaymentPowerups();
     }
 
     @Override

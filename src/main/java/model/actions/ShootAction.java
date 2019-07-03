@@ -83,8 +83,7 @@ public class ShootAction implements Action {
                 throw new IncompatibleActionException(actionChosen);
         }
 
-        // shooting validation
-        return actingPlayer.hasWeapon(shootingWeapon);
+        return true;
     }
 
     @Override
