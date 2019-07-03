@@ -17,6 +17,8 @@ import static model.cards.effects.EffectValidator.teleporterValidator;
 
 public class PowerupBaseEffect extends Effect {
 
+    private static final long serialVersionUID = -2807643151080169972L;
+
     public PowerupBaseEffect(HashMap<String, String> properties, TargetType[] targets, String description) {
         this.cost = new AmmoQuantity();
         this.targets = targets;

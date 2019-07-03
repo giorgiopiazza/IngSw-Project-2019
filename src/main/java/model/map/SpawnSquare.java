@@ -9,6 +9,7 @@ import model.cards.WeaponCard;
 
 public class SpawnSquare extends Square {
     public static final int MAX_WEAPONS = 3;
+    private static final long serialVersionUID = -6938415064965184143L;
     private WeaponCard[] weapons;
 
     /**

@@ -9,6 +9,7 @@ import network.message.EffectRequest;
 import java.util.List;
 
 public class ExtraMoveDecorator extends ExtraEffectDecorator {
+    private static final long serialVersionUID = -1299754577436399885L;
     private final MoveTarget moveTarget;
 
     public ExtraMoveDecorator(Effect effect, MoveTarget moveTarget) {

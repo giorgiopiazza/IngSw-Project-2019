@@ -12,6 +12,8 @@ import java.util.Map;
 
 public class WeaponBaseEffect extends Effect {
 
+    private static final long serialVersionUID = 6933102168404912677L;
+
     public WeaponBaseEffect(AmmoQuantity cost, HashMap<String, String> properties, TargetType[] targets, String description) {
         this.cost = cost;
         this.targets = targets;

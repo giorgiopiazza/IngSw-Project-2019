@@ -7,6 +7,8 @@ import network.message.EffectRequest;
 
 public class SemiChargedWeapon implements WeaponState {
 
+    private static final long serialVersionUID = 2736318954908242454L;
+
     @Override
     public boolean charged(WeaponCard weapon) {
         return false;

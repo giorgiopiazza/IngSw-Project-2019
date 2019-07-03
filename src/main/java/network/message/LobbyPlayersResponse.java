@@ -7,6 +7,7 @@ import utility.GameCostants;
 import java.util.ArrayList;
 
 public class LobbyPlayersResponse extends Message {
+    private static final long serialVersionUID = 6870316479006394730L;
     private ArrayList<String> users;
 
     public LobbyPlayersResponse(ArrayList<String> users) {

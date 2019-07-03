@@ -9,6 +9,7 @@ import network.message.EffectRequest;
 import java.util.List;
 
 public class ExtraMarkDecorator extends ExtraEffectDecorator {
+    private static final long serialVersionUID = 4095069933567546259L;
     private final int[] markDistribution;
     private final TargetType targetType;
 

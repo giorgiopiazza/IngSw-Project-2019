@@ -7,6 +7,7 @@ import network.message.EffectRequest;
 import java.util.List;
 
 public class ExtraDamageNoMarkDecorator extends ExtraEffectDecorator {
+    private static final long serialVersionUID = -2582923298178193774L;
     private final int[] damageDistribution;
 
     public ExtraDamageNoMarkDecorator(Effect effect, int[] extraDamageDistribution) {

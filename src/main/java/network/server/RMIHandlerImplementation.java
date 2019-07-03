@@ -9,6 +9,7 @@ import java.rmi.server.UnicastRemoteObject;
  * This class is the implementation of the interface RMIHandler
  */
 public class RMIHandlerImplementation extends UnicastRemoteObject implements RMIHandler {
+    private static final long serialVersionUID = 7973004963846163594L;
     private final transient Server server;
     private transient RMIConnection rmiSession;
 

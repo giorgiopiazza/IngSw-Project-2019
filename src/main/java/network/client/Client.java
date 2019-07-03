@@ -13,6 +13,7 @@ import java.util.List;
  */
 public abstract class Client extends UnicastRemoteObject {
     public static final int MAX_USERNAME_LENGTH = 20;
+    private static final long serialVersionUID = -5831202245262756797L;
 
     private final String username;
     private final String address;

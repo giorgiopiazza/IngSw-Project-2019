@@ -28,14 +28,14 @@ import java.util.stream.Collectors;
  * It handles all the client regardless of whether they are Sockets or RMI
  */
 public class Server implements Runnable {
-    private final int socketPort;
-    private final int rmiPort;
+    private int socketPort;
+    private int rmiPort;
 
     private static final String DEFAULT_CONF_FILE_PATH = "conf.json";
 
     private Map<String, Connection> clients;
 
-    private final GameManager gameManager;
+    private GameManager gameManager;
     private boolean waitForLoad;
 
     public static final Logger LOGGER = Logger.getLogger("Server");
@@ -45,11 +45,70 @@ public class Server implements Runnable {
 
     private Timer moveTimer;
 
+    /**
+     * Starts the server loading a game
+     *
+     * @param confFilePath path of the config file
+     */
     private Server(String confFilePath) {
         initLogger();
         this.clients = new HashMap<>();
         this.waitForLoad = true;
 
+        loadConfigFile(confFilePath);
+
+        startServers();
+
+        this.gameManager = SaveGame.loadGame(this, startTime);
+        reserveSlots(gameManager.getGameInstance().getPlayers());
+
+        LOGGER.log(Level.INFO, "Game loaded successfully.");
+
+        Thread pingThread = new Thread(this);
+        pingThread.start();
+
+        moveTimer = new Timer();
+    }
+
+    /**
+     * Starts the server with a new game
+     *
+     * @param bot {@code true} if the bot is present, {@code false} otherwise
+     * @param skullNum number of skull
+     * @param confFilePath path of the config file
+     */
+    public Server(boolean bot, int skullNum, String confFilePath) {
+        initLogger();
+        clients = new HashMap<>();
+        waitForLoad = false;
+
+        loadConfigFile(confFilePath);
+
+        startServers();
+
+        gameManager = new GameManager(this, bot, skullNum, startTime);
+
+        Thread pingThread = new Thread(this);
+        pingThread.start();
+
+        moveTimer = new Timer();
+    }
+
+    private void initLogger() {
+        Date date = GregorianCalendar.getInstance().getTime();
+        DateFormat dateFormat = new SimpleDateFormat("dd-MM_HH.mm.ss");
+
+        try {
+            FileHandler fh = new FileHandler("log/server-" + dateFormat.format(date) + ".log");
+            fh.setFormatter(new SimpleFormatter());
+
+            LOGGER.addHandler(fh);
+        } catch (IOException e) {
+            LOGGER.severe(e.getMessage());
+        }
+    }
+
+    private void loadConfigFile(String confFilePath) {
         JsonObject jo = ConfigurationParser.parseConfiguration(confFilePath);
 
         if (jo == null) {
@@ -69,7 +128,9 @@ public class Server implements Runnable {
         LOGGER.log(Level.INFO, "Move time : {0}", moveTime / 1000);
         LOGGER.log(Level.INFO, "Socket port : {0}", socketPort);
         LOGGER.log(Level.INFO, "Rmi port : {0}", rmiPort);
+    }
 
+    private void startServers() {
         SocketServer serverSocket = new SocketServer(this, socketPort);
         serverSocket.startServer();
 
@@ -79,71 +140,6 @@ public class Server implements Runnable {
         rmiServer.startServer();
 
         LOGGER.info("RMI Server Started");
-
-        this.gameManager = SaveGame.loadGame(this, startTime);
-        reserveSlots(gameManager.getGameInstance().getPlayers());
-
-        Thread pingThread = new Thread(this);
-        pingThread.start();
-
-        moveTimer = new Timer();
-    }
-
-    public Server(boolean terminator, int skullNum, String confFilePath) {
-        initLogger();
-        clients = new HashMap<>();
-        waitForLoad = false;
-
-        JsonObject jo = ConfigurationParser.parseConfiguration(confFilePath);
-
-        if (jo == null) {
-            rmiPort = 0;
-            gameManager = null;
-            socketPort = 0;
-            LOGGER.log(Level.SEVERE, "Configuration file not found: {0}", confFilePath);
-            return;
-        }
-
-        startTime = jo.get("start_time").getAsInt();
-        moveTime = jo.get("move_time").getAsInt() * 1000;
-        socketPort = jo.get("socket_port").getAsInt();
-        rmiPort = jo.get("rmi_port").getAsInt();
-
-        LOGGER.log(Level.INFO, "Start time : {0}", startTime);
-        LOGGER.log(Level.INFO, "Move time : {0}", moveTime / 1000);
-        LOGGER.log(Level.INFO, "Socket port : {0}", socketPort);
-        LOGGER.log(Level.INFO, "Rmi port : {0}", rmiPort);
-
-        SocketServer serverSocket = new SocketServer(this, socketPort);
-        serverSocket.startServer();
-
-        LOGGER.info("Socket Server Started");
-
-        RMIServer rmiServer = new RMIServer(this, rmiPort);
-        rmiServer.startServer();
-
-        LOGGER.info("RMI Server Started");
-
-        gameManager = new GameManager(this, terminator, skullNum, startTime);
-
-        Thread pingThread = new Thread(this);
-        pingThread.start();
-
-        moveTimer = new Timer();
-    }
-
-    private void initLogger() {
-        Date date = GregorianCalendar.getInstance().getTime();
-        DateFormat dateFormat = new SimpleDateFormat("dd-mm_HH.mm.ss");
-
-        try {
-            FileHandler fh = new FileHandler("log/server-" + dateFormat.format(date) + ".log");
-            fh.setFormatter(new SimpleFormatter());
-
-            LOGGER.addHandler(fh);
-        } catch (IOException e) {
-            LOGGER.severe(e.getMessage());
-        }
     }
 
     /**

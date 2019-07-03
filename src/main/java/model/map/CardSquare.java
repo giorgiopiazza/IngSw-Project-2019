@@ -7,6 +7,7 @@ import model.Game;
 import model.cards.AmmoTile;
 
 public class CardSquare extends Square {
+    private static final long serialVersionUID = 3605209286488449112L;
     private AmmoTile ammoTile;
     private boolean hasAmmoTile;
 

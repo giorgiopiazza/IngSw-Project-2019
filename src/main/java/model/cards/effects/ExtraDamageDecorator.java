@@ -9,6 +9,7 @@ import network.message.EffectRequest;
 import java.util.List;
 
 public class ExtraDamageDecorator extends ExtraEffectDecorator {
+    private static final long serialVersionUID = 793450342025388024L;
     private final int[] damageDistribution;
     private final TargetType targetType;
 

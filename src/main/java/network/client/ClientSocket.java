@@ -14,6 +14,7 @@ import java.util.logging.Logger;
  * This class represents a Socket Client
  */
 public class ClientSocket extends Client implements Runnable {
+    private static final long serialVersionUID = -7286675375073912395L;
     private transient Socket socket;
 
     private transient ObjectInputStream in;

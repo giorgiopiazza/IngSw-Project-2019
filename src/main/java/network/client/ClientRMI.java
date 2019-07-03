@@ -13,6 +13,7 @@ import java.rmi.registry.Registry;
  * This class represents a RMI Client
  */
 public class ClientRMI extends Client implements RMIClientConnection {
+    private static final long serialVersionUID = -6701767031892802332L;
     private transient RMIHandler server;
 
     /**

@@ -441,7 +441,7 @@ public class Game implements Serializable {
     public void spawnTerminator(PlayerPosition playerPosition) {
         if (playerPosition == null) throw new NullPointerException("playerPosition cannot be null");
         if (!gameStarted) throw new GameAlreadyStartedException("Game not gameStarted yet");
-        if (!terminatorPresent) throw new TerminatorNotSetException();
+        if (!terminatorPresent) throw new BotNotSetException();
 
         terminator.setPosition(playerPosition);
     }

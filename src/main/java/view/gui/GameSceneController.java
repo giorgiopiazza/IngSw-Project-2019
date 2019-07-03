@@ -19,6 +19,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import model.Game;
 import model.GameSerialized;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
@@ -1072,17 +1073,7 @@ public class GameSceneController {
             return;
         }
 
-        actionPanel.getChildren().clear();
-
-        setActionPanelTitle("Weapon Pick");
-
-        VBox vBox = new VBox();
-        vBox.setAlignment(Pos.CENTER);
-
-        HBox hBox = new HBox();
-        hBox.setAlignment(Pos.BASELINE_CENTER);
-        hBox.setSpacing(20);
-        vBox.getChildren().add(hBox);
+        HBox hBox = setHorizontalLayout("Weapon Pick");
 
         for (int i = 0; i < weaponCards.size(); i++) {
             final int weaponIndex = i;
@@ -1094,8 +1085,6 @@ public class GameSceneController {
                 hBox.getChildren().add(img);
             }
         }
-
-        actionPanel.setCenter(vBox);
 
         setActionPanelBottom();
 
@@ -1420,15 +1409,15 @@ public class GameSceneController {
 
     private void askPlayerTargets(ShootRequest.ShootRequestBuilder shootRequestBuilder, List<TargetType> targets, Map<String, String> properties) {
         if (properties.containsKey(Properties.TARGET_NUM.getJKey())) {
-            askExactTargets(shootRequestBuilder, targets, properties, Integer.parseInt(properties.get(Properties.TARGET_NUM.getJKey())));
+            askTargets(shootRequestBuilder, targets, properties, Integer.parseInt(properties.get(Properties.TARGET_NUM.getJKey())), true);
         } else if (properties.containsKey(Properties.MAX_TARGET_NUM.getJKey())) {
-            askMaxTargets(shootRequestBuilder, targets, properties, Integer.parseInt(properties.get(Properties.MAX_TARGET_NUM.getJKey())));
+            askTargets(shootRequestBuilder, targets, properties, Integer.parseInt(properties.get(Properties.MAX_TARGET_NUM.getJKey())), false);
         } else {
             throw new InvalidPropertiesException();
         }
     }
 
-    private void askExactTargets(ShootRequest.ShootRequestBuilder shootRequestBuilder, List<TargetType> targets, Map<String, String> properties, int numberOfTargets) {
+    private void askTargets(ShootRequest.ShootRequestBuilder shootRequestBuilder, List<TargetType> targets, Map<String, String> properties, int numberOfTargets, boolean exact) {
         actionPanel.getChildren().clear();
 
         ShootRequest tempRequest = shootRequestBuilder.build();
@@ -1438,15 +1427,7 @@ public class GameSceneController {
             tempRequest = shootRequestBuilder.build();
         }
 
-        setActionPanelTitle("Shoot Target #" + (tempRequest.getTargetPlayersUsername().size() + 1));
-
-        VBox vBox = new VBox();
-        vBox.setAlignment(Pos.CENTER);
-
-        HBox hBox = new HBox();
-        hBox.setAlignment(Pos.BASELINE_CENTER);
-        hBox.setSpacing(20);
-        vBox.getChildren().add(hBox);
+        HBox hBox = setHorizontalLayout("Shoot Target #" + (tempRequest.getTargetPlayersUsername().size() + 1));
 
         List<Player> players = guiManager.getPlayers().stream().filter(p -> !p.getUsername().equals(guiManager.getUsername())).collect(Collectors.toList());
 
@@ -1467,73 +1448,18 @@ public class GameSceneController {
 
                     buildShootRequest(shootRequestBuilder.targetPlayersUsernames(targetUsername), newTargets, properties);
                 } else {
-                    askExactTargets(shootRequestBuilder.targetPlayersUsernames(targetUsername), targets, properties, numberOfTargets);
+                    askTargets(shootRequestBuilder.targetPlayersUsernames(targetUsername), targets, properties, numberOfTargets, exact);
                 }
             });
 
             hBox.getChildren().add(img);
         }
 
-        actionPanel.setCenter(vBox);
-
         setActionPanelBottom();
 
-        setBoardOpaque(OPAQUE);
-        actionPanel.setVisible(true);
-        actionPanel.toFront();
-    }
-
-    private void askMaxTargets(ShootRequest.ShootRequestBuilder shootRequestBuilder, List<TargetType> targets, Map<String, String> properties, int numberOfTargets) {
-        actionPanel.getChildren().clear();
-
-        ShootRequest tempRequest = shootRequestBuilder.build();
-
-        if (tempRequest.getTargetPlayersUsername() == null) {
-            shootRequestBuilder.targetPlayersUsernames(new ArrayList<>());
-            tempRequest = shootRequestBuilder.build();
+        if (!exact) {
+            addNextButton(shootRequestBuilder, targets, properties);
         }
-
-        VBox vBox = new VBox();
-        vBox.setAlignment(Pos.CENTER);
-
-        setActionPanelTitle("Shoot Target #" + (tempRequest.getTargetPlayersUsername().size() + 1));
-
-        HBox hBox = new HBox();
-        hBox.setSpacing(20);
-        hBox.setAlignment(Pos.BASELINE_CENTER);
-        vBox.getChildren().add(hBox);
-
-        List<Player> players = guiManager.getPlayers().stream().filter(p -> !p.getUsername().equals(guiManager.getUsername())).collect(Collectors.toList());
-
-        for (Player player : players) {
-            final String currentUsername = player.getUsername();
-
-            ImageView img = new ImageView();
-            img.setId(getIconIDFromColor(player.getColor()));
-            img.getStyleClass().add(CSS_BUTTON);
-            img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-                ShootRequest currTempRequest = shootRequestBuilder.build();
-
-                ArrayList<String> targetUsername = currTempRequest.getTargetPlayersUsername();
-                targetUsername.add(currentUsername);
-
-                if (targetUsername.size() == numberOfTargets) {
-                    List<TargetType> newTargets = (targets.size() == 1) ? List.of() : targets.subList(1, targets.size());
-
-                    buildShootRequest(shootRequestBuilder.targetPlayersUsernames(targetUsername), newTargets, properties);
-                } else {
-                    askMaxTargets(shootRequestBuilder.targetPlayersUsernames(targetUsername), targets, properties, numberOfTargets);
-                }
-            });
-
-            hBox.getChildren().add(img);
-        }
-
-        actionPanel.setCenter(vBox);
-
-        setActionPanelBottom();
-
-        addNextButton(shootRequestBuilder, targets, properties);
 
         setBoardOpaque(OPAQUE);
         actionPanel.setVisible(true);
@@ -1585,7 +1511,7 @@ public class GameSceneController {
                 Square square = gameMap.getSquare(x, y);
 
                 if (square != null) {
-                    Button mapButton = exactSquareTarget(tempPos, playerPosition, shootRequestBuilder, targets, properties, numberOfTargets);
+                    Button mapButton = squareTarget(tempPos, playerPosition, shootRequestBuilder, targets, properties, numberOfTargets, true);
 
                     AnchorPane.setLeftAnchor(mapButton, MapInsetsHelper.squareButtonInsets.getLeft() + y * MapInsetsHelper.SQUARE_BUTTON_HORIZONTAL_OFFSET);
                     AnchorPane.setTopAnchor(mapButton, MapInsetsHelper.squareButtonInsets.getTop() + x * MapInsetsHelper.SQUARE_BUTTON_VERTICAL_OFFSET);
@@ -1602,29 +1528,6 @@ public class GameSceneController {
         setBoardOpaque(OPAQUE);
         actionPanel.setVisible(true);
         actionPanel.toFront();
-    }
-
-    private Button exactSquareTarget(PlayerPosition tempPos, PlayerPosition playerPosition, ShootRequest.ShootRequestBuilder shootRequestBuilder,
-                                     List<TargetType> targets, Map<String, String> properties, int numberOfTargets) {
-        Button mapButton = new Button();
-        mapButton.getStyleClass().add(tempPos.equals(playerPosition) ? CSS_SQUARE_OWNER_CLICK_BUTTON : CSS_SQUARE_CLICK_BUTTON);
-
-        mapButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-            ShootRequest currTempRequest = shootRequestBuilder.build();
-
-            ArrayList<PlayerPosition> targetPositions = currTempRequest.getTargetPositions();
-            targetPositions.add(tempPos);
-
-            if (targetPositions.size() == numberOfTargets) {
-                List<TargetType> newTargets = (targets.size() == 1) ? List.of() : targets.subList(1, targets.size());
-
-                buildShootRequest(shootRequestBuilder.targetPositions(targetPositions), newTargets, properties);
-            } else {
-                askExactSquareTargets(shootRequestBuilder.targetPositions(targetPositions), targets, properties, numberOfTargets);
-            }
-        });
-
-        return mapButton;
     }
 
     private void askMaxSquareTargets(ShootRequest.ShootRequestBuilder shootRequestBuilder, List<TargetType> targets, Map<String, String> properties, int numberOfTargets) {
@@ -1649,7 +1552,7 @@ public class GameSceneController {
                 Square square = gameMap.getSquare(x, y);
 
                 if (square != null) {
-                    Button mapButton = maxSquareTarget(tempPos, playerPosition, shootRequestBuilder, targets, properties, numberOfTargets);
+                    Button mapButton = squareTarget(tempPos, playerPosition, shootRequestBuilder, targets, properties, numberOfTargets, false);
                     AnchorPane.setLeftAnchor(mapButton, MapInsetsHelper.squareButtonInsets.getLeft() + y * MapInsetsHelper.SQUARE_BUTTON_HORIZONTAL_OFFSET);
                     AnchorPane.setTopAnchor(mapButton, MapInsetsHelper.squareButtonInsets.getTop() + x * MapInsetsHelper.SQUARE_BUTTON_VERTICAL_OFFSET);
 
@@ -1669,8 +1572,8 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
-    private Button maxSquareTarget(PlayerPosition tempPos, PlayerPosition playerPosition, ShootRequest.ShootRequestBuilder shootRequestBuilder,
-                                   List<TargetType> targets, Map<String, String> properties, int numberOfTargets) {
+    private Button squareTarget(PlayerPosition tempPos, PlayerPosition playerPosition, ShootRequest.ShootRequestBuilder shootRequestBuilder,
+                                List<TargetType> targets, Map<String, String> properties, int numberOfTargets, boolean exact) {
         Button mapButton = new Button();
         mapButton.getStyleClass().add(tempPos.equals(playerPosition) ? CSS_SQUARE_OWNER_CLICK_BUTTON : CSS_SQUARE_CLICK_BUTTON);
 
@@ -1685,7 +1588,11 @@ public class GameSceneController {
 
                 buildShootRequest(shootRequestBuilder.targetPositions(targetPositions), newTargets, properties);
             } else {
-                askMaxSquareTargets(shootRequestBuilder.targetPositions(targetPositions), targets, properties, numberOfTargets);
+                if (exact) {
+                    askExactSquareTargets(shootRequestBuilder.targetPositions(targetPositions), targets, properties, numberOfTargets);
+                } else {
+                    askMaxSquareTargets(shootRequestBuilder.targetPositions(targetPositions), targets, properties, numberOfTargets);
+                }
             }
         });
 
@@ -2004,15 +1911,7 @@ public class GameSceneController {
 
         actionPanel.getChildren().clear();
 
-        setActionPanelTitle("Powerup use");
-
-        VBox vBox = new VBox();
-        vBox.setAlignment(Pos.CENTER);
-
-        HBox hBox = new HBox();
-        hBox.setAlignment(Pos.BASELINE_CENTER);
-        hBox.setSpacing(20);
-        vBox.getChildren().add(hBox);
+        HBox hBox = setHorizontalLayout("Powerup Use");
 
         for (int i = 0; i < powerupCards.size(); i++) {
             if (powerupCards.get(i).getName().equals(GuiManager.TELEPORTER) || powerupCards.get(i).getName().equals(GuiManager.NEWTON)) {
@@ -2024,8 +1923,6 @@ public class GameSceneController {
                 hBox.getChildren().add(img);
             }
         }
-
-        actionPanel.setCenter(vBox);
 
         setActionPanelBottom();
 
@@ -2103,17 +2000,7 @@ public class GameSceneController {
             return;
         }
 
-        actionPanel.getChildren().clear();
-
-        setActionPanelTitle("Newton Target");
-
-        VBox vBox = new VBox();
-        vBox.setAlignment(Pos.CENTER);
-
-        HBox hBox = new HBox();
-        hBox.setAlignment(Pos.BASELINE_CENTER);
-        hBox.setSpacing(20);
-        vBox.getChildren().add(hBox);
+        HBox hBox = setHorizontalLayout("Newton Target");
 
         for (Player player : players) {
             ImageView img = new ImageView();
@@ -2129,8 +2016,6 @@ public class GameSceneController {
 
             hBox.getChildren().add(img);
         }
-
-        actionPanel.setCenter(vBox);
 
         setActionPanelBottom();
 
@@ -2280,17 +2165,7 @@ public class GameSceneController {
             return;
         }
 
-        actionPanel.getChildren().clear();
-
-        setActionPanelTitle("Scope payment Powerup");
-
-        setMultiplePowerupSelectLayout(powerupCards);
-
-        setActionPanelBottom();
-
-        HBox botHBox = (HBox) actionPanel.getBottom();
-        ImageView nextButton = new ImageView(NEXT_BUTTON_PATH);
-        nextButton.getStyleClass().add(CSS_BUTTON);
+        ImageView nextButton = setPaymentPowerupsLayout("Scope payment Powerups", powerupCards);
 
         nextButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
             ArrayList<Integer> paymentPowerups = getMultiplePowerupIndexes();
@@ -2302,8 +2177,6 @@ public class GameSceneController {
                 askScopeAmmoColor(powerupRequestBuilder.paymentPowerups(paymentPowerups));
             }
         });
-
-        botHBox.getChildren().add(nextButton);
 
         setBoardOpaque(OPAQUE);
         actionPanel.setVisible(true);
@@ -2472,18 +2345,7 @@ public class GameSceneController {
             return;
         }
 
-        actionPanel.getChildren().clear();
-
-        setActionPanelTitle("Reload Payment Powerups");
-
-        setMultiplePowerupSelectLayout(powerupCards);
-
-        setActionPanelBottom();
-
-        HBox botHBox = (HBox) actionPanel.getBottom();
-        ImageView nextButton = new ImageView(NEXT_BUTTON_PATH);
-        nextButton.getStyleClass().add(CSS_BUTTON);
-
+        ImageView nextButton = setPaymentPowerupsLayout("Reload Payment Powerups", powerupCards);
         nextButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
             ArrayList<Integer> paymentPowerups = getMultiplePowerupIndexes();
 
@@ -2507,9 +2369,6 @@ public class GameSceneController {
                 GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
             }
         });
-
-
-        botHBox.getChildren().add(nextButton);
 
         setBoardOpaque(OPAQUE);
         actionPanel.setVisible(true);
@@ -2560,6 +2419,24 @@ public class GameSceneController {
         }
 
         return paymentPowerups;
+    }
+
+    private ImageView setPaymentPowerupsLayout(String title, List<PowerupCard> powerupCards) {
+        actionPanel.getChildren().clear();
+
+        setActionPanelTitle(title);
+
+        setMultiplePowerupSelectLayout(powerupCards);
+
+        setActionPanelBottom();
+
+        HBox botHBox = (HBox) actionPanel.getBottom();
+        ImageView nextButton = new ImageView(NEXT_BUTTON_PATH);
+        nextButton.getStyleClass().add(CSS_BUTTON);
+
+        botHBox.getChildren().add(nextButton);
+
+        return nextButton;
     }
 
     void botAction() {
@@ -2653,139 +2530,83 @@ public class GameSceneController {
         }
     }
 
+    private HBox setHorizontalLayout(String title) {
+        actionPanel.getChildren().clear();
+
+        setActionPanelTitle(title);
+
+        VBox vBox = new VBox();
+        vBox.setAlignment(Pos.CENTER);
+
+        HBox hBox = new HBox();
+        hBox.setAlignment(Pos.BASELINE_CENTER);
+        hBox.setSpacing(20);
+        vBox.getChildren().add(hBox);
+
+        actionPanel.setCenter(vBox);
+
+        return hBox;
+    }
+
     private List<PlayerPosition> getDirectionalMove(GameMap gameMap, PlayerPosition startingSquare, int distance) {
         List<PlayerPosition> returnPositions = new ArrayList<>();
 
-        returnPositions.addAll(getNorthDirectionalMove(gameMap, startingSquare, distance));
-        returnPositions.addAll(getSouthDirectionalMove(gameMap, startingSquare, distance));
-        returnPositions.addAll(getEastDirectionalMove(gameMap, startingSquare, distance));
-        returnPositions.addAll(getWestDirectionalMove(gameMap, startingSquare, distance));
+        for (int i = 0; i < 4; i++) {
+            Square tempsquare = gameMap.getSquare(startingSquare);
+            PlayerPosition tempPosition = new PlayerPosition(startingSquare.getRow(), startingSquare.getColumn());
 
-        return returnPositions;
-    }
-
-    private List<PlayerPosition> getNorthDirectionalMove(GameMap gameMap, PlayerPosition startingSquare, int distance) {
-        List<PlayerPosition> returnPositions = new ArrayList<>();
-
-        int x = startingSquare.getRow();
-        int y = startingSquare.getColumn();
-
-        Square tempsquare = gameMap.getSquare(startingSquare);
-        PlayerPosition tempPosition = new PlayerPosition(x, y);
-
-        while (tempsquare != null) {
-            if (!startingSquare.equals(tempPosition)) {
-                if (startingSquare.distanceOf(tempPosition, gameMap) <= distance) {
-                    returnPositions.add(tempPosition);
-                } else {
-                    return returnPositions;
+            while (tempsquare != null) {
+                if (!startingSquare.equals(tempPosition)) {
+                    if (startingSquare.distanceOf(tempPosition, gameMap) <= distance) {
+                        returnPositions.add(tempPosition);
+                    } else {
+                        return returnPositions;
+                    }
                 }
-            }
 
-            x--;
-
-            if (x >= 0) {
-                tempPosition = new PlayerPosition(x, y);
-                tempsquare = gameMap.getSquare(tempPosition);
-            } else {
-                tempsquare = null;
+                tempsquare = getSquare(gameMap, tempPosition, i);
             }
         }
 
         return returnPositions;
     }
 
-    private List<PlayerPosition> getSouthDirectionalMove(GameMap gameMap, PlayerPosition startingSquare, int distance) {
-        List<PlayerPosition> returnPositions = new ArrayList<>();
-
-        int x = startingSquare.getRow();
-        int y = startingSquare.getColumn();
-
-        Square tempsquare = gameMap.getSquare(startingSquare);
-        PlayerPosition tempPosition = new PlayerPosition(x, y);
-
-        while (tempsquare != null) {
-            if (!startingSquare.equals(tempPosition)) {
-                if (startingSquare.distanceOf(tempPosition, gameMap) <= distance) {
-                    returnPositions.add(tempPosition);
+    private Square getSquare(GameMap gameMap, PlayerPosition tempPosition, int direction) {
+        switch (direction) {
+            case 0:
+                if (tempPosition.getRow() - 1 >= 0) {
+                    tempPosition.setRow(tempPosition.getRow() - 1);
                 } else {
-                    return returnPositions;
+                    tempPosition = null;
                 }
-            }
-
-            x++;
-
-            if (x < GameMap.MAX_ROWS) {
-                tempPosition = new PlayerPosition(x, y);
-                tempsquare = gameMap.getSquare(tempPosition);
-            } else {
-                tempsquare = null;
-            }
+                break;
+            case 1:
+                if (tempPosition.getColumn() + 1 < GameMap.MAX_COLUMNS) {
+                    tempPosition.setColumn(tempPosition.getColumn() + 1);
+                } else {
+                    tempPosition = null;
+                }
+                break;
+            case 2:
+                if (tempPosition.getRow() + 1 < GameMap.MAX_ROWS) {
+                    tempPosition.setRow(tempPosition.getRow() + 1);
+                } else {
+                    tempPosition = null;
+                }
+                break;
+            default:
+                if (tempPosition.getColumn() - 1 >= 0) {
+                    tempPosition.setColumn(tempPosition.getColumn() - 1);
+                } else {
+                    tempPosition = null;
+                }
         }
 
-        return returnPositions;
-    }
-
-    private List<PlayerPosition> getEastDirectionalMove(GameMap gameMap, PlayerPosition startingSquare, int distance) {
-        List<PlayerPosition> returnPositions = new ArrayList<>();
-
-        int x = startingSquare.getRow();
-        int y = startingSquare.getColumn();
-
-        Square tempsquare = gameMap.getSquare(startingSquare);
-        PlayerPosition tempPosition = new PlayerPosition(x, y);
-
-        while (tempsquare != null) {
-            if (!startingSquare.equals(tempPosition)) {
-                if (startingSquare.distanceOf(tempPosition, gameMap) <= distance) {
-                    returnPositions.add(tempPosition);
-                } else {
-                    return returnPositions;
-                }
-            }
-
-            y--;
-
-            if (y >= 0) {
-                tempPosition = new PlayerPosition(x, y);
-                tempsquare = gameMap.getSquare(tempPosition);
-            } else {
-                tempsquare = null;
-            }
+        if (tempPosition != null) {
+            return gameMap.getSquare(tempPosition);
+        } else {
+            return null;
         }
-
-        return returnPositions;
-    }
-
-    private List<PlayerPosition> getWestDirectionalMove(GameMap gameMap, PlayerPosition startingSquare, int distance) {
-        List<PlayerPosition> returnPositions = new ArrayList<>();
-
-        int x = startingSquare.getRow();
-        int y = startingSquare.getColumn();
-
-        Square tempsquare = gameMap.getSquare(startingSquare);
-        PlayerPosition tempPosition = new PlayerPosition(x, y);
-
-        while (tempsquare != null) {
-            if (!startingSquare.equals(tempPosition)) {
-                if (startingSquare.distanceOf(tempPosition, gameMap) <= distance) {
-                    returnPositions.add(tempPosition);
-                } else {
-                    return returnPositions;
-                }
-            }
-
-            y++;
-
-            if (y < GameMap.MAX_COLUMNS) {
-                tempPosition = new PlayerPosition(x, y);
-                tempsquare = gameMap.getSquare(tempPosition);
-            } else {
-                tempsquare = null;
-            }
-        }
-
-        return returnPositions;
     }
 
     void onPlayerDisconnect(String player) {

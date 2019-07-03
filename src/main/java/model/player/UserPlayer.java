@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 public class UserPlayer extends Player {
+    private static final long serialVersionUID = 6112114324297833028L;
     private transient EnumSet<PossibleAction> possibleActions;
     private transient PossiblePlayerState playerState;
     private List<WeaponCard> weapons;

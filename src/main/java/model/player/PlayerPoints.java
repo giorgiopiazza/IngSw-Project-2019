@@ -9,6 +9,7 @@ import java.io.Serializable;
  * the winners following the tie rules
  */
 public class PlayerPoints implements Serializable {
+    private static final long serialVersionUID = -6776609142156319407L;
     private final String userName;
     private final PlayerColor playerColor;
     private final int points;
