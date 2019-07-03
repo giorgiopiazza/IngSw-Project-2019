@@ -315,7 +315,6 @@ public class GameManager implements TimerRunListener, Serializable {
         if (inLobbyPlayers.contains(receivedConnectionMessage)) {
             // if I receive a disconnection message I remove it from the lobby and set the corresponding player state to DISCONNECTED
             inLobbyPlayers.remove(receivedConnectionMessage);
-            server.sendMessageToAll(new LobbyPlayersResponse(new ArrayList<>(lobby.getInLobbyPlayers().stream().map(LobbyMessage::getSenderUsername).collect(Collectors.toList()))));
             ((UserPlayer) gameInstance.getPlayerByName(receivedConnectionMessage.getSenderUsername())).setPlayerState(PossiblePlayerState.DISCONNECTED);
 
             // then I check if in the lobby there are still enough players to continue the game, if not the game ends
@@ -773,6 +772,7 @@ public class GameManager implements TimerRunListener, Serializable {
         } else if (lobbyMessage.getContent() == MessageContent.GET_IN_LOBBY && inLobbyPlayers.contains(lobbyMessage) && lobbyMessage.isDisconnection()) {
             inLobbyPlayers.remove(lobbyMessage);
             removeVote(lobbyMessage.getSenderUsername());
+            server.sendMessageToAll(new LobbyPlayersResponse(new ArrayList<>(lobby.getInLobbyPlayers().stream().map(LobbyMessage::getSenderUsername).collect(Collectors.toList()))));
             Server.LOGGER.log(Level.INFO, "{0} left the lobby", lobbyMessage.getSenderUsername());
             timerCheck();
             sendPrivateUpdates();

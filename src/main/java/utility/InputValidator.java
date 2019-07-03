@@ -144,7 +144,11 @@ public class InputValidator {
     }
 
     private static boolean checkNullsInLobby(LobbyMessage lobbyMessage) {
-        return lobbyMessage.getChosenColor() != null;
+        if (!lobbyMessage.isDisconnection()) {
+            return lobbyMessage.getChosenColor() != null;
+        } else {
+            return true;
+        }
     }
 
     private static boolean checkNullsInVote(GameVoteMessage gameVoteMessage) {

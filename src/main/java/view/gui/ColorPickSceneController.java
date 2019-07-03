@@ -12,6 +12,9 @@ import utility.MessageBuilder;
 
 import java.util.List;
 
+/**
+ * Scene where player color is picked
+ */
 public class ColorPickSceneController {
     private GuiManager guiManager;
 
@@ -39,6 +42,9 @@ public class ColorPickSceneController {
         bindEvents();
     }
 
+    /**
+     * Sends to the server the remaining colors available for picking
+     */
     private void sendColorRequest() {
         yellowCard.setDisable(true);
         blueCard.setDisable(true);
@@ -56,6 +62,9 @@ public class ColorPickSceneController {
         }
     }
 
+    /**
+     * Binds on click events
+     */
     private void bindEvents() {
         yellowCard.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onCardClick(PlayerColor.YELLOW));
         blueCard.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onCardClick(PlayerColor.BLUE));
@@ -66,11 +75,19 @@ public class ColorPickSceneController {
         backButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onBackButtonClick());
     }
 
+    /**
+     * On back button click
+     */
     private void onBackButtonClick() {
         guiManager.closeConnection();
         GuiManager.setLayout(mainPane.getScene(), "fxml/connectionScene.fxml");
     }
 
+    /**
+     * On color card click
+     *
+     * @param playerColor color of the card
+     */
     private void onCardClick(PlayerColor playerColor) {
         yellowCard.setDisable(true);
         blueCard.setDisable(true);
@@ -87,6 +104,10 @@ public class ColorPickSceneController {
         }
     }
 
+    /**
+     * On color request response
+     * @param availableColors list of available colors
+     */
     void onColorResponse(List<PlayerColor> availableColors) {
         if (availableColors.isEmpty()) {
             GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE,
@@ -103,6 +124,10 @@ public class ColorPickSceneController {
         greenCard.setDisable(!availableColors.contains(PlayerColor.GREEN));
     }
 
+    /**
+     * On lobby join response
+     * @param response response of the join request
+     */
     void onLobbyJoinResponse(Response response) {
         if (response.getStatus() == MessageStatus.ERROR) {
 
@@ -112,10 +137,17 @@ public class ColorPickSceneController {
             onBackButtonClick();
 
         } else {
-            GuiManager.setLayout(mainPane.getScene(), "fxml/lobbyScene.fxml");
+            LobbySceneController lobbySceneController = GuiManager.setLayout(mainPane.getScene(), "fxml/lobbyScene.fxml");
+
+            if (lobbySceneController != null) {
+                lobbySceneController.updateLobbyList();
+            }
         }
     }
 
+    /**
+     * On server disconnection
+     */
     void onDisconnection() {
         GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), "Disconnection", "You were disconnected from the server");
     }

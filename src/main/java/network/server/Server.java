@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
  * It handles all the client regardless of whether they are Sockets or RMI
  */
 public class Server implements Runnable {
+    private final Object clientsLock = new Object();
     private int socketPort;
     private int rmiPort;
 
@@ -52,7 +53,9 @@ public class Server implements Runnable {
      */
     private Server(String confFilePath) {
         initLogger();
-        this.clients = new HashMap<>();
+        synchronized (clientsLock) {
+            this.clients = new HashMap<>();
+        }
         this.waitForLoad = true;
 
         loadConfigFile(confFilePath);
@@ -73,13 +76,15 @@ public class Server implements Runnable {
     /**
      * Starts the server with a new game
      *
-     * @param bot {@code true} if the bot is present, {@code false} otherwise
-     * @param skullNum number of skull
+     * @param bot          {@code true} if the bot is present, {@code false} otherwise
+     * @param skullNum     number of skull
      * @param confFilePath path of the config file
      */
     public Server(boolean bot, int skullNum, String confFilePath) {
         initLogger();
-        clients = new HashMap<>();
+        synchronized (clientsLock) {
+            clients = new HashMap<>();
+        }
         waitForLoad = false;
 
         loadConfigFile(confFilePath);
@@ -148,8 +153,10 @@ public class Server implements Runnable {
      * @param loadedPlayers from the game save
      */
     private void reserveSlots(List<UserPlayer> loadedPlayers) {
-        for (UserPlayer player : loadedPlayers) {
-            clients.put(player.getUsername(), null);
+        synchronized (clientsLock) {
+            for (UserPlayer player : loadedPlayers) {
+                clients.put(player.getUsername(), null);
+            }
         }
     }
 
@@ -213,10 +220,12 @@ public class Server implements Runnable {
      */
     void login(String username, Connection connection) {
         try {
-            if (clients.containsKey(username)) {
-                knownPlayerLogin(username, connection);
-            } else {
-                newPlayerLogin(username, connection);
+            synchronized (clientsLock) {
+                if (clients.containsKey(username)) {
+                    knownPlayerLogin(username, connection);
+                } else {
+                    newPlayerLogin(username, connection);
+                }
             }
         } catch (IOException e) {
             connection.disconnect();
@@ -311,10 +320,15 @@ public class Server implements Runnable {
         }
     }
 
+    /**
+     * Checks if all player of the loaded game have joined the game
+     */
     private void checkLoadReady() {
-        if (clients.entrySet().stream().noneMatch(entry -> entry.getValue() == null || !entry.getValue().isConnected())) {
-            waitForLoad = false;
-            gameManager.sendPrivateUpdates();
+        synchronized (clientsLock) {
+            if (clients.entrySet().stream().noneMatch(entry -> entry.getValue() == null || !entry.getValue().isConnected())) {
+                waitForLoad = false;
+                gameManager.sendPrivateUpdates();
+            }
         }
     }
 
@@ -341,38 +355,58 @@ public class Server implements Runnable {
      */
     void onMessage(Message message) {
         if (message != null && message.getSenderUsername() != null && (message.getToken() != null || message.getSenderUsername().equals("god"))) {
-            if (message.getContent().equals(MessageContent.SHOOT)) LOGGER.log(Level.INFO, message.toString());
-            else LOGGER.log(Level.INFO, "Received: {0}", message);
+            if (message.getContent().equals(MessageContent.SHOOT)) {
+                LOGGER.log(Level.INFO, message.toString());
+            } else {
+                LOGGER.log(Level.INFO, "Received: {0}", message);
+            }
+
             String msgToken = message.getToken();
-            Connection conn = clients.get(message.getSenderUsername());
+            Connection conn;
+
+            synchronized (clientsLock) {
+                conn = clients.get(message.getSenderUsername());
+            }
 
             if (conn == null) {
                 LOGGER.log(Level.INFO, "Message Request {0} - Unknown username {1}", new Object[]{message.getContent().name(), message.getSenderUsername()});
             } else if (msgToken.equals(conn.getToken())) { // Checks that sender is the real player
                 Message response = gameManager.onMessage(message);
-                // update timer
-                if (Game.getInstance().isGameStarted()) {
-                    if (message.getContent().equals(MessageContent.PASS_TURN)
-                            && response.getContent().equals(MessageContent.RESPONSE)
-                            && ((Response) response).getStatus().equals(MessageStatus.OK)) { // if the player pass the turn with success
-                        // cancel the move timer for the previous player and schedule another one for the new player to play
-                        Connection connection = clients.get(gameManager.getRoundManager().getTurnManager().getTurnOwner().getUsername());
-                        String user = gameManager.getRoundManager().getTurnManager().getTurnOwner().getUsername();
-                        LOGGER.log(Level.INFO, "Move timer reset for user {0}, {1} seconds left", new Object[]{user, moveTime / 1000});
 
-                        moveTimer.cancel();
-                        moveTimer = new Timer();
-                        moveTimer.schedule(new MoveTimer(connection, user), moveTime);
-                    } else if (message.getSenderUsername().equals(gameManager.getRoundManager().getTurnManager().getTurnOwner().getUsername())) { // if the message was send by the current user
-                        LOGGER.log(Level.INFO, "Move timer reset for user {0}, {1} seconds left", new Object[]{message.getSenderUsername(), moveTime / 1000});
+                updateTimer(conn, message, response);
 
-                        moveTimer.cancel();
-                        moveTimer = new Timer();
-                        moveTimer.schedule(new MoveTimer(conn, message.getSenderUsername()), moveTime);
-                    }
-                }
                 // send message to client
                 sendMessage(message.getSenderUsername(), response);
+            }
+        }
+    }
+
+    /**
+     * Updates the timer state based on request and response to the request
+     *
+     * @param conn     connection of the player
+     * @param message  request of the player
+     * @param response response of the server
+     */
+    private void updateTimer(Connection conn, Message message, Message response) {
+        if (Game.getInstance().isGameStarted()) {
+            if (message.getContent().equals(MessageContent.PASS_TURN)
+                    && response.getContent().equals(MessageContent.RESPONSE)
+                    && ((Response) response).getStatus().equals(MessageStatus.OK)) { // if the player pass the turn with success
+                // cancel the move timer for the previous player and schedule another one for the new player to play
+                Connection connection = clients.get(gameManager.getRoundManager().getTurnManager().getTurnOwner().getUsername());
+                String user = gameManager.getRoundManager().getTurnManager().getTurnOwner().getUsername();
+                LOGGER.log(Level.INFO, "Move timer reset for user {0}, {1} seconds left", new Object[]{user, moveTime / 1000});
+
+                moveTimer.cancel();
+                moveTimer = new Timer();
+                moveTimer.schedule(new MoveTimer(connection, user), moveTime);
+            } else if (message.getSenderUsername().equals(gameManager.getRoundManager().getTurnManager().getTurnOwner().getUsername())) { // if the message was send by the current user
+                LOGGER.log(Level.INFO, "Move timer reset for user {0}, {1} seconds left", new Object[]{message.getSenderUsername(), moveTime / 1000});
+
+                moveTimer.cancel();
+                moveTimer = new Timer();
+                moveTimer.schedule(new MoveTimer(conn, message.getSenderUsername()), moveTime);
             }
         }
     }
@@ -389,8 +423,9 @@ public class Server implements Runnable {
             LOGGER.log(Level.INFO, "{0} disconnected from server!", username);
 
             if (gameManager.getGameState() == PossibleGameState.GAME_ROOM) {
-                clients.remove(username);
-
+                synchronized (clientsLock) {
+                    clients.remove(username);
+                }
                 gameManager.onMessage(new LobbyMessage(username, null, null, true));
                 LOGGER.log(Level.INFO, "{0} removed from client list!", username);
             } else {
@@ -425,14 +460,16 @@ public class Server implements Runnable {
      * @param message  message to send
      */
     public void sendMessage(String username, Message message) {
-        for (Map.Entry<String, Connection> client : clients.entrySet()) {
-            if (client.getKey().equals(username) && client.getValue() != null && client.getValue().isConnected()) {
-                try {
-                    client.getValue().sendMessage(message);
-                } catch (IOException e) {
-                    LOGGER.severe(e.getMessage());
+        synchronized (clientsLock) {
+            for (Map.Entry<String, Connection> client : clients.entrySet()) {
+                if (client.getKey().equals(username) && client.getValue() != null && client.getValue().isConnected()) {
+                    try {
+                        client.getValue().sendMessage(message);
+                    } catch (IOException e) {
+                        LOGGER.severe(e.getMessage());
+                    }
+                    break;
                 }
-                break;
             }
         }
 
@@ -446,12 +483,14 @@ public class Server implements Runnable {
      * @return the username
      */
     private String getUsernameByConnection(Connection connection) {
-        Set<String> usernameList = clients.entrySet()
-                .stream()
-                .filter(entry -> connection.equals(entry.getValue()))
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toSet());
-
+        Set<String> usernameList;
+        synchronized (clientsLock) {
+            usernameList = clients.entrySet()
+                    .stream()
+                    .filter(entry -> connection.equals(entry.getValue()))
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.toSet());
+        }
         if (usernameList.isEmpty()) {
             return null;
         } else {
@@ -465,9 +504,11 @@ public class Server implements Runnable {
     @Override
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
-            for (Map.Entry<String, Connection> client : clients.entrySet()) {
-                if (client.getValue() != null && client.getValue().isConnected()) {
-                    client.getValue().ping();
+            synchronized (clientsLock) {
+                for (Map.Entry<String, Connection> client : clients.entrySet()) {
+                    if (client.getValue() != null && client.getValue().isConnected()) {
+                        client.getValue().ping();
+                    }
                 }
             }
 

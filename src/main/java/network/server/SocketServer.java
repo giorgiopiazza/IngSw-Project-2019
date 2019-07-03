@@ -17,7 +17,7 @@ public class SocketServer extends Thread {
         this.port = port;
     }
 
-    public void startServer() {
+    void startServer() {
         try {
             serverSocket = new ServerSocket(port);
             start();

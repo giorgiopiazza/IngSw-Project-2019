@@ -6,7 +6,7 @@ public class PingTimerTask extends TimerTask {
 
     private DisconnectionListener disconnectionListener;
 
-    public PingTimerTask(DisconnectionListener disconnectionListener) {
+    PingTimerTask(DisconnectionListener disconnectionListener) {
         super();
         this.disconnectionListener = disconnectionListener;
     }

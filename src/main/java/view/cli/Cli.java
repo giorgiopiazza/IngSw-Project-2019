@@ -653,7 +653,7 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
         }
 
         if (chosenGrenades.isEmpty()) {
-            if(!sendRequest(MessageBuilder.buildPassTurnRequest(getClientToken(), getPlayer()))) {
+            if (!sendRequest(MessageBuilder.buildPassTurnRequest(getClientToken(), getPlayer()))) {
                 promptError(SEND_ERROR, true);
             }
         } else {
@@ -842,7 +842,9 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
             // Can't happen
         }
 
-        if (!sendRequest(MessageBuilder.buildVoteMessage(getClientToken(), getUsername(), mapVote))) {
+        if (sendRequest(MessageBuilder.buildVoteMessage(getClientToken(), getUsername(), mapVote))) {
+            votedMap();
+        } else {
             promptError(SEND_ERROR, true);
         }
     }

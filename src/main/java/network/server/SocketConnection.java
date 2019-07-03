@@ -75,7 +75,6 @@ class SocketConnection extends Connection implements Runnable {
                 }
             } catch (IOException e) {
                 disconnect();
-                Server.LOGGER.severe(e.getMessage());
             } catch (ClassNotFoundException e) {
                 Server.LOGGER.severe(e.getMessage());
             }
@@ -115,18 +114,20 @@ class SocketConnection extends Connection implements Runnable {
      */
     @Override
     public void disconnect() {
-        try {
-            if (!socket.isClosed()) {
-                socket.close();
+        if (connected) {
+            try {
+                if (!socket.isClosed()) {
+                    socket.close();
+                }
+            } catch (IOException e) {
+                Server.LOGGER.severe(e.getMessage());
             }
-        } catch (IOException e) {
-            Server.LOGGER.severe(e.getMessage());
+
+            listener.interrupt(); // Interrupts the thread
+            connected = false;
+
+            socketServer.onDisconnect(this);
         }
-
-        listener.interrupt(); // Interrupts the thread
-        connected = false;
-
-        socketServer.onDisconnect(this);
     }
 
     /**
