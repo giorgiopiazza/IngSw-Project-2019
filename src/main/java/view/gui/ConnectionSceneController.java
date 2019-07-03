@@ -133,4 +133,8 @@ public class ConnectionSceneController {
             gameSceneController.onStateUpdate();
         }
     }
+
+    void onError(String error) {
+        GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, error);
+    }
 }

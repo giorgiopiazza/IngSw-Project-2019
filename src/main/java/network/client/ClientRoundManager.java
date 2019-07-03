@@ -4,6 +4,7 @@ import enumerations.GameClientState;
 import enumerations.UserPlayerState;
 import exceptions.game.InvalidGameStateException;
 import exceptions.player.ClientRoundManagerException;
+import model.player.UserPlayer;
 
 /**
  * Owns the game state machine for a client
@@ -163,6 +164,13 @@ class ClientRoundManager {
      */
     void botRespawn() {
         playerState = UserPlayerState.BOT_RESPAWN;
+    }
+
+    /**
+     * Set the state to the player spawn
+     */
+    void spawn() {
+        playerState = UserPlayerState.SPAWN;
     }
 
     /**

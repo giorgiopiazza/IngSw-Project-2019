@@ -115,4 +115,8 @@ public class ColorPickSceneController {
             GuiManager.setLayout(mainPane.getScene(), "fxml/lobbyScene.fxml");
         }
     }
+
+    void onDisconnection() {
+        GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), "Disconnection", "You were disconnected from the server");
+    }
 }
