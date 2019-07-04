@@ -1246,7 +1246,7 @@ public class RoundManager {
      * Checks if the therminator has died after a shoot or scope action. In this case the BOT_ACTION can not be used!
      */
     private void checkBotAction() {
-        if(gameInstance.isTerminatorPresent() && gameInstance.getTerminator().getPlayerBoard().getDamageCount() > 10) {
+        if(gameInstance.isBotPresent() && gameInstance.getBot().getPlayerBoard().getDamageCount() > 10) {
             turnManager.getTurnOwner().removeAction(PossibleAction.BOT_ACTION);
         }
     }
