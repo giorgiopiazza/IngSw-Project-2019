@@ -347,6 +347,7 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
 
     @Override
     public void gameStateUpdate() {
+        printKillShotTrack();
         printMap();
         out.println();
         printPlayerBoard();
@@ -1800,6 +1801,13 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
     private void printMap() {
         CliPrinter.clearConsole(out);
         CliPrinter.printMap(out, getGameSerialized());
+    }
+
+    /**
+     * Prints the killShotTrack
+     */
+    private void printKillShotTrack() {
+        CliPrinter.printKillShotTrack(out, getGameSerialized());
     }
 
     /**

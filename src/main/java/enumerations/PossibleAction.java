@@ -14,11 +14,11 @@ public enum PossibleAction {
     RELOAD("Reload your weapons"),
     ADRENALINE_PICK("Move up to 2 boxes and pick up weapon or power up"),
     ADRENALINE_SHOOT("Move up to 1 box and shoot a player"),
-    FRENZY_MOVE("TODO Frenzy move desc"),
-    FRENZY_PICK("TODO Frenzy move pick desc"),
-    FRENZY_SHOOT("TODO Frenzy move shoot desc"),
-    LIGHT_FRENZY_PICK("TODO Frenzy move pick desc"),
-    LIGHT_FRENZY_SHOOT("TODO Frenzy move shot desc"),
+    FRENZY_MOVE("Move up to 4 boxes"),
+    FRENZY_PICK("Frenzy move pick desc"),
+    FRENZY_SHOOT("Move up to 2 boxes and pick up weapon or power up"),
+    LIGHT_FRENZY_PICK("Move up to 3 boxes and pick up weapon or power up"),
+    LIGHT_FRENZY_SHOOT("Move up to 2 boxes and choose first to reload, then shoot a player"),
     BOT_ACTION("Do the bot action"),
     PASS_TURN("Pass the turn");
 

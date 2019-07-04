@@ -1203,8 +1203,71 @@ class CliPrinter {
         return tempOut.append(ammoString).append(" ").toString();
     }
 
-    static void printKillShotTrack(KillShot[] killshotTrack, ArrayList<KillShot> finalFrenzyKillShots) {
-        // todo
+    /**
+     * Prints the killShotTrack of the game
+     *
+     * @param out PrintStream where to print
+     * @param gameSerialized the gameSerialized of the game
+     */
+    static void printKillShotTrack(AdrenalinePrintStream out, GameSerialized gameSerialized) {
+        KillShot[] killshotTrack = gameSerialized.getKillShotsTrack();
+        List<KillShot> finalFrenzyKillShots = gameSerialized.getFinalFrenzyKillShots();
+
+        out.println(
+                getTopKillShotTrack(killshotTrack) +
+                        getKillshotPresence(gameSerialized, killshotTrack, finalFrenzyKillShots, true) +
+                        getKillshotPresence(gameSerialized, killshotTrack, finalFrenzyKillShots, false) +
+                        getBotKillShotTrack(killshotTrack)
+        );
+    }
+
+    private static String getTopKillShotTrack(KillShot[] killshotTrack) {
+        return "╔════╦" + "════╦".repeat(killshotTrack.length - 1) + " ══ ══ ══" + "\n";
+    }
+
+    private static String getBotKillShotTrack(KillShot[] killShotTrack) {
+        return "╚════╩" + "════╩".repeat(killShotTrack.length - 1) + " ══ ══ ══" + "\n";
+    }
+
+    private static String getKillshotPresence(GameSerialized gameSerialized, KillShot[] killshotTrack, List<KillShot> finalFrenzyKillShots, boolean oneKillShot) {
+        StringBuilder tempOut = new StringBuilder();
+
+        for(KillShot killShot : killshotTrack) {
+            tempOut.append("║ ").append(getKillShotPlayer(gameSerialized, killShot, oneKillShot)).append(" ║");
+        }
+
+        for(KillShot frenzyKillshot : finalFrenzyKillShots) {
+            tempOut.append(" ").append(getKillShotPlayer(gameSerialized, frenzyKillshot, oneKillShot)).append(frenzyKillshot).append(" ");
+        }
+
+        tempOut.append("\n");
+        return tempOut.toString();
+    }
+
+    private static String getKillShotPlayer(GameSerialized gameSerialized, KillShot killShot, boolean oneKillShot) {
+        String killShotColor = null;
+
+        if(killShot != null) {
+            Player killShotPlayer = gameSerialized.getAllPlayers().stream().filter(player -> player.getUsername().equals(killShot.getKiller())).findFirst().orElse(null);
+
+            if(killShotPlayer != null) {
+                killShotColor = getPlayerColorCode(killShotPlayer, gameSerialized, true) + AnsiCode.TEXT_BLACK;
+            }
+        }
+
+        if(killShotColor == null) {
+            return "  ";
+        } else {
+            if(killShot.getPoints() > 1) {
+                if(oneKillShot) {
+                    return killShotColor + "__" + AnsiCode.RESET;
+                } else {
+                    return killShotColor + "  " + AnsiCode.RESET;
+                }
+            } else {
+                return killShotColor + "  " + AnsiCode.RESET;
+            }
+        }
     }
 
     /**
