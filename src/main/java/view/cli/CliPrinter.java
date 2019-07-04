@@ -1039,10 +1039,10 @@ class CliPrinter {
                             getWinnersTitle(size, "POOR ORDERED LOOSERS ARE") +
                             addEmptyLine(size) +
                             getWinnersNames(size, allPoints.stream().filter(player -> !winners.contains(player))
-                                    .sorted(Comparator.comparingInt(PlayerPoints::getPoints))
+                                    .sorted(Comparator.comparingInt(PlayerPoints::getPoints).reversed())
                                     .collect(Collectors.toList())) +
                             getWinnersPoints(size, allPoints.stream().filter(player -> !winners.contains(player))
-                                    .sorted(Comparator.comparingInt(PlayerPoints::getPoints))
+                                    .sorted(Comparator.comparingInt(PlayerPoints::getPoints).reversed())
                                     .collect(Collectors.toList())) +
                             addEmptyLine(size) +
                             getBotWinnersDecoration(size)
