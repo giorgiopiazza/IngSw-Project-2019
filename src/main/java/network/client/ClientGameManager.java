@@ -455,7 +455,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
         queue.add(this::gameStateUpdate);
 
-        if (gameSerialized.isBotActionDone()) {
+        if (roundManager != null && gameSerialized.isBotActionDone()) {
             roundManager.setBotMoved();
         }
 
@@ -485,6 +485,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
      */
     private void handleWinner(WinnersResponse winnerResponse) {
         gameEnded = true;
+        client.pingTimer.cancel();
 
         synchronized (gameSerializedLock) {
             queue.add(() -> notifyGameEnd(winnerResponse.getWinners()));
