@@ -45,7 +45,6 @@ public abstract class Client extends UnicastRemoteObject {
         this.messageQueue = new ArrayList<>();
 
         this.pingTimer = new Timer();
-        this.pingTimer.schedule(new PingTimerTask(this.disconnectionListener), DISCONNECTION_TIME);
     }
 
     /**

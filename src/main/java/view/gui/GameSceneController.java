@@ -685,7 +685,7 @@ public class GameSceneController {
 
         AnchorPane anchorPane = new AnchorPane();
 
-        ImageView playerBoardImageView = new ImageView(getPlayboardPath(playerColor, playerBoard));
+        ImageView playerBoardImageView = new ImageView(getPlayerBoardPath(playerColor, playerBoard));
         playerBoardImageView.setFitWidth(PLAYER_BOARD_WIDTH);
         playerBoardImageView.setFitHeight(PLAYER_BOARD_HEIGHT);
 
@@ -695,7 +695,7 @@ public class GameSceneController {
         infoPanel.setCenter(anchorPane);
     }
 
-    private String getPlayboardPath(PlayerColor playerColor, PlayerBoard playerBoard) {
+    private String getPlayerBoardPath(PlayerColor playerColor, PlayerBoard playerBoard) {
         String suffix;
 
         if (playerBoard.isBoardFlipped()) {
@@ -1966,6 +1966,7 @@ public class GameSceneController {
 
             if (powerupName.equals(ClientGameManager.TAGBACK_GRENADE)) {
                 if (powerupIndexes.isEmpty()) {
+                    hideActionPanel();
                     passTurn();
                 } else {
                     sendPowerupRequest(powerupRequestBuilder);

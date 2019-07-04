@@ -78,7 +78,7 @@ public class EndGameSceneController {
         players.removeAll(winners);
 
         players = players.stream()
-                .sorted(Comparator.comparingInt(PlayerPoints::getPoints))
+                .sorted(Comparator.comparingInt(PlayerPoints::getPoints).reversed())
                 .collect(Collectors.toList());
 
         int count = 2;

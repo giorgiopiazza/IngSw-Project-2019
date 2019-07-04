@@ -1277,6 +1277,10 @@ public class GameManager implements TimerRunListener, Serializable {
         server.sendMessageToAll(message);
     }
 
+    public String getTurnOwnerUsername() {
+        return roundManager.getTurnManager().getTurnOwner().getUsername();
+    }
+
     /**
      * Utility Class Used to manage needed parameters when a Shooter wants to use the TARGETING SCOPE
      */
