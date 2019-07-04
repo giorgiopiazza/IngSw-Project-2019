@@ -460,6 +460,13 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             gameSerialized = gameStateMessage.getGameSerialized();
         }
 
+        if (roundManager != null &&
+                getUsername().equals(gameStateMessage.getTurnOwner()) &&
+                isBotPresent &&
+                gameSerialized.getBot().getPlayerBoard().getDamageCount() > 10) {
+            roundManager.setBotMoved();
+        }
+
         queue.add(this::gameStateUpdate);
 
         checkTurnChange(gameStateMessage);
@@ -663,7 +670,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             int activatorIndex = players.indexOf(stateMessage.getTurnOwner());
             int playerIndex = players.indexOf(getUsername());
 
-            roundManager.setSecondFrenzyAction(playerIndex > activatorIndex);
+            roundManager.setSecondFrenzyAction(playerIndex >= activatorIndex);
         }
     }
 
@@ -856,7 +863,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     /**
      * @return a list of all the players plus the bot if present
      */
-    public List<Player> getPlayersWithBot() {
+    public List<Player> getAllPlayers() {
         synchronized (gameSerializedLock) {
             return gameSerialized.getAllPlayers();
         }
@@ -984,5 +991,9 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
      */
     protected void votedMap() {
         votedMap = true;
+    }
+
+    public boolean isBotPresent() {
+        return isBotPresent;
     }
 }

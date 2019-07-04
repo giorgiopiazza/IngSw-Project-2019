@@ -963,7 +963,7 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
 
         do {
             out.println("Choose exactly " + exactIntNum + " target/s for your shoot action:");
-            String target = readTargetUsername(getPlayersWithBot(), false);
+            String target = readTargetUsername(getAllPlayers(), false);
 
             chosenTargets.add(target);
 
@@ -985,7 +985,7 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
         out.println("Choose up to " + maxIntNum + " target/s for your shoot action (-1 to stop choosing):");
 
         do {
-            String target = readTargetUsername(getPlayersWithBot(), true);
+            String target = readTargetUsername(getAllPlayers(), true);
 
             if (target != null) {
                 chosenTargets.add(target);
@@ -1357,7 +1357,7 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
 
             if (readVal != -1) {
                 out.println("Choose the target player:");
-                String user = readTargetUsername(getPlayersWithBot(), false);
+                String user = readTargetUsername(getAllPlayers(), false);
 
                 scopes.add(scopeList.get(readVal));
                 targets.add(user);
@@ -1806,7 +1806,7 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
      * Prints the list of players
      */
     private void printPlayers() {
-        CliPrinter.printUsername(out, getPlayersWithBot());
+        CliPrinter.printUsername(out, getAllPlayers());
         out.println();
     }
 
