@@ -82,7 +82,7 @@ class GameMapTest {
         instance.addPlayer(p1);
         instance.addPlayer(p2);
         instance.addPlayer(p3);
-        instance.setTerminator(true);
+        instance.setBot(true);
         instance.buildTerminator();
         instance.setGameMap(GameMap.MAP_2);
         instance.startGame();
@@ -94,8 +94,8 @@ class GameMapTest {
 
         assertEquals(p1, gameMap.getPlayersInRoom(RoomColor.BLUE).get(0));
         assertEquals(p1, gameMap.getPlayersInSquare(myPos).get(0));
-        assertEquals(instance.getTerminator(), gameMap.getPlayersInSquare(new PlayerPosition(1, 0)).get(0));
-        assertEquals(instance.getTerminator(), gameMap.getPlayersInRoom(RoomColor.RED).get(0));
+        assertEquals(instance.getBot(), gameMap.getPlayersInSquare(new PlayerPosition(1, 0)).get(0));
+        assertEquals(instance.getBot(), gameMap.getPlayersInRoom(RoomColor.RED).get(0));
     }
 
     @Test

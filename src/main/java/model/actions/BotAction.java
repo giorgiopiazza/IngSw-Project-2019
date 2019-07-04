@@ -7,31 +7,31 @@ import model.player.Player;
 import model.player.PlayerPosition;
 import model.player.UserPlayer;
 
-public class TerminatorAction implements Action {
-    private static final int MAX_TERMINATOR_MOVE = 1;
-    private static final int TERMINATOR_DAMAGE = 1;
-    private static final int TERMINATOR_ADRENALINE_MARK = 1;
-    private final Player terminator = Game.getInstance().getTerminator();
+public class BotAction implements Action {
+    private static final int MAX_BOT_MOVE = 1;
+    private static final int BOT_DAMAGE = 1;
+    private static final int BOT_ADRENALINE_MARK = 1;
+    private final Player bot = Game.getInstance().getBot();
     private UserPlayer actingPlayer;
     private Player targetPlayer;
     private PlayerPosition movingPos;
-    private TerminatorState terminatorState;
+    private BotState botState;
 
 
-    public TerminatorAction(UserPlayer actingPlayer, Player targetPlayer, PlayerPosition movingPos) {
+    public BotAction(UserPlayer actingPlayer, Player targetPlayer, PlayerPosition movingPos) {
         this.actingPlayer = actingPlayer;
         this.targetPlayer = targetPlayer;
 
-        if (terminator.getPosition().equals(movingPos)) {
-            this.movingPos = terminator.getPosition();
+        if (bot.getPosition().equals(movingPos)) {
+            this.movingPos = bot.getPosition();
         } else {
             this.movingPos = movingPos;
         }
 
-        if (terminator.getPlayerBoard().getDamageCount() < 6) {
-            this.terminatorState = TerminatorState.NORMAL;
+        if (bot.getPlayerBoard().getDamageCount() < 6) {
+            this.botState = BotState.NORMAL;
         } else {
-            this.terminatorState = TerminatorState.ADRENALINE;
+            this.botState = BotState.ADRENALINE;
         }
     }
 
@@ -51,7 +51,7 @@ public class TerminatorAction implements Action {
             throw new InvalidActionException();
         }
 
-        int movingDistance = terminator.getPosition().distanceOf(movingPos);
+        int movingDistance = bot.getPosition().distanceOf(movingPos);
 
         return movingAndVisibilityValidation(movingDistance);
     }
@@ -61,10 +61,10 @@ public class TerminatorAction implements Action {
         if (movingDistance == 0) {
             if (targetPlayer == null) throw new InvalidActionException();
 
-            return terminator.canSee(targetPlayer);
-        } else if (movingDistance == MAX_TERMINATOR_MOVE) {
+            return bot.canSee(targetPlayer);
+        } else if (movingDistance == MAX_BOT_MOVE) {
             if (targetPlayer == null) {
-                Bot temp = new Bot((Bot) terminator);
+                Bot temp = new Bot((Bot) bot);
                 temp.setPosition(movingPos);
 
                 if (movingPos.canSeeSomeone(temp, actingPlayer)) {
@@ -82,29 +82,29 @@ public class TerminatorAction implements Action {
 
     @Override
     public void execute() {
-        // first I move the terminator
-        terminator.changePosition(movingPos.getRow(), movingPos.getColumn());
+        // first I move the bot
+        bot.changePosition(movingPos.getRow(), movingPos.getColumn());
 
-        // if the terminator can not see anyone his action is ended
+        // if the bot can not see anyone his action is ended
         if (targetPlayer == null) {
             return;
         }
 
-        // then I shoot with the terminator depending on it's state
-        switch (terminatorState) {
+        // then I shoot with the bot depending on it's state
+        switch (botState) {
             case NORMAL:
-                targetPlayer.getPlayerBoard().addDamage(terminator, TERMINATOR_DAMAGE);
+                targetPlayer.getPlayerBoard().addDamage(bot, BOT_DAMAGE);
                 break;
             case ADRENALINE:
-                targetPlayer.getPlayerBoard().addDamage(terminator, TERMINATOR_DAMAGE);
-                targetPlayer.getPlayerBoard().addMark(terminator, TERMINATOR_ADRENALINE_MARK);
+                targetPlayer.getPlayerBoard().addDamage(bot, BOT_DAMAGE);
+                targetPlayer.getPlayerBoard().addMark(bot, BOT_ADRENALINE_MARK);
                 break;
             default:
                 throw new NullPointerException("The Terminator state can never be null!");
         }
     }
 
-    enum TerminatorState {
+    enum BotState {
         NORMAL, ADRENALINE
     }
 

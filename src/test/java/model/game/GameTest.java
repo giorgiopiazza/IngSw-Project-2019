@@ -24,7 +24,7 @@ class GameTest {
     @Test
     void getInstance() {
         assertFalse(instance.isGameStarted());
-        assertFalse(instance.isTerminatorPresent());
+        assertFalse(instance.isBotPresent());
 
         assertEquals(instance, Game.getInstance());
     }
@@ -35,13 +35,13 @@ class GameTest {
         instance.addPlayer(mock(UserPlayer.class));
         instance.addPlayer(mock(UserPlayer.class));
 
-        // assertNotNull(instance.setTerminator(true));
+        // assertNotNull(instance.setBot(true));
 
         instance.addPlayer(mock(UserPlayer.class));
 
         // assertThrows(MaxPlayerException.class, () -> instance.addPlayer(mock(UserPlayer.class)));
 
-        // assertNull(instance.setTerminator(false));
+        // assertNull(instance.setBot(false));
         instance.addPlayer(mock(UserPlayer.class));
 
         assertEquals(5, instance.playersNumber());
@@ -121,12 +121,12 @@ class GameTest {
         instance.addPlayer(mock(UserPlayer.class));
         instance.addPlayer(mock(UserPlayer.class));
 
-        assertThrows(MaxPlayerException.class, () -> instance.setTerminator(true));
+        assertThrows(MaxPlayerException.class, () -> instance.setBot(true));
 
         instance.setKillShotNum(8);
         instance.startGame();
 
-        assertThrows(GameAlreadyStartedException.class, () -> instance.setTerminator(true));
+        assertThrows(GameAlreadyStartedException.class, () -> instance.setBot(true));
 
         instance.stopGame();
         instance.init();
@@ -136,13 +136,13 @@ class GameTest {
         instance.addPlayer(mock(UserPlayer.class));
         instance.addPlayer(mock(UserPlayer.class));
 
-        // assertNull(instance.setTerminator(false));
+        // assertNull(instance.setBot(false));
 
-        instance.setTerminator(true);
+        instance.setBot(true);
         instance.buildTerminator();
-        Player terminator = instance.getTerminator();
+        Player terminator = instance.getBot();
         assertNotNull(terminator);
-        assertEquals(terminator, instance.getTerminator());
+        assertEquals(terminator, instance.getBot());
     }
 
     @Test

@@ -6,6 +6,7 @@ import exceptions.game.InvalidGameStateException;
 import exceptions.game.InvalidKillshotNumberException;
 import exceptions.game.InvalidMapNumberException;
 import model.Game;
+import model.actions.BotAction;
 import model.player.*;
 import network.message.*;
 import network.server.Server;
@@ -125,8 +126,8 @@ public class GameManager implements TimerRunListener, Serializable {
         }
 
         if (roundManager.getTurnManager().getTurnOwner().equals(userPlayer)) {
-            if (gameInstance.isTerminatorPresent() && gameInstance.getTerminator().getPosition() == null) {
-                if (gameInstance.getTerminator().isDead()) {
+            if (gameInstance.isBotPresent() && gameInstance.getBot().getPosition() == null) {
+                if (gameInstance.getBot().isDead()) {
                     return UserPlayerState.BOT_RESPAWN;
                 } else {
                     return UserPlayerState.BOT_SPAWN;
@@ -324,7 +325,7 @@ public class GameManager implements TimerRunListener, Serializable {
                 return new Response("Player disconnected, game has now less then 3 players and then is ending...", MessageStatus.OK);
             } else if (getRoundManager().getTurnManager().getTurnOwner().getUsername().equals(receivedConnectionMessage.getSenderUsername())) {    // if game hasn't ended I check if the disconnected player is the turn owner, if so I change the state, otherwise nothing happens
                 if (roundManager.getTurnManager().getTurnOwner().getPossibleActions().contains(PossibleAction.CHOOSE_SPAWN) || roundManager.getTurnManager().getTurnOwner().getPossibleActions().contains(PossibleAction.SPAWN_BOT)) {
-                    roundManager.handleRandomSpawn(roundManager.getTurnManager().getTurnOwner().getPosition() == null, gameInstance.isTerminatorPresent() && gameInstance.getTerminator().getPosition() == null);
+                    roundManager.handleRandomSpawn(roundManager.getTurnManager().getTurnOwner().getPosition() == null, gameInstance.isBotPresent() && gameInstance.getBot().getPosition() == null);
                 }
                 roundManager.handlePassAction();
                 return new Response("Turn Owner disconnected, turn is passed to next Player", MessageStatus.OK);
@@ -412,7 +413,7 @@ public class GameManager implements TimerRunListener, Serializable {
     }
 
     /**
-     * Method used to oblige a player to use the {@link model.actions.TerminatorAction TerminatorAction} in case he hasn't
+     * Method used to oblige a player to use the {@link BotAction BotAction} in case he hasn't
      * already performed it
      *
      * @param receivedMessage the {@link Message Message} received that can be both: {@link BotUseRequest UseTerminatorRequest}
@@ -466,7 +467,7 @@ public class GameManager implements TimerRunListener, Serializable {
      * @return a positive or negative {@link Response Response} handled by the server
      */
     private Response checkTerminatorRespawn(Message receivedMessage) {
-        Bot terminator = (Bot) gameInstance.getTerminator();
+        Bot terminator = (Bot) gameInstance.getBot();
         Response tempResponse;
         if (receivedMessage.getContent() == MessageContent.BOT_SPAWN) {
             tempResponse = roundManager.handleTerminatorRespawn((BotSpawnRequest) receivedMessage);
@@ -481,7 +482,7 @@ public class GameManager implements TimerRunListener, Serializable {
                 }
 
                 // then I set back the playerboard to the initial state
-                gameInstance.getTerminator().getPlayerBoard().onDeath();
+                gameInstance.getBot().getPlayerBoard().onDeath();
 
                 return checkFrenzy(tempResponse);
             } else {
@@ -691,7 +692,7 @@ public class GameManager implements TimerRunListener, Serializable {
      */
     private void gameSetupHandler() {
         // first of all I set the terminator presence
-        gameInstance.setTerminator(lobby.getTerminatorPresence());
+        gameInstance.setBot(lobby.getTerminatorPresence());
 
         // then I can start adding players to the game with the color specified in their Lobby Message
         for (LobbyMessage player : lobby.getInLobbyPlayers()) {
@@ -699,7 +700,7 @@ public class GameManager implements TimerRunListener, Serializable {
         }
 
         // added the players I can add the terminator, if present
-        if (gameInstance.isTerminatorPresent()) {
+        if (gameInstance.isBotPresent()) {
             gameInstance.buildTerminator();
         }
 
@@ -736,7 +737,7 @@ public class GameManager implements TimerRunListener, Serializable {
         UserPlayer firstPlayer = roundManager.getTurnManager().getTurnOwner();
 
         // if the game has the terminator I set the first player state depending on the presence of the terminator
-        if (gameInstance.isTerminatorPresent()) {
+        if (gameInstance.isBotPresent()) {
             firstPlayer.changePlayerState(PossiblePlayerState.SPAWN_TERMINATOR);
         } // else the state remains first spawn and it's ok to start
 
@@ -958,9 +959,9 @@ public class GameManager implements TimerRunListener, Serializable {
      */
     private void finalFrenzySetup() {
         // boards flipping setup
-        if (gameInstance.isTerminatorPresent() && gameInstance.getTerminator().getPlayerBoard().getDamageCount() == 0) {
+        if (gameInstance.isBotPresent() && gameInstance.getBot().getPlayerBoard().getDamageCount() == 0) {
             try {
-                gameInstance.getTerminator().getPlayerBoard().flipBoard();
+                gameInstance.getBot().getPlayerBoard().flipBoard();
             } catch (AdrenalinaException e) {
                 // exceptions thrown can never be reached thanks to the control done
             }
@@ -1045,9 +1046,9 @@ public class GameManager implements TimerRunListener, Serializable {
      */
     private void handleLastPointsDistribution() {
         List<UserPlayer> players = gameInstance.getPlayers();
-        Bot bot = (Bot) gameInstance.getTerminator();
+        Bot bot = (Bot) gameInstance.getBot();
 
-        if (gameInstance.isTerminatorPresent() && bot.getPlayerBoard().getDamageCount() > 0) {
+        if (gameInstance.isBotPresent() && bot.getPlayerBoard().getDamageCount() > 0) {
             // in the last distribution each damaged player counts as a dead one to calculate points
             distributePoints(bot);
         }
@@ -1145,8 +1146,8 @@ public class GameManager implements TimerRunListener, Serializable {
         List<UserPlayer> players = gameInstance.getPlayers();
         ArrayList<PlayerPoints> playerPoints = new ArrayList<>();
 
-        if (gameInstance.isTerminatorPresent()) {
-            Bot bot = (Bot) gameInstance.getTerminator();
+        if (gameInstance.isBotPresent()) {
+            Bot bot = (Bot) gameInstance.getBot();
             PlayerPoints botPoints = new PlayerPoints(bot.getUsername(), bot.getColor(), bot.getPoints());
             playerPoints.add(botPoints);
         }
@@ -1195,12 +1196,12 @@ public class GameManager implements TimerRunListener, Serializable {
             }
         }
 
-        if (gameInstance.isTerminatorPresent()) {
-            if (gameInstance.getTerminator().getPoints() > maxPoints) {
-                setWinners(new ArrayList<>(List.of(gameInstance.getTerminator().getUsername())), winners);
+        if (gameInstance.isBotPresent()) {
+            if (gameInstance.getBot().getPoints() > maxPoints) {
+                setWinners(new ArrayList<>(List.of(gameInstance.getBot().getUsername())), winners);
                 return new WinnersResponse(winners);
-            } else if (gameInstance.getTerminator().getPoints() == maxPoints) {
-                tiePlayers.add(gameInstance.getTerminator());
+            } else if (gameInstance.getBot().getPoints() == maxPoints) {
+                tiePlayers.add(gameInstance.getBot());
             }
         }
 
