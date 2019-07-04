@@ -32,13 +32,11 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
     public static final String SEND_ERROR = "Error while sending the request";
     public static final String ERROR_DIALOG_TITLE = "Error";
-    protected static final String INVALID_STRING = "Invalid String!";
-
     public static final String TELEPORTER = "TELEPORTER";
     public static final String NEWTON = "NEWTON";
     public static final String TAGBACK_GRENADE = "TAGBACK GRENADE";
     public static final String TARGETING_SCOPE = "TARGETING SCOPE";
-
+    protected static final String INVALID_STRING = "Invalid String!";
     private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
     private final Object gameSerializedLock = new Object(); // handles GameSerialized parallelism
 
@@ -56,6 +54,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     private String turnOwner;
     private boolean turnOwnerChanged;
     private boolean waitingGrenade = false;
+    private boolean loadGame = false;
 
     private boolean firstTurn;
     private boolean yourTurn;
@@ -231,6 +230,14 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
     private void newTurn() {
         if (yourTurn) {
             roundManager.beginRound();
+
+            if (loadGame) {
+                loadGame = false;
+                if (gameSerialized.isBotActionDone()) {
+                    roundManager.setBotMoved();
+                }
+            }
+
             makeMove();
         } else {
             queue.add(() -> notYourTurn(turnOwner));
@@ -455,10 +462,6 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
         queue.add(this::gameStateUpdate);
 
-        if (roundManager != null && gameSerialized.isBotActionDone()) {
-            roundManager.setBotMoved();
-        }
-
         checkTurnChange(gameStateMessage);
     }
 
@@ -545,6 +548,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         firstTurn = false;
         yourTurn = false;
         joinedLobby = true;
+        loadGame = true;
 
         client.setToken(gameLoadResponse.getNewToken());
 
