@@ -397,7 +397,7 @@ public class RoundManager {
         }
 
         if (tempResponse.getStatus() == MessageStatus.NO_RESPONSE) {
-            // after each damaging action I must check id the terminator died. In this case I need 
+            // after each damaging action I must check id the terminator died. In this case I need
             checkBotAction();
 
             gameManager.changeState(handleAfterActionState(turnManager.isSecondAction()));
@@ -1177,7 +1177,8 @@ public class RoundManager {
             return buildPositiveResponse("Reload action done and turn passed");
         } else if (arrivingState == PossibleGameState.PASS_FRENZY_TURN) {
             gameManager.changeState(PossibleGameState.FINAL_FRENZY);
-            return buildPositiveResponse("Turn Passed");
+            SaveGame.saveGame(gameManager);
+            return new Response("Turn Passed and Frenzy Starting", MessageStatus.OK);
         } else {
             throw new InvalidGameStateException();
         }
