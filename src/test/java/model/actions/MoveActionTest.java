@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class MoveActionTest {
+class MoveActionTest {
     @Test
     void moveAction() throws Exception {
         UserPlayer moving = new UserPlayer("1", PlayerColor.GREEN, new PlayerBoard());
