@@ -3,6 +3,7 @@ package controller;
 import enumerations.PossibleGameState;
 import model.player.Player;
 import model.player.UserPlayer;
+import utility.GameCostants;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -145,7 +146,7 @@ public class TurnManager implements Serializable {
         ArrayList<UserPlayer> grenadePossessors = new ArrayList<>();
 
         for(Player player : damagedPlayers) {
-            if(((UserPlayer) player).getPowerupOccurrences("TAGBACK GRENADE") > 0) {
+            if(!player.getUsername().equals(GameCostants.BOT_NAME)  && ((UserPlayer) player).getPowerupOccurrences("TAGBACK GRENADE") > 0) {
                 grenadePossessors.add((UserPlayer) player);
             }
         }
