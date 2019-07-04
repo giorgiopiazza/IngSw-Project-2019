@@ -37,8 +37,8 @@ public class Game implements Serializable {
     private boolean gameStarted;
 
     private List<UserPlayer> players;
-    private boolean terminatorPresent;
-    private Player terminator;
+    private boolean botPresent;
+    private Player bot;
 
     private int killShotNum;
     private KillShot[] killShotsTrack;
@@ -63,11 +63,11 @@ public class Game implements Serializable {
      */
     public void init() {
         players = new ArrayList<>();
-        terminator = null;
+        bot = null;
         this.currentState = GameState.NORMAL;
         killShotsTrack = new KillShot[MAX_KILLSHOT];
         finalFrenzyKillShots = new ArrayList<>();
-        terminatorPresent = false;
+        botPresent = false;
         gameStarted = false;
         killShotNum = 0;
 
@@ -85,9 +85,9 @@ public class Game implements Serializable {
         gameStarted = savedGame.gameStarted;
         players = savedGame.players;
         loadTransientPlayers(notTransientPlayers);
-        terminatorPresent = savedGame.terminatorPresent;
-        if(terminatorPresent) {
-            terminator = savedGame.terminator;
+        botPresent = savedGame.botPresent;
+        if(botPresent) {
+            bot = savedGame.bot;
             loadTransientBot(notTransientPlayers);
         }
         killShotNum = savedGame.killShotNum;
@@ -128,7 +128,7 @@ public class Game implements Serializable {
     private void loadTransientBot(List<NotTransientPlayer> notTransientPlayers) {
         for(NotTransientPlayer notTransientPlayer : notTransientPlayers) {
             if(notTransientPlayer.getUserName().equals(GameConstants.BOT_NAME)) {
-                terminator.setPoints(notTransientPlayer.getPoints());
+                bot.setPoints(notTransientPlayer.getPoints());
             }
         }
     }
@@ -215,7 +215,7 @@ public class Game implements Serializable {
         if (gameStarted)
             throw new GameAlreadyStartedException("It is not possible to add a player when the game has already gameStarted");
         if (player == null) throw new NullPointerException("Player cannot be null");
-        if (players.size() >= 5 || (players.size() >= 4 && terminatorPresent)) throw new MaxPlayerException();
+        if (players.size() >= 5 || (players.size() >= 4 && botPresent)) throw new MaxPlayerException();
         players.add(player);
     }
 
@@ -238,9 +238,9 @@ public class Game implements Serializable {
         if (players.size() < 3) return false;
         if (killShotNum == 0) return false;
 
-        if (isTerminatorPresent() && players.size() < 5) {
+        if (isBotPresent() && players.size() < 5) {
             return true;
-        } else return (!isTerminatorPresent() && players.size() < 6);
+        } else return (!isBotPresent() && players.size() < 6);
     }
 
     /**
@@ -255,7 +255,7 @@ public class Game implements Serializable {
         pickFirstPlayer();
 
         for (UserPlayer player : players) {
-            ActionManager.setStartingPossibleActions(player, terminatorPresent);
+            ActionManager.setStartingPossibleActions(player, botPresent);
         }
 
         distributeCards();
@@ -363,29 +363,29 @@ public class Game implements Serializable {
         throw new KillShotsTerminatedException();
     }
 
-    public boolean isTerminatorPresent() {
-        return this.terminatorPresent;
+    public boolean isBotPresent() {
+        return this.botPresent;
     }
 
     /**
-     * Only sets true to the boolean attribute that specifies the presence of the terminator
+     * Only sets true to the boolean attribute that specifies the presence of the bot
      *
-     * @param terminatorPresent true in case the terminator is present, otherwise false
+     * @param terminatorPresent true in case the bot is present, otherwise false
      * @throws MaxPlayerException in case the game already has 5 players
      */
-    public void setTerminator(boolean terminatorPresent) {
+    public void setBot(boolean terminatorPresent) {
         if (gameStarted)
-            throw new GameAlreadyStartedException("It is not possible to set the setTerminator player when the game has already gameStarted.");
+            throw new GameAlreadyStartedException("It is not possible to set the setBot player when the game has already gameStarted.");
         if (players.size() >= 5 && terminatorPresent)
             throw new MaxPlayerException("Can not add Terminator with 5 players");
-        this.terminatorPresent = terminatorPresent;
+        this.botPresent = terminatorPresent;
     }
 
     /**
-     * Method to spawn the terminator, separated as it can be spawned after the spawn of the players
+     * Method to spawn the bot, separated as it can be spawned after the spawn of the players
      */
     public void buildTerminator() {
-        this.terminator = new Bot(firstColorUnused(), new PlayerBoard());
+        this.bot = new Bot(firstColorUnused(), new PlayerBoard());
     }
 
     /**
@@ -433,7 +433,7 @@ public class Game implements Serializable {
     }
 
     /**
-     * Spawn the terminator player to a spawn point on the map
+     * Spawn the bot player to a spawn point on the map
      *
      * @param playerPosition the player's spawn position
      * @throws GameAlreadyStartedException if the game has not gameStarted
@@ -441,9 +441,9 @@ public class Game implements Serializable {
     public void spawnTerminator(PlayerPosition playerPosition) {
         if (playerPosition == null) throw new NullPointerException("playerPosition cannot be null");
         if (!gameStarted) throw new GameAlreadyStartedException("Game not gameStarted yet");
-        if (!terminatorPresent) throw new BotNotSetException();
+        if (!botPresent) throw new BotNotSetException();
 
-        terminator.setPosition(playerPosition);
+        bot.setPosition(playerPosition);
     }
 
     /**
@@ -465,12 +465,12 @@ public class Game implements Serializable {
     }
 
     /**
-     * Return the instance of terminator {@code player} for this game
+     * Return the instance of bot {@code player} for this game
      *
-     * @return the terminator instance
+     * @return the bot instance
      */
-    public Player getTerminator() {
-        return (terminatorPresent) ? terminator : null;
+    public Player getBot() {
+        return (botPresent) ? bot : null;
     }
 
     /**
@@ -495,7 +495,7 @@ public class Game implements Serializable {
      */
     public Player getUserPlayerByUsername(String username) {
         if (username.equalsIgnoreCase(GameConstants.BOT_NAME)) {
-            return terminator;
+            return bot;
         }
 
         for (UserPlayer p : players) {
@@ -554,8 +554,8 @@ public class Game implements Serializable {
             playersDamage.add(player.getPlayerBoard().getDamageCount());
         }
 
-        if(isTerminatorPresent()) {
-            playersDamage.add(terminator.getPlayerBoard().getDamageCount());
+        if(isBotPresent()) {
+            playersDamage.add(bot.getPlayerBoard().getDamageCount());
         }
 
         return playersDamage;
@@ -584,7 +584,7 @@ public class Game implements Serializable {
             if (player.getUsername().equals(username)) return player;
         }
 
-        if (terminator.getUsername().equals(username)) return terminator;
+        if (bot.getUsername().equals(username)) return bot;
 
         return null;
     }

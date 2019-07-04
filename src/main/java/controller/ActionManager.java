@@ -48,7 +48,7 @@ public class ActionManager {
                 player.setPossibleActions(EnumSet.of(PossibleAction.MOVE, PossibleAction.ADRENALINE_PICK, PossibleAction.ADRENALINE_SHOOT));
         }
 
-        if (Game.getInstance().isTerminatorPresent()) {
+        if (Game.getInstance().isBotPresent()) {
             player.addAction(PossibleAction.BOT_ACTION);
         }
     }
@@ -66,7 +66,7 @@ public class ActionManager {
             player.setPossibleActions(EnumSet.of(PossibleAction.LIGHT_FRENZY_SHOOT, PossibleAction.LIGHT_FRENZY_PICK));
         }
 
-        if (Game.getInstance().isTerminatorPresent()) {
+        if (Game.getInstance().isBotPresent()) {
             player.addAction(PossibleAction.BOT_ACTION);
         }
     }

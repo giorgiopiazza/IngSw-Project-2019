@@ -76,6 +76,12 @@ public class GameMap implements Serializable {
      * @param mapType the index representing the chosen map
      */
     public GameMap(int mapType) {
+        this.rooms = buildMap(mapType);
+        this.imagePath = getMapImage(mapType);
+        this.mapID = mapType;
+    }
+
+    private JsonObject buildMapObject(int mapType) {
         String path = "json/maps.json";
         InputStream is = GameMap.class.getClassLoader().getResourceAsStream(path);
 
@@ -85,9 +91,6 @@ public class GameMap implements Serializable {
         JsonArray array = parser.parse(new InputStreamReader(is)).getAsJsonArray();
 
         JsonObject mapObject;
-
-        Square[][] map;
-        map = new Square[MAX_ROWS][MAX_COLUMNS];
 
         switch (mapType) {
             case MAP_1:
@@ -110,12 +113,22 @@ public class GameMap implements Serializable {
                 throw new MapUnknowException();
         }
 
-        JsonArray matrix = mapObject.get("map").getAsJsonArray();
-        fillMap(matrix, map);
+        return mapObject;
+    }
 
-        this.rooms = map;
-        this.imagePath = mapObject.get("image").getAsString();
-        this.mapID = mapType;
+    private String getMapImage(int mapType) {
+        JsonObject mapObject = buildMapObject(mapType);
+
+        return mapObject.get("image").getAsString();
+    }
+
+    private Square[][] buildMap(int mapType) {
+        Square[][] map = new Square[MAX_ROWS][MAX_COLUMNS];
+
+        JsonArray squaresMatrix = buildMapObject(mapType).get("map").getAsJsonArray();
+        fillMap(squaresMatrix, map);
+
+        return map;
     }
 
     /**
@@ -220,8 +233,8 @@ public class GameMap implements Serializable {
             }
         }
 
-        if (game.isTerminatorPresent()) {
-            Player term = game.getTerminator();
+        if (game.isBotPresent()) {
+            Player term = game.getBot();
             if (term.getPosition().equals(pos)) {
                 players.add(term);
             }
@@ -246,8 +259,8 @@ public class GameMap implements Serializable {
             }
         }
 
-        if (game.isTerminatorPresent()) {
-            Player term = game.getTerminator();
+        if (game.isBotPresent()) {
+            Player term = game.getBot();
             if (getSquare(term.getPosition().getRow(), term.getPosition().getColumn()).getRoomColor().equals(roomColor)) {
                 players.add(term);
             }

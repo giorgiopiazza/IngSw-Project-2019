@@ -355,7 +355,7 @@ public class GameSceneController {
         List<KillShot> killShots = new ArrayList<>(Arrays.asList(gameSerialized.getKillShotsTrack()));
         int killShotNum = gameSerialized.getKillShotNum();
 
-        killShots.subList(killShotNum - 1, killShots.size() - 1).clear();
+        killShots.subList(killShotNum, killShots.size() - 1).clear();
 
         for (ImageView killShot : killshotsImages) {
             boardArea.getChildren().remove(killShot);
@@ -643,7 +643,8 @@ public class GameSceneController {
         setAmmo(me);
         setPlayerboardSkulls(me.getPlayerBoard());
 
-        setWeapons(Arrays.asList(me.getWeapons()));
+        setWeapons(Arrays.asList(me.getWeapons()), (guiManager.isBotPresent() &&
+                me.getUsername().equals(guiManager.getTurnOwner())));
         setPowerups(guiManager.getPowerups());
     }
 
@@ -665,7 +666,8 @@ public class GameSceneController {
         setAmmo(other);
         setPlayerboardSkulls(other.getPlayerBoard());
 
-        setWeapons(Arrays.asList(other.getWeapons()));
+        setWeapons(Arrays.asList(other.getWeapons()), (guiManager.isBotPresent() &&
+                other.getUsername().equals(guiManager.getTurnOwner())));
     }
 
     private void setUsernamePlayerInfo(String username) {
@@ -764,7 +766,7 @@ public class GameSceneController {
         }
     }
 
-    private void setWeapons(List<WeaponCard> weapons) {
+    private void setWeapons(List<WeaponCard> weapons, boolean botcard) {
         if (weapons.isEmpty()) {
             return;
         }
@@ -785,6 +787,15 @@ public class GameSceneController {
                 monochrome.setSaturation(-1);
                 weaponImage.setEffect(monochrome);
             }
+
+            weaponHBox.getChildren().add(weaponImage);
+        }
+
+        if (botcard) {
+            ImageView weaponImage = new ImageView("/img/weapons/bot_front.png");
+
+            weaponImage.setFitHeight(WEAPON_CARD_HEIGHT);
+            weaponImage.setFitWidth(WEAPON_CARD_WIDTH);
 
             weaponHBox.getChildren().add(weaponImage);
         }
@@ -1251,7 +1262,13 @@ public class GameSceneController {
             return;
         }
 
-        weaponCards = weaponCards.stream().filter(w -> w.status() == 0).collect(Collectors.toList());
+        List<WeaponCard> shootCards = weaponCards.stream().filter(w -> w.status() == 0).collect(Collectors.toList());
+
+        for (Integer weaponIndex : rechargingWeapons) {
+            if (weaponCards.get(weaponIndex) != null) {
+                shootCards.add(weaponCards.get(weaponIndex));
+            }
+        }
 
         actionPanel.getChildren().clear();
 
@@ -1265,7 +1282,7 @@ public class GameSceneController {
         hBox.setSpacing(20);
         vBox.getChildren().add(hBox);
 
-        for (WeaponCard weaponCard : weaponCards) {
+        for (WeaponCard weaponCard : shootCards) {
             ImageView img = new ImageView(weaponCard.getImagePath());
             img.getStyleClass().add(CSS_BUTTON);
             img.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> chooseWeaponEffect(moveBeforeShoot, rechargingWeapons, weaponCard));
@@ -1432,7 +1449,7 @@ public class GameSceneController {
 
         HBox hBox = setHorizontalLayout("Shoot Target #" + (tempRequest.getTargetPlayersUsername().size() + 1));
 
-        List<Player> players = guiManager.getPlayers().stream().filter(p -> !p.getUsername().equals(guiManager.getUsername())).collect(Collectors.toList());
+        List<Player> players = guiManager.getAllPlayers().stream().filter(p -> !p.getUsername().equals(guiManager.getUsername())).collect(Collectors.toList());
 
         for (Player player : players) {
             final String currentUsername = player.getUsername();
@@ -1677,7 +1694,15 @@ public class GameSceneController {
 
         GameMap gameMap = guiManager.getGameMap();
 
-        PlayerPosition playerPosition = guiManager.getPlayer().getPosition();
+        ShootRequest tempReq = shootRequestBuilder.build();
+        PlayerPosition playerPosition;
+
+        if (tempReq.getMoveBeforeShootPosition() != null) {
+            playerPosition = tempReq.getMoveBeforeShootPosition();
+        } else {
+            playerPosition = guiManager.getPlayer().getPosition();
+        }
+
         AnchorPane anchorPane = new AnchorPane();
 
         int distance = Integer.parseInt(properties.get(Properties.MOVE.getJKey()));
@@ -2005,7 +2030,7 @@ public class GameSceneController {
     }
 
     private void onNewtonClick(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
-        List<Player> players = guiManager.getPlayersWithBot();
+        List<Player> players = guiManager.getAllPlayers();
         players = players.stream().filter(p -> p.getPosition() != null && !p.getUsername().equals(guiManager.getUsername())).collect(Collectors.toList());
 
         if (players.isEmpty()) {
@@ -2130,7 +2155,7 @@ public class GameSceneController {
         hBox.setSpacing(20);
         vBox.getChildren().add(hBox);
 
-        for (Player player : guiManager.getPlayers()) {
+        for (Player player : guiManager.getAllPlayers()) {
             final String currentUsername = player.getUsername();
             if (!currentUsername.equals(guiManager.getUsername())) {
                 ImageView img = new ImageView();
