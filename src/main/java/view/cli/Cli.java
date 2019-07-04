@@ -1465,7 +1465,7 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
             out.println("\nChoose the weapon. Your ammo are:\n");
             printAmmo();
             choose = readInt(0, weapons.length - 1, true);
-        } while (weapons[choose] == null && choose > weapons.length - 1);
+        } while (weapons[choose] == null || choose > weapons.length - 1);
 
         return weapons[choose];
     }
