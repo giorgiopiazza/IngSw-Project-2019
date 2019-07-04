@@ -51,7 +51,7 @@ public class GameManager implements TimerRunListener, Serializable {
         this.gameState = PossibleGameState.GAME_ROOM;
         this.lobby = new GameLobby(terminator, skullNum);
         this.gameInstance = Game.getInstance();
-        this.roundManager = new RoundManager(this, server);
+        this.roundManager = new RoundManager(this);
 
         this.lobbyTimeoutTime = lobbyTimeoutTime * 1000;
     }
@@ -72,7 +72,7 @@ public class GameManager implements TimerRunListener, Serializable {
         this.shootParameters = savedGameManager.shootParameters;
 
         this.lobbyTimeoutTime = lobbyTimeoutTime * 1000;
-        this.roundManager = new RoundManager(this, server);
+        this.roundManager = new RoundManager(this);
     }
 
     /**
@@ -909,7 +909,6 @@ public class GameManager implements TimerRunListener, Serializable {
 
                 sendGrenadePrivateUpdates();
                 roundManager.getTurnManager().giveTurn(roundManager.getTurnManager().getGrenadePossibleUsers().get(roundManager.getTurnManager().getTurnCount()));
-                server.onRoundChange(roundManager.getTurnManager().getTurnOwner().getUsername());
                 return new Response("Granade not used", MessageStatus.OK);
             default:
                 return new Response("Invalid Message while in granade state", MessageStatus.ERROR);
@@ -1276,6 +1275,10 @@ public class GameManager implements TimerRunListener, Serializable {
      */
     void sendBroadcastMessage(Message message) {
         server.sendMessageToAll(message);
+    }
+
+    public String getTurnOwnerUsername() {
+        return roundManager.getTurnManager().getTurnOwner().getUsername();
     }
 
     /**
