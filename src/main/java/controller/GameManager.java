@@ -967,7 +967,7 @@ public class GameManager implements TimerRunListener, Serializable {
         }
 
         for (UserPlayer player : gameInstance.getPlayers()) {
-            roundManager.setInitialActions();
+            ActionManager.setFrenzyPossibleActions(player, roundManager.getTurnManager());
             if (player.getPlayerBoard().getDamageCount() == 0) {
                 try {
                     player.getPlayerBoard().flipBoard();
