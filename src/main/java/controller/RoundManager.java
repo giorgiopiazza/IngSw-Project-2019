@@ -74,13 +74,11 @@ public class RoundManager {
      * depending on the {@link Game Game} state that can be: {@link GameState GameState.NORMAL} or
      * {@link GameState GameState}
      */
-    void setInitialActions() {
+    private void setInitialActions() {
         if (gameInstance.getState() == GameState.NORMAL && turnManager.getTurnOwner().getPlayerState() == PossiblePlayerState.FIRST_SPAWN) {
             ActionManager.setStartingPossibleActions(turnManager.getTurnOwner(), gameInstance.isBotPresent());
         } else if (gameInstance.getState() == GameState.NORMAL && turnManager.getTurnOwner().getPlayerState() == PossiblePlayerState.PLAYING) {
             ActionManager.setPossibleActions(turnManager.getTurnOwner());
-        } else if (gameInstance.getState() == GameState.FINAL_FRENZY && turnManager.getTurnOwner().getPlayerState() == PossiblePlayerState.PLAYING) {
-            ActionManager.setFrenzyPossibleActions(turnManager.getTurnOwner(), turnManager);
         }
     }
 
@@ -399,6 +397,9 @@ public class RoundManager {
         }
 
         if (tempResponse.getStatus() == MessageStatus.NO_RESPONSE) {
+            // after each damaging action I must check id the terminator died. In this case I need
+            checkBotAction();
+
             gameManager.changeState(handleAfterActionState(turnManager.isSecondAction()));
             discardPowerups(Stream.of(powerupsIndexes, paymentPowerups).flatMap(Collection::stream).collect(Collectors.toList()));
             return buildPositiveResponse(tempResponse.getMessage());
@@ -836,12 +837,14 @@ public class RoundManager {
         } catch (WeaponAlreadyChargedException e) {
             return buildNegativeResponse("Trying to recharge an already charged weapon with frenzy shoot");
         } catch (NotEnoughAmmoException e) {
-            return buildNegativeResponse("Not enough ammo to recharge a weapon with frenzy shoot");
+            return buildNegativeResponse("Not enough ammo");
         } catch (WeaponNotChargedException e) {
             return buildNegativeResponse("Not charged weapon can not be used to shoot");
         } catch (InvalidActionException e) {
             return buildNegativeResponse("Invalid Shoot Action");
         }
+
+        checkBotAction();
 
         if (checkScopeUsage(turnOwner)) {
             turnManager.setSecondAction(secondAction);
@@ -1159,7 +1162,9 @@ public class RoundManager {
             actions if the game state changed while they where not connected. These actions will be set as for all connected players
             thanks for the reconnection
          */
-        setInitialActions();
+        if(gameInstance.getState() == GameState.NORMAL) {
+            setInitialActions();
+        }
 
         // then I reset the missing cards on the board
         gameInstance.getGameMap().addMissingCards();
@@ -1172,7 +1177,8 @@ public class RoundManager {
             return buildPositiveResponse("Reload action done and turn passed");
         } else if (arrivingState == PossibleGameState.PASS_FRENZY_TURN) {
             gameManager.changeState(PossibleGameState.FINAL_FRENZY);
-            return buildPositiveResponse("Turn Passed");
+            SaveGame.saveGame(gameManager);
+            return new Response("Turn Passed and Frenzy Starting", MessageStatus.OK);
         } else {
             throw new InvalidGameStateException();
         }
@@ -1233,6 +1239,15 @@ public class RoundManager {
             gameManager.sendBroadcastMessage(new BroadcastSpawningPowerup(spawningPowerup));
             getTurnManager().getTurnOwner().changePlayerState(PossiblePlayerState.PLAYING);
             setInitialActions();
+        }
+    }
+
+    /**
+     * Checks if the therminator has died after a shoot or scope action. In this case the BOT_ACTION can not be used!
+     */
+    private void checkBotAction() {
+        if(gameInstance.isTerminatorPresent() && gameInstance.getTerminator().getPlayerBoard().getDamageCount() > 10) {
+            turnManager.getTurnOwner().removeAction(PossibleAction.BOT_ACTION);
         }
     }
 
