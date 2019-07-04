@@ -10,13 +10,20 @@ import model.map.*;
 import model.player.PlayerPoints;
 import model.player.UserPlayer;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 class CliPrinter {
+    private static final String ROOM_NULL = "                ";
+    private static final String ROOM_EMPTY = "             ";
+    private static final String ROOM_DOOR = "     ";
+    private static final String EMPTY_WEAPON_ROW = "                                          ";
+    private static final String WEAPON_ROW = "║                                   ║     ";
+    private static final String EMPTY_CARD_ROW = "                                 ";
+    private static final String CARD_SPACING = " ║     ";
+    private static final String BOX_ROW = "═══════════════";
+
+    private static final String POINTS_TEXT = "Points: ";
 
     private CliPrinter() {
         throw new IllegalStateException("Utility class");
@@ -174,7 +181,7 @@ class CliPrinter {
                 String roomColor = AnsiCode.getTextColorCodeByName(square.getRoomColor().name(), true) + AnsiCode.TEXT_BLACK;
                 row.append(roomColor).append(getTopLeft(square)).append(getTopMiddle(square)).append(getTopRight(square)).append(AnsiCode.RESET).append(" ");
             } else {
-                row.append(AnsiCode.RESET).append("                ");
+                row.append(AnsiCode.RESET).append(ROOM_NULL);
             }
         }
 
@@ -202,7 +209,7 @@ class CliPrinter {
         if (square.getNorth() == SquareAdjacency.WALL) {
             middle = "═════";
         } else {
-            middle = "     ";
+            middle = ROOM_DOOR;
         }
 
         return middle;
@@ -227,9 +234,9 @@ class CliPrinter {
 
         for (Square square : squareRow) {
             if (square != null) {
-                row.append(getFirstTopDecoration(square)).append("             ").append(getSecondTopDecoration(square));
+                row.append(getFirstTopDecoration(square)).append(ROOM_EMPTY).append(getSecondTopDecoration(square));
             } else {
-                row.append(AnsiCode.RESET).append("                ");
+                row.append(AnsiCode.RESET).append(ROOM_NULL);
             }
         }
 
@@ -272,9 +279,9 @@ class CliPrinter {
 
         for (Square square : squareRow) {
             if (square != null) {
-                row.append(getFirstMidDecoration(square)).append("             ").append(getSecondMidDecoration(square));
+                row.append(getFirstMidDecoration(square)).append(ROOM_EMPTY).append(getSecondMidDecoration(square));
             } else {
-                row.append(AnsiCode.RESET).append("                ");
+                row.append(AnsiCode.RESET).append(ROOM_NULL);
             }
         }
 
@@ -315,7 +322,7 @@ class CliPrinter {
             if (square != null) {
                 row.append(getLeftMidDecoration(square)).append(getMidPlayerDecoration(square, gameSerialized, inGamePlayers)).append(getRightMidDecoration(square));
             } else {
-                row.append(AnsiCode.RESET).append("                ");
+                row.append(AnsiCode.RESET).append(ROOM_NULL);
             }
         }
 
@@ -379,7 +386,7 @@ class CliPrinter {
             if (square != null) {
                 row.append(getLeftMidDecoration(square).append(getMidCentre(square)).append(getRightMidDecoration(square)));
             } else {
-                row.append(AnsiCode.RESET).append("                ");
+                row.append(AnsiCode.RESET).append(ROOM_NULL);
             }
         }
 
@@ -408,9 +415,9 @@ class CliPrinter {
 
         for (Square square : squareRow) {
             if (square != null) {
-                row.append(getFirstBotDecoration(square)).append("             ").append(getSecondBotDecoration(square));
+                row.append(getFirstBotDecoration(square)).append(ROOM_EMPTY).append(getSecondBotDecoration(square));
             } else {
-                row.append(AnsiCode.RESET).append("                ");
+                row.append(AnsiCode.RESET).append(ROOM_NULL);
             }
         }
 
@@ -456,7 +463,7 @@ class CliPrinter {
                 String roomColor = AnsiCode.getTextColorCodeByName(square.getRoomColor().name(), true) + AnsiCode.TEXT_BLACK;
                 row.append(roomColor).append(getBotLeft(square)).append(getBotMiddle(square)).append(getBotRight(square)).append(AnsiCode.RESET).append(" ");
             } else {
-                row.append(AnsiCode.RESET).append("                ");
+                row.append(AnsiCode.RESET).append(ROOM_NULL);
             }
         }
 
@@ -484,7 +491,7 @@ class CliPrinter {
         if (square.getSouth() == SquareAdjacency.WALL) {
             middle = "═════";
         } else {
-            middle = "     ";
+            middle = ROOM_DOOR;
         }
 
         return middle;
@@ -549,7 +556,7 @@ class CliPrinter {
             if (weapon != null) {
                 out.append("╔═══════════════════════════════════╗     ");
             } else {
-                out.append("                                          ");
+                out.append(EMPTY_WEAPON_ROW);
             }
         }
 
@@ -562,9 +569,9 @@ class CliPrinter {
 
         for (WeaponCard weapon : weapons) {
             if (weapon != null) {
-                out.append("║                                   ║     ");
+                out.append(WEAPON_ROW);
             } else {
-                out.append("                                          ");
+                out.append(EMPTY_WEAPON_ROW);
             }
         }
 
@@ -579,7 +586,7 @@ class CliPrinter {
             if (weapons[i] != null) {
                 out.append("║ ").append(getWeaponMainDetails(weapons[i])).append("[").append(i).append("]").append("  ║     ");
             } else {
-                out.append("                                          ");
+                out.append(EMPTY_WEAPON_ROW);
             }
         }
 
@@ -625,7 +632,7 @@ class CliPrinter {
                 }
 
             } else {
-                out.append("                                          ");
+                out.append(EMPTY_WEAPON_ROW);
             }
         }
 
@@ -668,7 +675,7 @@ class CliPrinter {
             if (weapon != null) {
                 out.append("║         Base Effect: [0]          ║     ");
             } else {
-                out.append("                                          ");
+                out.append(EMPTY_WEAPON_ROW);
             }
         }
 
@@ -679,13 +686,13 @@ class CliPrinter {
     private static String getEffectCost(AmmoQuantity ammoQuantity) {
         StringBuilder tempOut = new StringBuilder();
 
-        tempOut         .append((AnsiCode.getTextColorCodeByName("Red", true) + "  " + AnsiCode.RESET + " ").repeat(ammoQuantity.getRedAmmo()))
-                        .append((AnsiCode.getTextColorCodeByName("Blue", true) + "  " + AnsiCode.RESET + " ").repeat(ammoQuantity.getBlueAmmo()))
-                        .append((AnsiCode.getTextColorCodeByName("Yellow", true) + "  " + AnsiCode.RESET + " ").repeat(ammoQuantity.getYellowAmmo()));
-        if(ammoQuantity.getAmmoCount() == 0) {
+        tempOut.append((AnsiCode.getTextColorCodeByName("Red", true) + "  " + AnsiCode.RESET + " ").repeat(ammoQuantity.getRedAmmo()))
+                .append((AnsiCode.getTextColorCodeByName("Blue", true) + "  " + AnsiCode.RESET + " ").repeat(ammoQuantity.getBlueAmmo()))
+                .append((AnsiCode.getTextColorCodeByName("Yellow", true) + "  " + AnsiCode.RESET + " ").repeat(ammoQuantity.getYellowAmmo()));
+        if (ammoQuantity.getAmmoCount() == 0) {
             tempOut.append("        ");
-        } else if(ammoQuantity.getAmmoCount() == 1){
-            tempOut.append("     ");
+        } else if (ammoQuantity.getAmmoCount() == 1) {
+            tempOut.append(ROOM_DOOR);
         } else {
             tempOut.append("  ");
         }
@@ -701,10 +708,10 @@ class CliPrinter {
                 if (!weapon.getSecondaryEffects().isEmpty()) {
                     out.append("║ ").append(getEffectCost(weapon.getSecondaryEffects().get(0).getCost())).append("First Effect: [1]         ║     ");
                 } else {
-                    out.append("║                                   ║     ");
+                    out.append(WEAPON_ROW);
                 }
             } else {
-                out.append("                                          ");
+                out.append(EMPTY_WEAPON_ROW);
             }
         }
 
@@ -720,10 +727,10 @@ class CliPrinter {
                 if (weapon.getSecondaryEffects().size() > 1) {
                     out.append("║ ").append(getEffectCost(weapon.getSecondaryEffects().get(1).getCost())).append("Second Effect: [2]        ║     ");
                 } else {
-                    out.append("║                                   ║     ");
+                    out.append(WEAPON_ROW);
                 }
             } else {
-                out.append("                                          ");
+                out.append(EMPTY_WEAPON_ROW);
             }
         }
 
@@ -742,7 +749,7 @@ class CliPrinter {
                     out.append("║    NO COMBO WITH THESE EFFECTS    ║     ");
                 }
             } else {
-                out.append("                                          ");
+                out.append(EMPTY_WEAPON_ROW);
             }
         }
 
@@ -761,11 +768,11 @@ class CliPrinter {
                 } else if (weapon.getSecondaryEffects().size() >= effect) {
                     tempEffect = weapon.getSecondaryEffects().get(effect - 1).getDescription();
                 } else {
-                    tempEffect = "                                 ";
+                    tempEffect = EMPTY_CARD_ROW;
                 }
-                out.append("║ ").append(addEffectChunk(tempEffect, startIndex, finishIndex)).append(" ║     ");
+                out.append("║ ").append(addEffectChunk(tempEffect, startIndex, finishIndex)).append(CARD_SPACING);
             } else {
-                out.append("                                          ");
+                out.append(EMPTY_WEAPON_ROW);
             }
         }
 
@@ -788,7 +795,7 @@ class CliPrinter {
             if (weapon != null) {
                 out.append("╚═══════════════════════════════════╝     ");
             } else {
-                out.append("                                          ");
+                out.append(EMPTY_WEAPON_ROW);
             }
         }
 
@@ -833,7 +840,7 @@ class CliPrinter {
             if (powerup != null) {
                 out.append("╔══════════════════════════╗     ");
             } else {
-                out.append("                                 ");
+                out.append(EMPTY_CARD_ROW);
             }
         }
 
@@ -846,9 +853,9 @@ class CliPrinter {
 
         for (int i = 0; i < powerups.length; ++i) {
             if (powerups[i] != null) {
-                out.append("║ ").append(addFirstMissingBlanks(powerups[i].getName())).append(powerups[i].getName()).append(" [").append(i).append("]").append(addSecondMissingBlanks(powerups[i].getName())).append(" ║     ");
+                out.append("║ ").append(addFirstMissingBlanks(powerups[i].getName())).append(powerups[i].getName()).append(" [").append(i).append("]").append(addSecondMissingBlanks(powerups[i].getName())).append(CARD_SPACING);
             } else {
-                out.append("                                 ");
+                out.append(EMPTY_CARD_ROW);
             }
         }
 
@@ -883,7 +890,7 @@ class CliPrinter {
             if (powerup != null) {
                 out.append("║                          ║     ");
             } else {
-                out.append("                                 ");
+                out.append(EMPTY_CARD_ROW);
             }
         }
 
@@ -898,7 +905,7 @@ class CliPrinter {
             if (powerup != null) {
                 out.append("║         Effect:          ║     ");
             } else {
-                out.append("                                 ");
+                out.append(EMPTY_CARD_ROW);
             }
         }
 
@@ -911,9 +918,9 @@ class CliPrinter {
 
         for (PowerupCard powerup : powerups) {
             if (powerup != null) {
-                out.append("║ ").append(addEffectChunk(powerup.getBaseEffect().getDescription(), startIndex, finishIndex)).append(" ║     ");
+                out.append("║ ").append(addEffectChunk(powerup.getBaseEffect().getDescription(), startIndex, finishIndex)).append(CARD_SPACING);
             } else {
-                out.append("                                 ");
+                out.append(EMPTY_CARD_ROW);
             }
         }
 
@@ -929,7 +936,7 @@ class CliPrinter {
                 String powerupColor = AnsiCode.getTextColorCodeByName(powerup.getValue().name(), true) + AnsiCode.TEXT_BLACK;
                 out.append("║           ").append(powerupColor).append("    ").append(AnsiCode.RESET).append("           ║     ");
             } else {
-                out.append("                                 ");
+                out.append(EMPTY_CARD_ROW);
             }
         }
 
@@ -944,7 +951,7 @@ class CliPrinter {
             if (powerup != null) {
                 out.append("╚══════════════════════════╝     ");
             } else {
-                out.append("                                 ");
+                out.append(EMPTY_CARD_ROW);
             }
         }
 
@@ -974,7 +981,7 @@ class CliPrinter {
     /**
      * Prints the names of the players in the game colored with their chosen color
      *
-     * @param out PrintStream where to print
+     * @param out        PrintStream where to print
      * @param playerList the List of {@link Player Players} to be printed
      */
     static void printUsername(AdrenalinePrintStream out, List<Player> playerList) {
@@ -999,13 +1006,13 @@ class CliPrinter {
     /**
      * Prints the winners of the game
      *
-     * @param out PrintStream where to print
+     * @param out       PrintStream where to print
      * @param allPoints the ArrayList containing all the {@link PlayerPoints PlayerPoints}
      */
     static void printWinners(AdrenalinePrintStream out, List<PlayerPoints> allPoints) {
         List<PlayerPoints> winners = allPoints.stream().filter(PlayerPoints::isWinner).collect(Collectors.toList());
 
-        if(winners.size() == allPoints.size()) {
+        if (winners.size() == allPoints.size()) {
             out.println(
                     getTopWinnersDecoration(winners.size()) +
                             addEmptyLine(winners.size()) +
@@ -1032,20 +1039,11 @@ class CliPrinter {
                             getWinnersTitle(size, "POOR ORDERED LOOSERS ARE") +
                             addEmptyLine(size) +
                             getWinnersNames(size, allPoints.stream().filter(player -> !winners.contains(player))
-                                                                     .sorted((player1, player2) -> {
-                                                                         if(player1.getPoints() < player2.getPoints()) return 1;
-                                                                         else if (player1.getPoints() > player2.getPoints()) return -1;
-                                                                         else return 0;
-                            })
-                                                                     .collect(Collectors.toList()))
-                                    +
+                                    .sorted(Comparator.comparingInt(PlayerPoints::getPoints))
+                                    .collect(Collectors.toList())) +
                             getWinnersPoints(size, allPoints.stream().filter(player -> !winners.contains(player))
-                                                                      .sorted((player1, player2) -> {
-                                                                          if(player1.getPoints() < player2.getPoints()) return 1;
-                                                                          else if (player1.getPoints() > player2.getPoints()) return -1;
-                                                                          else return 0;
-                            })
-                                                                      .collect(Collectors.toList())) +
+                                    .sorted(Comparator.comparingInt(PlayerPoints::getPoints))
+                                    .collect(Collectors.toList())) +
                             addEmptyLine(size) +
                             getBotWinnersDecoration(size)
             );
@@ -1053,19 +1051,19 @@ class CliPrinter {
     }
 
     private static String getTopWinnersDecoration(int winners) {
-        return "╔═══════════════" + "═══════════════".repeat(winners - 2) + "═══════════════╗" + "\n";
+        return "╔═══════════════" + BOX_ROW.repeat(winners - 2) + "═══════════════╗" + "\n";
     }
 
     private static String getBotWinnersDecoration(int winners) {
-        return "╚═══════════════" + "═══════════════".repeat(winners - 2) + "═══════════════╝" + "\n";
+        return "╚═══════════════" + BOX_ROW.repeat(winners - 2) + "═══════════════╝" + "\n";
     }
 
     private static String addSeparatorLine(int size) {
-        return "╠═══════════════" + "═══════════════".repeat(size - 2) + "═══════════════╣" + "\n";
+        return "╠═══════════════" + BOX_ROW.repeat(size - 2) + "═══════════════╣" + "\n";
     }
 
     private static String addEmptyLine(int winners) {
-        return "║" + "               ".repeat(winners) + "║"  + "\n";
+        return "║" + "               ".repeat(winners) + "║" + "\n";
     }
 
     private static String getWinnersTitle(int size, String winnerTitle) {
@@ -1090,7 +1088,7 @@ class CliPrinter {
 
         tempOut.append("║");
 
-        for(PlayerPoints player : winners) {
+        for (PlayerPoints player : winners) {
             tempOut.append(addFirstWinnersMissingBlanks(player.getUserName())).append(player.getUserName()).append(addSecondWinnersMissingBlanks(player.getUserName()));
         }
 
@@ -1103,13 +1101,13 @@ class CliPrinter {
 
         tempOut.append("║");
 
-        if(size == winners.size()) {
-            for(PlayerPoints player : winners) {
+        if (size == winners.size()) {
+            for (PlayerPoints player : winners) {
                 tempOut.append(addFirstWinnersMissingBlanks(player.getUserName())).append(player.getUserName()).append(addSecondWinnersMissingBlanks(player.getUserName()));
             }
         } else {
             tempOut.append(addFirstCenterBlanks(size, winners.size()));
-            for(PlayerPoints player : winners) {
+            for (PlayerPoints player : winners) {
                 tempOut.append(addFirstWinnersMissingBlanks(player.getUserName())).append(player.getUserName()).append(addSecondWinnersMissingBlanks(player.getUserName()));
             }
             tempOut.append(addSecondCenterBlanks(size, winners.size()));
@@ -1125,7 +1123,7 @@ class CliPrinter {
         int difference = decorationLength - writingString.length();
         int missingBlanks;
 
-        if(difference % 2 == 0) {
+        if (difference % 2 == 0) {
             missingBlanks = difference / 2;
         } else {
             missingBlanks = difference / 2 + 1;
@@ -1146,7 +1144,7 @@ class CliPrinter {
 
         int missingBlanks;
 
-        if(difference % 2 == 0) {
+        if (difference % 2 == 0) {
             missingBlanks = difference / 2;
         } else {
             missingBlanks = difference / 2 + 1;
@@ -1166,8 +1164,8 @@ class CliPrinter {
 
         tempOut.append("║");
 
-        for(PlayerPoints player : winners) {
-            String tempPoints = "Points: " + player.getPoints();
+        for (PlayerPoints player : winners) {
+            String tempPoints = POINTS_TEXT + player.getPoints();
             tempOut.append(addFirstWinnersMissingBlanks(tempPoints)).append(tempPoints).append(addSecondWinnersMissingBlanks(tempPoints));
         }
 
@@ -1181,15 +1179,15 @@ class CliPrinter {
 
         tempOut.append("║");
 
-        if(size == winners.size()) {
-            for(PlayerPoints player : winners) {
-                String tempPoints = "Points: " + player.getPoints();
+        if (size == winners.size()) {
+            for (PlayerPoints player : winners) {
+                String tempPoints = POINTS_TEXT + player.getPoints();
                 tempOut.append(addFirstWinnersMissingBlanks(tempPoints)).append(tempPoints).append(addSecondWinnersMissingBlanks(tempPoints));
             }
         } else {
             tempOut.append(addFirstCenterBlanks(size, winners.size()));
-            for(PlayerPoints player : winners) {
-                String tempPoints = "Points: " + player.getPoints();
+            for (PlayerPoints player : winners) {
+                String tempPoints = POINTS_TEXT + player.getPoints();
                 tempOut.append(addFirstWinnersMissingBlanks(tempPoints)).append(tempPoints).append(addSecondWinnersMissingBlanks(tempPoints));
             }
             tempOut.append(addSecondCenterBlanks(size, winners.size()));

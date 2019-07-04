@@ -5,6 +5,8 @@ import network.message.Message;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Objects;
+
 /**
  * This class is the implementation of the interface RMIHandler
  */
@@ -42,5 +44,20 @@ public class RMIHandlerImplementation extends UnicastRemoteObject implements RMI
     @Override
     public void disconnectMe() {
         rmiSession.disconnect();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        RMIHandlerImplementation that = (RMIHandlerImplementation) o;
+        return Objects.equals(server, that.server) &&
+                Objects.equals(rmiSession, that.rmiSession);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), server, rmiSession);
     }
 }

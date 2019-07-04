@@ -10,8 +10,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Objects;
 import java.util.Timer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * This class represents a RMI Client
@@ -28,7 +26,7 @@ public class ClientRMI extends Client implements RMIClientConnection {
      * @param port     port of the server
      * @throws RemoteException in case of problems with communication with server
      */
-    public ClientRMI(String username, String address, int port, DisconnectionListener disconnectionListener) throws RemoteException {
+    ClientRMI(String username, String address, int port, DisconnectionListener disconnectionListener) throws RemoteException {
         super(username, address, port, disconnectionListener);
     }
 

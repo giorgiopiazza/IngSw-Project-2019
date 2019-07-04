@@ -356,7 +356,8 @@ public class Server implements Runnable {
     void onMessage(Message message) {
         if (message != null && message.getSenderUsername() != null && (message.getToken() != null || message.getSenderUsername().equals("god"))) {
             if (message.getContent().equals(MessageContent.SHOOT)) {
-                LOGGER.log(Level.INFO, message.toString());
+                String messageString = message.toString();
+                LOGGER.log(Level.INFO, messageString);
             } else {
                 LOGGER.log(Level.INFO, "Received: {0}", message);
             }

@@ -355,14 +355,10 @@ public class RoundManager {
             return buildPositiveResponse("Targeting Scope Not Used");
         }
 
-        // index Check
-        if (!checkScopeIndexes(powerupsIndexes, paymentPowerups)) {
-            return buildNegativeResponse("Invalid Indexes in Request");
-        }
+        Response checkResponse = scopeChecks(scopeMessage, powerupsIndexes, paymentPowerups);
 
-        // targets Check
-        if (!checkScopeTargets(scopeMessage)) {
-            return buildNegativeResponse("Invalid Targets in Request");
+        if (checkResponse != null) {
+            return checkResponse;
         }
 
         if (powerupsIndexes.size() < targets.size()) {
@@ -410,6 +406,27 @@ public class RoundManager {
             resetDamage(oldDamage);
             return tempResponse;
         }
+    }
+
+    /**
+     * Checks indexes and targets of the scope request
+     * @param scopeMessage message of request of scope usage
+     * @param powerupsIndexes list of indexes of powerups used
+     * @param paymentPowerups list of indexes of pouwerups used for payment
+     * @return Returns the invalid response if the check failed, null otherwise
+     */
+    private Response scopeChecks(PowerupRequest scopeMessage, List<Integer> powerupsIndexes, List<Integer> paymentPowerups) {
+        // index Check
+        if (!checkScopeIndexes(powerupsIndexes, paymentPowerups)) {
+            return buildNegativeResponse("Invalid Indexes in Request");
+        }
+
+        // targets Check
+        if (!checkScopeTargets(scopeMessage)) {
+            return buildNegativeResponse("Invalid Targets in Request");
+        }
+
+        return null;
     }
 
     /**

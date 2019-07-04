@@ -80,6 +80,10 @@ public class WeaponBaseEffect extends Effect {
             return false;
         }
 
+        return validateMovement(request, properties, targetType, shooterPosition, targetPositions);
+    }
+
+    private boolean validateMovement(ShootRequest request, Map<String, String> properties, TargetType targetType, PlayerPosition shooterPosition, List<PlayerPosition> targetPositions) {
         // Simulates player movement after shooting
         if (!request.isMoveSenderFirst() && request.getSenderMovePosition() != null) {
             shooterPosition = request.getSenderMovePosition();

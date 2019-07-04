@@ -8,29 +8,30 @@ import model.player.UserPlayer;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
-public class PersistencyClass implements Serializable {
+class PersistencyClass implements Serializable {
     private static final long serialVersionUID = 2545891111714662670L;
 
     private GameManager gameManager;
     private TurnManager turnManager;
     private ArrayList<NotTransientPlayer> playersCopy;
 
-    public PersistencyClass(GameManager gameManager) {
+    PersistencyClass(GameManager gameManager) {
         this.gameManager = gameManager;
         this.turnManager = gameManager.getRoundManager().getTurnManager();
         this.playersCopy = setPlayersCopy();
     }
 
-    public GameManager getGameManager() {
+    GameManager getGameManager() {
         return this.gameManager;
     }
 
-    public TurnManager getTurnManager() {
+    TurnManager getTurnManager() {
         return this.turnManager;
     }
 
-    public ArrayList<NotTransientPlayer> getPlayersCopy() {
+    List<NotTransientPlayer> getPlayersCopy() {
         return this.playersCopy;
     }
 

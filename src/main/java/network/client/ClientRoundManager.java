@@ -4,7 +4,6 @@ import enumerations.GameClientState;
 import enumerations.UserPlayerState;
 import exceptions.game.InvalidGameStateException;
 import exceptions.player.ClientRoundManagerException;
-import model.player.UserPlayer;
 
 /**
  * Owns the game state machine for a client

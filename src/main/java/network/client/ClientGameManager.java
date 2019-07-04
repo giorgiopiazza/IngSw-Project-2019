@@ -437,22 +437,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 onPositiveResponse(response);
             }
 
-            if (!waitingGrenade) {
-                if (roundManager.getUserPlayerState() != UserPlayerState.END) {
-                    makeMove();
-                } else {
-                    roundManager.endRound();
-                }
-            } else {
-                waitingGrenade = false;
-            }
-
-            if (yourTurn && turnOwnerChanged) { // Use to wait the response before calling newTurn()
-                turnOwnerChanged = false;
-                yourTurn = false;
-
-                newTurn();
-            }
+            checkNextAction();
         }
     }
 
@@ -584,6 +569,28 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
             roundManager.botRespawn();
         } else {
             nextState();
+        }
+    }
+
+    /**
+     * Check what is the next action for the client
+     */
+    private void checkNextAction() {
+        if (!waitingGrenade) {
+            if (roundManager.getUserPlayerState() != UserPlayerState.END) {
+                makeMove();
+            } else {
+                roundManager.endRound();
+            }
+        } else {
+            waitingGrenade = false;
+        }
+
+        if (yourTurn && turnOwnerChanged) { // Use to wait the response before calling newTurn()
+            turnOwnerChanged = false;
+            yourTurn = false;
+
+            newTurn();
         }
     }
 

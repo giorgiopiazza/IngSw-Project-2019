@@ -60,11 +60,10 @@ public class InputValidator {
             switch (checkingMessage.getContent()) {
                 case COLOR:
                 case PASS_TURN:
+                case LOBBY_VOTE:
                     return true;
                 case GET_IN_LOBBY:
                     return checkNullsInLobby((LobbyMessage) checkingMessage);
-                case LOBBY_VOTE:
-                    return checkNullsInVote((GameVoteMessage) checkingMessage);
                 case BOT_SPAWN:
                     return checkNullsInBotSpawn((BotSpawnRequest) checkingMessage);
                 case DISCARD_POWERUP:
@@ -149,10 +148,6 @@ public class InputValidator {
         } else {
             return true;
         }
-    }
-
-    private static boolean checkNullsInVote(GameVoteMessage gameVoteMessage) {
-        return true;
     }
 
     private static boolean checkNullsInBotSpawn(BotSpawnRequest botSpawnRequest) {

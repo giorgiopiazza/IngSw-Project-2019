@@ -249,7 +249,7 @@ public class WeaponParser {
      */
     static Map<String, String> getProperties(JsonObject properties) {
         // I create a linked hash map as I can iterate on it with the order I put his elements
-        HashMap<String, String> effectProperties = new LinkedHashMap<>();
+        Map<String, String> effectProperties = new LinkedHashMap<>();
         JsonObject justVisibilityProperties = properties.deepCopy();
         Set<String> keys;
 
