@@ -91,16 +91,11 @@ public class BotAction implements Action {
         }
 
         // then I shoot with the bot depending on it's state
-        switch (botState) {
-            case NORMAL:
-                targetPlayer.getPlayerBoard().addDamage(bot, BOT_DAMAGE);
-                break;
-            case ADRENALINE:
-                targetPlayer.getPlayerBoard().addDamage(bot, BOT_DAMAGE);
-                targetPlayer.getPlayerBoard().addMark(bot, BOT_ADRENALINE_MARK);
-                break;
-            default:
-                throw new NullPointerException("The Terminator state can never be null!");
+        if (botState.equals(BotState.NORMAL)) {
+            targetPlayer.getPlayerBoard().addDamage(bot, BOT_DAMAGE);
+        } else {
+            targetPlayer.getPlayerBoard().addDamage(bot, BOT_DAMAGE);
+            targetPlayer.getPlayerBoard().addMark(bot, BOT_ADRENALINE_MARK);
         }
     }
 
