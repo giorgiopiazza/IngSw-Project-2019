@@ -16,7 +16,7 @@ import java.util.Timer;
 public abstract class Client extends UnicastRemoteObject {
     public static final int MAX_USERNAME_LENGTH = 20;
     private static final long serialVersionUID = -5831202245262756797L;
-    static final int DISCONNECTION_TIME = 1500000000;
+    static final int DISCONNECTION_TIME = 15000;
 
     transient DisconnectionListener disconnectionListener;
     transient Timer pingTimer;
