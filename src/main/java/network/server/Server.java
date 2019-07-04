@@ -249,7 +249,7 @@ public class Server implements Runnable {
             if (waitForLoad) {// Game in lobby state for load a game
                 connection.sendMessage(
                         new GameLoadResponse("Successfully reconnected", token,
-                                gameManager.getUserPlayerState(username), gameManager.getGameInstance().isTerminatorPresent())
+                                gameManager.getUserPlayerState(username), gameManager.getGameInstance().isBotPresent())
                 );
                 checkLoadReady();
             } else {

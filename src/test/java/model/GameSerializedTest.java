@@ -81,7 +81,7 @@ class GameSerializedTest {
         game.addPlayer(p1);
         game.addPlayer(p2);
         game.addPlayer(new UserPlayer("asd"));
-        game.setTerminator(true);
+        game.setBot(true);
         game.buildTerminator();
 
         GameSerialized gameSerialized = new GameSerialized("1");

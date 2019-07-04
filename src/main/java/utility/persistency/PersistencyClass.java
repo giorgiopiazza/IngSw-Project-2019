@@ -44,8 +44,8 @@ class PersistencyClass implements Serializable {
             notTransientPlayers.add(tempPlayer);
         }
 
-        if(gameSaved.isTerminatorPresent()) {
-            notTransientPlayers.add(new NotTransientPlayer((Bot) gameSaved.getTerminator()));
+        if(gameSaved.isBotPresent()) {
+            notTransientPlayers.add(new NotTransientPlayer((Bot) gameSaved.getBot()));
         }
 
         return notTransientPlayers;

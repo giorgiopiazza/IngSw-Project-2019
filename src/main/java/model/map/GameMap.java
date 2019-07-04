@@ -220,8 +220,8 @@ public class GameMap implements Serializable {
             }
         }
 
-        if (game.isTerminatorPresent()) {
-            Player term = game.getTerminator();
+        if (game.isBotPresent()) {
+            Player term = game.getBot();
             if (term.getPosition().equals(pos)) {
                 players.add(term);
             }
@@ -246,8 +246,8 @@ public class GameMap implements Serializable {
             }
         }
 
-        if (game.isTerminatorPresent()) {
-            Player term = game.getTerminator();
+        if (game.isBotPresent()) {
+            Player term = game.getBot();
             if (getSquare(term.getPosition().getRow(), term.getPosition().getColumn()).getRoomColor().equals(roomColor)) {
                 players.add(term);
             }

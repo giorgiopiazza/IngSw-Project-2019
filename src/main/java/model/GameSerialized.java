@@ -45,9 +45,9 @@ public class GameSerialized implements Serializable {
             players = new ArrayList<>();
         }
 
-        botPresent = instance.isTerminatorPresent();
+        botPresent = instance.isBotPresent();
         if (botPresent) {
-            bot = (Bot) instance.getTerminator();
+            bot = (Bot) instance.getBot();
             botActionDone = !((UserPlayer) Game.getInstance().getPlayerByName(userName)).getPossibleActions().contains(PossibleAction.BOT_ACTION);
         } else {
             botActionDone = true;
