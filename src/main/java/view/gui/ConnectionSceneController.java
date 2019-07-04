@@ -11,7 +11,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import network.client.Client;
 import network.message.ConnectionResponse;
-import utility.GameCostants;
+import utility.GameConstants;
 import utility.ServerAddressValidator;
 
 public class ConnectionSceneController {
@@ -87,7 +87,7 @@ public class ConnectionSceneController {
         final String port = portField.getText();
 
         boolean isUsernameValid = !username.equals("") &&
-                GameCostants.getForbiddenUsernames().stream().noneMatch(u -> u.equalsIgnoreCase(username));
+                GameConstants.getForbiddenUsernames().stream().noneMatch(u -> u.equalsIgnoreCase(username));
 
         boolean isAddressValid = ServerAddressValidator.isAddressValid(address);
 

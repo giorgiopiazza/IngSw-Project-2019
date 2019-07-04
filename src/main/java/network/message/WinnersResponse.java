@@ -2,7 +2,7 @@ package network.message;
 
 import enumerations.MessageContent;
 import model.player.PlayerPoints;
-import utility.GameCostants;
+import utility.GameConstants;
 import utility.NullObjectHelper;
 
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ public class WinnersResponse extends Message {
      * @param winners the ArrayList containing the {@link PlayerPoints PlayerPoints} of all the players
      */
     public WinnersResponse(List<PlayerPoints> winners) {
-        super(GameCostants.GOD_NAME, null,MessageContent.WINNER);
+        super(GameConstants.GOD_NAME, null,MessageContent.WINNER);
 
         this.winners = NullObjectHelper.getNotNullArrayList(winners);
     }

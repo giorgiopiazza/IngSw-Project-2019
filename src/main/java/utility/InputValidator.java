@@ -95,7 +95,7 @@ public class InputValidator {
             return false;
         }
 
-        if (message.getSenderUsername().equalsIgnoreCase(GameCostants.GOD_NAME) || message.getSenderUsername().equalsIgnoreCase(GameCostants.BOT_NAME)) {
+        if (message.getSenderUsername().equalsIgnoreCase(GameConstants.GOD_NAME) || message.getSenderUsername().equalsIgnoreCase(GameConstants.BOT_NAME)) {
             return false;
         }
 

@@ -2,7 +2,7 @@ package network.message;
 
 import enumerations.MessageContent;
 import enumerations.PlayerColor;
-import utility.GameCostants;
+import utility.GameConstants;
 import utility.NullObjectHelper;
 
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ public class ColorResponse extends Message {
     private final ArrayList<PlayerColor> colorList;
 
     public ColorResponse(List<PlayerColor> colorList) {
-        super(GameCostants.GOD_NAME, null, MessageContent.COLOR_RESPONSE);
+        super(GameConstants.GOD_NAME, null, MessageContent.COLOR_RESPONSE);
         this.colorList = NullObjectHelper.getNotNullArrayList(colorList);
     }
 

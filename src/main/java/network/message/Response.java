@@ -2,7 +2,7 @@ package network.message;
 
 import enumerations.MessageContent;
 import enumerations.MessageStatus;
-import utility.GameCostants;
+import utility.GameConstants;
 
 public class Response extends Message {
     private static final long serialVersionUID = 9049719323850459931L;
@@ -11,7 +11,7 @@ public class Response extends Message {
     private final MessageStatus status;
 
     public Response(String message, MessageStatus status) {
-        super(GameCostants.GOD_NAME, null, MessageContent.RESPONSE);
+        super(GameConstants.GOD_NAME, null, MessageContent.RESPONSE);
 
         this.message = message;
         this.status = status;

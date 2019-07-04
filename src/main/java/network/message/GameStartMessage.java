@@ -1,7 +1,7 @@
 package network.message;
 
 import enumerations.MessageContent;
-import utility.GameCostants;
+import utility.GameConstants;
 
 public class GameStartMessage extends Message {
     private static final long serialVersionUID = -5671092105322763783L;
@@ -9,7 +9,7 @@ public class GameStartMessage extends Message {
     private final String firstPlayer;
 
     public GameStartMessage(String firstPlayer) {
-        super(GameCostants.GOD_NAME, null, MessageContent.READY);
+        super(GameConstants.GOD_NAME, null, MessageContent.READY);
         this.firstPlayer = firstPlayer;
     }
 

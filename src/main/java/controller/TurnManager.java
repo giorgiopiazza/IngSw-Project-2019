@@ -3,6 +3,7 @@ package controller;
 import enumerations.PossibleGameState;
 import model.player.Player;
 import model.player.UserPlayer;
+import utility.GameConstants;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -16,12 +17,10 @@ import java.util.Objects;
  */
 public class TurnManager implements Serializable {
     private static final long serialVersionUID = -6048602661465079910L;
-
+    private final UserPlayer lastRoundPlayer;
     private UserPlayer turnOwner;
     private UserPlayer lastPlayer;
     private Player frenzyActivator;
-    private final UserPlayer lastRoundPlayer;
-
     private List<UserPlayer> players;
     private List<Player> damagedPlayers;
     private List<UserPlayer> deathPlayers;
@@ -122,6 +121,14 @@ public class TurnManager implements Serializable {
     }
 
     /**
+     * @return the ArrayList of damaged {@link UserPlayer UserPlayers}, used to verify when TARGETING SCOPE
+     * can be used
+     */
+    List<Player> getDamagedPlayers() {
+        return this.damagedPlayers;
+    }
+
+    /**
      * Method that sets the ArrayList of {@link UserPlayer UserPlayers} that took damage after a damaging {@link model.actions.Action Action}
      *
      * @param damaged the ArrayList of damaged {@link UserPlayer UserPlayers}
@@ -131,26 +138,25 @@ public class TurnManager implements Serializable {
     }
 
     /**
-     * @return the ArrayList of damaged {@link UserPlayer UserPlayers}, used to verify when TARGETING SCOPE
-     * can be used
-     */
-    List<Player> getDamagedPlayers() {
-        return this.damagedPlayers;
-    }
-
-    /**
      * @return the ArrayList of the {@link UserPlayer UserPlayers} that can use a TAGBACK GRENADE
      */
     List<UserPlayer> getGrenadePossibleUsers() {
         ArrayList<UserPlayer> grenadePossessors = new ArrayList<>();
 
-        for(Player player : damagedPlayers) {
-            if(((UserPlayer) player).getPowerupOccurrences("TAGBACK GRENADE") > 0) {
+        for (Player player : damagedPlayers) {
+            if (!player.getUsername().equals(GameConstants.BOT_NAME) && ((UserPlayer) player).getPowerupOccurrences("TAGBACK GRENADE") > 0) {
                 grenadePossessors.add((UserPlayer) player);
             }
         }
 
         return grenadePossessors;
+    }
+
+    /**
+     * @return an ArrayList of dead {@link UserPlayer UserPlayers}, it is used to give them the turn to Respawn
+     */
+    List<UserPlayer> getDeathPlayers() {
+        return this.deathPlayers;
     }
 
     /**
@@ -160,16 +166,16 @@ public class TurnManager implements Serializable {
      */
     void setDeathPlayers(List<UserPlayer> deaths) {
         deathPlayers = Objects.requireNonNullElse(deaths, new ArrayList<>());
-        for(UserPlayer deathPlayer : deathPlayers) {
+        for (UserPlayer deathPlayer : deathPlayers) {
             deathPlayer.setPosition(null);
         }
     }
 
     /**
-     * @return an ArrayList of dead {@link UserPlayer UserPlayers}, it is used to give them the turn to Respawn
+     * @return the "real" turn owner while a TAGBACK GRENADE usage is getting maneged
      */
-    List<UserPlayer> getDeathPlayers() {
-        return this.deathPlayers;
+    UserPlayer getMarkedByGrenadePlayer() {
+        return this.markedByGrenadePlayer;
     }
 
     /**
@@ -182,10 +188,10 @@ public class TurnManager implements Serializable {
     }
 
     /**
-     * @return the "real" turn owner while a TAGBACK GRENADE usage is getting maneged
+     * @return true if the  {@link model.player.Bot Bot} is the one to be marked by the TAGBACK GRENADE, otherwise false
      */
-    UserPlayer getMarkedByGrenadePlayer() {
-        return this.markedByGrenadePlayer;
+    boolean getMarkingTerminator() {
+        return this.markingTerminator;
     }
 
     /**
@@ -199,10 +205,10 @@ public class TurnManager implements Serializable {
     }
 
     /**
-     * @return true if the  {@link model.player.Bot Bot} is the one to be marked by the TAGBACK GRENADE, otherwise false
+     * @return a Boolean that specifies if the performing action is the second
      */
-    boolean getMarkingTerminator() {
-        return this.markingTerminator;
+    boolean isSecondAction() {
+        return this.secondAction;
     }
 
     /**
@@ -213,13 +219,6 @@ public class TurnManager implements Serializable {
      */
     void setSecondAction(boolean secondAction) {
         this.secondAction = secondAction;
-    }
-
-    /**
-     * @return a Boolean that specifies if the performing action is the second
-     */
-    boolean isSecondAction() {
-        return this.secondAction;
     }
 
     /**
@@ -245,6 +244,14 @@ public class TurnManager implements Serializable {
     }
 
     /**
+     * @return the {@link PossibleGameState PossibleGameState} of the {@link GameManager GameManager} used to restore
+     * the correct State after an extemporary action
+     */
+    PossibleGameState getArrivingGameState() {
+        return this.arrivingGameState;
+    }
+
+    /**
      * Method used to set the {@link PossibleGameState PossibleGameState} from which the {@link GameManager GameManager}
      * is evolving
      *
@@ -252,14 +259,6 @@ public class TurnManager implements Serializable {
      */
     void setArrivingGameState(PossibleGameState arrivingGameState) {
         this.arrivingGameState = arrivingGameState;
-    }
-
-    /**
-     * @return the {@link PossibleGameState PossibleGameState} of the {@link GameManager GameManager} used to restore
-     * the correct State after an extemporary action
-     */
-    PossibleGameState getArrivingGameState() {
-        return this.arrivingGameState;
     }
 
     /**

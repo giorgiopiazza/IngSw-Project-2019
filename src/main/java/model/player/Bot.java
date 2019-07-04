@@ -1,7 +1,7 @@
 package model.player;
 
 import enumerations.PlayerColor;
-import utility.GameCostants;
+import utility.GameConstants;
 
 import java.util.Objects;
 
@@ -9,7 +9,7 @@ public class Bot extends Player {
     private static final long serialVersionUID = 7578529420778904200L;
     private boolean spawnTurn;
     public Bot(PlayerColor color, PlayerBoard playerBoard) {
-        super(GameCostants.BOT_NAME, color, playerBoard);
+        super(GameConstants.BOT_NAME, color, playerBoard);
     }
 
     public Bot(Bot other) {

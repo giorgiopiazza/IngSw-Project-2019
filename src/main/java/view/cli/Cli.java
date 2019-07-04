@@ -76,7 +76,7 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
                 final String currentUsername = in.nextLine();
 
                 if (currentUsername.equals("") ||
-                        GameCostants.getForbiddenUsernames().stream().anyMatch(u -> u.equalsIgnoreCase(currentUsername))) {
+                        GameConstants.getForbiddenUsernames().stream().anyMatch(u -> u.equalsIgnoreCase(currentUsername))) {
                     firstError = promptInputError(firstError, "Invalid username!");
                 } else {
                     username = currentUsername;
@@ -1587,7 +1587,7 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
 
             String line = in.nextLine();
 
-            if (line.equalsIgnoreCase(GameCostants.CANCEL_KEYWORD)) {
+            if (line.equalsIgnoreCase(GameConstants.CANCEL_KEYWORD)) {
                 throw new CancelledActionException();
             }
 
@@ -1629,7 +1629,7 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
             out.print(">>> ");
             String line = in.nextLine();
 
-            if (cancellable && line.equalsIgnoreCase(GameCostants.CANCEL_KEYWORD)) {
+            if (cancellable && line.equalsIgnoreCase(GameConstants.CANCEL_KEYWORD)) {
                 throw new CancelledActionException();
             }
 
@@ -1665,7 +1665,7 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
             out.print(">>> ");
             chosenTarget = in.nextLine();
 
-            if (chosenTarget.equals(GameCostants.CANCEL_KEYWORD)) {
+            if (chosenTarget.equals(GameConstants.CANCEL_KEYWORD)) {
                 throw new CancelledActionException();
             } else if (chosenTarget.equals("-1")) {
                 return null;
@@ -1704,7 +1704,7 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
 
             chosenTarget = in.nextLine().trim();
 
-            if (chosenTarget.equalsIgnoreCase(GameCostants.CANCEL_KEYWORD)) {
+            if (chosenTarget.equalsIgnoreCase(GameConstants.CANCEL_KEYWORD)) {
                 throw new CancelledActionException();
             }
 
@@ -1745,7 +1745,7 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
             out.print(">>> ");
             stringColor = in.nextLine();
 
-            if (stringColor.equalsIgnoreCase(GameCostants.CANCEL_KEYWORD)) {
+            if (stringColor.equalsIgnoreCase(GameConstants.CANCEL_KEYWORD)) {
                 throw new CancelledActionException();
             }
 
@@ -1778,7 +1778,7 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
             out.print(">>> ");
             stringDecision = in.nextLine();
 
-            if (stringDecision.equalsIgnoreCase(GameCostants.CANCEL_KEYWORD)) {
+            if (stringDecision.equalsIgnoreCase(GameConstants.CANCEL_KEYWORD)) {
                 throw new CancelledActionException();
             } else if (stringDecision.equalsIgnoreCase(BEFORE)) {
                 finalDecision = true;
