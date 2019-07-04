@@ -344,7 +344,7 @@ public class RoundManager {
         Response tempResponse;
         int sizeDifference;
         List<Integer> powerupsIndexes = scopeMessage.getPowerup();
-        List<Integer> paymentPowerups = scopeMessage.getPaymentPowerups();
+        List<Integer> paymentPowerups = new ArrayList<>(scopeMessage.getPaymentPowerups());
         List<String> targets = scopeMessage.getTargetPlayersUsername();
 
         // checks over every constraint of a SCOPE usage
