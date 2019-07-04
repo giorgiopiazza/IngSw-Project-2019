@@ -64,7 +64,10 @@ public class TerminatorAction implements Action {
             return terminator.canSee(targetPlayer);
         } else if (movingDistance == MAX_TERMINATOR_MOVE) {
             if (targetPlayer == null) {
-                if (movingPos.canSeeSomeone((Bot) terminator, actingPlayer)) {
+                Bot temp = new Bot((Bot) terminator);
+                temp.setPosition(movingPos);
+
+                if (movingPos.canSeeSomeone(temp, actingPlayer)) {
                     throw new InvalidActionException();
                 } else {
                     return true;
