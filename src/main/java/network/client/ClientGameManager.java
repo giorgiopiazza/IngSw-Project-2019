@@ -455,6 +455,10 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
         queue.add(this::gameStateUpdate);
 
+        if (gameSerialized.isBotActionDone()) {
+            roundManager.setBotMoved();
+        }
+
         checkTurnChange(gameStateMessage);
     }
 
