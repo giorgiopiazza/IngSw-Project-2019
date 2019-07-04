@@ -4,11 +4,8 @@ import enumerations.*;
 import model.GameSerialized;
 import model.cards.PowerupCard;
 import model.cards.WeaponCard;
-import model.player.AmmoQuantity;
-import model.player.Player;
+import model.player.*;
 import model.map.*;
-import model.player.PlayerPoints;
-import model.player.UserPlayer;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -1204,6 +1201,10 @@ class CliPrinter {
         String ammoString = (ammoColor + "  " + AnsiCode.RESET + " ").repeat(ammoInt);
 
         return tempOut.append(ammoString).append(" ").toString();
+    }
+
+    static void printKillShotTrack(KillShot[] killshotTrack, ArrayList<KillShot> finalFrenzyKillShots) {
+        // todo
     }
 
     /**

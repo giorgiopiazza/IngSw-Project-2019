@@ -11,10 +11,7 @@ import model.player.Bot;
 import model.player.UserPlayer;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class GameSerialized implements Serializable {
@@ -51,9 +48,9 @@ public class GameSerialized implements Serializable {
         botPresent = instance.isTerminatorPresent();
         if (botPresent) {
             bot = (Bot) instance.getTerminator();
-            botActionDone = ((UserPlayer) Game.getInstance().getPlayerByName(userName)).getPossibleActions().contains(PossibleAction.BOT_ACTION);
+            botActionDone = !((UserPlayer) Game.getInstance().getPlayerByName(userName)).getPossibleActions().contains(PossibleAction.BOT_ACTION);
         } else {
-            botActionDone = false;
+            botActionDone = true;
         }
 
         killShotsTrack = instance.getKillShotsTrack() != null ? Arrays.copyOf(instance.getKillShotsTrack(), instance.getKillShotsTrack().length) : null;
