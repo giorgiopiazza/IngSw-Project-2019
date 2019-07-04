@@ -485,6 +485,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
      */
     private void handleWinner(WinnersResponse winnerResponse) {
         gameEnded = true;
+        client.pingTimer.cancel();
 
         synchronized (gameSerializedLock) {
             queue.add(() -> notifyGameEnd(winnerResponse.getWinners()));

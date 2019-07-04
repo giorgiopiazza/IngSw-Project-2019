@@ -374,7 +374,7 @@ public class Server implements Runnable {
             } else if (msgToken.equals(conn.getToken())) { // Checks that sender is the real player
                 Message response = gameManager.onMessage(message);
 
-                updateTimer(conn, message, response);
+                updateTimer();
 
                 // send message to client
                 sendMessage(message.getSenderUsername(), response);
@@ -383,32 +383,21 @@ public class Server implements Runnable {
     }
 
     /**
-     * Updates the timer state based on request and response to the request
-     *
-     * @param conn     connection of the player
-     * @param message  request of the player
-     * @param response response of the server
+     * Updates the timer state
      */
-    private void updateTimer(Connection conn, Message message, Message response) {
+    private void updateTimer() {
         if (Game.getInstance().isGameStarted()) {
-            if (message.getContent().equals(MessageContent.PASS_TURN)
-                    && response.getContent().equals(MessageContent.RESPONSE)
-                    && ((Response) response).getStatus().equals(MessageStatus.OK)) { // if the player pass the turn with success
-                // cancel the move timer for the previous player and schedule another one for the new player to play
-                Connection connection = clients.get(gameManager.getRoundManager().getTurnManager().getTurnOwner().getUsername());
-                String user = gameManager.getRoundManager().getTurnManager().getTurnOwner().getUsername();
-                LOGGER.log(Level.INFO, "Move timer reset for user {0}, {1} seconds left", new Object[]{user, moveTime / 1000});
+            Connection conn;
 
-                moveTimer.cancel();
-                moveTimer = new Timer();
-                moveTimer.schedule(new MoveTimer(connection, user), moveTime);
-            } else if (message.getSenderUsername().equals(gameManager.getRoundManager().getTurnManager().getTurnOwner().getUsername())) { // if the message was send by the current user
-                LOGGER.log(Level.INFO, "Move timer reset for user {0}, {1} seconds left", new Object[]{message.getSenderUsername(), moveTime / 1000});
-
-                moveTimer.cancel();
-                moveTimer = new Timer();
-                moveTimer.schedule(new MoveTimer(conn, message.getSenderUsername()), moveTime);
+            synchronized (clientsLock) {
+                conn = clients.get(gameManager.getTurnOwnerUsername());
             }
+
+            moveTimer.cancel();
+            moveTimer = new Timer();
+            moveTimer.schedule(new MoveTimer(conn, gameManager.getTurnOwnerUsername()), moveTime);
+
+            LOGGER.log(Level.INFO, "Move timer reset for user {0}, {1} seconds left", new Object[]{gameManager.getTurnOwnerUsername(), moveTime / 1000});
         }
     }
 
