@@ -166,7 +166,7 @@ public class WeaponParser {
         TargetType[] targets = parseTargetTypeJsonArray(properties.getAsJsonArray(TARGET));
         JsonArray subEffects = properties.getAsJsonArray(SUB_EFFECTS);
 
-        for (int i = targets.length - 1; i >= 0; --i) {
+        for (int i = 0; i < targets.length; i++) {
             JsonObject subEffect = subEffects.get(i).getAsJsonObject();
 
             if (subEffect.has(Properties.DAMAGE_DISTRIBUTION.getJKey())) {

@@ -6,7 +6,6 @@ import model.player.PlayerPosition;
 import utility.NullObjectHelper;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public abstract class EffectRequest extends ActionRequest {
@@ -43,7 +42,7 @@ public abstract class EffectRequest extends ActionRequest {
     }
 
     public void setGrenadeTarget(String grenadeTarget) {
-        this.targetPlayersUsername = new ArrayList<>(Collections.singletonList(grenadeTarget));
+        this.targetPlayersUsername = new ArrayList<>(List.of(grenadeTarget));
     }
 
     public static class EffectRequestBuilder {
@@ -60,7 +59,7 @@ public abstract class EffectRequest extends ActionRequest {
 
         private List<Integer> paymentPowerups;
 
-        public EffectRequestBuilder(String username, String token, MessageContent content) {
+        EffectRequestBuilder(String username, String token, MessageContent content) {
             this.username = username;
             this.token = token;
             this.content = content;

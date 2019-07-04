@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import utility.WeaponParser;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static enumerations.Ammo.*;
@@ -405,7 +404,7 @@ class WeaponCardTest {
 
         // first effect
         builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 0);
-        builder = builder.targetPositions(new ArrayList<>(Collections.singletonList(new PlayerPosition(1,0))));
+        builder = builder.targetPositions(new ArrayList<>(List.of(new PlayerPosition(1,0))));
         builder = builder.moveBeforeShootPosition(new PlayerPosition(1,0));
 
         request = new ShootRequest(builder);
@@ -430,7 +429,7 @@ class WeaponCardTest {
         target3.getPlayerBoard().setDamages(new ArrayList<>());
 
         builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 1);
-        builder = builder.targetPositions(new ArrayList<>(Collections.singletonList(new PlayerPosition(1,0))));
+        builder = builder.targetPositions(new ArrayList<>(List.of(new PlayerPosition(1,0))));
         builder = builder.moveBeforeShootPosition(null);
 
         request = new ShootRequest(builder);
@@ -452,7 +451,7 @@ class WeaponCardTest {
         electroscythe.setStatus(full);
 
         builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 1);
-        builder = builder.targetPositions(new ArrayList<>(Collections.singletonList(new PlayerPosition(1,0))));
+        builder = builder.targetPositions(new ArrayList<>(List.of(new PlayerPosition(1,0))));
 
         // invalid shooter position
         builder = builder.moveBeforeShootPosition(new PlayerPosition(-1, 0));
@@ -574,7 +573,7 @@ class WeaponCardTest {
         assertThrows(IncompatibleActionException.class, () -> action.validate());
 
         // first effect valid
-        builder = builder.targetPlayersMovePositions(new ArrayList<>(Collections.singletonList(new PlayerPosition(0,0))));
+        builder = builder.targetPlayersMovePositions(new ArrayList<>(List.of(new PlayerPosition(0,0))));
         builder = builder.moveTargetsFirst(true);
         request = new ShootRequest(builder);
         action = new ShootAction(shooter, PossibleAction.ADRENALINE_SHOOT, request);
@@ -593,7 +592,7 @@ class WeaponCardTest {
         target1.getPlayerBoard().setDamages(new ArrayList<>());
         builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 1);
         builder.targetPlayersUsernames(userTarget);
-        builder = builder.targetPlayersMovePositions(new ArrayList<>(Collections.singletonList(new PlayerPosition(0,0))));
+        builder = builder.targetPlayersMovePositions(new ArrayList<>(List.of(new PlayerPosition(0,0))));
         builder = builder.moveTargetsFirst(true);
 
         request = new ShootRequest(builder);
@@ -798,7 +797,7 @@ class WeaponCardTest {
         target3.setPosition(new PlayerPosition(1,0));
 
         builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 1);
-        builder = builder.targetPositions(new ArrayList<>(Collections.singletonList(new PlayerPosition(1,0))));
+        builder = builder.targetPositions(new ArrayList<>(List.of(new PlayerPosition(1,0))));
 
         request = new ShootRequest(builder);
         action = new ShootAction(shooter, PossibleAction.SHOOT, request);
@@ -862,7 +861,7 @@ class WeaponCardTest {
         // first effect
         builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 0);
         builder = builder.targetPlayersUsernames(userTarget);
-        builder = builder.targetPositions(new ArrayList<>(Collections.singletonList(new PlayerPosition(1,2))));
+        builder = builder.targetPositions(new ArrayList<>(List.of(new PlayerPosition(1,2))));
 
         request = new ShootRequest(builder);
         action = new ShootAction(shooter, PossibleAction.SHOOT, request);
@@ -870,7 +869,7 @@ class WeaponCardTest {
         assertTrue(action.validate());
         action.execute();
 
-        assertEquals(2, target1.getPlayerBoard().getDamageCount());
+        assertEquals(1, target1.getPlayerBoard().getDamageCount());
         assertEquals(1, target1.getPlayerBoard().getMarkCount());
         assertEquals(0, target2.getPlayerBoard().getDamageCount());
         assertEquals(1, target2.getPlayerBoard().getMarkCount());
@@ -886,7 +885,10 @@ class WeaponCardTest {
 
         builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 1);
         builder = builder.targetPlayersUsernames(userTarget);
-        builder = builder.targetPositions(new ArrayList<>(Collections.singletonList(new PlayerPosition(1,2))));
+        builder = builder.targetPositions(new ArrayList<>(List.of(new PlayerPosition(1,2))));
+
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.SHOOT, request);
 
         assertTrue(action.validate());
         action.execute();
@@ -897,10 +899,6 @@ class WeaponCardTest {
         assertEquals(2, target2.getPlayerBoard().getMarkCount());
         assertEquals(0, target3.getPlayerBoard().getDamageCount());
         assertEquals(2, target3.getPlayerBoard().getMarkCount());
-
-
-
-
     }
 
     @Test

@@ -1424,7 +1424,7 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
         out.println("Choose the powerup index");
         chosenPowerup = readInt(0, possiblePowerups.size(), true);
 
-        return getPowerupsIndexesFromList(powerups, Collections.singletonList(possiblePowerups.get(chosenPowerup))).get(0);
+        return getPowerupsIndexesFromList(powerups, List.of(possiblePowerups.get(chosenPowerup))).get(0);
     }
 
     private void askPaymentMethod(int scopesUsed, ArrayList<Ammo> payingColors, ArrayList<Integer> payingPowerups, List<PowerupCard> powerups, List<PowerupCard> possiblePowerups) throws CancelledActionException {

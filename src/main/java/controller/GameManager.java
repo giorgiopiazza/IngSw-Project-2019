@@ -1197,7 +1197,7 @@ public class GameManager implements TimerRunListener, Serializable {
 
         if (gameInstance.isTerminatorPresent()) {
             if (gameInstance.getTerminator().getPoints() > maxPoints) {
-                setWinners(new ArrayList<>(Collections.singletonList(gameInstance.getTerminator().getUsername())), winners);
+                setWinners(new ArrayList<>(List.of(gameInstance.getTerminator().getUsername())), winners);
                 return new WinnersResponse(winners);
             } else if (gameInstance.getTerminator().getPoints() == maxPoints) {
                 tiePlayers.add(gameInstance.getTerminator());
@@ -1205,7 +1205,7 @@ public class GameManager implements TimerRunListener, Serializable {
         }
 
         if (tiePlayers.size() == 1) {
-            setWinners(new ArrayList<>(Collections.singletonList(tiePlayers.get(0).getUsername())), winners);
+            setWinners(new ArrayList<>(List.of(tiePlayers.get(0).getUsername())), winners);
             return new WinnersResponse(winners);
         } else {
             handleTiePlayers(tiePlayers, winners);
@@ -1226,7 +1226,7 @@ public class GameManager implements TimerRunListener, Serializable {
         for (KillShot killShot : killShotTracker) {
             for (Player player : tiePlayers) {
                 if (player.getUsername().equals(killShot.getKiller())) {
-                    setWinners(new ArrayList<>(Collections.singletonList(player.getUsername())), winners);
+                    setWinners(new ArrayList<>(List.of(player.getUsername())), winners);
                 }
             }
         }
