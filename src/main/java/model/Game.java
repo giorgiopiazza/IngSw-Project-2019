@@ -15,7 +15,7 @@ import model.map.SpawnSquare;
 import model.map.Square;
 import model.player.*;
 import utility.AmmoTileParser;
-import utility.GameCostants;
+import utility.GameConstants;
 import utility.PowerupParser;
 import utility.WeaponParser;
 import utility.persistency.NotTransientPlayer;
@@ -127,7 +127,7 @@ public class Game implements Serializable {
      */
     private void loadTransientBot(List<NotTransientPlayer> notTransientPlayers) {
         for(NotTransientPlayer notTransientPlayer : notTransientPlayers) {
-            if(notTransientPlayer.getUserName().equals(GameCostants.BOT_NAME)) {
+            if(notTransientPlayer.getUserName().equals(GameConstants.BOT_NAME)) {
                 terminator.setPoints(notTransientPlayer.getPoints());
             }
         }
@@ -494,7 +494,7 @@ public class Game implements Serializable {
      * @return the UserPlayer with the ID passed
      */
     public Player getUserPlayerByUsername(String username) {
-        if (username.equalsIgnoreCase(GameCostants.BOT_NAME)) {
+        if (username.equalsIgnoreCase(GameConstants.BOT_NAME)) {
             return terminator;
         }
 

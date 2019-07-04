@@ -20,7 +20,7 @@ import model.player.Bot;
 import model.player.Player;
 import model.player.UserPlayer;
 import network.message.*;
-import utility.GameCostants;
+import utility.GameConstants;
 import utility.persistency.SaveGame;
 
 import java.util.*;
@@ -320,7 +320,7 @@ public class RoundManager {
 
         // now I can set the target for the usage of the TAGBACK GRENADE
         if (gameInstance.isTerminatorPresent() && turnManager.getMarkingTerminator()) {
-            granadeMessage.setGrenadeTarget(GameCostants.BOT_NAME);
+            granadeMessage.setGrenadeTarget(GameConstants.BOT_NAME);
         } else {
             granadeMessage.setGrenadeTarget(turnManager.getMarkedByGrenadePlayer().getUsername());
         }

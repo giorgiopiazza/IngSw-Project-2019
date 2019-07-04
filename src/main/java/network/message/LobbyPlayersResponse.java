@@ -1,7 +1,7 @@
 package network.message;
 
 import enumerations.MessageContent;
-import utility.GameCostants;
+import utility.GameConstants;
 import utility.NullObjectHelper;
 
 import java.util.ArrayList;
@@ -12,7 +12,7 @@ public class LobbyPlayersResponse extends Message {
     private ArrayList<String> users;
 
     public LobbyPlayersResponse(List<String> users) {
-        super(GameCostants.GOD_NAME, null, MessageContent.PLAYERS_IN_LOBBY);
+        super(GameConstants.GOD_NAME, null, MessageContent.PLAYERS_IN_LOBBY);
         this.users = NullObjectHelper.getNotNullArrayList(users);
     }
 

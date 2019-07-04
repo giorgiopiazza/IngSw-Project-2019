@@ -32,7 +32,7 @@ import network.client.ClientGameManager;
 import network.message.PowerupRequest;
 import network.message.ReloadRequest;
 import network.message.ShootRequest;
-import utility.GameCostants;
+import utility.GameConstants;
 import utility.MessageBuilder;
 
 import java.util.*;
@@ -611,7 +611,7 @@ public class GameSceneController {
 
         if (guiManager.getUsername().equals(username)) {
             showMyPlayerInfo(guiManager.getPlayer());
-        } else if (username.equals(GameCostants.BOT_NAME)) {
+        } else if (username.equals(GameConstants.BOT_NAME)) {
             showBotPlayerInfo((Bot) guiManager.getPlayerByName(username));
         } else {
             showOthersPlayerInfo((UserPlayer) guiManager.getPlayerByName(username));
@@ -2450,7 +2450,7 @@ public class GameSceneController {
     void botAction() {
         setActionPanelTitle("Bot Move");
         GameMap gameMap = guiManager.getGameMap();
-        PlayerPosition botPosition = guiManager.getPlayerByName(GameCostants.BOT_NAME).getPosition();
+        PlayerPosition botPosition = guiManager.getPlayerByName(GameConstants.BOT_NAME).getPosition();
 
         AnchorPane anchorPane = new AnchorPane();
 

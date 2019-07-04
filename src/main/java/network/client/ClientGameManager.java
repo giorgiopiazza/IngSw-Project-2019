@@ -10,7 +10,7 @@ import model.map.GameMap;
 import model.player.Player;
 import model.player.UserPlayer;
 import network.message.*;
-import utility.GameCostants;
+import utility.GameConstants;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -454,6 +454,10 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         }
 
         queue.add(this::gameStateUpdate);
+
+        if (gameSerialized.isBotActionDone()) {
+            roundManager.setBotMoved();
+        }
 
         checkTurnChange(gameStateMessage);
     }
@@ -913,7 +917,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         synchronized (gameSerializedLock) {
             Player player;
 
-            if (username.equalsIgnoreCase(GameCostants.BOT_NAME)) {
+            if (username.equalsIgnoreCase(GameConstants.BOT_NAME)) {
                 if (isBotPresent) {
                     return gameSerialized.getBot();
                 } else {

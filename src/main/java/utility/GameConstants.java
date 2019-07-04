@@ -2,8 +2,8 @@ package utility;
 
 import java.util.List;
 
-public class GameCostants {
-    private GameCostants() {
+public class GameConstants {
+    private GameConstants() {
         throw new IllegalStateException("Utility class");
     }
 

@@ -9,7 +9,7 @@ import model.Game;
 import model.player.UserPlayer;
 import network.message.*;
 import utility.ConfigurationParser;
-import utility.GameCostants;
+import utility.GameConstants;
 import utility.MoveTimer;
 import utility.persistency.SaveGame;
 
@@ -339,7 +339,7 @@ public class Server implements Runnable {
      * @return if a username is legit
      */
     private boolean isUsernameLegit(String username) {
-        for (String forbidden : GameCostants.getForbiddenUsernames()) {
+        for (String forbidden : GameConstants.getForbiddenUsernames()) {
             if (username.equalsIgnoreCase(forbidden)) {
                 return false;
             }
