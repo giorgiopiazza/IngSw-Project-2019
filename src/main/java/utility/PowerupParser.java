@@ -18,6 +18,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static utility.WeaponParser.parseIntJsonArray;
 
@@ -83,7 +84,7 @@ public class PowerupParser {
             target = WeaponParser.parseTargetTypeJsonArray(targets);
         }
 
-        HashMap<String, String> powerupProperties;
+        Map<String, String> powerupProperties;
         powerupProperties = WeaponParser.getProperties(properties);
 
         Effect effect;

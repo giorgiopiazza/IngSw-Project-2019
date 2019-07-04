@@ -5,16 +5,13 @@ import model.player.AmmoQuantity;
 import network.message.EffectRequest;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public abstract class Effect implements Serializable {
     private static final long serialVersionUID = 992667210434983695L;
 
     protected AmmoQuantity cost;
-    private HashMap<String, String> properties;
+    private Map<String, String> properties;
     protected TargetType[] targets;
     protected String description;
 
@@ -36,9 +33,9 @@ public abstract class Effect implements Serializable {
 
     public void setProperties(Map<String, String> properties) {
         if (properties != null) {
-            this.properties = new HashMap<>(properties);
+            this.properties = new LinkedHashMap<>(properties);
         } else {
-            this.properties = new HashMap<>();
+            this.properties = new LinkedHashMap<>();
         }
     }
 

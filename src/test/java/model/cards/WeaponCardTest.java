@@ -487,11 +487,16 @@ class WeaponCardTest {
 
         paymentPowerups.add(0);
         builder = builder.paymentPowerups(paymentPowerups);
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.ADRENALINE_SHOOT, request);
         assertThrows(InvalidActionException.class, () -> action.validate());
 
         paymentPowerups.clear();
         paymentPowerups.add(1);
         shooter.addPowerup(new PowerupCard("TAGBACK GRENADE", "/img/powerups/venom_blue.png", BLUE, null, 14));
+        builder = builder.paymentPowerups(paymentPowerups);
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.ADRENALINE_SHOOT, request);
         assertThrows(InvalidActionException.class, () -> action.validate());
     }
 
@@ -552,14 +557,14 @@ class WeaponCardTest {
         // invalid light frenzy with movement
         builder = builder.moveBeforeShootPosition(new PlayerPosition(1,1));
         request = new ShootRequest(builder);
-        action = new ShootAction(shooter, PossibleAction.FRENZY_SHOOT, request);
+        action = new ShootAction(shooter, PossibleAction.LIGHT_FRENZY_SHOOT, request);
         assertFalse(action.validate());
 
         // invalid light frenzy without recharging weapons
         builder = builder.moveBeforeShootPosition(new PlayerPosition(1,0));
         builder = builder.rechargingWeapons(null);
         request = new ShootRequest(builder);
-        action = new ShootAction(shooter, PossibleAction.FRENZY_SHOOT, request);
+        action = new ShootAction(shooter, PossibleAction.LIGHT_FRENZY_SHOOT, request);
         assertFalse(action.validate());
 
         // invalid action
@@ -807,6 +812,95 @@ class WeaponCardTest {
         assertEquals(1, target2.getPlayerBoard().getMarkCount());
         assertEquals(1, target3.getPlayerBoard().getDamageCount());
         assertEquals(1, target3.getPlayerBoard().getMarkCount());
+    }
+
+    @Test
+    void heatSeeker() throws MaxCardsInHandException, NotEnoughAmmoException, WeaponNotChargedException, WeaponAlreadyChargedException, InvalidActionException {
+        WeaponCard heatSeeker = getWeaponByName("Heatseeker");
+        heatSeeker.setStatus(full);
+
+        shooter.addWeapon(heatSeeker);
+        shooter.setPosition(new PlayerPosition(0,0));
+        target1.setPosition(new PlayerPosition(1,2));
+        userTarget.add(target1.getUsername());
+
+        // invalid visible effect
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 0);
+        builder = builder.targetPlayersUsernames(userTarget);
+
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.SHOOT, request);
+
+        assertTrue(action.validate());
+        assertThrows(Exception.class, () -> action.execute());
+
+        // valid invisible effect
+        target1.setPosition(new PlayerPosition(2,3));
+
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.SHOOT, request);
+
+        assertTrue(action.validate());
+        action.execute();
+
+        assertEquals(3, target1.getPlayerBoard().getDamageCount());
+        assertEquals(0, target1.getPlayerBoard().getMarkCount());
+    }
+
+    @Test
+    void hellion() throws MaxCardsInHandException, NotEnoughAmmoException, WeaponNotChargedException, WeaponAlreadyChargedException, InvalidActionException {
+        WeaponCard hellion = getWeaponByName("Hellion");
+        hellion.setStatus(full);
+
+        shooter.addWeapon(hellion);
+        shooter.setPosition(new PlayerPosition(0, 0));
+        target1.setPosition(new PlayerPosition(1, 2));
+        target2.setPosition(new PlayerPosition(1, 2));
+        target3.setPosition(new PlayerPosition(1, 2));
+        userTarget.add(target1.getUsername());
+
+        // first effect
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 0);
+        builder = builder.targetPlayersUsernames(userTarget);
+        builder = builder.targetPositions(new ArrayList<>(Collections.singletonList(new PlayerPosition(1,2))));
+
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.SHOOT, request);
+
+        assertTrue(action.validate());
+        action.execute();
+
+        assertEquals(2, target1.getPlayerBoard().getDamageCount());
+        assertEquals(1, target1.getPlayerBoard().getMarkCount());
+        assertEquals(0, target2.getPlayerBoard().getDamageCount());
+        assertEquals(1, target2.getPlayerBoard().getMarkCount());
+        assertEquals(0, target3.getPlayerBoard().getDamageCount());
+        assertEquals(1, target3.getPlayerBoard().getMarkCount());
+
+        // second effect
+        hellion.setStatus(full);
+        target1.getPlayerBoard().setDamages(new ArrayList<>());
+        target1.getPlayerBoard().setMarks(new ArrayList<>());
+        target2.getPlayerBoard().setMarks(new ArrayList<>());
+        target3.getPlayerBoard().setMarks(new ArrayList<>());
+
+        builder = new ShootRequest.ShootRequestBuilder(shooter.getUsername(), null, 0, 1);
+        builder = builder.targetPlayersUsernames(userTarget);
+        builder = builder.targetPositions(new ArrayList<>(Collections.singletonList(new PlayerPosition(1,2))));
+
+        assertTrue(action.validate());
+        action.execute();
+
+        assertEquals(1, target1.getPlayerBoard().getDamageCount());
+        assertEquals(2, target1.getPlayerBoard().getMarkCount());
+        assertEquals(0, target2.getPlayerBoard().getDamageCount());
+        assertEquals(2, target2.getPlayerBoard().getMarkCount());
+        assertEquals(0, target3.getPlayerBoard().getDamageCount());
+        assertEquals(2, target3.getPlayerBoard().getMarkCount());
+
+
+
+
     }
 
     @Test

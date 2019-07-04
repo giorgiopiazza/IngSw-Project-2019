@@ -263,11 +263,13 @@ class EffectValidator {
         Map<String, String> tempMap = new LinkedHashMap<>(allProperties);
 
         for (Map.Entry<String, String> entry : allProperties.entrySet()) {
-            if (foundTarget && !entry.getValue().equals("stop")) {
+            if (foundTarget && !entry.getKey().equals(targetType.toString())) {
                 tempMap.remove(entry.getKey());
+            } else if(entry.getKey().equals(targetType.toString())) {
+                foundTarget = false;
             }
 
-            if (entry.getKey().equals(targetType.toString())) {
+            if (entry.getValue().equals("stop") && !entry.getKey().equals(targetType.toString())) {
                 foundTarget = true;
                 tempMap.remove(entry.getKey());
             }
