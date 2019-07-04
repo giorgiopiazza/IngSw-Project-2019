@@ -355,7 +355,7 @@ public class GameSceneController {
         List<KillShot> killShots = new ArrayList<>(Arrays.asList(gameSerialized.getKillShotsTrack()));
         int killShotNum = gameSerialized.getKillShotNum();
 
-        killShots.subList(killShotNum, killShots.size() - 1).clear();
+        killShots.subList(killShotNum, killShots.size()).clear();
 
         for (ImageView killShot : killshotsImages) {
             boardArea.getChildren().remove(killShot);
@@ -1264,9 +1264,11 @@ public class GameSceneController {
 
         List<WeaponCard> shootCards = weaponCards.stream().filter(w -> w.status() == 0).collect(Collectors.toList());
 
-        for (Integer weaponIndex : rechargingWeapons) {
-            if (weaponCards.get(weaponIndex) != null) {
-                shootCards.add(weaponCards.get(weaponIndex));
+        if (rechargingWeapons != null && !rechargingWeapons.isEmpty()) {
+            for (Integer weaponIndex : rechargingWeapons) {
+                if (weaponCards.get(weaponIndex) != null) {
+                    shootCards.add(weaponCards.get(weaponIndex));
+                }
             }
         }
 
