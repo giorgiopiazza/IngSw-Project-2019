@@ -718,6 +718,10 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
             return;
         }
 
+        paymentPowerupsCheck(paymentPowerups, rechargingWeapons);
+    }
+
+    private void paymentPowerupsCheck(List<Integer> paymentPowerups, List<Integer> rechargingWeapons) {
         try {
             if (paymentPowerups.isEmpty()) {
                 if (!sendRequest(MessageBuilder.buildReloadRequest(getClientToken(), getPlayer(), new ArrayList<>(rechargingWeapons)))) {
@@ -1183,6 +1187,12 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
             shootRequestBuilder.moveToLastTarget(true);
         }
 
+        turnOwnerTargetsCheck(effectProperties, shootRequestBuilder, targetsChosen);
+
+        return shootRequestBuilder;
+    }
+
+    private void turnOwnerTargetsCheck(Map<String, String> effectProperties, ShootRequest.ShootRequestBuilder shootRequestBuilder, ArrayList<String> targetsChosen) throws CancelledActionException {
         // now that I have handled the Turn Owner movement I have to handle the targets ones
         if (effectProperties.containsKey(Properties.MOVE_TARGET.getJKey()) || effectProperties.containsKey(Properties.MAX_MOVE_TARGET.getJKey())) {
             shootRequestBuilder.targetPlayersMovePositions(askTargetsMovePositions(targetsChosen));
@@ -1194,8 +1204,6 @@ public class Cli extends ClientGameManager implements DisconnectionListener {
         } else if (effectProperties.containsKey(Properties.MOVE_TARGET.getJKey()) || effectProperties.containsKey(Properties.MAX_MOVE_TARGET.getJKey())) {
             shootRequestBuilder.moveTargetsFirst(askBeforeAfterMove());
         }
-
-        return shootRequestBuilder;
     }
 
     /**
