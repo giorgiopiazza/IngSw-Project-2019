@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Message class of response to a color request with a list of free colors
+ */
 public class ColorResponse extends Message {
     private static final long serialVersionUID = -5279461134770266666L;
 

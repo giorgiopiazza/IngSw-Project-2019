@@ -4,6 +4,9 @@ import enumerations.MessageContent;
 import enumerations.MessageStatus;
 import utility.GameConstants;
 
+/**
+ * Message class to respond to a vote map
+ */
 public class GameVoteResponse extends Message {
     private static final long serialVersionUID = -6209158395966916144L;
 

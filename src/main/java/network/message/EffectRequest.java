@@ -8,6 +8,9 @@ import utility.NullObjectHelper;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Message class for request a effect execution
+ */
 public abstract class EffectRequest extends ActionRequest {
     private static final long serialVersionUID = 2808691785528480885L;
 

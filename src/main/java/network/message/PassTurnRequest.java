@@ -2,6 +2,9 @@ package network.message;
 
 import enumerations.MessageContent;
 
+/**
+ * Message class for requesting a pass turn
+ */
 public class PassTurnRequest extends Message {
     private static final long serialVersionUID = 838173783902712501L;
 

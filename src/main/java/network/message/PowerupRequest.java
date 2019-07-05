@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Message class used for requesting a powerup usage
+ */
 public class PowerupRequest extends EffectRequest {
     private static final long serialVersionUID = 8674157231024320484L;
 

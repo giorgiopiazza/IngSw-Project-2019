@@ -149,8 +149,6 @@ public class RoundManager {
             // never reached, a powerup has always a corresponding spawning color!
         }
 
-        // every player must see the powerup the spawning one choosed to spawn
-        gameManager.sendBroadcastMessage(new BroadcastSpawningPowerup(spawningPowerup));
         turnOwner.changePlayerState(PossiblePlayerState.PLAYING);
 
         // actions are set to every player after he has spawned, if terminator is present, first player's turn hasn't the BOT ACTION!
@@ -1248,8 +1246,6 @@ public class RoundManager {
                 // never reached, a powerup has always a corresponding spawning color!
             }
 
-            // every player must see the powerup the spawning one choosed to spawn
-            gameManager.sendBroadcastMessage(new BroadcastSpawningPowerup(spawningPowerup));
             getTurnManager().getTurnOwner().changePlayerState(PossiblePlayerState.PLAYING);
             setInitialActions();
         }

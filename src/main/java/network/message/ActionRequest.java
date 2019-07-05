@@ -7,6 +7,9 @@ import utility.NullObjectHelper;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Abstract class of message request for requesting the execution of an action
+ */
 public abstract class ActionRequest extends Message {
     private static final long serialVersionUID = 9032466429818166290L;
 

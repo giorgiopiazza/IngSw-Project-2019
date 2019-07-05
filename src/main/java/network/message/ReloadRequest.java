@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Message class for requesting a reload action
+ */
 public class ReloadRequest extends ActionRequest {
     private static final long serialVersionUID = -2207568671961041647L;
 

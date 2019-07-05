@@ -4,6 +4,9 @@ import enumerations.MessageContent;
 import enumerations.MessageStatus;
 import utility.GameConstants;
 
+/**
+ * Message class of response after a connection request
+ */
 public class ConnectionResponse extends Message {
     private static final long serialVersionUID = 8971780730242420173L;
 

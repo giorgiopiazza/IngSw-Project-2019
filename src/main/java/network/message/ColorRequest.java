@@ -2,6 +2,9 @@ package network.message;
 
 import enumerations.MessageContent;
 
+/**
+ * Message class for querying which color are free to use
+ */
 public class ColorRequest extends Message {
     private static final long serialVersionUID = 8937363835835301847L;
 

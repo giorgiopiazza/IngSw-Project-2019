@@ -2,6 +2,9 @@ package network.message;
 
 import enumerations.MessageContent;
 
+/**
+ * Message class of connection request
+ */
 public class ConnectionRequest extends Message {
     private static final long serialVersionUID = 5444683484323330868L;
 
