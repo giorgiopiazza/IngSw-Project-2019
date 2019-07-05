@@ -87,9 +87,21 @@ class WeaponCardTest {
 
     @Test
     void status() {
+        WeaponCard testWhisper = getWeaponByName("Whisper");
+        Ammo[] whisperCost = new Ammo[] {BLUE, BLUE, YELLOW};
+
+        assertArrayEquals(whisperCost, testWhisper.getCost());
+        assertEquals(0, testWhisper.getSecondaryEffects().size());
+
+        testWhisper.setStatus(new ChargedWeapon());
+        assertThrows(WeaponAlreadyChargedException.class, testWhisper::recharge);
+
         assertEquals(2, weaponTest.status());
         weaponTest.setStatus(empty);
         assertEquals(1, weaponTest.status());
+
+        testWhisper.toString();
+        testWhisper.hashCode();
     }
 
     @Test
@@ -571,6 +583,15 @@ class WeaponCardTest {
         request = new ShootRequest(builder);
         action = new ShootAction(shooter, PossibleAction.SCOPE_USAGE, request);
         assertThrows(IncompatibleActionException.class, () -> action.validate());
+
+        // invalid recharging weapons not in frenzy action
+        builder = builder.rechargingWeapons(null);
+        request = new ShootRequest(builder);
+        action = new ShootAction(shooter, PossibleAction.FRENZY_SHOOT, request);
+
+        assertTrue(action.validate());
+        assertThrows(InvalidActionException.class, action::execute);
+
 
         // first effect valid
         builder = builder.targetPlayersMovePositions(new ArrayList<>(List.of(new PlayerPosition(0,0))));
