@@ -220,6 +220,13 @@ class ClientRoundManager {
     }
 
     /**
+     * Sets frenzy first action
+     */
+    void setFrenzyFirstAction() {
+        playerState = UserPlayerState.FIRST_FRENZY_ACTION;
+    }
+
+    /**
      * Sets the player state
      *
      * @param playerState player state that have to be setted
