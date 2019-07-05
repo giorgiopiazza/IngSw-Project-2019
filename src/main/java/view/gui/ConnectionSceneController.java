@@ -14,6 +14,9 @@ import network.message.ConnectionResponse;
 import utility.GameConstants;
 import utility.ServerAddressValidator;
 
+/**
+ * Controller that handles the connection to the server
+ */
 public class ConnectionSceneController {
     private final PseudoClass errorPseudo = PseudoClass.getPseudoClass("error");
     private GuiManager guiManager;
@@ -42,12 +45,18 @@ public class ConnectionSceneController {
         setInputFormat();
     }
 
+    /**
+     * Binds click events
+     */
     private void bindEvents() {
         connectSocketButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onConnectionButtonClick(0));
         connectRmiButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onConnectionButtonClick(1));
         backButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onBackButtonClick());
     }
 
+    /**
+     * Sets the input formats for the textfield
+     */
     private void setInputFormat() {
         usernameField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue.length() > Client.MAX_USERNAME_LENGTH) {
@@ -77,10 +86,18 @@ public class ConnectionSceneController {
         });
     }
 
+    /**
+     * Handles the back button click
+     */
     private void onBackButtonClick() {
         GuiManager.setLayout(mainPane.getScene(), "fxml/menuScene.fxml");
     }
 
+    /**
+     * Handles the click of connection button
+     *
+     * @param connection type of connection
+     */
     private void onConnectionButtonClick(int connection) {
         final String username = usernameField.getText();
         final String address = addressField.getText();
@@ -113,6 +130,11 @@ public class ConnectionSceneController {
         }
     }
 
+    /**
+     * Handles the connection response
+     *
+     * @param response connection response
+     */
     void onConnectionResponse(ConnectionResponse response) {
         if (response.getStatus() == MessageStatus.OK) {
             GuiManager.setLayout(mainPane.getScene(), "fxml/colorPickScene.fxml");
@@ -124,6 +146,9 @@ public class ConnectionSceneController {
         }
     }
 
+    /**
+     * Handles the reconnection respons
+     **/
     void onReconnectionResponse() {
         GameSceneController gameSceneController =
                 GuiManager.setLayout(mainPane.getScene(), "fxml/gameScene.fxml");
@@ -134,6 +159,11 @@ public class ConnectionSceneController {
         }
     }
 
+    /**
+     * Handles an error occurrence
+     *
+     * @param error message of error
+     */
     void onError(String error) {
         GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, error);
     }

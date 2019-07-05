@@ -18,11 +18,17 @@ public class MenuSceneController {
         bindEvents();
     }
 
+    /**
+     * Binds on click events
+     */
     private void bindEvents() {
         startButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onStartButtonClick());
         exitButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> System.exit(0));
     }
 
+    /**
+     * Handles the start button click
+     */
     private void onStartButtonClick() {
         GuiManager.setLayout(mainPane.getScene(), "fxml/connectionScene.fxml");
     }

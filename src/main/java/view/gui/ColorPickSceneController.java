@@ -13,7 +13,7 @@ import utility.MessageBuilder;
 import java.util.List;
 
 /**
- * Scene where player color is picked
+ * Controller that handles the color pick
  */
 public class ColorPickSceneController {
     private GuiManager guiManager;
@@ -76,7 +76,7 @@ public class ColorPickSceneController {
     }
 
     /**
-     * On back button click
+     * Handles back button click
      */
     private void onBackButtonClick() {
         guiManager.closeConnection();
@@ -84,7 +84,7 @@ public class ColorPickSceneController {
     }
 
     /**
-     * On color card click
+     * Handles color card click
      *
      * @param playerColor color of the card
      */
@@ -105,7 +105,7 @@ public class ColorPickSceneController {
     }
 
     /**
-     * On color request response
+     * Handles the color request response
      * @param availableColors list of available colors
      */
     void onColorResponse(List<PlayerColor> availableColors) {
@@ -125,7 +125,7 @@ public class ColorPickSceneController {
     }
 
     /**
-     * On lobby join response
+     * Handles the lobby join response
      * @param response response of the join request
      */
     void onLobbyJoinResponse(Response response) {
@@ -146,7 +146,7 @@ public class ColorPickSceneController {
     }
 
     /**
-     * On server disconnection
+     * Handles the server disconnection
      */
     void onDisconnection() {
         GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), "Disconnection", "You were disconnected from the server");
