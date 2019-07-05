@@ -3096,7 +3096,7 @@ public class GameSceneController {
             PlayerPosition myPos = new PlayerPosition(startingSquare);
 
             for (int j = 0; j < distance; j++) {
-                directionalSwitch(mySquare, myPos, returnPositions, gameMap, i);
+                mySquare = directionalSwitch(mySquare, myPos, returnPositions, gameMap, i);
             }
         }
 
@@ -3112,7 +3112,7 @@ public class GameSceneController {
      * @param gameMap         map of the game
      * @param i               direction
      */
-    private void directionalSwitch(Square mySquare, PlayerPosition myPos, List<PlayerPosition> returnPositions, GameMap gameMap, int i) {
+    private Square directionalSwitch(Square mySquare, PlayerPosition myPos, List<PlayerPosition> returnPositions, GameMap gameMap, int i) {
         switch (i) {
             case 0:
                 if (!mySquare.getNorth().equals(SquareAdjacency.WALL)) {
@@ -3149,7 +3149,7 @@ public class GameSceneController {
             default:
         }
 
-        mySquare.getWest();
+        return mySquare;
     }
 
     /**
