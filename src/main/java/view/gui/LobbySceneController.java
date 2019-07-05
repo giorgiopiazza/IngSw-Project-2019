@@ -15,6 +15,9 @@ import utility.MessageBuilder;
 
 import java.util.List;
 
+/**
+ * Controller that handles the lobby scene
+ */
 public class LobbySceneController {
     private GuiManager guiManager;
 
@@ -41,6 +44,9 @@ public class LobbySceneController {
         bindEvents();
     }
 
+    /**
+     * Binds click events
+     */
     private void bindEvents() {
         backButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onBackButtonClick());
 
@@ -50,6 +56,10 @@ public class LobbySceneController {
         map4.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onMapButtonClick(4));
     }
 
+    /**
+     * Handles the click on the map for vote
+     * @param mapVote map vote
+     */
     private void onMapButtonClick(int mapVote) {
         map1.setDisable(true);
         map2.setDisable(true);
@@ -65,11 +75,18 @@ public class LobbySceneController {
         }
     }
 
+    /**
+     * Handles the back button click
+     */
     private void onBackButtonClick() {
         guiManager.closeConnection();
         GuiManager.setLayout(mainPane.getScene(), "fxml/connectionScene.fxml");
     }
 
+    /**
+     * Handles the vote response
+     * @param gameVoteResponse response to the vote
+     */
     void onVoteResponse(GameVoteResponse gameVoteResponse) {
         if (gameVoteResponse.getStatus() == MessageStatus.OK) {
             GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), "Info",
@@ -85,6 +102,9 @@ public class LobbySceneController {
         }
     }
 
+    /**
+     * Handles the start of the game
+     */
     void onGameStart() {
         GameSceneController gameSceneController =
                 GuiManager.setLayout(mainPane.getScene(), "fxml/gameScene.fxml");
@@ -94,6 +114,9 @@ public class LobbySceneController {
         }
     }
 
+    /**
+     * Updates the lobby list
+     */
     void updateLobbyList() {
         List<String> users = guiManager.getLobbyPlayers();
         ObservableList<Node> childrens = lobbyLabelsBox.getChildren();
@@ -108,10 +131,18 @@ public class LobbySceneController {
         }
     }
 
+    /**
+     * Handles an error occurrence
+     *
+     * @param error message of error
+     */
     void onError(String error) {
         GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, error);
     }
 
+    /**
+     * Handles the server disconnection
+     */
     void onDisconnection() {
         GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), "Disconnection", "You were disconnected from the server");
     }

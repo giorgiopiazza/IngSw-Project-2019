@@ -14,6 +14,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Controller of the end game scene
+ */
 public class EndGameSceneController {
     @FXML
     ImageView exitButton;
@@ -34,10 +37,16 @@ public class EndGameSceneController {
         tableSetup();
     }
 
+    /**
+     * Binds the click events
+     */
     private void bindEvents() {
         exitButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> System.exit(0));
     }
 
+    /**
+     * Setups the table
+     */
     private void tableSetup() {
         rankColumn.setReorderable(false);
         rankColumn.setResizable(false);
@@ -62,6 +71,11 @@ public class EndGameSceneController {
         table.setPlaceholder(new Label());
     }
 
+    /**
+     * Sets data in the table
+     *
+     * @param players List of player points
+     */
     void setData(List<PlayerPoints> players) {
         List<PlayerPoints> winners = players.stream().filter(PlayerPoints::isWinner).collect(Collectors.toList());
 

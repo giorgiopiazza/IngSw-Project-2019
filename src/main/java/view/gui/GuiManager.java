@@ -22,6 +22,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * Handles all the interactions between Client and GUI
+ */
 public class GuiManager extends ClientGameManager implements DisconnectionListener {
     private static GuiManager instance = null;
 
@@ -40,6 +43,14 @@ public class GuiManager extends ClientGameManager implements DisconnectionListen
         return instance;
     }
 
+    /**
+     * Sets a layout form FXML file and returns the scene controller
+     *
+     * @param scene scene where to set the layout
+     * @param path  path of the FXML file
+     * @param <T>   type of the scene controller
+     * @return the scene controller
+     */
     static <T> T setLayout(Scene scene, String path) {
         FXMLLoader loader = new FXMLLoader(GuiManager.class.getClassLoader().getResource(path));
 
@@ -55,6 +66,13 @@ public class GuiManager extends ClientGameManager implements DisconnectionListen
         return loader.getController();
     }
 
+    /**
+     * Shows a dialog
+     *
+     * @param window window of the program
+     * @param title  title of the dialog
+     * @param text   text of the dialog
+     */
     static void showDialog(Stage window, String title, String text) {
         FXMLLoader loader = new FXMLLoader(GuiManager.class.getClassLoader().getResource("fxml/dialogScene.fxml"));
 
@@ -118,6 +136,14 @@ public class GuiManager extends ClientGameManager implements DisconnectionListen
     public void lobbyJoinResponse(Response response) {
         Platform.runLater(() ->
                 colorPickSceneController.onLobbyJoinResponse(response));
+    }
+
+    @Override
+    public void playersLobbyUpdate(List<String> users) {
+        if (lobbySceneController != null) {
+            Platform.runLater(() ->
+                    lobbySceneController.updateLobbyList());
+        }
     }
 
     @Override
@@ -243,6 +269,16 @@ public class GuiManager extends ClientGameManager implements DisconnectionListen
     }
 
     @Override
+    public void targetingScope() {
+        Platform.runLater(gameSceneController::targetingScope);
+    }
+
+    @Override
+    public void tagbackGrenade() {
+        Platform.runLater(gameSceneController::tagbackGrenade);
+    }
+
+    @Override
     public void reload() {
         Platform.runLater(gameSceneController::reload);
     }
@@ -250,11 +286,6 @@ public class GuiManager extends ClientGameManager implements DisconnectionListen
     @Override
     public void powerup() {
         Platform.runLater(gameSceneController::powerup);
-    }
-
-    @Override
-    public void tagbackGrenade() {
-        Platform.runLater(gameSceneController::tagbackGrenade);
     }
 
     @Override
@@ -273,19 +304,6 @@ public class GuiManager extends ClientGameManager implements DisconnectionListen
     public void notifyGameEnd(List<PlayerPoints> winners) {
         if (gameSceneController != null) {
             Platform.runLater(() -> gameSceneController.onGameEnd(winners));
-        }
-    }
-
-    @Override
-    public void targetingScope() {
-        Platform.runLater(gameSceneController::targetingScope);
-    }
-
-    @Override
-    public void playersLobbyUpdate(List<String> users) {
-        if (lobbySceneController != null) {
-            Platform.runLater(() ->
-                    lobbySceneController.updateLobbyList());
         }
     }
 

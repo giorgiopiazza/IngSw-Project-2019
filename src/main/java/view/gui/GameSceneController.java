@@ -432,8 +432,9 @@ public class GameSceneController {
 
     /**
      * Adds a drop to the killshot track
-     * @param dropPath path of the drop
-     * @param topMargin top margin
+     *
+     * @param dropPath   path of the drop
+     * @param topMargin  top margin
      * @param leftMargin left margin
      */
     private void addDropToKillshotTrack(String dropPath, double topMargin, double leftMargin) {
@@ -571,6 +572,7 @@ public class GameSceneController {
 
     /**
      * Called when an error occurs. Displays an alert with the error message
+     *
      * @param error message of the error
      */
     void onError(String error) {
@@ -656,6 +658,7 @@ public class GameSceneController {
 
     /**
      * Shows the info of a player in the info panel
+     *
      * @param username username of the player who you want to displays informations
      */
     private void showPlayerInfo(String username) {
@@ -688,6 +691,7 @@ public class GameSceneController {
 
     /**
      * Shows the player info of the client owner
+     *
      * @param me UserPlayer of the client owner
      */
     private void showMyPlayerInfo(UserPlayer me) {
@@ -706,6 +710,7 @@ public class GameSceneController {
 
     /**
      * Shows the bot info
+     *
      * @param bot bot
      */
     private void showBotPlayerInfo(Bot bot) {
@@ -718,8 +723,9 @@ public class GameSceneController {
     }
 
     /**
-     * Shows 
-     * @param other
+     * Shows the player info of another player
+     *
+     * @param other UserPlayer who you wants to displays informations
      */
     private void showOthersPlayerInfo(UserPlayer other) {
         setUsernamePlayerInfo(other.getUsername());
@@ -734,6 +740,11 @@ public class GameSceneController {
                 other.getUsername().equals(guiManager.getTurnOwner())));
     }
 
+    /**
+     * Sets the username in the info panel
+     *
+     * @param username username of the player
+     */
     private void setUsernamePlayerInfo(String username) {
         Label label = new Label(username);
         label.getStyleClass().add("infoTitle");
@@ -745,6 +756,11 @@ public class GameSceneController {
         infoPanel.setTop(vBox);
     }
 
+    /**
+     * Adds the playerboard to the info panel
+     *
+     * @param player player who you want to display the information
+     */
     private void addPlayerBoardToPlayerInfo(Player player) {
         PlayerColor playerColor = player.getColor();
         PlayerBoard playerBoard = player.getPlayerBoard();
@@ -761,6 +777,13 @@ public class GameSceneController {
         infoPanel.setCenter(anchorPane);
     }
 
+    /**
+     * Returns the path of the player board from the playerColo and the playerboard status
+     *
+     * @param playerColor Color of the player
+     * @param playerBoard player board of the player
+     * @return the path of the player board
+     */
     private String getPlayerBoardPath(PlayerColor playerColor, PlayerBoard playerBoard) {
         String suffix;
 
@@ -775,6 +798,11 @@ public class GameSceneController {
         return "/img/boards/" + playerColor.name().toLowerCase() + "_" + suffix + ".png";
     }
 
+    /**
+     * Sets the ammo on the player board
+     *
+     * @param player player who you want to display the ammo
+     */
     private void setAmmo(UserPlayer player) {
         AmmoQuantity ammoQuantity = player.getPlayerBoard().getAmmo();
 
@@ -800,6 +828,11 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Sets the damages drop on the player board
+     *
+     * @param playerBoard player board who you want to displays damages drops
+     */
     private void setDamages(PlayerBoard playerBoard) {
         List<String> damages = playerBoard.getDamages();
 
@@ -815,6 +848,11 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Sets the marks drop on the player board
+     *
+     * @param playerBoard player board who you want to displays marks drops
+     */
     private void setMarks(PlayerBoard playerBoard) {
         List<String> marks = playerBoard.getMarks();
 
@@ -830,6 +868,12 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Sets the weapons card in the info panel
+     *
+     * @param weapons List of the weapons to display
+     * @param botcard {@code true} if the bot card has to be displayed, {@code false} otherwise
+     */
     private void setWeapons(List<WeaponCard> weapons, boolean botcard) {
         if (weapons.isEmpty()) {
             return;
@@ -868,6 +912,11 @@ public class GameSceneController {
         ((AnchorPane) infoPanel.getCenter()).getChildren().add(weaponHBox);
     }
 
+    /**
+     * Sets the powerups in the info panels
+     *
+     * @param powerups List of the powerups that needs to be set
+     */
     private void setPowerups(List<PowerupCard> powerups) {
         if (powerups.isEmpty()) {
             return;
@@ -889,6 +938,11 @@ public class GameSceneController {
         ((AnchorPane) infoPanel.getCenter()).getChildren().add(powerupHBox);
     }
 
+    /**
+     * Sets the skulls on the playerboard
+     *
+     * @param playerBoard board which has skulls on it
+     */
     private void setPlayerboardSkulls(PlayerBoard playerBoard) {
         Insets startingInsets;
         if (playerBoard.isBoardFlipped()) {
@@ -911,6 +965,12 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Returns the path of the drop image from the player color
+     *
+     * @param playerColor color of the desired drop
+     * @return the path of the image
+     */
     private String getDropPath(PlayerColor playerColor) {
         return "/img/players/" + playerColor.name().toLowerCase() + "Drop.png";
     }
@@ -929,6 +989,11 @@ public class GameSceneController {
         setTurnOwnerIcon(guiManager.getTurnOwner());
     }
 
+    /**
+     * Sets the title of the action panel
+     *
+     * @param title title of the panel
+     */
     private void setActionPanelTitle(String title) {
         Label label = new Label(title);
         label.getStyleClass().add("infoTitle");
@@ -940,8 +1005,10 @@ public class GameSceneController {
         actionPanel.setTop(vBox);
     }
 
+    /**
+     * Sets the bottom layout of the action panel
+     */
     private void setActionPanelBottom() {
-
         HBox botHBox = new HBox();
         botHBox.setAlignment(Pos.BASELINE_CENTER);
         botHBox.setSpacing(20);
@@ -954,6 +1021,9 @@ public class GameSceneController {
         actionPanel.setBottom(botHBox);
     }
 
+    /**
+     * Handles the spawn action
+     */
     void spawn() {
         List<PowerupCard> powerups = guiManager.getPowerups();
 
@@ -985,6 +1055,11 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Handles the click on a spawning powerup
+     *
+     * @param powerupIndex index of the powerup clicked
+     */
     private void onClickPowerupSpawn(int powerupIndex) {
         hideActionPanel();
 
@@ -999,7 +1074,12 @@ public class GameSceneController {
         }
     }
 
-
+    /**
+     * Handles the move action
+     *
+     * @param title    Name of the move
+     * @param distance max move distance
+     */
     void move(String title, int distance) {
         setActionPanelTitle(title);
         GameMap gameMap = guiManager.getGameMap();
@@ -1035,6 +1115,11 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Handles the click on a map button for move
+     *
+     * @param playerPosition position of the button clicked
+     */
     private void onMoveMapSlotClick(PlayerPosition playerPosition) {
         hideActionPanel();
 
@@ -1043,12 +1128,20 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Handles the pass turn
+     */
     void passTurn() {
         if (!guiManager.sendRequest(MessageBuilder.buildPassTurnRequest(guiManager.getClientToken(), guiManager.getPlayer()))) {
             GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, GuiManager.SEND_ERROR);
         }
     }
 
+    /**
+     * Handles the bot spawn
+     *
+     * @param respawn {@code true} if it a respawn, {@code false} otherwise
+     */
     void spawnBot(boolean respawn) {
         setActionPanelTitle((respawn) ? "Respawn Bot" : "Spawn bot");
         GameMap gameMap = guiManager.getGameMap();
@@ -1083,6 +1176,11 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Handles the click on a spawn bot location
+     *
+     * @param botSpawnPosition position of bot spawn
+     */
     private void onSpawnBotClick(PlayerPosition botSpawnPosition) {
         hideActionPanel();
 
@@ -1091,6 +1189,12 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Handles the move and pick action
+     *
+     * @param title    title of the action
+     * @param distance max move and pick distance
+     */
     void moveAndPick(String title, int distance) {
         setActionPanelTitle(title);
         GameMap gameMap = guiManager.getGameMap();
@@ -1126,6 +1230,13 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Sets the event handler for the click on a square of move and pick
+     *
+     * @param square    Square clicked
+     * @param mapButton Button clicked
+     * @param tempPos   Position of the square in te map
+     */
     private void setMovePickSquareClickEvent(Square square, Button mapButton, PlayerPosition tempPos) {
         if (square.getSquareType() == SquareType.TILE) {
             mapButton.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> onTilePickClick(tempPos));
@@ -1134,6 +1245,11 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Handles the click on an ammo tile
+     *
+     * @param pickPosition position of ammo pick
+     */
     private void onTilePickClick(PlayerPosition pickPosition) {
         hideActionPanel();
 
@@ -1142,6 +1258,11 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Handles the click on a weapon square
+     *
+     * @param pickPosition position of weapon pick
+     */
     private void onWeaponPickClick(final PlayerPosition pickPosition) {
         SpawnSquare weaponSquare = (SpawnSquare) guiManager.getGameMap().getSquare(pickPosition);
         List<WeaponCard> weaponCards = Arrays.asList(weaponSquare.getWeapons());
@@ -1171,6 +1292,12 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Handles the click on the weapon card chosen
+     *
+     * @param pickPosition position of pick
+     * @param weaponCard   weaponcard picked
+     */
     private void onWeaponCardPickClick(final PlayerPosition pickPosition, final WeaponCard weaponCard) {
         ArrayList<Integer> paymentPowerups = new ArrayList<>();
         ArrayList<PowerupCard> powerupCards = new ArrayList<>(guiManager.getPowerups());
@@ -1199,6 +1326,13 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Ask for a swap if the player has 3 weapons
+     *
+     * @param pickPosition    position of pick
+     * @param weaponCard      card picked
+     * @param paymentPowerups list of powerups used for payment
+     */
     private void onCheckWeaponSwap(final PlayerPosition pickPosition, final WeaponCard weaponCard, final ArrayList<Integer> paymentPowerups) {
         if (guiManager.getPlayer().getWeapons().length < 3) {
             sendPickRequest(pickPosition, weaponCard, paymentPowerups, null);
@@ -1234,6 +1368,14 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Sends the pick request
+     *
+     * @param pickPosition     position of pick
+     * @param weaponCard       card picked
+     * @param paymentPowerups  list of powerups used for payment
+     * @param discardingWeapon weapon choosed for discard
+     */
     private void sendPickRequest(final PlayerPosition pickPosition, final WeaponCard weaponCard, final ArrayList<Integer> paymentPowerups, final WeaponCard discardingWeapon) {
         hideActionPanel();
 
@@ -1247,10 +1389,20 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Handles shoot action
+     */
     void shoot() {
         chooseShootWeapon(null, null);
     }
 
+    /**
+     * Handles move shoot actin
+     *
+     * @param title    title of the action
+     * @param distance max distance of move
+     * @param frenzy   {@code true} if it is a frenzy move pick, {@code false} otherwise
+     */
     void moveShoot(String title, int distance, boolean frenzy) {
         setActionPanelTitle(title);
         GameMap gameMap = guiManager.getGameMap();
@@ -1287,6 +1439,12 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Check next action based if it is an frenzy action or not
+     *
+     * @param tempPos position of move before
+     * @param frenzy  {@code true} if it is a frenzy move pick, {@code false} otherwise
+     */
     private void checkFrenzy(PlayerPosition tempPos, boolean frenzy) {
         if (frenzy) {
             reloadBeforeShoot(tempPos);
@@ -1295,6 +1453,11 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Sets the reload weapons before shoots
+     *
+     * @param moveBeforeShoot position of moving before shoot
+     */
     private void reloadBeforeShoot(final PlayerPosition moveBeforeShoot) {
         actionPanel.getChildren().clear();
 
@@ -1318,6 +1481,12 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Handles the choose of the weapon for shooting
+     *
+     * @param moveBeforeShoot   position of the move before shoot
+     * @param rechargingWeapons weapons that wants to be recharged
+     */
     private void chooseShootWeapon(final PlayerPosition moveBeforeShoot, final ArrayList<Integer> rechargingWeapons) {
         List<WeaponCard> weaponCards = new ArrayList<>(Arrays.asList(guiManager.getPlayer().getWeapons()));
 
@@ -1364,6 +1533,13 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Handles the choose of weapon effect
+     *
+     * @param moveBeforeShoot   position of the move before shoot
+     * @param rechargingWeapons weapons that wants to be recharged
+     * @param weaponCard        weapon chosen
+     */
     private void chooseWeaponEffect(PlayerPosition moveBeforeShoot, ArrayList<Integer> rechargingWeapons, WeaponCard weaponCard) {
         actionPanel.getChildren().clear();
 
@@ -1430,6 +1606,12 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Asks for payment powerups
+     *
+     * @param shootRequestBuilder builder of the shoot request
+     * @param weaponEffect        effect of the weapon
+     */
     private void askShootPaymentPowerups(ShootRequest.ShootRequestBuilder shootRequestBuilder, Effect weaponEffect) {
         ArrayList<PowerupCard> powerupCards = new ArrayList<>(guiManager.getPowerups());
 
@@ -1463,6 +1645,13 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Builds the shoot request based on effect properties
+     *
+     * @param shootRequestBuilder builder of the shoot request
+     * @param targets             targets of the effect
+     * @param properties          properties of the effect
+     */
     private void buildShootRequest(ShootRequest.ShootRequestBuilder shootRequestBuilder, List<TargetType> targets, Map<String, String> properties) {
         if (!targets.isEmpty()) {
             switch (targets.get(0)) {
@@ -1493,6 +1682,13 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Asks for player targets
+     *
+     * @param shootRequestBuilder builder of the shoot request
+     * @param targets             targets of the effect
+     * @param properties          properties of the effect
+     */
     private void askPlayerTargets(ShootRequest.ShootRequestBuilder shootRequestBuilder, List<TargetType> targets, Map<String, String> properties) {
         if (properties.containsKey(Properties.TARGET_NUM.getJKey())) {
             askTargets(shootRequestBuilder, targets, properties, Integer.parseInt(properties.get(Properties.TARGET_NUM.getJKey())), true);
@@ -1503,6 +1699,15 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Asks for player targets
+     *
+     * @param shootRequestBuilder builder of the shoot request
+     * @param targets             targets of the effect
+     * @param properties          properties of the effect
+     * @param numberOfTargets     number of targets
+     * @param exact               if the number of target needs to be equal to numberOfTargets
+     */
     private void askTargets(ShootRequest.ShootRequestBuilder shootRequestBuilder, List<TargetType> targets, Map<String, String> properties, int numberOfTargets, boolean exact) {
         actionPanel.getChildren().clear();
 
@@ -1552,6 +1757,13 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Handles square targets
+     *
+     * @param shootRequestBuilder builder of the shoot request
+     * @param targets             targets of the effect
+     * @param properties          properties of the effect
+     */
     private void onSquareTarget(ShootRequest.ShootRequestBuilder shootRequestBuilder, List<TargetType> targets, Map<String, String> properties) {
         if (properties.containsKey(Properties.SAME_POSITION.getJKey())) {
             ShootRequest tempReq = shootRequestBuilder.build();
@@ -1565,6 +1777,13 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Asks for square targets
+     *
+     * @param shootRequestBuilder builder of the shoot request
+     * @param targets             targets of the effect
+     * @param properties          properties of the effect
+     */
     private void askSquareTargets(ShootRequest.ShootRequestBuilder shootRequestBuilder, List<TargetType> targets, Map<String, String> properties) {
         if (properties.containsKey(Properties.TARGET_NUM.getJKey())) {
             askExactSquareTargets(shootRequestBuilder, targets, properties, Integer.parseInt(properties.get(Properties.TARGET_NUM.getJKey())));
@@ -1575,6 +1794,14 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Asks for exact number square targets
+     *
+     * @param shootRequestBuilder builder of the shoot request
+     * @param targets             targets of the effect
+     * @param properties          properties of the effect
+     * @param numberOfTargets     exact number of target
+     */
     private void askExactSquareTargets(ShootRequest.ShootRequestBuilder shootRequestBuilder, List<TargetType> targets, Map<String, String> properties, int numberOfTargets) {
         actionPanel.getChildren().clear();
 
@@ -1616,6 +1843,14 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Asks for max number square targets
+     *
+     * @param shootRequestBuilder builder of the shoot request
+     * @param targets             targets of the effect
+     * @param properties          properties of the effect
+     * @param numberOfTargets     exact number of target
+     */
     private void askMaxSquareTargets(ShootRequest.ShootRequestBuilder shootRequestBuilder, List<TargetType> targets, Map<String, String> properties, int numberOfTargets) {
         actionPanel.getChildren().clear();
 
@@ -1658,6 +1893,18 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Creates the button of square target
+     *
+     * @param tempPos             position of move
+     * @param playerPosition      actual player position
+     * @param shootRequestBuilder builder of shoot request
+     * @param targets             targets of the effect
+     * @param properties          properties of the effect
+     * @param numberOfTargets     number of targets
+     * @param exact               {@code true} if is an exact number
+     * @return the button created
+     */
     private Button squareTarget(PlayerPosition tempPos, PlayerPosition playerPosition, ShootRequest.ShootRequestBuilder shootRequestBuilder,
                                 List<TargetType> targets, Map<String, String> properties, int numberOfTargets, boolean exact) {
         Button mapButton = new Button();
@@ -1685,6 +1932,13 @@ public class GameSceneController {
         return mapButton;
     }
 
+    /**
+     * Asks for room target
+     *
+     * @param shootRequestBuilder builder of shoot request
+     * @param targets             targets of the effect
+     * @param properties          properties of the effect
+     */
     private void askRoomTarget(ShootRequest.ShootRequestBuilder shootRequestBuilder, List<TargetType> targets, Map<String, String> properties) {
         actionPanel.getChildren().clear();
 
@@ -1724,6 +1978,13 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Adds the next button to layout
+     *
+     * @param shootRequestBuilder builder of shoot request
+     * @param targets             targets of the effect
+     * @param properties          properties of the effect
+     */
     private void addNextButton(ShootRequest.ShootRequestBuilder shootRequestBuilder, List<TargetType> targets, Map<String, String> properties) {
         HBox botHBox = (HBox) actionPanel.getBottom();
         ImageView nextButton = new ImageView(NEXT_BUTTON_PATH);
@@ -1735,6 +1996,12 @@ public class GameSceneController {
         botHBox.getChildren().add(nextButton);
     }
 
+    /**
+     * Handles move to last target
+     *
+     * @param shootRequestBuilder builder of shoot request
+     * @param properties          properties of the effect
+     */
     private void moveToLastTarget(ShootRequest.ShootRequestBuilder shootRequestBuilder, Map<String, String> properties) {
         ShootRequest tempReq = shootRequestBuilder.build();
 
@@ -1753,6 +2020,12 @@ public class GameSceneController {
         buildShootRequest(shootRequestBuilder, List.of(), newProperties);
     }
 
+    /**
+     * Asks for sender move
+     *
+     * @param shootRequestBuilder builder of shoot request
+     * @param properties          properties of the effect
+     */
     private void askSenderMove(ShootRequest.ShootRequestBuilder shootRequestBuilder, Map<String, String> properties) {
         actionPanel.getChildren().clear();
 
@@ -1805,6 +2078,13 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Asks for move order of the sender
+     *
+     * @param shootRequestBuilder builder of shoot request
+     * @param properties          properties of the effect
+     * @param middle              {@code true} if midlle is permitted
+     */
     private void askSenderMoveOrder(ShootRequest.ShootRequestBuilder shootRequestBuilder, Map<String, String> properties, boolean middle) {
         actionPanel.getChildren().clear();
 
@@ -1862,6 +2142,15 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Asks for target move position
+     *
+     * @param shootRequestBuilder builder of shoot request
+     * @param properties          properties of the effect
+     * @param exactMove           {@code true} if move is exact
+     * @param distance            max distance
+     * @param targetNum           number of target
+     */
     private void askTargetMovePosition(ShootRequest.ShootRequestBuilder shootRequestBuilder, Map<String, String> properties, boolean exactMove, int distance, int targetNum) {
         actionPanel.getChildren().clear();
 
@@ -1905,6 +2194,18 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Creates the button of target move position
+     *
+     * @param tempPos             position of move
+     * @param playerPosition      actual player position
+     * @param shootRequestBuilder builder of shoot request
+     * @param properties          properties of the effect
+     * @param exactMove           {@code true} if is an exact move
+     * @param distance            distance of move
+     * @param targetNum           number of target
+     * @return the button created
+     */
     private Button targetMovePosition(PlayerPosition tempPos, PlayerPosition playerPosition, ShootRequest.ShootRequestBuilder shootRequestBuilder,
                                       Map<String, String> properties, boolean exactMove, int distance, int targetNum) {
         Button mapButton = new Button();
@@ -1935,6 +2236,12 @@ public class GameSceneController {
         return mapButton;
     }
 
+    /**
+     * Handles the order of move
+     *
+     * @param shootRequestBuilder builder of shoot request
+     * @param properties          properties of the effect
+     */
     private void targetMoveOrder(ShootRequest.ShootRequestBuilder shootRequestBuilder, Map<String, String> properties) {
         if (properties.containsKey(Properties.MOVE_TARGET_BEFORE.getJKey())) {
             buildShootRequest(shootRequestBuilder.moveTargetsFirst(Boolean.parseBoolean(properties.get(Properties.MOVE_TARGET_BEFORE.getJKey()))), List.of(), properties);
@@ -1943,6 +2250,12 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Ask the order of move
+     *
+     * @param shootRequestBuilder builder of shoot request
+     * @param properties          properties of the effect
+     */
     private void askTargetMoveOrder(ShootRequest.ShootRequestBuilder shootRequestBuilder, Map<String, String> properties) {
         actionPanel.getChildren().clear();
 
@@ -1988,6 +2301,11 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Send a shoot request
+     *
+     * @param shootRequestBuilder builder of shoot request
+     */
     private void sendShootRequest(ShootRequest.ShootRequestBuilder shootRequestBuilder) {
         hideActionPanel();
 
@@ -1996,6 +2314,9 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Handles powerup use
+     */
     void powerup() {
         List<PowerupCard> powerupCards = guiManager.getPowerups();
 
@@ -2026,14 +2347,25 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Handles tagback grenade request
+     */
     void tagbackGrenade() {
         askMultiplePowerupUsage(ClientGameManager.TAGBACK_GRENADE);
     }
 
+    /**
+     * Handle targeting scope request
+     */
     void targetingScope() {
         askMultiplePowerupUsage(ClientGameManager.TARGETING_SCOPE);
     }
 
+    /**
+     * Asks for multiple poweup usage
+     *
+     * @param powerupName name of the powerup
+     */
     private void askMultiplePowerupUsage(String powerupName) {
         List<PowerupCard> powerupCards = new ArrayList<>(guiManager.getPowerups());
 
@@ -2078,6 +2410,11 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Handles the click on a powerup
+     *
+     * @param powerupIndex index of the powerup
+     */
     private void onPowerupUseClick(int powerupIndex) {
         PowerupRequest.PowerupRequestBuilder powerupRequestBuilder =
                 new PowerupRequest.PowerupRequestBuilder(guiManager.getUsername(), guiManager.getClientToken(), new ArrayList<>(List.of(powerupIndex)));
@@ -2095,6 +2432,11 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Handles the click on a newton
+     *
+     * @param powerupRequestBuilder builder of powerup request
+     */
     private void onNewtonClick(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
         List<Player> players = guiManager.getAllPlayers();
         players = players.stream().filter(p -> p.getPosition() != null && !p.getUsername().equals(guiManager.getUsername())).collect(Collectors.toList());
@@ -2128,6 +2470,11 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Asks for newton move positions
+     *
+     * @param powerupRequestBuilder builder of powerup request
+     */
     private void askNewtonMovePosition(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
         PowerupRequest tempReq = powerupRequestBuilder.build();
         setActionPanelTitle("Newton " + tempReq.getTargetPlayersUsername().get(0) + " move");
@@ -2166,6 +2513,11 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Handles the click on a teleport
+     *
+     * @param powerupRequestBuilder builder of powerup request
+     */
     private void onTeleporterClick(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
         setActionPanelTitle("Teleporter");
         GameMap gameMap = guiManager.getGameMap();
@@ -2201,6 +2553,11 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Handles the click on a scope
+     *
+     * @param powerupRequestBuilder builder of powerup request
+     */
     private void onScopeClick(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
         actionPanel.getChildren().clear();
 
@@ -2253,6 +2610,11 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Asks for scope payments poweups
+     *
+     * @param powerupRequestBuilder powerup request builder
+     */
     private void askScopePaymentPowerups(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
         ArrayList<PowerupCard> powerupCards = new ArrayList<>(guiManager.getPowerups());
 
@@ -2287,6 +2649,11 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Asks for ammo of scope paymeny
+     *
+     * @param powerupRequestBuilder builder of powerup request
+     */
     private void askScopeAmmoColor(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
         actionPanel.getChildren().clear();
 
@@ -2339,6 +2706,9 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Sends powerup request
+     **/
     private void sendPowerupRequest(PowerupRequest.PowerupRequestBuilder powerupRequestBuilder) {
         hideActionPanel();
 
@@ -2347,6 +2717,9 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Handles reload action
+     */
     void reload() {
         actionPanel.getChildren().clear();
 
@@ -2370,6 +2743,11 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Sets the reload layout for picking weapons for reload
+     *
+     * @param weapons list of reloadable weapons
+     */
     private void setReloadLayout(List<WeaponCard> weapons) {
         VBox vBox = new VBox();
         vBox.setAlignment(Pos.CENTER);
@@ -2399,6 +2777,11 @@ public class GameSceneController {
         actionPanel.setCenter(vBox);
     }
 
+    /**
+     * Gets the weapons selected indexes
+     *
+     * @return List of indexes of selected elements
+     */
     private ArrayList<Integer> getReloadWeaponIndexes() {
         List<WeaponCard> weaponCards = new ArrayList<>(Arrays.asList(guiManager.getPlayer().getWeapons()));
         ArrayList<Integer> reloadWeapons = new ArrayList<>();
@@ -2423,6 +2806,11 @@ public class GameSceneController {
         return reloadWeapons;
     }
 
+    /**
+     * Asks for reload payment powerups
+     *
+     * @param reloadWeapons list of weapons to recharge
+     */
     private void reloadPaymentPowerups(ArrayList<Integer> reloadWeapons) {
         ArrayList<PowerupCard> powerupCards = new ArrayList<>(guiManager.getPowerups());
 
@@ -2475,6 +2863,11 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Sets the layout for select multiple powerups
+     *
+     * @param powerupCards list of powerups selectable
+     */
     private void setMultiplePowerupSelectLayout(List<PowerupCard> powerupCards) {
         VBox vBox = new VBox();
         vBox.setAlignment(Pos.CENTER);
@@ -2497,6 +2890,11 @@ public class GameSceneController {
         actionPanel.setCenter(vBox);
     }
 
+    /**
+     * Gets all selected powerups from layout
+     *
+     * @return the list of selected powerups
+     */
     private ArrayList<Integer> getMultiplePowerupIndexes() {
         List<PowerupCard> powerupCards = guiManager.getPowerups();
         ArrayList<Integer> paymentPowerups = new ArrayList<>();
@@ -2521,6 +2919,13 @@ public class GameSceneController {
         return paymentPowerups;
     }
 
+    /**
+     * Sets the powerup payment layout
+     *
+     * @param title        title of the layout
+     * @param powerupCards List of powerups for payment
+     * @return the next button
+     */
     private ImageView setPaymentPowerupsLayout(String title, List<PowerupCard> powerupCards) {
         actionPanel.getChildren().clear();
 
@@ -2539,6 +2944,9 @@ public class GameSceneController {
         return nextButton;
     }
 
+    /**
+     * Handles the bot action
+     */
     void botAction() {
         setActionPanelTitle("Bot Move");
         GameMap gameMap = guiManager.getGameMap();
@@ -2574,6 +2982,11 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Handles the move of the bot
+     *
+     * @param tempPos position of move
+     */
     private void handleBotMove(PlayerPosition tempPos) {
         List<UserPlayer> players = guiManager.getPlayers().stream().filter(p -> !p.getUsername().equals(guiManager.getUsername())).collect(Collectors.toList());
         List<UserPlayer> visiblePlayers = new ArrayList<>();
@@ -2591,6 +3004,12 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Choose bot target
+     *
+     * @param movePosition   position of bot move
+     * @param visiblePlayers list of player that bot can see
+     */
     private void chooseBotTarget(PlayerPosition movePosition, List<UserPlayer> visiblePlayers) {
         actionPanel.getChildren().clear();
 
@@ -2623,6 +3042,12 @@ public class GameSceneController {
         actionPanel.toFront();
     }
 
+    /**
+     * Sends the bot action
+     *
+     * @param movePosition position of bot move
+     * @param target       target of bot
+     */
     private void sendBotAction(PlayerPosition movePosition, UserPlayer target) {
         hideActionPanel();
 
@@ -2631,6 +3056,12 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Sets the horizontal layout for add center horizontal layout element
+     *
+     * @param title title of the layout
+     * @return return the HBox
+     */
     private HBox setHorizontalLayout(String title) {
         actionPanel.getChildren().clear();
 
@@ -2649,6 +3080,14 @@ public class GameSceneController {
         return hBox;
     }
 
+    /**
+     * Gets the list of directional positions
+     *
+     * @param gameMap        map used
+     * @param startingSquare starting square
+     * @param distance       distance of the directional move
+     * @return a list of directional positions
+     */
     private List<PlayerPosition> getDirectionalMove(GameMap gameMap, PlayerPosition startingSquare, int distance) {
         List<PlayerPosition> returnPositions = new ArrayList<>();
 
@@ -2664,6 +3103,15 @@ public class GameSceneController {
         return returnPositions;
     }
 
+    /**
+     * Explore a direction
+     *
+     * @param mySquare        square of start
+     * @param myPos           position of start
+     * @param returnPositions position of retun
+     * @param gameMap         map of the game
+     * @param i               direction
+     */
     private void directionalSwitch(Square mySquare, PlayerPosition myPos, List<PlayerPosition> returnPositions, GameMap gameMap, int i) {
         switch (i) {
             case 0:
@@ -2697,13 +3145,27 @@ public class GameSceneController {
                     mySquare = gameMap.getSquare(myPos);
                 }
                 break;
+
+            default:
         }
+
+        mySquare.getWest();
     }
 
+    /**
+     * Communicates the disconnection of a player
+     *
+     * @param player username of a player who disconnected
+     */
     void onPlayerDisconnect(String player) {
         GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), "Disconnection", player + " disconnected from the server");
     }
 
+    /**
+     * Handles the game end
+     *
+     * @param players player of the leaderboard
+     */
     void onGameEnd(List<PlayerPoints> players) {
         EndGameSceneController endGameSceneController = GuiManager.setLayout(mainPane.getScene(), "fxml/endGameScene.fxml");
 
@@ -2712,6 +3174,9 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Handles the disconnection
+     */
     void onDisconnection() {
         GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), "Disconnection", "You were disconnected from the server");
     }

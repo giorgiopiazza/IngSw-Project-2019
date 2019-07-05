@@ -3,6 +3,9 @@ package view.gui;
 import enumerations.PlayerColor;
 import javafx.scene.image.ImageView;
 
+/**
+ * This class represents a row of the table of EndGameSceneController
+ */
 public class TableRow {
     private String rank;
     private ImageView icon;
