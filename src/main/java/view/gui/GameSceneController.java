@@ -2657,43 +2657,47 @@ public class GameSceneController {
             PlayerPosition myPos = new PlayerPosition(startingSquare);
 
             for (int j = 0; j < distance; j++) {
-                switch (i) {
-                    case 0:
-                        if (!mySquare.getNorth().equals(SquareAdjacency.WALL)) {
-                            myPos.setRow(myPos.getRow() - 1);
-                            returnPositions.add(new PlayerPosition(myPos));
-                            mySquare = gameMap.getSquare(myPos);
-                        }
-                        break;
-
-                    case 1:
-                        if (!mySquare.getEast().equals(SquareAdjacency.WALL)) {
-                            myPos.setColumn(myPos.getColumn() + 1);
-                            returnPositions.add(new PlayerPosition(myPos));
-                            mySquare = gameMap.getSquare(myPos);
-                        }
-                        break;
-
-                    case 2:
-                        if (!mySquare.getSouth().equals(SquareAdjacency.WALL)) {
-                            myPos.setRow(myPos.getRow() + 1);
-                            returnPositions.add(new PlayerPosition(myPos));
-                            mySquare = gameMap.getSquare(myPos);
-                        }
-                        break;
-
-                    case 3:
-                        if (!mySquare.getWest().equals(SquareAdjacency.WALL)) {
-                            myPos.setColumn(myPos.getColumn() - 1);
-                            returnPositions.add(new PlayerPosition(myPos));
-                            mySquare = gameMap.getSquare(myPos);
-                        }
-                        break;
-                }
+                directionalSwitch(mySquare, myPos, returnPositions, gameMap, i);
             }
         }
 
         return returnPositions;
+    }
+
+    private void directionalSwitch(Square mySquare, PlayerPosition myPos, List<PlayerPosition> returnPositions, GameMap gameMap, int i) {
+        switch (i) {
+            case 0:
+                if (!mySquare.getNorth().equals(SquareAdjacency.WALL)) {
+                    myPos.setRow(myPos.getRow() - 1);
+                    returnPositions.add(new PlayerPosition(myPos));
+                    mySquare = gameMap.getSquare(myPos);
+                }
+                break;
+
+            case 1:
+                if (!mySquare.getEast().equals(SquareAdjacency.WALL)) {
+                    myPos.setColumn(myPos.getColumn() + 1);
+                    returnPositions.add(new PlayerPosition(myPos));
+                    mySquare = gameMap.getSquare(myPos);
+                }
+                break;
+
+            case 2:
+                if (!mySquare.getSouth().equals(SquareAdjacency.WALL)) {
+                    myPos.setRow(myPos.getRow() + 1);
+                    returnPositions.add(new PlayerPosition(myPos));
+                    mySquare = gameMap.getSquare(myPos);
+                }
+                break;
+
+            case 3:
+                if (!mySquare.getWest().equals(SquareAdjacency.WALL)) {
+                    myPos.setColumn(myPos.getColumn() - 1);
+                    returnPositions.add(new PlayerPosition(myPos));
+                    mySquare = gameMap.getSquare(myPos);
+                }
+                break;
+        }
     }
 
     void onPlayerDisconnect(String player) {
