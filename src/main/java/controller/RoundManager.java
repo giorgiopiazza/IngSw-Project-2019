@@ -1036,7 +1036,7 @@ public class RoundManager {
                 turnManager.setLastPlayer();
                 return handleNextTurn(PossibleGameState.PASS_FRENZY_TURN);
             } else {
-                return handleNextTurn(turnManager.getArrivingGameState());
+                return handleNextTurn(PossibleGameState.PASS_NORMAL_BOT_TURN);
             }
         }
     }
@@ -1179,6 +1179,10 @@ public class RoundManager {
             gameManager.changeState(PossibleGameState.FINAL_FRENZY);
             SaveGame.saveGame(gameManager);
             return new Response("Turn Passed and Frenzy Starting", MessageStatus.OK);
+        } else if (arrivingState == PossibleGameState.PASS_NORMAL_BOT_TURN) {
+            gameManager.changeState(PossibleGameState.GAME_STARTED);
+            SaveGame.saveGame(gameManager);
+            return new Response("Turn Passed after bot action", MessageStatus.OK);
         } else {
             throw new InvalidGameStateException();
         }
