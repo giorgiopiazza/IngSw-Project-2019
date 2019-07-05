@@ -228,15 +228,15 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
      * Called when a change of turn owner happen
      */
     private void newTurn() {
+        if (loadGame) {
+            loadGame = false;
+            if (yourTurn && gameSerialized.isBotActionDone()) {
+                roundManager.setBotMoved();
+            }
+        }
+
         if (yourTurn) {
             roundManager.beginRound();
-
-            if (loadGame) {
-                loadGame = false;
-                if (gameSerialized.isBotActionDone()) {
-                    roundManager.setBotMoved();
-                }
-            }
 
             makeMove();
         } else {
@@ -463,7 +463,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
         if (roundManager != null &&
                 getUsername().equals(gameStateMessage.getTurnOwner()) &&
                 isBotPresent &&
-                gameSerialized.getBot().getPlayerBoard().getDamageCount() > 10) {
+                gameStateMessage.getGameSerialized().getBot().getPlayerBoard().getDamageCount() > 10) {
             roundManager.setBotMoved();
         }
 
