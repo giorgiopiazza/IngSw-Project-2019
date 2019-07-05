@@ -38,6 +38,9 @@ import utility.MessageBuilder;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Class for the graphical interface of the game
+ */
 public class GameSceneController {
     private static final String USERNAME_PROPERTY = "username";
 
@@ -135,6 +138,11 @@ public class GameSceneController {
                 yellowWeapon0, yellowWeapon1, yellowWeapon2);
     }
 
+    /**
+     * Setups the board and binds all the events
+     *
+     * @param gameSerialized state of the game at the time of the join
+     */
     void setupGame(GameSerialized gameSerialized) {
         GameMap gameMap = gameSerialized.getGameMap();
 
@@ -149,17 +157,12 @@ public class GameSceneController {
         updateMap(gameSerialized);
     }
 
+    /**
+     * Binds click events on the panels
+     */
     private void bindPanels() {
         infoPanel.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> hideInfoPanel());
         zoomPanel.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> hideZoomPanel());
-    }
-
-    private void hideActionPanel() {
-        actionPanel.getChildren().clear();
-        actionPanel.setVisible(false);
-
-        setBoardOpaque(NOT_OPAQUE);
-        setTurnOwnerIcon(guiManager.getTurnOwner());
     }
 
     /**
@@ -171,6 +174,11 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Set the icons of the players on the left of the board
+     *
+     * @param gameSerialized status of the game at the time of the join
+     */
     private void setPlayerIcons(GameSerialized gameSerialized) {
         ImageView imageView;
 
@@ -193,6 +201,12 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Get the CSS ID of the icon from the PlayerColor
+     *
+     * @param playerColor PlayerColor corresponding to the desired ID color
+     * @return the string of the CSS ID
+     */
     private String getIconIDFromColor(PlayerColor playerColor) {
         switch (playerColor) {
             case BLUE:
@@ -210,6 +224,11 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Enlight the turn owner icon and set opacity to the others
+     *
+     * @param turnOwner username of the player who owns the turn
+     */
     void setTurnOwnerIcon(String turnOwner) {
         for (Node children : iconList.getChildren()) {
             children.getStyleClass().clear();
@@ -224,6 +243,9 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Updates the elements of the board
+     */
     void onStateUpdate() {
         setTurnOwnerIcon(GuiManager.getInstance().getTurnOwner());
         updateMap(guiManager.getGameSerialized());
@@ -480,6 +502,17 @@ public class GameSceneController {
     private void hideZoomPanel() {
         zoomPanel.getChildren().clear();
         zoomPanel.setVisible(false);
+
+        setBoardOpaque(NOT_OPAQUE);
+        setTurnOwnerIcon(guiManager.getTurnOwner());
+    }
+
+    /**
+     * Hides the action panel
+     */
+    private void hideActionPanel() {
+        actionPanel.getChildren().clear();
+        actionPanel.setVisible(false);
 
         setBoardOpaque(NOT_OPAQUE);
         setTurnOwnerIcon(guiManager.getTurnOwner());
