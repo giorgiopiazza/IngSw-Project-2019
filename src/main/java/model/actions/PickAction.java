@@ -25,7 +25,6 @@ public class PickAction implements Action {
     private static final int MAX_ADRENALINE_MOVE = 2;
     private static final int MAX_FRENZY_MOVE = 2;
     private static final int MAX_LIGHT_FRENZY_MOVE = 3;
-    private static final int MIN_MOVE = 0;
 
     private UserPlayer actingPlayer;
     private PlayerPosition movingPos;
@@ -58,10 +57,6 @@ public class PickAction implements Action {
 
     @Override
     public boolean validate() throws InvalidActionException {
-        if(!InputValidator.validatePosition(movingPos)) {
-            throw new InvalidActionException();
-        }
-
         if(!InputValidator.validateIndexes(pickRequest, actingPlayer)) {
             throw new InvalidActionException();
         }
@@ -87,7 +82,7 @@ public class PickAction implements Action {
                 throw new IncompatibleActionException(actionChosen);
         }
 
-        if (!(movingDistance >= MIN_MOVE && movingDistance <= maxMove)) {
+        if (movingDistance > maxMove) {
             return false;
         }
 
@@ -103,7 +98,7 @@ public class PickAction implements Action {
         // then I can pick depending on the square I now belong to
         if (squareType == SquareType.TILE) {
             ((CardSquare) pickingSquare).pickAmmoTile().giveResources(actingPlayer);
-        } else if (squareType == SquareType.SPAWN) {
+        } else {
             try {
                 // weapon is already payed in the validation
                 // then I add the weapon to my hand
@@ -114,15 +109,13 @@ public class PickAction implements Action {
                 discardingWeapon.setStatus(new SemiChargedWeapon());
                 ((SpawnSquare) pickingSquare).swapWeapons(discardingWeapon, pickingWeapon);
             }
-        } else {
-            throw new NullPointerException("A square must have a type!");
         }
     }
 
     private boolean pickValidation() {
         if (squareType == SquareType.TILE) {
             return ((CardSquare) pickingSquare).isAmmoTilePresent();
-        } else if (squareType == SquareType.SPAWN && pickingWeapon != null) {
+        } else if (pickingWeapon != null) {
             try {
                 pickingWeapon.payRechargeCost(pickRequest);
             } catch (WeaponAlreadyChargedException e) {
