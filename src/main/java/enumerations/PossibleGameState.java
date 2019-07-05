@@ -1,5 +1,9 @@
 package enumerations;
 
+/**
+ * Enumeration containing all the possible states that the {@link controller.GameManager GameManager} can have
+ * while "controlling" the evolving of the game.
+ */
 public enum PossibleGameState {
     /**
      * Game State when wait to vote and entry in lobby

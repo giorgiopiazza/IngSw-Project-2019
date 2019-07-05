@@ -7,10 +7,20 @@ import network.message.EffectRequest;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * This Class is used to Implement a Mark Decoration without triggering the Marks that the
+ * shooter has on his target's playerboard
+ */
 public class ExtraDamageNoMarkDecorator extends ExtraEffectDecorator {
     private static final long serialVersionUID = -2582923298178193774L;
     private final int[] damageDistribution;
 
+    /**
+     * Builds the Damage with no marks decoration
+     *
+     * @param effect to be decorated
+     * @param extraDamageDistribution the Array containing the damage decoration distribution
+     */
     public ExtraDamageNoMarkDecorator(Effect effect, int[] extraDamageDistribution) {
         this.effect = effect;
         this.description = effect.description;

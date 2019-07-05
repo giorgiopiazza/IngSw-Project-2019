@@ -10,6 +10,9 @@ import network.message.ShootRequest;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Implements the Class from which each {@link model.cards.WeaponCard Weapons'} effect must be decorated
+ */
 public class WeaponBaseEffect extends Effect {
 
     private static final long serialVersionUID = 6933102168404912677L;
@@ -42,6 +45,15 @@ public class WeaponBaseEffect extends Effect {
         }
     }
 
+    /**
+     * This is the most important utility method used by a Weapon's effect to validate each of his properties with the
+     * request received
+     *
+     * @param request the received request
+     * @param properties the checking properties
+     * @param targetType the kind of target on which the weapon is damaging
+     * @return true if all the properties are valid, otherwise false
+     */
     private boolean subValidate(ShootRequest request, Map<String, String> properties, TargetType targetType) {
         PlayerPosition shooterPosition = EffectValidator.checkAdrenalineMove(request);
         List<PlayerPosition> targetPositions = EffectValidator.getTargetPositions(request, targetType);
@@ -83,6 +95,16 @@ public class WeaponBaseEffect extends Effect {
         return validateMovement(request, properties, targetType, shooterPosition, targetPositions);
     }
 
+    /**
+     * Other Utility method instead used only for the moving validation
+     *
+     * @param request the request received
+     * @param properties the properties to be validated
+     * @param targetType the kind of target to be shooted
+     * @param shooterPosition the {@link PlayerPosition PlayerPosition} of the target
+     * @param targetPositions the targets moving positions
+     * @return true if all the properties are valid, otherwise false
+     */
     private boolean validateMovement(ShootRequest request, Map<String, String> properties, TargetType targetType, PlayerPosition shooterPosition, List<PlayerPosition> targetPositions) {
         // Simulates player movement after shooting
         if (!request.isMoveSenderFirst() && request.getSenderMovePosition() != null) {

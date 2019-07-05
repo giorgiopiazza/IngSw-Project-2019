@@ -21,7 +21,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-
+/**
+ * This class represents a Weapon.
+ * A weapon has always an id a cost and a list of effects used to validate and execute it
+ */
 public class WeaponCard extends UsableCard {
     private static final long serialVersionUID = -1676793782570413675L;
 

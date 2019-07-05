@@ -1,5 +1,10 @@
 package enumerations;
 
+/**
+ * Enumeration representing all the possible actions a {@link model.player.UserPlayer UserPlayer}
+ * can have during the game. Actions are set and removed to each player whenever his state changes as
+ * the validation can be done more fluently
+ */
 public enum PossibleAction {
     SPAWN_BOT("Choose a bot spawn point"),
     RESPAWN_BOT("Choose a bot respawn point"),

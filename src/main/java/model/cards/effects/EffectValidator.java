@@ -19,6 +19,9 @@ import network.message.PowerupRequest;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Main utility class used to validate an {@link Effect Effect}
+ */
 class EffectValidator {
 
     private EffectValidator() {

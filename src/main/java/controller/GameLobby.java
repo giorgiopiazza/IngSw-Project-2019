@@ -22,6 +22,12 @@ class GameLobby implements Serializable {
     private boolean terminator;
     private int skullNum;
 
+    /**
+     * Creates an instance of the class after the terminator presence and the skullNumm have been decided
+     *
+     * @param terminator boolean representing the presence of the terminator
+     * @param skullNum integer representing the number of the skulls of the imminent starting game
+     */
     GameLobby(boolean terminator, int skullNum) {
         this.inLobbyPlayers = new ArrayList<>();
         this.votedPlayers = new ArrayList<>();

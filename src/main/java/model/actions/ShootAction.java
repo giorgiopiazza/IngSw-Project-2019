@@ -15,6 +15,11 @@ import network.message.ReloadRequest;
 import network.message.ShootRequest;
 import utility.InputValidator;
 
+/**
+ * Implements the Shoot Action considering all the possible kind of Shoot that are activated by
+ * a player during the game. Remember that a shoot action can involve a {@link ReloadAction
+ * ReloadAction} in case the kind of action is a FRENZY ONE
+ */
 public class ShootAction implements Action {
     private static final int MAX_NORMAL_MOVE = 0;
     private static final int MAX_ADRENALINE_MOVE = 1;
@@ -28,6 +33,16 @@ public class ShootAction implements Action {
     private EffectRequest shootRequest;
     private ReloadAction reloadAction;
 
+    /**
+     * Builds a Shoot Action that executes a shoot during the game.
+     * This kind of action is the one that receives the most complex request due to give
+     * the possibility to a shooter to perform any kind of possible shoot action valid
+     * in the game
+     *
+     * @param actingPlayer the Shooting Acting Player
+     * @param actionChosen the kind of Shoot Action that is going to be performed
+     * @param shootRequest the {@link ShootRequest ShootRequest} received
+     */
     public ShootAction(UserPlayer actingPlayer, PossibleAction actionChosen, ShootRequest shootRequest) {
         this.actingPlayer = actingPlayer;
         this.shootingWeapon = actingPlayer.getWeapons()[shootRequest.getWeaponID()];
@@ -46,6 +61,13 @@ public class ShootAction implements Action {
         }
     }
 
+    /**
+     * Validates the Shoot Action considering all the constraints on the inputs and the ones
+     * defined by the kind of Shoot Action that is going to be executed
+     *
+     * @return true if the Shoot Action is valid, otherwise false
+     * @throws InvalidActionException in case the action is invalid due to input validation
+     */
     @Override
     public boolean validate() throws InvalidActionException {
         if (!InputValidator.validatePosition(movingPos)) {
@@ -86,6 +108,17 @@ public class ShootAction implements Action {
         return true;
     }
 
+    /**
+     * Executes the Shoot Action considering also the case of a Reload during it.
+     * It is the method that throws all the invalid action exception given by the validation
+     * of the effect of the chosen Weapon. Also reload exceptions are thrown here, in case
+     * during a FRENZY Shoot, the Reload Action is not valid
+     *
+     * @throws InvalidActionException in case the action is not valid
+     * @throws WeaponAlreadyChargedException in case the weapon is already charged
+     * @throws NotEnoughAmmoException in case the weapons can not be recharged
+     * @throws WeaponNotChargedException in case the using weapon is not charged
+     */
     @Override
     public void execute() throws InvalidActionException, WeaponAlreadyChargedException, NotEnoughAmmoException, WeaponNotChargedException {
         // first I move the shooter saving his position in case after the weapon validate it can not be used

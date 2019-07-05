@@ -2,6 +2,11 @@ package model.actions;
 
 import exceptions.AdrenalinaException;
 
+/**
+ * Interface implemented by all the possible actions that a player can do in his turn.
+ * {@link model.cards.PowerupCard Powerups} are not implementing this interface because they have the same effect's
+ * logic of the {@link model.cards.WeaponCard Weapons}
+ */
 public interface Action {
     /**
      * Method used to verify that the user player can do the action with the parameter

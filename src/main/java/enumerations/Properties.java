@@ -1,5 +1,9 @@
 package enumerations;
 
+/**
+ * Enumeration containing all the possible Properties used to implement the logic of the {@link model.cards.WeaponCard}
+ * Weapons. Properties are contained in a Map, paired with their value in each weapon's effect
+ */
 public enum Properties {
     VISIBLE("visible"),
     CONCATENATED_VISIBLE("concatenatedVisible"),

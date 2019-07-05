@@ -7,6 +7,11 @@ import network.message.EffectRequest;
 import java.io.Serializable;
 import java.util.*;
 
+/**
+ * This is the main abstract class from which starts all the Decorator Pattern used to
+ * implement the effects of the {@link model.cards.WeaponCard Weapons} and {@link model.cards.PowerupCard
+ * Powerups}
+ */
 public abstract class Effect implements Serializable {
     private static final long serialVersionUID = 992667210434983695L;
 
@@ -15,22 +20,38 @@ public abstract class Effect implements Serializable {
     protected TargetType[] targets;
     protected String description;
 
+    /**
+     * @return the Properties of the effect
+     */
     public Map<String, String> getProperties() {
         return this.properties;
     }
 
+    /**
+     * @return an Array containing the kind of targets of the effect
+     */
     public TargetType[] getTargets() {
         return this.targets;
     }
 
+    /**
+     * @return the description of the effect
+     */
     public String getDescription() {
         return this.description;
     }
 
+    /**
+     * @return the cost of the effect represented with the {@link AmmoQuantity AmmoQuantity}
+     */
     public AmmoQuantity getCost() {
         return cost;
     }
 
+    /**
+     * Method that sets the properties to the decoratinf effect
+     * @param properties
+     */
     public void setProperties(Map<String, String> properties) {
         if (properties != null) {
             this.properties = new LinkedHashMap<>(properties);

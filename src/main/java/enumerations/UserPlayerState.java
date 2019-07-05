@@ -1,5 +1,10 @@
 package enumerations;
 
+/**
+ * Enumeration representing all the possible states that the client round manager can have.
+ * These states are mapped to the ones in the controller thanks to a mapping function
+ * used to reload a game in persistency
+ */
 public enum UserPlayerState {
     BOT_SPAWN,
     SPAWN,

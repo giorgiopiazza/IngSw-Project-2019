@@ -10,11 +10,21 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Implements the Mark Decoration as marks can be distributed to the targets of the Effect request
+ */
 public class ExtraMarkDecorator extends ExtraEffectDecorator {
     private static final long serialVersionUID = 4095069933567546259L;
     private final int[] markDistribution;
     private final TargetType targetType;
 
+    /**
+     * Builds the Mark Decoration
+     *
+     * @param effect to be decorated
+     * @param markDistribution he Array containing the marks' decoration distribution
+     * @param targetType the kind of target that needs to be shooted
+     */
     public ExtraMarkDecorator(Effect effect, int[] markDistribution, TargetType targetType) {
         this.effect = effect;
         this.description = effect.description;
@@ -64,6 +74,12 @@ public class ExtraMarkDecorator extends ExtraEffectDecorator {
         }
     }
 
+    /**
+     * Utility method used to correctly distribute marks through players
+     *
+     * @param shooter the Acting Shooting player
+     * @param squares the ArrayList of the target square positions
+     */
     private void sameSquareMarksForAllTargets(Player shooter, List<PlayerPosition> squares) {
         for (PlayerPosition square : squares) {
             List<Player> targetSquare = Game.getInstance().getGameMap().getPlayersInSquare(square);
@@ -75,18 +91,36 @@ public class ExtraMarkDecorator extends ExtraEffectDecorator {
         }
     }
 
+    /**
+     * Utility method used to correctly distribute marks through players
+     *
+     * @param shooter the Acting Shooting player
+     * @param targetsUsername the ArrayList of the Usernames of the Targets
+     */
     private void distributePlayerMarks(Player shooter, List<String> targetsUsername) {
         for (int i = 0; i < targetsUsername.size(); ++i) {
             Game.getInstance().getUserPlayerByUsername(targetsUsername.get(i)).getPlayerBoard().addMark(shooter, markDistribution[i]);
         }
     }
 
+    /**
+     * Utility method used to correctly distribute marks through players
+     *
+     * @param shooter the Acting Shooting player
+     * @param targetsUsername the ArrayList of the Usernames of the Targets
+     */
     private void samePlayerMarksForAllTargets(Player shooter, List<String> targetsUsername) {
         for (String targetUsername : targetsUsername) {
             Game.getInstance().getUserPlayerByUsername(targetUsername).getPlayerBoard().addMark(shooter, markDistribution[0]);
         }
     }
 
+    /**
+     * Utility method used to correctly distribute marks through players
+     *
+     * @param shooter the Acting Shooting player
+     * @param squares the ArrayList of the target square positions
+     */
     private void distributeMarkDamage(Player shooter, List<PlayerPosition> squares) {
         for (int i = 0; i < squares.size(); ++i) {
             List<Player> targetSquare = Game.getInstance().getGameMap().getPlayersInSquare(squares.get(i));

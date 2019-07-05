@@ -6,6 +6,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Class representing a deck of cards, decks contain all same kind of cards
+ */
 public class Deck implements Serializable {
     private static final long serialVersionUID = -3053418734560184556L;
 

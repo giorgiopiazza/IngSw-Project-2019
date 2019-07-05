@@ -362,6 +362,9 @@ public class GameManager implements TimerRunListener, Serializable {
         }
     }
 
+    /**
+     * @return {@code true} if the lobby is full, otherwise false
+     */
     public boolean isLobbyFull() {
         return lobby.isLobbyFull();
     }
@@ -785,6 +788,7 @@ public class GameManager implements TimerRunListener, Serializable {
         // then if the game has reached the maximum number of players also considering the terminator presence, it starts
         return checkLobby();
     }
+
 
     private void timerCheck() {
         ArrayList<LobbyMessage> inLobbyPlayers = lobby.getInLobbyPlayers();
@@ -1328,6 +1332,12 @@ public class GameManager implements TimerRunListener, Serializable {
             this.damage = damage;
         }
 
+        /**
+         * Method used to compare two playerpoints as they can be ordered for the winners points determination
+         *
+         * @param otherDamageCountWrapper the other damage to be compared
+         * @return true if the first has more damage than the second, otherwise false
+         */
         @Override
         public int compareTo(DamageCountWrapper otherDamageCountWrapper) {
             // Reversed compare to get the best damage dealer first

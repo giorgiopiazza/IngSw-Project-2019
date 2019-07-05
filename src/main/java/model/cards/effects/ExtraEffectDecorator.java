@@ -4,11 +4,12 @@ import network.message.EffectRequest;
 
 import java.util.Objects;
 
+/**
+ * Decorator of the Effect used to add functionalities to a BaseEffect
+ */
 public abstract class ExtraEffectDecorator extends Effect {
     private static final long serialVersionUID = -3143503212164027705L;
-    /**
-     * Decorator of the Effect used to add functionalities to a BaseEffect
-     */
+
     protected Effect effect;
 
     @Override

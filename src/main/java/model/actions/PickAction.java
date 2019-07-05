@@ -20,6 +20,10 @@ import network.message.ActionRequest;
 import network.message.MovePickRequest;
 import utility.InputValidator;
 
+/**
+ * Implements the Pick Action considering all the possible kinds of moving actions and the
+ * target resource that is going to be picked depending on the moving square
+ */
 public class PickAction implements Action {
     private static final int MAX_NORMAL_MOVE = 1;
     private static final int MAX_ADRENALINE_MOVE = 2;
@@ -36,6 +40,15 @@ public class PickAction implements Action {
     private SquareType squareType;
     private Square pickingSquare;
 
+    /**
+     * Builds a Pick Action that executes the pick during the game.
+     * Care, a Pick Action, can have a more Complex request due to
+     * the possible type of payment used to pick a weapon
+     *
+     * @param actingPlayer the Picking Acting Player
+     * @param actionChosen the kind of pick action chosen
+     * @param pickRequest the {@link MovePickRequest PickRequest} received
+     */
     public PickAction(UserPlayer actingPlayer, PossibleAction actionChosen, MovePickRequest pickRequest) {
         // verify that if a parameter in the request is null then the game crashes!
         this.actingPlayer = actingPlayer;
@@ -54,7 +67,14 @@ public class PickAction implements Action {
         squareType = pickingSquare.getSquareType();
     }
 
-
+    /**
+     * Validates the Pick Action considering all the possible kind of picks but also the validation
+     * ot the payment of a weapon, in case the target square is a spawn one still containing some
+     * weapons
+     *
+     * @return true in case the pick Action is true, otherwise false
+     * @throws InvalidActionException in case the action is invalid due to input validation
+     */
     @Override
     public boolean validate() throws InvalidActionException {
         if(!InputValidator.validateIndexes(pickRequest, actingPlayer)) {
@@ -90,6 +110,10 @@ public class PickAction implements Action {
         return pickValidation();
     }
 
+    /**
+     * Executes the Pick Action considering the kind of resources that need to be granted
+     * by the acting player
+     */
     @Override
     public void execute() {
         // first I must always move the player

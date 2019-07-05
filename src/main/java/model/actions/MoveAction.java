@@ -6,6 +6,9 @@ import model.player.PlayerPosition;
 import model.player.UserPlayer;
 import utility.InputValidator;
 
+/**
+ * Implementation of the Move Action considering all the possible kind of moves
+ */
 public class MoveAction implements Action {
     private static final int MAX_NORMAL_MOVE = 3;
     private static final int MAX_FRENZY_MOVE = 4;
@@ -15,12 +18,26 @@ public class MoveAction implements Action {
     private PlayerPosition movingPos;
     private PossibleAction actionChosen;
 
+    /**
+     * Builds a Move Action, used to execute a movement during the game
+     *
+     * @param actingPlayer the Acting moving player
+     * @param movingPos the target moving position
+     * @param actionChosen the kind of move that the actingPlayer can do
+     */
     public MoveAction(UserPlayer actingPlayer, PlayerPosition movingPos, PossibleAction actionChosen) {
         this.actingPlayer = actingPlayer;
         this.movingPos = movingPos;
         this.actionChosen = actionChosen;
     }
 
+    /**
+     * Validation of the move action considering the distances defined by the kind of action
+     * that is going to be executed
+     *
+     * @return true if the Move Action is valid, otherwise false
+     * @throws InvalidActionException in case the action is invalid due to input validation
+     */
     @Override
     public boolean validate() throws InvalidActionException {
         if(!InputValidator.validatePosition(movingPos)) {
@@ -38,6 +55,9 @@ public class MoveAction implements Action {
         }
     }
 
+    /**
+     * Implementation of the execution of a moving action
+     */
     @Override
     public void execute() {
         actingPlayer.changePosition(movingPos.getRow(), movingPos.getColumn());

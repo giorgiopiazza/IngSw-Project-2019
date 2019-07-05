@@ -10,11 +10,21 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Implements the Damage decoration as damages can be distributed to the targets of the Effect Request
+ */
 public class ExtraDamageDecorator extends ExtraEffectDecorator {
     private static final long serialVersionUID = 793450342025388024L;
     private final int[] damageDistribution;
     private final TargetType targetType;
 
+    /**
+     * Builds the Damage Decoration
+     *
+     * @param effect to be decorated
+     * @param extraDamageDistribution the Array containing the damage decoration distribution
+     * @param targetType the kind of target that needs to be shooted
+     */
     public ExtraDamageDecorator(Effect effect, int[] extraDamageDistribution, TargetType targetType) {
         this.effect = effect;
         this.description = effect.description;
@@ -64,12 +74,24 @@ public class ExtraDamageDecorator extends ExtraEffectDecorator {
         }
     }
 
+    /**
+     * Utility method used to correctly distribute damage through players
+     *
+     * @param shooter the Acting Shooting player
+     * @param targetsUsername the ArrayList of the Usernames of the Targets
+     */
     private void distributePlayerDamage(Player shooter, List<String> targetsUsername) {
         for (int i = 0; i < targetsUsername.size(); ++i) {
             Game.getInstance().getUserPlayerByUsername(targetsUsername.get(i)).getPlayerBoard().addDamage(shooter, damageDistribution[i]);
         }
     }
 
+    /**
+     * Utility method used to correctly distribute damage through players
+     *
+     * @param shooter the Acting Shooting player
+     * @param squares the ArrayList of the target square positions
+     */
     private void sameSquareDamageForAllTargets(Player shooter, List<PlayerPosition> squares) {
         for (PlayerPosition square : squares) {
             List<Player> targetSquare = Game.getInstance().getGameMap().getPlayersInSquare(square);
@@ -81,6 +103,12 @@ public class ExtraDamageDecorator extends ExtraEffectDecorator {
         }
     }
 
+    /**
+     * Utility method used to correctly distribute damage through players
+     *
+     * @param shooter the Acting Shooting player
+     * @param squares the ArrayList of the target square positions
+     */
     private void distributeSquareDamage(Player shooter, List<PlayerPosition> squares) {
         for (int i = 0; i < squares.size(); ++i) {
             List<Player> targetSquare = Game.getInstance().getGameMap().getPlayersInSquare(squares.get(i));
@@ -92,6 +120,12 @@ public class ExtraDamageDecorator extends ExtraEffectDecorator {
         }
     }
 
+    /**
+     * Utility method used to correctly distribute damage through players
+     *
+     * @param shooter the Acting Shooting player
+     * @param targetsUsername the ArrayList of the Usernames of the Targets
+     */
     private void samePlayerDamageForAllTargets(Player shooter, List<String> targetsUsername) {
         for (String targetUsername : targetsUsername) {
             Game.getInstance().getUserPlayerByUsername(targetUsername).getPlayerBoard().addDamage(shooter, damageDistribution[0]);

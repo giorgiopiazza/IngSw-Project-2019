@@ -7,6 +7,9 @@ import model.player.Player;
 import model.player.PlayerPosition;
 import model.player.UserPlayer;
 
+/**
+ * Implementation of the Bot Action considering the possible adrenaline states in which the bot can be
+ */
 public class BotAction implements Action {
     private static final int MAX_BOT_MOVE = 1;
     private static final int BOT_DAMAGE = 1;
@@ -18,6 +21,13 @@ public class BotAction implements Action {
     private BotState botState;
 
 
+    /**
+     * Builds a bot action, used to execute the bot damage
+     *
+     * @param actingPlayer the player using the Bot Action
+     * @param targetPlayer the target of the Bot Action
+     * @param movingPos the {@link PlayerPosition Position} in which the Bot is going to move
+     */
     public BotAction(UserPlayer actingPlayer, Player targetPlayer, PlayerPosition movingPos) {
         this.actingPlayer = actingPlayer;
         this.targetPlayer = targetPlayer;
@@ -35,6 +45,12 @@ public class BotAction implements Action {
         }
     }
 
+    /**
+     * Implementation of the validate for a Bot Action
+     *
+     * @return true if the Action is valid, otherwise false
+     * @throws InvalidActionException in case the action is invalid due to input validation
+     */
     @Override
     public boolean validate() throws InvalidActionException {
         if (actingPlayer.equals(targetPlayer)) {
@@ -56,6 +72,14 @@ public class BotAction implements Action {
         return movingAndVisibilityValidation(movingDistance);
     }
 
+    /**
+     * Utility method used by the validate to check the combination of a bot action with the
+     * move and the shoot
+     *
+     * @param movingDistance the moving distance between the bot and his moving position
+     * @return true if the sub validation is verified, otherwise false
+     * @throws InvalidActionException in case the action is invalid due to input validation
+     */
     private boolean movingAndVisibilityValidation(int movingDistance) throws InvalidActionException{
         // move and Visibility validation
         if (movingDistance == 0) {
@@ -80,6 +104,9 @@ public class BotAction implements Action {
         }
     }
 
+    /**
+     * Implementation of the execution of a Bot Action
+     */
     @Override
     public void execute() {
         // first I move the bot
@@ -99,6 +126,10 @@ public class BotAction implements Action {
         }
     }
 
+    /**
+     * Enumeration used to define the state of the Bot's playerboard as his normal or adrenaline
+     * actions can be activated
+     */
     enum BotState {
         NORMAL, ADRENALINE
     }

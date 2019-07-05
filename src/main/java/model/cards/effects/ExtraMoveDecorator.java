@@ -9,10 +9,19 @@ import network.message.EffectRequest;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Implemets the Move decoration as each movement can be performed
+ */
 public class ExtraMoveDecorator extends ExtraEffectDecorator {
     private static final long serialVersionUID = -1299754577436399885L;
     private final MoveTarget moveTarget;
 
+    /**
+     * Builds the Move Decoration
+     *
+     * @param effect to be decorated
+     * @param moveTarget the target moving position to be performed
+     */
     public ExtraMoveDecorator(Effect effect, MoveTarget moveTarget) {
         this.effect = effect;
         this.description = effect.description;

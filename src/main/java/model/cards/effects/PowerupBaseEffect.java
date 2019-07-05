@@ -14,6 +14,9 @@ import java.util.Map;
 
 import static model.cards.effects.EffectValidator.teleporterValidator;
 
+/**
+ * Implements the Class from which each {@link model.cards.PowerupCard Powerups'} effect must be decorated
+ */
 public class PowerupBaseEffect extends Effect {
 
     private static final long serialVersionUID = -2807643151080169972L;
