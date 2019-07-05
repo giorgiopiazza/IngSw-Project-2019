@@ -1231,9 +1231,16 @@ class CliPrinter {
 
     private static String getKillshotPresence(GameSerialized gameSerialized, KillShot[] killshotTrack, List<KillShot> finalFrenzyKillShots, boolean oneKillShot) {
         StringBuilder tempOut = new StringBuilder();
+        int emptyKillShots = killshotTrack.length - gameSerialized.getKillShotNum();
 
-        for(KillShot killShot : killshotTrack) {
-            tempOut.append("║ ").append(getKillShotPlayer(gameSerialized, killShot, oneKillShot)).append(" ║");
+        tempOut.append("║");
+
+        for(int i = 0; i < emptyKillShots; ++i) {
+            tempOut.append("   ").append(" ║");
+        }
+
+        for(int i = 0; i < gameSerialized.getKillShotNum(); ++i) {
+            tempOut.append(" ").append(getKillShotPlayer(gameSerialized, killshotTrack[i], oneKillShot)).append(" ║");
         }
 
         for(KillShot frenzyKillshot : finalFrenzyKillShots) {
@@ -1253,11 +1260,7 @@ class CliPrinter {
             if(killShotPlayer != null) {
                 killShotColor = getPlayerColorCode(killShotPlayer, gameSerialized, true) + AnsiCode.TEXT_BLACK;
             }
-        }
 
-        if(killShotColor == null) {
-            return "  ";
-        } else {
             if(killShot.getPoints() > 1) {
                 if(oneKillShot) {
                     return killShotColor + "__" + AnsiCode.RESET;
@@ -1265,8 +1268,22 @@ class CliPrinter {
                     return killShotColor + "  " + AnsiCode.RESET;
                 }
             } else {
-                return killShotColor + "  " + AnsiCode.RESET;
+                if(oneKillShot) {
+                    return killShotColor + "  " + AnsiCode.RESET;
+                } else {
+                    return "  ";
+                }
             }
+        } else {
+            return checkNullKillShot(oneKillShot);
+        }
+    }
+
+    private static String checkNullKillShot(boolean oneKillShot) {
+        if(oneKillShot) {
+            return "\uD83D\uDC80";
+        } else {
+            return "  ";
         }
     }
 
