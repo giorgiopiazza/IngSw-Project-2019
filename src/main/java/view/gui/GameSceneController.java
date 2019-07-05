@@ -373,6 +373,11 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Sets skulls and drops on the killshots track
+     *
+     * @param gameSerialized state of the game
+     */
     private void setKillshotTrack(GameSerialized gameSerialized) {
         List<KillShot> killShots = new ArrayList<>(Arrays.asList(gameSerialized.getKillShotsTrack()));
         int killShotNum = gameSerialized.getKillShotNum();
@@ -425,6 +430,12 @@ public class GameSceneController {
 
     }
 
+    /**
+     * Adds a drop to the killshot track
+     * @param dropPath path of the drop
+     * @param topMargin top margin
+     * @param leftMargin left margin
+     */
     private void addDropToKillshotTrack(String dropPath, double topMargin, double leftMargin) {
         ImageView drop = new ImageView(dropPath);
         StackPane.setAlignment(drop, Pos.TOP_LEFT);
@@ -558,6 +569,10 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Called when an error occurs. Displays an alert with the error message
+     * @param error message of the error
+     */
     void onError(String error) {
         GuiManager.showDialog((Stage) mainPane.getScene().getWindow(), GuiManager.ERROR_DIALOG_TITLE, error);
     }
@@ -639,6 +654,10 @@ public class GameSceneController {
         }
     }
 
+    /**
+     * Shows the info of a player in the info panel
+     * @param username username of the player who you want to displays informations
+     */
     private void showPlayerInfo(String username) {
         infoPanelUsername = username;
 
@@ -667,6 +686,10 @@ public class GameSceneController {
         showPlayerInfo(username);
     }
 
+    /**
+     * Shows the player info of the client owner
+     * @param me UserPlayer of the client owner
+     */
     private void showMyPlayerInfo(UserPlayer me) {
         setUsernamePlayerInfo(me.getUsername());
 
@@ -681,6 +704,10 @@ public class GameSceneController {
         setPowerups(guiManager.getPowerups());
     }
 
+    /**
+     * Shows the bot info
+     * @param bot bot
+     */
     private void showBotPlayerInfo(Bot bot) {
         setUsernamePlayerInfo(bot.getUsername());
 
@@ -690,6 +717,10 @@ public class GameSceneController {
         setPlayerboardSkulls(bot.getPlayerBoard());
     }
 
+    /**
+     * Shows 
+     * @param other
+     */
     private void showOthersPlayerInfo(UserPlayer other) {
         setUsernamePlayerInfo(other.getUsername());
 
@@ -2663,44 +2694,6 @@ public class GameSceneController {
         }
 
         return returnPositions;
-    }
-
-    private Square getSquare(GameMap gameMap, PlayerPosition tempPosition, int direction) {
-        switch (direction) {
-            case 0:
-                if (tempPosition.getRow() - 1 >= 0) {
-                    tempPosition.setRow(tempPosition.getRow() - 1);
-                } else {
-                    tempPosition = null;
-                }
-                break;
-            case 1:
-                if (tempPosition.getColumn() + 1 < GameMap.MAX_COLUMNS) {
-                    tempPosition.setColumn(tempPosition.getColumn() + 1);
-                } else {
-                    tempPosition = null;
-                }
-                break;
-            case 2:
-                if (tempPosition.getRow() + 1 < GameMap.MAX_ROWS) {
-                    tempPosition.setRow(tempPosition.getRow() + 1);
-                } else {
-                    tempPosition = null;
-                }
-                break;
-            default:
-                if (tempPosition.getColumn() - 1 >= 0) {
-                    tempPosition.setColumn(tempPosition.getColumn() - 1);
-                } else {
-                    tempPosition = null;
-                }
-        }
-
-        if (tempPosition != null) {
-            return gameMap.getSquare(tempPosition);
-        } else {
-            return null;
-        }
     }
 
     void onPlayerDisconnect(String player) {
