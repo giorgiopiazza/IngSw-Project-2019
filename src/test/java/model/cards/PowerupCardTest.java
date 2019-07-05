@@ -2,27 +2,36 @@ package model.cards;
 
 import enumerations.Ammo;
 import enumerations.PlayerColor;
+import exceptions.cards.InvalidPowerupActionException;
+import exceptions.command.InvalidCommandException;
 import exceptions.game.InvalidMapNumberException;
+import exceptions.player.MaxCardsInHandException;
+import exceptions.playerboard.NotEnoughAmmoException;
 import model.Game;
 import model.cards.effects.PowerupBaseEffect;
 import model.player.PlayerBoard;
+import model.player.PlayerPosition;
 import model.player.UserPlayer;
-import network.message.EffectRequest;
+import network.message.PowerupRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
+import java.util.ArrayList;
 
-import static enumerations.MessageContent.POWERUP_USAGE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class PowerupCardTest {
-    Game game;
-    UserPlayer pl1;
-    UserPlayer pl2;
-    UserPlayer pl3;
+    private Game game;
+    private UserPlayer pl1;
+    private UserPlayer pl2;
+    private UserPlayer pl3;
+
+    private PowerupRequest powerupRequest;
+    private PowerupRequest.PowerupRequestBuilder builder;
+
+    private ArrayList<String> userTargets = new ArrayList<>();
+    private ArrayList<PlayerPosition> targetsPos = new ArrayList<>();
 
     @BeforeEach
     void before() throws InvalidMapNumberException {
@@ -32,16 +41,16 @@ class PowerupCardTest {
         pl3 = new UserPlayer("3", PlayerColor.YELLOW, new PlayerBoard());
 
         game.init();
-        game.initializeDecks();
         game.setGameMap(1);
 
         game.addPlayer(pl1);
         game.addPlayer(pl2);
         game.addPlayer(pl3);
+        game.startGame();
     }
 
     @Test
-    void use() {
+    void defaultMethods() {
         PowerupCard p1, p2, p3;
         PowerupBaseEffect effect = mock(PowerupBaseEffect.class);
 
@@ -59,4 +68,106 @@ class PowerupCardTest {
         assertEquals(p1, p1);
         assertNotEquals(p1, p3);
     }
+
+    @Test
+    void newton() throws MaxCardsInHandException, NotEnoughAmmoException, InvalidPowerupActionException {
+        PowerupCard newton = drawPowerup("NEWTON");
+
+        pl1.addPowerup(newton);
+        ArrayList<Integer> powerup = new ArrayList<>();
+        powerup.add(0);
+
+        // inexistent player
+        builder = new PowerupRequest.PowerupRequestBuilder("TOPOLINO", null, powerup);
+
+        powerupRequest = builder.build();
+
+        assertThrows(InvalidCommandException.class, () -> newton.use(powerupRequest));
+
+        // invalid newton movement
+        pl2.setPosition(new PlayerPosition(0,0));
+        targetsPos.add(new PlayerPosition(1,1));
+        userTargets.add(pl2.getUsername());
+        builder = new PowerupRequest.PowerupRequestBuilder(pl1.getUsername(), null, powerup);
+        builder.targetPlayersUsername(userTargets);
+
+        powerupRequest = builder.build();
+
+        assertThrows(InvalidPowerupActionException.class, () -> newton.use(powerupRequest));
+
+
+        // NEWTON test
+        targetsPos.clear();
+        targetsPos.add(new PlayerPosition(0,2));
+        builder = new PowerupRequest.PowerupRequestBuilder(pl1.getUsername(), null, powerup);
+        builder.targetPlayersUsername(userTargets);
+        builder = builder.targetPlayersMovePositions(targetsPos);
+
+        powerupRequest = builder.build();
+        newton.use(powerupRequest);
+
+        assertEquals(new PlayerPosition(0, 2), pl2.getPosition());
+    }
+
+    @Test
+    void targetingScope() throws MaxCardsInHandException, NotEnoughAmmoException, InvalidPowerupActionException {
+        PowerupCard targetingScope = drawPowerup("TARGETING SCOPE");
+        PowerupCard paymentPowerup = drawPowerup("TARGETING SCOPE");
+
+        ArrayList<Ammo> payingColors = new ArrayList<>();
+
+        pl1.addPowerup(targetingScope);
+        ArrayList<Integer> powerup = new ArrayList<>();
+        powerup.add(0);
+        payingColors.add(Ammo.RED);
+
+        // payment without powerup
+        pl1.setPosition(new PlayerPosition(0,0));
+        pl2.setPosition(new PlayerPosition(0,0));
+        userTargets.add(pl2.getUsername());
+        builder = new PowerupRequest.PowerupRequestBuilder(pl1.getUsername(), null, powerup);
+        builder = builder.targetPlayersUsername(userTargets);
+        builder = builder.ammoColor(payingColors);
+
+        powerupRequest = builder.build();
+        targetingScope.use(powerupRequest);
+
+        assertEquals(1, pl2.getPlayerBoard().getDamageCount());
+
+        // payment with powerup
+        pl1.addPowerup(targetingScope);
+        powerup.clear();
+        powerup.add(0);
+        pl1.addPowerup(paymentPowerup);
+        ArrayList<Integer> paymentPowerups = new ArrayList<>();
+        powerup.add(1);
+        paymentPowerups.add(1);
+
+        builder = new PowerupRequest.PowerupRequestBuilder(pl1.getUsername(), null, powerup);
+        builder = builder.targetPlayersUsername(userTargets);
+        builder = builder.paymentPowerups(paymentPowerups);
+
+        powerupRequest = builder.build();
+        targetingScope.use(powerupRequest);
+
+        assertEquals(2, pl2.getPlayerBoard().getDamageCount());
+
+    }
+
+    private PowerupCard drawPowerup(String name) {
+        PowerupCard powerupCard = null;
+
+        for(Card card : game.getPowerupCardsDeck().toList()) {
+            PowerupCard powerup = (PowerupCard) card;
+
+            if(((PowerupCard) card).getName().equals(name)) {
+                powerupCard = powerup;
+                break;
+            }
+        }
+
+        return powerupCard;
+    }
+
+
 }
