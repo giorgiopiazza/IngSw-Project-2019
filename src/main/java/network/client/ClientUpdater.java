@@ -4,6 +4,10 @@ import network.message.Message;
 
 import java.util.List;
 
+/**
+ * This class run a process that wait messages from the server
+ * and notify the Client whenever one arrives
+ */
 public class ClientUpdater implements Runnable {
     private final Client client;
     private ClientUpdateListener updateListener;
@@ -43,10 +47,16 @@ public class ClientUpdater implements Runnable {
         }
     }
 
+    /**
+     * stop the running process
+     */
     public void stop() {
         this.thread.interrupt();
     }
 
+    /**
+     * start the process
+     */
     public void start() {
         if (this.thread.isInterrupted()) {
             this.thread.start();

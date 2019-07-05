@@ -4,6 +4,9 @@ import enumerations.MessageContent;
 
 import java.io.Serializable;
 
+/**
+ * This abstract class need to differentiate that the server can send to the client or vice versa
+ */
 public abstract class Message implements Serializable {
     private static final long serialVersionUID = -5411382756213360684L;
 
