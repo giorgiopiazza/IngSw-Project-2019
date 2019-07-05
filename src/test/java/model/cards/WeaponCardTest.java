@@ -551,7 +551,7 @@ class WeaponCardTest {
         builder = builder.rechargingWeapons(null);
         request = new ShootRequest(builder);
         action = new ShootAction(shooter, PossibleAction.FRENZY_SHOOT, request);
-        assertFalse(action.validate());
+        assertTrue(action.validate());
 
         // invalid light frenzy with movement
         builder = builder.moveBeforeShootPosition(new PlayerPosition(1,1));
@@ -564,7 +564,7 @@ class WeaponCardTest {
         builder = builder.rechargingWeapons(null);
         request = new ShootRequest(builder);
         action = new ShootAction(shooter, PossibleAction.LIGHT_FRENZY_SHOOT, request);
-        assertFalse(action.validate());
+        assertTrue(action.validate());
 
         // invalid action
         builder = builder.moveBeforeShootPosition(new PlayerPosition(0,0));
