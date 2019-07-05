@@ -52,6 +52,7 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
     private String firstPlayer;
     private String turnOwner;
+    private boolean frenzyJustActivated = false;
     private boolean turnOwnerChanged;
     private boolean waitingGrenade = false;
     private boolean loadGame = false;
@@ -584,7 +585,11 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
                 isBotPresent && gameSerialized.getBot().isDead()) {
             roundManager.botRespawn();
         } else {
-            nextState();
+            if (frenzyJustActivated) {
+                frenzyJustActivated = false;
+            } else {
+                nextState();
+            }
         }
     }
 
@@ -667,10 +672,15 @@ public abstract class ClientGameManager implements ClientGameManagerListener, Cl
 
             List<String> players = getPlayers().stream().map(Player::getUsername).collect(Collectors.toList());
 
-            int activatorIndex = players.indexOf(stateMessage.getTurnOwner());
+            if (getUsername().equals(turnOwner)) {
+                frenzyJustActivated = true;
+            }
+
+            int afterActivatorIndex = players.indexOf(stateMessage.getTurnOwner());
             int playerIndex = players.indexOf(getUsername());
 
-            roundManager.setSecondFrenzyAction(playerIndex >= activatorIndex);
+            roundManager.setSecondFrenzyAction(playerIndex >= afterActivatorIndex);
+            roundManager.setFrenzyFirstAction();
         }
     }
 
