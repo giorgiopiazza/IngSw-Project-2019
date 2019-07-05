@@ -939,6 +939,8 @@ public class RoundManager {
         if (gameInstance.getState() == GameState.NORMAL) {
             return deathPlayersHandler(PossibleGameState.PASS_NORMAL_TURN);
         } else if (gameInstance.getState() == GameState.FINAL_FRENZY) {
+            Response tempResponse;
+
             if (turnManager.getTurnOwner().equals(turnManager.getLastPlayer())) {
                 // if reached, game has ended, last remaining points are calculated and a winner is declared!
                 gameManager.endGame();
@@ -947,7 +949,14 @@ public class RoundManager {
                 gameManager.sendPrivateUpdates();
                 return new Response("Turn passed and GAME HAS ENDED", MessageStatus.OK);
             }
-            return deathPlayersHandler(PossibleGameState.PASS_FRENZY_TURN);
+
+            tempResponse = deathPlayersHandler(PossibleGameState.PASS_FRENZY_TURN);
+            if(tempResponse.getStatus() == MessageStatus.OK) {
+                gameManager.sendPrivateUpdates();
+                return tempResponse;
+            } else {
+                throw new InvalidGameStateException();
+            }
         } else {
             throw new InvalidGameStateException();
         }

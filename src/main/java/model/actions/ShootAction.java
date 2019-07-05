@@ -70,12 +70,12 @@ public class ShootAction implements Action {
                 }
                 break;
             case FRENZY_SHOOT:
-                if (movingDistance > MAX_FRENZY_MOVE || reloadAction == null) {
+                if (movingDistance > MAX_FRENZY_MOVE) {
                     return false;
                 }
                 break;
             case LIGHT_FRENZY_SHOOT:
-                if (movingDistance > MAX_LIGHT_FRENZY_MOVE || reloadAction == null) {
+                if (movingDistance > MAX_LIGHT_FRENZY_MOVE) {
                     return false;
                 }
                 break;
@@ -93,7 +93,7 @@ public class ShootAction implements Action {
         actingPlayer.changePosition(movingPos.getRow(), movingPos.getColumn());
 
         // if the shooting action is a frenzy one I can also recharge my weapons before shooting
-        if (actionChosen == PossibleAction.FRENZY_SHOOT || actionChosen == PossibleAction.LIGHT_FRENZY_SHOOT) {
+        if (reloadAction != null && (actionChosen == PossibleAction.FRENZY_SHOOT || actionChosen == PossibleAction.LIGHT_FRENZY_SHOOT)) {
             if (reloadAction.validate()) {
                 reloadAction.execute();
             } else {
