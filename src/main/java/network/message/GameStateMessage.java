@@ -4,6 +4,9 @@ import enumerations.MessageContent;
 import model.GameSerialized;
 import utility.GameConstants;
 
+/**
+ * Message class to inform the clients about a game state update
+ */
 public class GameStateMessage extends Message {
     private static final long serialVersionUID = 2725986184174583892L;
 

@@ -2,6 +2,9 @@ package network.message;
 
 import enumerations.MessageContent;
 
+/**
+ * Message class for request a discard of a powerup for spawn
+ */
 public class DiscardPowerupRequest extends Message {
     private static final long serialVersionUID = -6885404447987158413L;
 

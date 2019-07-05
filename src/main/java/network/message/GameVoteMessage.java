@@ -4,6 +4,9 @@ import enumerations.MessageContent;
 
 import java.util.Objects;
 
+/**
+ * Message class for vote a map
+ */
 public class GameVoteMessage extends Message {
     private static final long serialVersionUID = -1592035927392350342L;
 

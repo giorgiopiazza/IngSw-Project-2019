@@ -3,6 +3,9 @@ package network.message;
 import enumerations.MessageContent;
 import enumerations.RoomColor;
 
+/**
+ * Message class for requesting the bot spawn
+ */
 public class BotSpawnRequest extends Message {
     private static final long serialVersionUID = 1272585248979532293L;
 

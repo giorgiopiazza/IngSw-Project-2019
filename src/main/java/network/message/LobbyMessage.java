@@ -5,6 +5,9 @@ import enumerations.PlayerColor;
 
 import java.util.Objects;
 
+/**
+ * Message class used to join or leave the lobby
+ */
 public class LobbyMessage extends Message {
     private static final long serialVersionUID = -8420070827032848314L;
 

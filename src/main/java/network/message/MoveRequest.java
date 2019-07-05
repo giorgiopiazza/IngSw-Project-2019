@@ -5,6 +5,9 @@ import model.player.PlayerPosition;
 
 import java.util.Arrays;
 
+/**
+ * Message class for requesting a move action
+ */
 public class MoveRequest extends ActionRequest {
     private static final long serialVersionUID = 7410856239418653990L;
 

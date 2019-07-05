@@ -3,6 +3,9 @@ package network.message;
 import enumerations.MessageContent;
 import utility.GameConstants;
 
+/**
+ * Message class for game reconnection
+ */
 public class ReconnectionMessage extends Message {
     private static final long serialVersionUID = -3306576176165651299L;
 

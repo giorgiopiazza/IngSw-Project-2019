@@ -3,6 +3,9 @@ package network.message;
 import enumerations.MessageContent;
 import utility.GameConstants;
 
+/**
+ * Message class for tell the client that a player disconnected
+ */
 public class DisconnectionMessage extends Message {
     private static final long serialVersionUID = -8073712986535222650L;
 

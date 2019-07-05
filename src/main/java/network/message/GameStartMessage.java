@@ -3,6 +3,9 @@ package network.message;
 import enumerations.MessageContent;
 import utility.GameConstants;
 
+/**
+ * Message class to tell the clients that the game is started
+ */
 public class GameStartMessage extends Message {
     private static final long serialVersionUID = -5671092105322763783L;
 

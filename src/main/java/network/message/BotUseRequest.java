@@ -3,6 +3,9 @@ package network.message;
 import enumerations.MessageContent;
 import model.player.PlayerPosition;
 
+/**
+ * Message class for requesting an execution of a bot action
+ */
 public class BotUseRequest extends Message {
     private static final long serialVersionUID = -2468038742086444870L;
 

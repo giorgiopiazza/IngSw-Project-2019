@@ -4,6 +4,9 @@ import enumerations.MessageContent;
 import enumerations.MessageStatus;
 import utility.GameConstants;
 
+/**
+ * Generic response to a request
+ */
 public class Response extends Message {
     private static final long serialVersionUID = 9049719323850459931L;
 

@@ -4,6 +4,9 @@ import enumerations.MessageContent;
 import enumerations.UserPlayerState;
 import utility.GameConstants;
 
+/**
+ * Message class that is sent when a load game is completed successfully
+ */
 public class GameLoadResponse extends Message {
     private static final long serialVersionUID = 4880522547664967982L;
 

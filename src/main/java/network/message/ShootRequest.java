@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Message class for requesting a shoot action execution
+ */
 public class ShootRequest extends EffectRequest {
     private static final long serialVersionUID = -9183566520524697764L;
 
