@@ -947,6 +947,8 @@ public class RoundManager {
                 gameManager.sendPrivateUpdates();
                 return new Response("Turn passed and GAME HAS ENDED", MessageStatus.OK);
             }
+            gameManager.sendPrivateUpdates();
+            SaveGame.saveGame(gameManager);
             return deathPlayersHandler(PossibleGameState.PASS_FRENZY_TURN);
         } else {
             throw new InvalidGameStateException();

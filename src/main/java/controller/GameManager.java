@@ -929,7 +929,7 @@ public class GameManager implements TimerRunListener, Serializable {
             case SECOND_ACTION:
                 return true;
             case FINAL_FRENZY:
-                return roundManager.getTurnManager().getAfterFrenzy().contains(roundManager.getTurnManager().getTurnOwner());
+                return !roundManager.getTurnManager().getAfterFrenzy().contains(roundManager.getTurnManager().getTurnOwner());
             default:
                 throw new InvalidGameStateException();
         }
