@@ -2589,19 +2589,43 @@ public class GameSceneController {
         List<PlayerPosition> returnPositions = new ArrayList<>();
 
         for (int i = 0; i < 4; i++) {
-            Square tempsquare = gameMap.getSquare(startingSquare);
-            PlayerPosition tempPosition = new PlayerPosition(startingSquare.getRow(), startingSquare.getColumn());
+            Square mySquare = gameMap.getSquare(startingSquare);
+            PlayerPosition myPos = new PlayerPosition(startingSquare);
 
-            while (tempsquare != null) {
-                if (!startingSquare.equals(tempPosition)) {
-                    if (startingSquare.distanceOf(tempPosition, gameMap) <= distance) {
-                        returnPositions.add(tempPosition);
-                    } else {
-                        return returnPositions;
-                    }
+            for (int j = 0; j < distance; j++) {
+                switch (i) {
+                    case 0:
+                        if (!mySquare.getNorth().equals(SquareAdjacency.WALL)) {
+                            myPos.setRow(myPos.getRow() - 1);
+                            returnPositions.add(new PlayerPosition(myPos));
+                            mySquare = gameMap.getSquare(myPos);
+                        }
+                        break;
+
+                    case 1:
+                        if (!mySquare.getEast().equals(SquareAdjacency.WALL)) {
+                            myPos.setColumn(myPos.getColumn() + 1);
+                            returnPositions.add(new PlayerPosition(myPos));
+                            mySquare = gameMap.getSquare(myPos);
+                        }
+                        break;
+
+                    case 2:
+                        if (!mySquare.getSouth().equals(SquareAdjacency.WALL)) {
+                            myPos.setRow(myPos.getRow() + 1);
+                            returnPositions.add(new PlayerPosition(myPos));
+                            mySquare = gameMap.getSquare(myPos);
+                        }
+                        break;
+
+                    case 3:
+                        if (!mySquare.getWest().equals(SquareAdjacency.WALL)) {
+                            myPos.setColumn(myPos.getColumn() - 1);
+                            returnPositions.add(new PlayerPosition(myPos));
+                            mySquare = gameMap.getSquare(myPos);
+                        }
+                        break;
                 }
-
-                tempsquare = getSquare(gameMap, tempPosition, i);
             }
         }
 
