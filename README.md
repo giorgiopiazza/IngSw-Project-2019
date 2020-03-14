@@ -1,4 +1,4 @@
-# Prova Finale di Ingegneria del Software - a.a. 2019-2020
+# Prova Finale di Ingegneria del Software - a.a. 2018-2019
 ![alt text](https://cf.geekdo-images.com/opengraph/img/ac8k6cuJA8cf6jnRlPjzkDd_YuQ=/fit-in/1200x630/pic3476604.jpg)
 
 Scopo del progetto è quello di implementare il gioco da tavola [Adrenalina](https://czechgames.com/en/adrenaline/) seguendo il pattern architetturale Model View Controller per la realizzazione del modello secondo il paradigma di programmazione orientato agli oggetti. Il risultato finale copre completamente le regole definite dal gioco e permette di interagirci sia con una interfaccia da linea di comando (CLI) che grafica (GUI), la rete è stata gestita sia con il tradizionale approccio delle socket che con una tecnologia specifica di Java (RMI).
@@ -35,7 +35,7 @@ I seguenti jar sono stati utilizzati per la consegna del progetto, permettono qu
 - Socket
 - RMI
 
-### Funzionalità Sggiuntive Sviluppate
+### Funzionalità Aggiuntive Sviluppate
 - Terminator
 - Persistenza
 
